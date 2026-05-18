@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -154,6 +154,10 @@ export default function DashboardPage() {
     )
   }
 
+  const [search, setSearch] = useState('')
+  const [filterTab, setFilterTab] = useState<'tous' | 'favoris' | 'top' | 'positif'>('tous')
+  const [sortBy, setSortBy] = useState<'date' | 'score' | 'rendement' | 'cashflow'>('date')
+
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
     user?.email?.split('@')[0] ||
@@ -187,6 +191,29 @@ export default function DashboardPage() {
   const best = simulations.length > 0
     ? [...simulations].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0]
     : null
+
+  /* Filtered + sorted simulations */
+  const filteredSims = useMemo(() => {
+    let list = [...simulations]
+    // Search
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        s.ville.toLowerCase().includes(q)
+      )
+    }
+    // Filter tabs
+    if (filterTab === 'favoris') list = list.filter(s => s.is_favorite)
+    if (filterTab === 'top') list = list.filter(s => (s.score ?? 0) >= 70)
+    if (filterTab === 'positif') list = list.filter(s => s.cashflowMensuel >= 0)
+    // Sort
+    if (sortBy === 'score') list.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+    else if (sortBy === 'rendement') list.sort((a, b) => b.rendementBrut - a.rendementBrut)
+    else if (sortBy === 'cashflow') list.sort((a, b) => b.cashflowMensuel - a.cashflowMensuel)
+    // default: date (already ordered by Supabase)
+    return list
+  }, [simulations, search, filterTab, sortBy])
 
   return (
     <AppShell>
@@ -366,17 +393,15 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── Simulations table ── */}
+          {/* ── Bibliothèque de simulations ── */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">
-                Mes simulations
+                Bibliothèque
               </p>
-              {simulations.length > 0 && (
-                <span className="text-[11px] text-zinc-600">
-                  {simulations.length}/3 · plan gratuit
-                </span>
-              )}
+              <span className="text-[11px] text-zinc-600">
+                {simulations.length} simulation{simulations.length !== 1 ? 's' : ''}
+              </span>
             </div>
 
             {simsLoading ? (
@@ -390,125 +415,173 @@ export default function DashboardPage() {
             ) : simulations.length === 0 ? (
               <EmptyState />
             ) : (
-              <div className="rounded-xl border border-white/[0.07] overflow-hidden">
-                {/* Table header */}
-                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_72px] gap-4 px-5 py-3 border-b border-white/[0.05] bg-white/[0.02]">
-                  {['Simulation', 'Rendement', 'Cashflow', 'Prix achat', 'Score', ''].map((h) => (
-                    <span key={h} className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">
-                      {h}
-                    </span>
-                  ))}
-                </div>
+              <div className="space-y-3">
 
-                {/* Rows */}
-                <div className="divide-y divide-white/[0.04]">
-                  {simulations.map((sim: SavedSimulation) => (
-                    <div
-                      key={sim.id}
-                      className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_72px] gap-4 items-center px-5 py-4 hover:bg-white/[0.02] transition-colors group"
-                    >
-                      {/* Name */}
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-sm font-semibold text-white truncate">{sim.name}</p>
-                          {sim.is_favorite && (
-                            <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                            </svg>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-zinc-600">
-                          {sim.ville} · {formatDate(sim.created_at)}
-                        </p>
-                      </div>
-
-                      {/* Rendement */}
-                      <div>
-                        <p className="text-sm font-semibold text-white tabular-nums">
-                          {formatPct(sim.rendementBrut)}
-                        </p>
-                        <p className="text-[11px] text-zinc-600">{formatPct(sim.rendementNet)} net</p>
-                      </div>
-
-                      {/* Cashflow */}
-                      <div>
-                        <p
-                          className={`text-sm font-bold tabular-nums ${
-                            sim.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'
-                          }`}
-                        >
-                          {sim.cashflowMensuel >= 0 ? '+' : ''}
-                          {Math.round(sim.cashflowMensuel)} €
-                        </p>
-                        <p className="text-[11px] text-zinc-600">par mois</p>
-                      </div>
-
-                      {/* Prix */}
-                      <div>
-                        <p className="text-sm text-white tabular-nums">
-                          {formatCurrency(sim.prixAchat)}
-                        </p>
-                      </div>
-
-                      {/* Score */}
-                      <div>
-                        {sim.score !== null ? (
-                          <ScoreBadge score={sim.score} />
-                        ) : (
-                          <span className="text-xs text-zinc-600">—</span>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 justify-end">
-                        <button
-                          onClick={() => toggleFavorite(sim.id, sim.is_favorite)}
-                          className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-amber-400 transition-colors"
-                          title={sim.is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                        >
-                          <svg
-                            className={`w-3.5 h-3.5 ${sim.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`}
-                            fill={sim.is_favorite ? 'currentColor' : 'none'}
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => deleteSimulation(sim.id)}
-                          className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors"
-                          title="Supprimer"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Upsell footer */}
-                {simulations.length >= 3 && (
-                  <div className="border-t border-amber-500/10 bg-amber-500/[0.03] px-5 py-4 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                {/* ── Search + Filters ── */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* Search */}
+                  <div className="relative flex-1 min-w-[200px]">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                      type="text"
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                      placeholder="Rechercher par nom ou ville…"
+                      className="w-full bg-white/[0.04] border border-white/[0.07] rounded-lg text-sm text-white placeholder:text-zinc-600 pl-9 pr-3 py-2 focus:outline-none focus:border-emerald-500/40 transition-all"
+                    />
+                    {search && (
+                      <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">Limite du plan gratuit atteinte</p>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                          Simulations illimitées, analyse IA, comparateur et export PDF avec Pro.
-                        </p>
-                      </div>
-                    </div>
-                    <button className="shrink-0 text-[13px] font-semibold bg-white text-zinc-950 px-4 py-2 rounded-xl hover:bg-zinc-100 transition-all hover:scale-[1.02] whitespace-nowrap">
-                      Passer à Pro
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filter tabs */}
+                  <div className="flex items-center gap-1 bg-white/[0.03] border border-white/[0.07] rounded-lg p-1">
+                    {([
+                      { id: 'tous', label: 'Tous' },
+                      { id: 'favoris', label: '⭐ Favoris' },
+                      { id: 'top', label: '🏆 Score ≥ 70' },
+                      { id: 'positif', label: '✅ CF positif' },
+                    ] as const).map(f => (
+                      <button
+                        key={f.id}
+                        onClick={() => setFilterTab(f.id)}
+                        className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all ${
+                          filterTab === f.id
+                            ? 'bg-white/[0.1] text-white'
+                            : 'text-zinc-500 hover:text-zinc-300'
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Sort */}
+                  <select
+                    value={sortBy}
+                    onChange={e => setSortBy(e.target.value as typeof sortBy)}
+                    className="bg-white/[0.04] border border-white/[0.07] rounded-lg text-[11px] font-semibold text-zinc-400 px-3 py-2 focus:outline-none focus:border-emerald-500/40 transition-all"
+                  >
+                    <option value="date" className="bg-zinc-900">↓ Date</option>
+                    <option value="score" className="bg-zinc-900">↓ Score</option>
+                    <option value="rendement" className="bg-zinc-900">↓ Rendement</option>
+                    <option value="cashflow" className="bg-zinc-900">↓ Cashflow</option>
+                  </select>
+                </div>
+
+                {/* Table */}
+                {filteredSims.length === 0 ? (
+                  <div className="text-center py-12 rounded-xl border border-dashed border-white/[0.08] bg-white/[0.01]">
+                    <p className="text-sm text-zinc-500">Aucune simulation ne correspond à ce filtre</p>
+                    <button onClick={() => { setSearch(''); setFilterTab('tous') }} className="text-xs text-emerald-400 hover:underline mt-2 block mx-auto">
+                      Réinitialiser les filtres
                     </button>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-white/[0.07] overflow-hidden">
+                    {/* Table header */}
+                    <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_100px] gap-4 px-5 py-3 border-b border-white/[0.05] bg-white/[0.02]">
+                      {['Simulation', 'Rendement', 'Cashflow', 'Prix achat', 'Score', ''].map((h) => (
+                        <span key={h} className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">
+                          {h}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Rows */}
+                    <div className="divide-y divide-white/[0.04]">
+                      {filteredSims.map((sim: SavedSimulation) => (
+                        <div
+                          key={sim.id}
+                          className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_100px] gap-4 items-center px-5 py-4 hover:bg-white/[0.02] transition-colors group"
+                        >
+                          {/* Name */}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <p className="text-sm font-semibold text-white truncate">{sim.name}</p>
+                              {sim.is_favorite && (
+                                <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-zinc-600">
+                              {sim.ville} · {formatDate(sim.created_at)}
+                            </p>
+                          </div>
+
+                          {/* Rendement */}
+                          <div>
+                            <p className="text-sm font-semibold text-white tabular-nums">{formatPct(sim.rendementBrut)}</p>
+                            <p className="text-[11px] text-zinc-600">{formatPct(sim.rendementNet)} net</p>
+                          </div>
+
+                          {/* Cashflow */}
+                          <div>
+                            <p className={`text-sm font-bold tabular-nums ${sim.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {sim.cashflowMensuel >= 0 ? '+' : ''}{Math.round(sim.cashflowMensuel)} €
+                            </p>
+                            <p className="text-[11px] text-zinc-600">par mois</p>
+                          </div>
+
+                          {/* Prix */}
+                          <div>
+                            <p className="text-sm text-white tabular-nums">{formatCurrency(sim.prixAchat)}</p>
+                          </div>
+
+                          {/* Score */}
+                          <div>
+                            {sim.score !== null ? <ScoreBadge score={sim.score} /> : <span className="text-xs text-zinc-600">—</span>}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-1 justify-end">
+                            {/* Ouvrir dans le calculateur */}
+                            <Link
+                              href="/analyse"
+                              className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-emerald-400 transition-colors"
+                              title="Ouvrir dans le calculateur"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </Link>
+                            {/* Favori */}
+                            <button
+                              onClick={() => toggleFavorite(sim.id, sim.is_favorite)}
+                              className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-amber-400 transition-colors"
+                              title={sim.is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                            >
+                              <svg
+                                className={`w-3.5 h-3.5 ${sim.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`}
+                                fill={sim.is_favorite ? 'currentColor' : 'none'}
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                              </svg>
+                            </button>
+                            {/* Supprimer */}
+                            <button
+                              onClick={() => deleteSimulation(sim.id)}
+                              className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors"
+                              title="Supprimer"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -541,10 +614,10 @@ export default function DashboardPage() {
                     </svg>
                   ),
                   title: 'Comparer des biens',
-                  desc: 'Mettez 2 biens côte à côte pour décider',
-                  cta: 'Bientôt',
-                  ctaStyle: 'bg-white/[0.05] text-zinc-500 border border-white/[0.08] cursor-not-allowed',
-                  href: '#',
+                  desc: 'Mettez 2 à 3 biens côte à côte pour décider',
+                  cta: 'Comparer',
+                  ctaStyle: 'bg-white/[0.05] text-zinc-300 border border-white/[0.1] hover:bg-white/[0.1]',
+                  href: '/comparer',
                 },
                 {
                   icon: (

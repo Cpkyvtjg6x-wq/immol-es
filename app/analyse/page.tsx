@@ -16,6 +16,7 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations } from '@/lib/hooks/useSimulations'
 import { SaveModal } from '@/components/app/SaveModal'
 import { AppShell } from '@/components/app/AppShell'
+import { ExportButtons } from '@/components/app/ExportButtons'
 
 const LS_KEY = 'immolyse_last_params'
 
@@ -300,6 +301,12 @@ export default function AnalysePage() {
                       </>
                     )}
                   </div>
+                  <ExportButtons
+                    result={result}
+                    fiscalResults={fiscalResults}
+                    params={lastParams}
+                    simName={`${result.ville} — ${new Date().toLocaleDateString('fr-FR')}`}
+                  />
                   <button
                     onClick={handleSave}
                     className="flex items-center gap-1.5 text-[12px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors"

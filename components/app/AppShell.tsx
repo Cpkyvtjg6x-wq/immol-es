@@ -50,10 +50,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const tools = [
     {
-      href: '#',
+      href: '/comparer',
       label: 'Comparer',
-      disabled: true,
-      badge: 'Bientôt',
+      disabled: false,
+      badge: null as string | null,
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -61,10 +61,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       ),
     },
     {
-      href: '#',
-      label: 'Export PDF',
-      disabled: true,
-      badge: 'Pro',
+      href: '/analyse',
+      label: 'Export PDF / Excel',
+      disabled: false,
+      badge: null as string | null,
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -75,7 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       href: '#',
       label: 'Rapport banquier',
       disabled: true,
-      badge: 'Pro',
+      badge: 'Bientôt' as string | null,
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -188,21 +188,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div>
             <p className="px-3 mb-2 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">Outils Pro</p>
             <div className="space-y-0.5">
-              {tools.map((item) => (
-                <button
-                  key={item.label}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-all opacity-70 cursor-not-allowed"
-                  title="En cours de développement"
-                >
-                  <span className="shrink-0">{item.icon}</span>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.badge && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                      Bientôt
-                    </span>
-                  )}
-                </button>
-              ))}
+              {tools.map((item) => {
+                const isActive = pathname === item.href
+                const cls = `w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
+                  item.disabled
+                    ? 'text-zinc-600 opacity-50 cursor-not-allowed'
+                    : isActive
+                    ? 'bg-white/[0.08] text-white'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                }`
+                if (item.disabled) {
+                  return (
+                    <button key={item.label} disabled className={cls}>
+                      <span className="shrink-0">{item.icon}</span>
+                      <span className="flex-1 text-left">{item.label}</span>
+                      {item.badge && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/[0.05] text-zinc-600 border border-white/[0.07]">
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  )
+                }
+                return (
+                  <Link key={item.label} href={item.href} className={cls}>
+                    <span className="shrink-0">{item.icon}</span>
+                    <span className="flex-1">{item.label}</span>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </nav>

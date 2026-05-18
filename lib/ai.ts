@@ -1,7 +1,10 @@
 import OpenAI from 'openai'
 import type { InvestmentParams, InvestmentResult, FiscalResult, ScoreResult, AIInsight } from './types'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+// Lazy initialization to avoid build-time errors when OPENAI_API_KEY is not set
+function getOpenAIClient() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+}
 
 export async function generateInsights(
   params: InvestmentParams,
@@ -43,6 +46,7 @@ Types:
 
 Sois direct, professionnel et spécifique aux chiffres. Maximum 2 phrases par insight.`
 
+  const openai = getOpenAIClient()
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
@@ -101,6 +105,7 @@ ${fiscal ? `Régime optimal: ${fiscal.best?.name} | ` : ''}Score: ${score.global
 
 Sois concis, objectif et mentionne les points forts et les points de vigilance.`
 
+  const openai = getOpenAIClient()
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],

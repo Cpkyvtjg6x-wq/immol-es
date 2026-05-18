@@ -6,7 +6,9 @@ import { Navbar } from '@/components/landing/Navbar'
 import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
 import { formatCurrency } from '@/lib/utils'
 
-/* ─── Reveal hook ──────────────────────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────────────────────
+   REVEAL HOOK
+   ────────────────────────────────────────────────────────────────────────── */
 function useReveal() {
   useEffect(() => {
     const els = document.querySelectorAll('.reveal')
@@ -19,533 +21,916 @@ function useReveal() {
   }, [])
 }
 
-/* ─── Noise texture SVG (inline, no external) ──────────────────────────────── */
-const noiseSvg = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`
-
-/* ════════════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════════
+   PAGE
+   ══════════════════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
   useReveal()
   const router = useRouter()
+  const goAnalyse = () => router.push('/analyse')
+  const goLogin = () => router.push('/auth/login')
 
   return (
-    <div className="bg-[#09090b] text-white overflow-x-hidden">
+    <div className="bg-[#09090b] text-white overflow-x-hidden selection:bg-emerald-500/30">
       <Navbar />
 
-      {/* S1 — HERO */}
-      <HeroSection onCta={() => router.push('/analyse')} />
-
-      {/* S2 — PROBLEM */}
-      <ProblemSection />
-
-      {/* S3 — SOLUTION / PRODUCT PREVIEW */}
-      <SolutionSection />
-
-      {/* S4 — LIVE CALCULATOR SHOWCASE */}
-      <CalculatorSection onCta={() => router.push('/analyse')} />
-
-      {/* S5 — RESULT PREVIEW */}
-      <ResultSection />
-
-      {/* S6 — CTA FINAL */}
-      <CtaSection onCta={() => router.push('/analyse')} />
-
-      {/* FOOTER minimal */}
-      <footer className="border-t border-white/[0.04] py-10">
-        <div className="max-w-6xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-emerald-500 flex items-center justify-center">
-              <svg className="w-3 h-3 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-            </div>
-            <span className="text-zinc-600 text-sm">Immolyse © 2026</span>
-          </div>
-          <div className="flex gap-6">
-            {['CGU', 'Confidentialité', 'Contact'].map((l) => (
-              <a key={l} href="#" className="text-xs text-zinc-700 hover:text-zinc-400 transition-colors">{l}</a>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <HeroSection onPrimary={goAnalyse} onSecondary={goLogin} />
+      <LogoStrip />
+      <ExplicationSection />
+      <FeaturesSection />
+      <PricingSection onSignup={goAnalyse} />
+      <CtaFinalSection onPrimary={goAnalyse} />
+      <FooterMinimal />
     </div>
   )
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
-   SECTION 1 — HERO
+/* ══════════════════════════════════════════════════════════════════════════════
+   SECTION 1 — HERO (split-screen with live product preview)
    ══════════════════════════════════════════════════════════════════════════ */
-function HeroSection({ onCta }: { onCta: () => void }) {
+function HeroSection({ onPrimary, onSecondary }: { onPrimary: () => void; onSecondary: () => void }) {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center px-8 text-center overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full anim-glow pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse, rgba(16,185,129,0.14) 0%, transparent 70%)' }} />
+    <section className="relative pt-32 lg:pt-36 pb-20 lg:pb-28 overflow-hidden">
+      {/* Ambient background */}
+      <HeroBackground />
 
-      {/* Grid overlay */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
-          backgroundSize: '72px 72px',
-          maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%)'
-        }} />
+      <div className="relative max-w-7xl mx-auto px-6 lg:px-10">
+        <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">
 
-      <div className="relative max-w-4xl space-y-8 anim-fadein">
-        {/* Pill badge */}
-        <div className="inline-flex items-center gap-2 bg-white/[0.05] border border-white/[0.08] rounded-full px-4 py-1.5 text-xs text-zinc-400 backdrop-blur-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Analyse en 30 secondes · Gratuit pour commencer
-        </div>
-
-        {/* Main headline */}
-        <h1 className="text-[clamp(2.8rem,7vw,5.5rem)] font-black leading-[1.05] tracking-[-0.04em]">
-          <span className="gt-white">Analysez un investissement</span>
-          <br />
-          <span className="gt-em">immobilier en 30 secondes.</span>
-        </h1>
-
-        {/* Sub */}
-        <p className="text-[clamp(1rem,2vw,1.25rem)] text-zinc-500 max-w-xl mx-auto leading-relaxed font-light">
-          Rendement, cashflow, fiscalité optimale — tout calculé automatiquement.
-          <br />
-          Sans Excel. Sans expert. Maintenant.
-        </p>
-
-        {/* CTA */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <button
-            onClick={onCta}
-            className="group flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-base px-8 py-4 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-emerald-500/20"
-          >
-            Analyser un bien gratuitement
-            <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </button>
-          <span className="text-sm text-zinc-600">Aucune carte bancaire requise</span>
-        </div>
-      </div>
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce opacity-30">
-        <div className="w-px h-10 bg-gradient-to-b from-transparent to-zinc-500" />
-      </div>
-    </section>
-  )
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   SECTION 2 — PROBLEM
-   ══════════════════════════════════════════════════════════════════════════ */
-function ProblemSection() {
-  return (
-    <section className="relative py-40 px-8 overflow-hidden">
-      {/* Subtle side glow */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-96 h-96 rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%)' }} />
-
-      <div className="max-w-4xl mx-auto">
-        <p className="reveal text-sm text-zinc-600 tracking-widest uppercase font-medium mb-12">
-          Le problème
-        </p>
-
-        <h2 className="reveal text-[clamp(2rem,5vw,3.75rem)] font-black leading-[1.1] tracking-[-0.03em] text-white mb-10">
-          Les investisseurs prennent leurs décisions{' '}
-          <span style={{ color: '#3f3f46' }}>sur de mauvaises données.</span>
-        </h2>
-
-        <div className="reveal reveal-d2 grid md:grid-cols-3 gap-px bg-white/[0.04] rounded-2xl overflow-hidden">
-          {[
-            { n: '73%', label: 'des investisseurs calculent à la main ou sur Excel' },
-            { n: '2h', label: 'en moyenne pour analyser un seul bien correctement' },
-            { n: '1/3', label: 'des projets rentent moins bien que prévu faute d\'analyse fiscale' },
-          ].map((s) => (
-            <div key={s.n} className="bg-[#0d0d0f] px-8 py-10 space-y-3">
-              <div className="text-4xl font-black text-white tracking-tight">{s.n}</div>
-              <div className="text-sm text-zinc-500 leading-relaxed">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   SECTION 3 — SOLUTION / PRODUCT PREVIEW
-   ══════════════════════════════════════════════════════════════════════════ */
-function SolutionSection() {
-  const features = [
-    {
-      tag: 'Cashflow réel',
-      title: 'Chaque euro, au centime près.',
-      desc: 'Loyers, charges, mensualités, vacance locative — le cashflow net affiché en temps réel pendant que vous saisissez.',
-      preview: <CashflowPreview />,
-    },
-    {
-      tag: 'Fiscalité automatique',
-      title: '10 régimes calculés en une seconde.',
-      desc: 'Micro-foncier, LMNP Réel, SCI IS, SARL de famille… L\'outil compare tout et recommande le régime qui vous économise le plus.',
-      preview: <FiscalPreview />,
-    },
-    {
-      tag: 'Score investissement',
-      title: 'Un verdict clair, immédiatement.',
-      desc: 'Notre algorithme note le projet de 0 à 100 sur 4 critères : rentabilité, cashflow, fiscalité, marché local.',
-      preview: <ScorePreview />,
-    },
-  ]
-
-  return (
-    <section className="py-32 px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="reveal mb-24 max-w-2xl">
-          <p className="text-sm text-zinc-600 tracking-widest uppercase font-medium mb-6">La solution</p>
-          <h2 className="text-[clamp(2rem,4.5vw,3.5rem)] font-black leading-[1.1] tracking-[-0.03em]">
-            <span className="gt-white">Un seul outil.</span>
-            <br />
-            <span style={{ color: '#3f3f46' }}>Toute l'analyse.</span>
-          </h2>
-        </div>
-
-        <div className="space-y-32">
-          {features.map((f, i) => (
-            <div
-              key={f.tag}
-              className={`reveal grid md:grid-cols-2 gap-16 items-center ${i % 2 === 1 ? 'md:[&>*:first-child]:order-2' : ''}`}
+          {/* LEFT — Copy */}
+          <div className="anim-fadein space-y-8 lg:max-w-xl">
+            {/* Pill */}
+            <a
+              href="#features"
+              className="inline-flex items-center gap-2 rounded-full bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.07] backdrop-blur-md px-3 py-1 text-[12.5px] text-zinc-300 transition-colors"
             >
-              {/* Text */}
-              <div className="space-y-5">
-                <div className="inline-flex items-center gap-2 text-xs text-emerald-400 font-semibold tracking-widest uppercase bg-emerald-500/10 border border-emerald-500/15 rounded-full px-3 py-1">
-                  {f.tag}
-                </div>
-                <h3 className="text-3xl md:text-4xl font-black leading-tight tracking-tight text-white">
-                  {f.title}
-                </h3>
-                <p className="text-base text-zinc-500 leading-relaxed">{f.desc}</p>
-              </div>
+              <span className="relative flex w-1.5 h-1.5">
+                <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                <span className="relative w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              </span>
+              <span className="text-zinc-200 font-medium">Nouveau · Analyse IA intégrée</span>
+              <svg className="w-3 h-3 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
 
-              {/* Preview card */}
-              <div className={`reveal reveal-d2 ${i % 2 === 1 ? 'md:order-1' : ''}`}>
-                {f.preview}
-              </div>
+            {/* Headline */}
+            <h1 className="text-[clamp(2.8rem,6vw,4.8rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
+              <span className="gt-white">L'outil d'analyse</span>
+              <br />
+              <span className="gt-white">immobilière des </span>
+              <span className="gradient-text">pros.</span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-[17px] lg:text-[18px] text-zinc-400 leading-[1.55] max-w-[520px]">
+              Évaluez la rentabilité, le cashflow et la fiscalité d'un bien locatif en moins de 30 secondes.
+              Sans Excel. Sans approximation.
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={onPrimary}
+                className="group inline-flex items-center gap-2 bg-white text-zinc-950 font-medium text-[14.5px] px-5 py-3 rounded-lg transition-all duration-300 hover:shadow-[0_0_36px_-4px_rgba(255,255,255,0.4)] hover:-translate-y-0.5"
+              >
+                Commencer une analyse
+                <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
+              <button
+                onClick={onSecondary}
+                className="inline-flex items-center gap-2 text-zinc-300 hover:text-white font-medium text-[14.5px] px-5 py-3 rounded-lg border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.03] transition-all duration-300"
+              >
+                Se connecter
+              </button>
             </div>
-          ))}
+
+            {/* Tiny meta line */}
+            <div className="flex items-center gap-5 pt-2 text-[12.5px] text-zinc-500">
+              <span className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Gratuit pour commencer
+              </span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Aucune carte requise
+              </span>
+            </div>
+          </div>
+
+          {/* RIGHT — Product preview */}
+          <div className="relative anim-fadein-slow">
+            <ProductPreview />
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
-/* ─── Mini preview components ──────────────────────────────────────────────── */
-function CashflowPreview() {
+function HeroBackground() {
   return (
-    <div className="glass rounded-2xl p-6 space-y-4 anim-float">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-zinc-600 font-medium">Cashflow mensuel</span>
-        <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Temps réel</span>
-      </div>
-      <div className="text-5xl font-black text-emerald-400 tracking-tight">+320 €</div>
-      <div className="text-xs text-zinc-600">par mois · après crédit et charges</div>
-      <div className="h-px bg-white/[0.05]" />
-      {[
-        { label: 'Loyers encaissés', val: '+1 050 €', c: 'text-white' },
-        { label: 'Charges annualisées', val: '-280 €', c: 'text-zinc-500' },
-        { label: 'Mensualité crédit', val: '-450 €', c: 'text-zinc-500' },
-      ].map((r) => (
-        <div key={r.label} className="flex justify-between text-sm">
-          <span className="text-zinc-600">{r.label}</span>
-          <span className={`font-semibold ${r.c}`}>{r.val}</span>
-        </div>
-      ))}
+    <div className="absolute inset-0 pointer-events-none">
+      {/* Top glow */}
+      <div
+        className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] rounded-full anim-glow"
+        style={{
+          background: 'radial-gradient(ellipse, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.04) 35%, transparent 70%)',
+          filter: 'blur(30px)',
+        }}
+      />
+      {/* Side glow */}
+      <div
+        className="absolute top-1/3 right-0 w-[500px] h-[500px] rounded-full opacity-50"
+        style={{
+          background: 'radial-gradient(ellipse, rgba(99,102,241,0.10) 0%, transparent 70%)',
+          filter: 'blur(40px)',
+        }}
+      />
+      {/* Grid */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
+          maskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 100%)',
+        }}
+      />
+      {/* Vignette */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#09090b]" />
     </div>
   )
 }
 
-function FiscalPreview() {
-  const regimes = [
-    { name: 'LMNP Réel', rend: '4.2%', badge: 'Recommandé', em: true },
-    { name: 'Micro-BIC', rend: '2.8%', badge: null, em: false },
-    { name: 'Réel foncier', rend: '3.1%', badge: null, em: false },
-    { name: 'Micro-foncier', rend: '2.1%', badge: null, em: false },
-  ]
-  return (
-    <div className="glass rounded-2xl p-6 space-y-3 anim-float2">
-      <div className="text-xs text-zinc-600 font-medium mb-4">Comparaison des régimes fiscaux</div>
-      {regimes.map((r) => (
-        <div key={r.name} className={`flex items-center justify-between px-4 py-3 rounded-xl ${r.em ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-white/[0.03]'}`}>
-          <div className="flex items-center gap-3">
-            <span className={`text-sm font-semibold ${r.em ? 'text-white' : 'text-zinc-500'}`}>{r.name}</span>
-            {r.badge && <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/15 px-2 py-0.5 rounded-full">{r.badge}</span>}
-          </div>
-          <span className={`text-sm font-bold ${r.em ? 'text-emerald-400' : 'text-zinc-600'}`}>{r.rend}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function ScorePreview() {
-  return (
-    <div className="glass rounded-2xl p-6 anim-float">
-      <div className="text-xs text-zinc-600 font-medium mb-6">Score d'opportunité</div>
-      <div className="flex items-center gap-5 mb-6">
-        <div>
-          <span className="text-6xl font-black text-emerald-400">78</span>
-          <span className="text-zinc-600 text-xl">/100</span>
-        </div>
-        <div>
-          <div className="text-white font-semibold">Bon projet</div>
-          <div className="text-zinc-600 text-xs mt-1">Analyse multi-critères</div>
-        </div>
-      </div>
-      {[
-        { label: 'Rentabilité', v: 80 },
-        { label: 'Cashflow', v: 70 },
-        { label: 'Fiscalité', v: 85 },
-        { label: 'Marché', v: 75 },
-      ].map((s) => (
-        <div key={s.label} className="flex items-center gap-3 mb-2.5">
-          <span className="text-xs text-zinc-600 w-20">{s.label}</span>
-          <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${s.v}%` }} />
-          </div>
-          <span className="text-xs text-zinc-500 w-7 text-right">{s.v}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/* ════════════════════════════════════════════════════════════════════════════
-   SECTION 4 — CALCULATOR SHOWCASE (interactif)
-   ══════════════════════════════════════════════════════════════════════════ */
-function CalculatorSection({ onCta }: { onCta: () => void }) {
-  const [prix, setPrix] = useState(220000)
-  const [loyer, setLoyer] = useState(980)
+/* ──────────────────────────────────────────────────────────────────────────────
+   PRODUCT PREVIEW (interactive, glassmorphism)
+   ────────────────────────────────────────────────────────────────────────── */
+function ProductPreview() {
+  const [tab, setTab] = useState<'analyse' | 'fiscalite' | 'comparer'>('analyse')
+  const [prix, setPrix] = useState(245000)
+  const [loyer, setLoyer] = useState(1180)
 
   const result = calculateInvestment({
     ...DEFAULT_PARAMS,
     prixAchat: prix,
     loyerNu: loyer,
-    loyerMeuble: Math.round(loyer * 1.1),
+    loyerMeuble: loyer,
+    ville: 'Lyon',
   })
 
-  const cfColor = result.cashflowMensuel >= 0 ? '#10b981' : '#ef4444'
-  const brutColor = result.rendBrut >= 7 ? '#10b981' : result.rendBrut >= 5 ? '#f59e0b' : '#ef4444'
+  const rendBrut = result.rendBrut
+  const cf = result.cashflowMensuel
+  const cfNegative = cf < 0
+  const score = Math.min(100, Math.max(0, Math.round(rendBrut * 11 + (cf > 0 ? 18 : -5))))
 
   return (
-    <section className="relative py-32 px-8 overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] rounded-full"
-          style={{ background: 'radial-gradient(ellipse, rgba(16,185,129,0.05) 0%, transparent 65%)' }} />
+    <div className="relative">
+      {/* Outer glow */}
+      <div className="absolute -inset-4 bg-gradient-to-br from-emerald-500/20 via-transparent to-indigo-500/10 rounded-3xl blur-2xl opacity-60" />
+
+      {/* Floating accent labels */}
+      <div className="absolute -top-3 -left-3 z-20 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-full px-2.5 py-1 text-[11px] text-emerald-300 font-medium flex items-center gap-1.5 anim-float-slow">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        LIVE
       </div>
 
-      <div className="max-w-6xl mx-auto relative">
-        <div className="reveal text-center mb-20">
-          <p className="text-sm text-zinc-600 tracking-widest uppercase font-medium mb-6">Le produit</p>
-          <h2 className="text-[clamp(2rem,4.5vw,3.5rem)] font-black leading-tight tracking-[-0.03em]">
-            <span className="gt-white">Essayez maintenant.</span>
-          </h2>
-          <p className="text-zinc-600 mt-4 text-lg">Bougez les sliders — les résultats s'adaptent en temps réel.</p>
+      {/* Window */}
+      <div className="relative glass-card rounded-2xl overflow-hidden shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)]">
+        {/* Window chrome */}
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.05] bg-black/30">
+          <div className="flex gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+            <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+            <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+          </div>
+          <div className="flex-1 flex justify-center">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white/[0.04] text-[10.5px] text-zinc-500 font-mono">
+              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0-1.1.9-2 2-2s2 .9 2 2-2 4-2 4-2-2.9-2-4z" />
+                <circle cx="12" cy="11" r="9" />
+              </svg>
+              immolyse.app/analyse
+            </div>
+          </div>
+          <div className="w-12" />
         </div>
 
-        <div className="reveal reveal-d1 glass rounded-3xl overflow-hidden">
-          <div className="grid md:grid-cols-[1fr_1.4fr]">
-            {/* Left — inputs */}
-            <div className="p-8 border-r border-white/[0.05] space-y-8">
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <label className="text-xs text-zinc-600 uppercase tracking-widest font-medium">Prix d'achat</label>
-                  <span className="text-white font-bold text-sm">{formatCurrency(prix)}</span>
-                </div>
-                <input type="range" min={50000} max={800000} step={5000} value={prix}
-                  onChange={(e) => setPrix(+e.target.value)} />
-                <div className="flex justify-between mt-2 text-xs text-zinc-700">
-                  <span>50k</span><span>800k</span>
-                </div>
-              </div>
+        {/* Tabs */}
+        <div className="flex items-center gap-1 px-4 pt-3 border-b border-white/[0.04]">
+          {([
+            { id: 'analyse', label: 'Analyse' },
+            { id: 'fiscalite', label: 'Fiscalité' },
+            { id: 'comparer', label: 'Comparer' },
+          ] as const).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`relative px-3 py-2 text-[12.5px] font-medium transition-colors ${
+                tab === t.id ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              {t.label}
+              {tab === t.id && (
+                <span className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+              )}
+            </button>
+          ))}
+        </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <label className="text-xs text-zinc-600 uppercase tracking-widest font-medium">Loyer mensuel</label>
-                  <span className="text-white font-bold text-sm">{loyer} €</span>
-                </div>
-                <input type="range" min={300} max={4000} step={50} value={loyer}
-                  onChange={(e) => setLoyer(+e.target.value)} />
-                <div className="flex justify-between mt-2 text-xs text-zinc-700">
-                  <span>300€</span><span>4 000€</span>
-                </div>
-              </div>
+        {/* Content */}
+        <div className="p-5 space-y-4">
+          {/* Address bar */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.025] border border-white/[0.05]">
+            <svg className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z" />
+              <circle cx="12" cy="11" r="3" />
+            </svg>
+            <span className="text-[12.5px] text-zinc-300 truncate flex-1">
+              12 rue Vaubecour, 69002 Lyon
+            </span>
+            <span className="text-[10.5px] text-emerald-400 font-mono">T3 · 68m²</span>
+          </div>
 
-              <div className="text-xs text-zinc-700 pt-4 border-t border-white/[0.04]">
-                Apport 10% · Taux 3.8% · 20 ans · Lyon
-              </div>
+          {/* Inputs */}
+          <div className="grid grid-cols-2 gap-3">
+            <MiniInput
+              label="Prix d'achat"
+              value={formatCurrency(prix)}
+              slider={
+                <input
+                  type="range" min={80000} max={500000} step={5000}
+                  value={prix}
+                  onChange={(e) => setPrix(+e.target.value)}
+                  style={{ ['--val' as any]: `${((prix - 80000) / (500000 - 80000)) * 100}%` }}
+                />
+              }
+            />
+            <MiniInput
+              label="Loyer mensuel"
+              value={`${loyer.toLocaleString('fr-FR')} €`}
+              slider={
+                <input
+                  type="range" min={400} max={3000} step={20}
+                  value={loyer}
+                  onChange={(e) => setLoyer(+e.target.value)}
+                  style={{ ['--val' as any]: `${((loyer - 400) / (3000 - 400)) * 100}%` }}
+                />
+              }
+            />
+          </div>
 
-              <button onClick={onCta}
-                className="w-full bg-white text-zinc-950 font-bold text-sm py-3.5 rounded-xl hover:bg-zinc-100 transition-all hover:scale-[1.01] active:scale-[0.99]">
-                Analyse complète gratuite →
-              </button>
+          {/* Result tiles */}
+          <div className="grid grid-cols-3 gap-2.5">
+            <ResultTile
+              label="Rendement brut"
+              value={`${rendBrut.toFixed(2)}%`}
+              tone={rendBrut >= 6 ? 'good' : rendBrut >= 4 ? 'neutral' : 'warn'}
+            />
+            <ResultTile
+              label="Cashflow / mois"
+              value={`${cf >= 0 ? '+' : ''}${Math.round(cf)} €`}
+              tone={cfNegative ? 'warn' : 'good'}
+            />
+            <ResultTile
+              label="Score IA"
+              value={`${score}/100`}
+              tone={score >= 65 ? 'good' : score >= 45 ? 'neutral' : 'warn'}
+            />
+          </div>
+
+          {/* Mini chart */}
+          <MiniChart cf={cf} />
+
+          {/* AI insight */}
+          <div className="flex items-start gap-2.5 p-3 rounded-lg bg-emerald-500/[0.04] border border-emerald-500/15">
+            <div className="w-6 h-6 rounded-md bg-emerald-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-3 h-3 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
             </div>
-
-            {/* Right — results */}
-            <div className="p-8 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: 'Rendement brut', val: `${result.rendBrut.toFixed(1)}%`, color: brutColor },
-                  { label: 'Rendement net', val: `${result.rendNet.toFixed(1)}%`, color: brutColor },
-                  {
-                    label: 'Cashflow mensuel',
-                    val: `${result.cashflowMensuel >= 0 ? '+' : ''}${Math.round(result.cashflowMensuel)} €`,
-                    color: cfColor
-                  },
-                  { label: 'Prix de revient', val: formatCurrency(result.prixRevient), color: '#fff' },
-                ].map((k) => (
-                  <div key={k.label} className="bg-white/[0.03] rounded-2xl p-5">
-                    <div className="text-xs text-zinc-600 mb-2">{k.label}</div>
-                    <div className="text-2xl font-black" style={{ color: k.color }}>{k.val}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Bar visualization */}
-              <div className="bg-white/[0.03] rounded-2xl p-5 space-y-3">
-                <div className="text-xs text-zinc-600 mb-4">Décomposition mensuelle</div>
-                {[
-                  { label: 'Loyers', val: loyer, max: loyer, color: '#10b981' },
-                  { label: 'Mensualité crédit', val: result.mensualiteCredit, max: loyer, color: '#6366f1' },
-                  { label: 'Charges', val: result.totalCharges / 12, max: loyer, color: '#f59e0b' },
-                ].map((b) => (
-                  <div key={b.label} className="space-y-1.5">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-zinc-500">{b.label}</span>
-                      <span className="text-zinc-400 font-medium">{Math.round(b.val)} €</span>
-                    </div>
-                    <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, (b.val / b.max) * 100)}%`, background: b.color }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="space-y-0.5">
+              <p className="text-[11.5px] font-medium text-emerald-200">
+                Recommandation IA
+              </p>
+              <p className="text-[11.5px] text-zinc-400 leading-relaxed">
+                {cfNegative
+                  ? 'Cashflow négatif. Passage en LMNP recommandé pour réduire de ~38% l\'imposition annuelle.'
+                  : 'Investissement équilibré. Régime LMNP optimal pour les 12 premières années.'}
+              </p>
             </div>
           </div>
         </div>
       </div>
-    </section>
+
+      {/* Floating PDF chip */}
+      <div className="absolute -bottom-3 -right-3 z-20 glass-card rounded-xl px-3 py-2 flex items-center gap-2 anim-float">
+        <div className="w-7 h-7 rounded-md bg-red-500/15 flex items-center justify-center">
+          <svg className="w-3.5 h-3.5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m-6-8h6M5 7v13a1 1 0 001 1h12a1 1 0 001-1V8.414a1 1 0 00-.293-.707l-4.414-4.414A1 1 0 0013.586 3H6a1 1 0 00-1 1v3z" />
+          </svg>
+        </div>
+        <div className="leading-tight">
+          <div className="text-[11px] font-medium text-white">rapport.pdf</div>
+          <div className="text-[9.5px] text-zinc-500 font-mono">prêt à exporter</div>
+        </div>
+      </div>
+    </div>
   )
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
-   SECTION 5 — RESULT PREVIEW
-   ══════════════════════════════════════════════════════════════════════════ */
-function ResultSection() {
+function MiniInput({ label, value, slider }: { label: string; value: string; slider: React.ReactNode }) {
   return (
-    <section className="py-32 px-8 overflow-hidden">
-      <div className="max-w-6xl mx-auto">
-        <div className="reveal text-center mb-20">
-          <p className="text-sm text-zinc-600 tracking-widest uppercase font-medium mb-6">Le résultat</p>
-          <h2 className="text-[clamp(2rem,4.5vw,3.5rem)] font-black leading-tight tracking-[-0.03em]">
-            <span className="gt-white">Une décision éclairée.</span>
-            <br />
-            <span style={{ color: '#3f3f46' }}>En moins d'une minute.</span>
-          </h2>
-        </div>
-
-        <div className="reveal grid md:grid-cols-3 gap-5">
-          {/* Score card */}
-          <div className="glass rounded-2xl p-7 space-y-5 anim-float">
-            <div className="text-xs text-zinc-600 uppercase tracking-widest">Score</div>
-            <div className="flex items-end gap-2">
-              <span className="text-7xl font-black text-emerald-400 leading-none">82</span>
-              <span className="text-zinc-600 text-2xl pb-2">/100</span>
-            </div>
-            <div className="text-white font-semibold">Excellent projet</div>
-            <div className="h-px bg-white/[0.05]" />
-            <p className="text-xs text-zinc-600 leading-relaxed">
-              Avec un rendement brut de 7.1% et un cashflow positif, ce projet présente d'excellentes performances pour Lyon.
-            </p>
-          </div>
-
-          {/* AI insights */}
-          <div className="glass rounded-2xl p-7 space-y-4 anim-float2">
-            <div className="flex items-center gap-2 text-xs text-zinc-600 uppercase tracking-widest">
-              <span className="text-emerald-400">✦</span> Analyse IA
-            </div>
-            {[
-              { type: 'Opportunité', text: 'LMNP Réel efface l\'imposition via l\'amortissement. +1.3% de rendement vs Micro-BIC.', em: true },
-              { type: 'Risque', text: 'Vacance locative sous-estimée pour un T2. Prévoir 15 jours/an minimum.', em: false },
-              { type: 'Optimisation', text: 'Renégociez le prix à 205 000€ pour atteindre un cashflow de +180€/mois.', em: false },
-            ].map((i) => (
-              <div key={i.type} className={`rounded-xl p-3.5 space-y-1 ${i.em ? 'bg-emerald-500/10 border border-emerald-500/15' : 'bg-white/[0.03]'}`}>
-                <div className={`text-[10px] font-bold uppercase tracking-widest ${i.em ? 'text-emerald-400' : 'text-zinc-600'}`}>{i.type}</div>
-                <p className="text-xs text-zinc-400 leading-relaxed">{i.text}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* KPIs */}
-          <div className="glass rounded-2xl p-7 space-y-4 anim-float">
-            <div className="text-xs text-zinc-600 uppercase tracking-widest">Indicateurs clés</div>
-            {[
-              { label: 'Rendement brut', val: '7.1%', good: true },
-              { label: 'Rendement net', val: '5.3%', good: true },
-              { label: 'Nette-nette', val: '4.2%', good: true },
-              { label: 'Cashflow', val: '+312 €/mois', good: true },
-              { label: 'ROI apport', val: '18.7%', good: true },
-              { label: 'Point mort', val: '660 €/mois', good: null },
-            ].map((k) => (
-              <div key={k.label} className="flex justify-between items-center">
-                <span className="text-sm text-zinc-600">{k.label}</span>
-                <span className={`text-sm font-bold ${k.good === true ? 'text-emerald-400' : 'text-white'}`}>{k.val}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="space-y-2 p-3 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+      <div className="flex items-center justify-between">
+        <span className="text-[10.5px] text-zinc-500 uppercase tracking-wider font-medium">{label}</span>
       </div>
-    </section>
+      <div className="text-[15px] font-semibold text-white tabular-nums">{value}</div>
+      {slider}
+    </div>
   )
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
-   SECTION 6 — CTA FINAL
-   ══════════════════════════════════════════════════════════════════════════ */
-function CtaSection({ onCta }: { onCta: () => void }) {
+function ResultTile({ label, value, tone }: { label: string; value: string; tone: 'good' | 'neutral' | 'warn' }) {
+  const colors = {
+    good: 'text-emerald-300 bg-emerald-500/[0.04] border-emerald-500/15',
+    neutral: 'text-amber-300 bg-amber-500/[0.04] border-amber-500/15',
+    warn: 'text-red-300 bg-red-500/[0.04] border-red-500/15',
+  }[tone]
   return (
-    <section className="relative py-40 px-8 overflow-hidden">
-      {/* Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full anim-glow pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse, rgba(16,185,129,0.12) 0%, transparent 70%)' }} />
+    <div className={`p-2.5 rounded-lg border ${colors}`}>
+      <div className="text-[9.5px] text-zinc-500 uppercase tracking-wider font-medium mb-1">{label}</div>
+      <div className="text-[15px] font-semibold tabular-nums">{value}</div>
+    </div>
+  )
+}
 
-      <div className="relative max-w-3xl mx-auto text-center space-y-8">
-        <div className="reveal">
-          <h2 className="text-[clamp(2.5rem,6vw,4.5rem)] font-black leading-[1.05] tracking-[-0.04em]">
-            <span className="gt-white">Tester un bien</span>
-            <br />
-            <span className="gt-em">maintenant.</span>
-          </h2>
-        </div>
+function MiniChart({ cf }: { cf: number }) {
+  // Synthetic projection over 20 years
+  const years = 20
+  const points = Array.from({ length: years + 1 }, (_, i) => {
+    const base = cf * 12 * i * 1.02
+    const apprec = 1000 * i * i * 0.4
+    return Math.max(0, base + apprec + 18000)
+  })
+  const max = Math.max(...points)
+  const min = Math.min(...points)
+  const w = 100
+  const h = 40
+  const d = points
+    .map((p, i) => {
+      const x = (i / years) * w
+      const y = h - ((p - min) / (max - min || 1)) * h
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`
+    })
+    .join(' ')
+  const area = `${d} L ${w} ${h} L 0 ${h} Z`
 
-        <p className="reveal reveal-d1 text-lg text-zinc-600 font-light">
-          Gratuit. Sans compte. Résultat en 30 secondes.
+  return (
+    <div className="px-2.5 py-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10.5px] text-zinc-500 uppercase tracking-wider font-medium">Patrimoine projeté · 20 ans</span>
+        <span className="text-[11px] text-emerald-300 font-mono font-medium">+{(max / 1000).toFixed(0)}k €</span>
+      </div>
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-12">
+        <defs>
+          <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#chart-fill)" />
+        <path d={d} fill="none" stroke="#34d399" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LOGO STRIP (subtle social proof)
+   ══════════════════════════════════════════════════════════════════════════ */
+function LogoStrip() {
+  const logos = ['Bpi France', 'Notaires.fr', 'PAP', 'SeLoger', 'Empruntis', 'MeilleursAgents']
+  return (
+    <section className="relative py-10 border-y border-white/[0.04]">
+      <div className="max-w-6xl mx-auto px-6 lg:px-10">
+        <p className="text-center text-[11.5px] text-zinc-600 uppercase tracking-[0.18em] font-medium mb-6">
+          Données et méthodes alignées avec
         </p>
+        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+          {logos.map((logo) => (
+            <span
+              key={logo}
+              className="text-zinc-600 hover:text-zinc-400 transition-colors text-[15px] font-medium tracking-tight"
+            >
+              {logo}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
 
-        <div className="reveal reveal-d2">
+/* ══════════════════════════════════════════════════════════════════════════════
+   SECTION 2 — EXPLICATION (3 blocs)
+   ══════════════════════════════════════════════════════════════════════════ */
+function ExplicationSection() {
+  return (
+    <section id="produit" className="relative py-28 lg:py-36">
+      <div className="max-w-6xl mx-auto px-6 lg:px-10">
+        {/* Section title */}
+        <div className="text-center max-w-2xl mx-auto mb-20 reveal">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.07] text-[11.5px] text-zinc-400 mb-5">
+            <span className="w-1 h-1 rounded-full bg-emerald-400" />
+            Comment ça marche
+          </div>
+          <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-[-0.035em] gt-white">
+            Du bien à la décision,
+            <br />
+            <span className="text-zinc-500">en trois étapes.</span>
+          </h2>
+        </div>
+
+        {/* 3 blocks */}
+        <div className="space-y-24">
+          <ExpliBlock
+            num="01"
+            title="Analysez un bien"
+            subtitle="Entrez les chiffres, l'outil fait le reste."
+            description="Prix d'achat, loyer estimé, ville. Immolyse calcule instantanément le rendement brut, net, et nette-nette avec des données de marché actualisées."
+            visual={<ZoomVisualAnalyse />}
+            reverse={false}
+          />
+          <ExpliBlock
+            num="02"
+            title="Calcul automatique"
+            subtitle="Cashflow réel, fiscalité comparée."
+            description="L'outil simule 10 régimes fiscaux (LMNP, LMP, SCI IS/IR, micro-foncier, réel...) et recommande celui qui optimise votre cashflow net après impôt."
+            visual={<ZoomVisualFiscal />}
+            reverse={true}
+          />
+          <ExpliBlock
+            num="03"
+            title="Exportez en un clic"
+            subtitle="PDF prêt-pour-banquier ou Excel détaillé."
+            description="Rapport de présentation bancaire en PDF, tableau d'amortissement complet en Excel. Les documents que votre courtier attend, en 5 secondes."
+            visual={<ZoomVisualExport />}
+            reverse={false}
+          />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ExpliBlock({
+  num, title, subtitle, description, visual, reverse,
+}: {
+  num: string; title: string; subtitle: string; description: string; visual: React.ReactNode; reverse: boolean
+}) {
+  return (
+    <div className={`grid lg:grid-cols-2 gap-10 lg:gap-16 items-center reveal ${reverse ? 'lg:[&>*:first-child]:order-2' : ''}`}>
+      {/* Text */}
+      <div className="space-y-5">
+        <div className="text-[11px] font-mono text-emerald-400 tracking-[0.2em]">{num} —</div>
+        <h3 className="text-[clamp(1.6rem,3vw,2.4rem)] font-semibold leading-[1.05] tracking-[-0.03em] gt-white">
+          {title}
+        </h3>
+        <p className="text-[16px] text-zinc-300 font-medium">{subtitle}</p>
+        <p className="text-[15px] text-zinc-500 leading-[1.65] max-w-md">{description}</p>
+      </div>
+      {/* Visual */}
+      <div className="relative">{visual}</div>
+    </div>
+  )
+}
+
+function ZoomVisualAnalyse() {
+  return (
+    <div className="relative">
+      <div className="absolute -inset-6 bg-gradient-to-br from-emerald-500/15 to-transparent rounded-3xl blur-2xl" />
+      <div className="relative glass-card rounded-xl p-5 space-y-3.5 shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Analyse express</div>
+          <div className="text-[10.5px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/15 rounded-full px-2 py-0.5">en direct</div>
+        </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          <FieldChip label="Adresse" value="Lyon 2ᵉ" />
+          <FieldChip label="Surface" value="68 m²" />
+          <FieldChip label="Prix" value="245 000 €" />
+          <FieldChip label="Loyer" value="1 180 €" />
+        </div>
+        <div className="h-px bg-white/[0.05]" />
+        <div className="space-y-2">
+          {[
+            { label: 'Rendement brut', value: '5.78 %', color: 'text-emerald-300' },
+            { label: 'Rendement net', value: '4.12 %', color: 'text-emerald-300' },
+            { label: 'Cashflow/mois', value: '+128 €', color: 'text-emerald-300' },
+          ].map((r) => (
+            <div key={r.label} className="flex items-center justify-between text-[12.5px]">
+              <span className="text-zinc-500">{r.label}</span>
+              <span className={`font-mono font-semibold ${r.color}`}>{r.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FieldChip({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+      <div className="text-[9.5px] text-zinc-600 uppercase tracking-wider mb-0.5">{label}</div>
+      <div className="text-[13px] text-white font-medium">{value}</div>
+    </div>
+  )
+}
+
+function ZoomVisualFiscal() {
+  const rows = [
+    { name: 'Micro-foncier', net: '-1 240 €', tone: 'bad' },
+    { name: 'Réel foncier', net: '-480 €', tone: 'bad' },
+    { name: 'LMNP réel', net: '+1 540 €', tone: 'good', best: true },
+    { name: 'LMNP micro', net: '+620 €', tone: 'good' },
+    { name: 'SCI à l\'IS', net: '+340 €', tone: 'good' },
+  ]
+  return (
+    <div className="relative">
+      <div className="absolute -inset-6 bg-gradient-to-tl from-indigo-500/15 to-transparent rounded-3xl blur-2xl" />
+      <div className="relative glass-card rounded-xl p-5 space-y-3 shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Comparateur fiscal</div>
+          <div className="text-[10.5px] text-indigo-300 bg-indigo-500/10 border border-indigo-500/15 rounded-full px-2 py-0.5">10 régimes</div>
+        </div>
+        <div className="space-y-1.5">
+          {rows.map((r) => (
+            <div
+              key={r.name}
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-[12.5px] ${
+                r.best ? 'bg-emerald-500/[0.08] border border-emerald-500/25' : 'bg-white/[0.02] border border-white/[0.04]'
+              }`}
+            >
+              <span className="flex items-center gap-2 text-zinc-200">
+                {r.best && <span className="text-[9px] font-mono text-emerald-300 bg-emerald-500/15 px-1.5 py-0.5 rounded">OPTI</span>}
+                {r.name}
+              </span>
+              <span className={`font-mono font-semibold ${r.tone === 'good' ? 'text-emerald-300' : 'text-red-300'}`}>
+                {r.net}/mois
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ZoomVisualExport() {
+  return (
+    <div className="relative">
+      <div className="absolute -inset-6 bg-gradient-to-br from-amber-500/10 to-transparent rounded-3xl blur-2xl" />
+      <div className="relative glass-card rounded-xl p-5 space-y-3.5 shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Exports</div>
+          <div className="text-[10.5px] text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-0.5">prêt</div>
+        </div>
+        <div className="space-y-2">
+          {[
+            { name: 'rapport-banque.pdf', size: '420 Ko', color: 'red' },
+            { name: 'amortissement.xlsx', size: '186 Ko', color: 'emerald' },
+            { name: 'comparatif-fiscal.pdf', size: '312 Ko', color: 'red' },
+          ].map((f) => (
+            <div key={f.name} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-colors">
+              <div className={`w-8 h-8 rounded-md flex items-center justify-center ${f.color === 'red' ? 'bg-red-500/15 text-red-300' : 'bg-emerald-500/15 text-emerald-300'}`}>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m-6-8h6M5 7v13a1 1 0 001 1h12a1 1 0 001-1V8.414a1 1 0 00-.293-.707l-4.414-4.414A1 1 0 0013.586 3H6a1 1 0 00-1 1v3z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[12.5px] font-medium text-white truncate">{f.name}</div>
+                <div className="text-[10px] font-mono text-zinc-500">{f.size}</div>
+              </div>
+              <svg className="w-3.5 h-3.5 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+              </svg>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SECTION 3 — FEATURES (minimal icons grid)
+   ══════════════════════════════════════════════════════════════════════════ */
+function FeaturesSection() {
+  const features = [
+    {
+      title: 'Instantané',
+      desc: 'Analyse complète en moins de 30 secondes — pas de tableur à remplir.',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Précis',
+      desc: 'Données marché actualisées de 18 villes, méthode fiscale conforme 2026.',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+          <circle cx="12" cy="12" r="9" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 2" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Simple',
+      desc: 'Trois champs suffisent. Le reste se calibre tout seul.',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h10M4 18h7" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Décisif',
+      desc: 'Score d\'opportunité de 0 à 100 + recommandation IA en une phrase.',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Multi-scénarios',
+      desc: 'Compare nu, meublé, colocation, saisonnier — sur un seul écran.',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8h18M3 16h18M9 4v16M15 4v16" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Exportable',
+      desc: 'PDF présentation banque, Excel complet, partage par lien sécurisé.',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+        </svg>
+      ),
+    },
+  ]
+
+  return (
+    <section id="features" className="relative py-28 lg:py-36 border-t border-white/[0.04]">
+      <div className="max-w-6xl mx-auto px-6 lg:px-10">
+        <div className="max-w-2xl mb-16 reveal">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.07] text-[11.5px] text-zinc-400 mb-5">
+            Pourquoi Immolyse
+          </div>
+          <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-[-0.035em] gt-white">
+            Conçu pour décider vite,
+            <br />
+            <span className="text-zinc-500">sans rien sacrifier.</span>
+          </h2>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/[0.04] rounded-2xl overflow-hidden border border-white/[0.05] reveal reveal-d1">
+          {features.map((f) => (
+            <div key={f.title} className="group bg-[#0c0c0e] hover:bg-[#101013] p-7 transition-colors">
+              <div className="w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-emerald-300 mb-5 group-hover:border-emerald-500/25 group-hover:bg-emerald-500/[0.06] transition-all">
+                {f.icon}
+              </div>
+              <h3 className="text-[15px] font-semibold text-white mb-1.5 tracking-tight">{f.title}</h3>
+              <p className="text-[13.5px] text-zinc-500 leading-[1.55]">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SECTION 4 — PRICING (3 plans, ultra clean)
+   ══════════════════════════════════════════════════════════════════════════ */
+function PricingSection({ onSignup }: { onSignup: () => void }) {
+  const [annual, setAnnual] = useState(true)
+  const plans = [
+    {
+      name: 'Découverte',
+      price: { monthly: 0, annual: 0 },
+      desc: 'Pour tester l\'outil',
+      features: ['Analyse express', '3 simulations sauvegardées', 'Export PDF (filigrane)', 'Données marché basiques'],
+      cta: 'Commencer gratuitement',
+      featured: false,
+    },
+    {
+      name: 'Pro',
+      price: { monthly: 29, annual: 19 },
+      desc: 'L\'essentiel pour investir sérieusement',
+      features: ['Simulations illimitées', '10 régimes fiscaux', 'Analyse IA (GPT-4)', 'Export PDF & Excel pro', 'Comparaison multi-biens', 'Support prioritaire'],
+      cta: 'Essai 14 jours',
+      featured: true,
+    },
+    {
+      name: 'Agence',
+      price: { monthly: 79, annual: 59 },
+      desc: 'Pour les pros de l\'immobilier',
+      features: ['Tout le plan Pro', 'Jusqu\'à 5 sièges', 'Rapports white-label', 'Accès API', 'Onboarding dédié'],
+      cta: 'Contacter l\'équipe',
+      featured: false,
+    },
+  ]
+
+  return (
+    <section id="pricing" className="relative py-28 lg:py-36 border-t border-white/[0.04]">
+      <div className="max-w-6xl mx-auto px-6 lg:px-10">
+        <div className="text-center max-w-2xl mx-auto mb-14 reveal">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.07] text-[11.5px] text-zinc-400 mb-5">
+            Tarifs
+          </div>
+          <h2 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-[-0.035em] gt-white">
+            Simple. Honnête.
+            <br />
+            <span className="text-zinc-500">Sans surprise.</span>
+          </h2>
+
+          {/* Toggle */}
+          <div className="inline-flex items-center gap-1 p-1 mt-8 rounded-full bg-white/[0.04] border border-white/[0.07]">
+            <button
+              onClick={() => setAnnual(false)}
+              className={`px-4 py-1.5 rounded-full text-[12.5px] font-medium transition-all ${!annual ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-white'}`}
+            >
+              Mensuel
+            </button>
+            <button
+              onClick={() => setAnnual(true)}
+              className={`px-4 py-1.5 rounded-full text-[12.5px] font-medium transition-all flex items-center gap-2 ${annual ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-white'}`}
+            >
+              Annuel
+              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${annual ? 'bg-emerald-500/15 text-emerald-700' : 'bg-emerald-500/15 text-emerald-300'}`}>−35%</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto reveal reveal-d1">
+          {plans.map((plan) => {
+            const price = annual ? plan.price.annual : plan.price.monthly
+            return (
+              <div
+                key={plan.name}
+                className={`relative rounded-2xl p-7 transition-all duration-300 ${
+                  plan.featured
+                    ? 'bg-gradient-to-b from-emerald-500/[0.06] to-transparent border border-emerald-500/30 shadow-[0_0_60px_-15px_rgba(16,185,129,0.25)]'
+                    : 'bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12]'
+                }`}
+              >
+                {plan.featured && (
+                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500 text-zinc-950 text-[10.5px] font-semibold">
+                    <span className="w-1 h-1 rounded-full bg-zinc-950 animate-pulse" />
+                    Le plus choisi
+                  </div>
+                )}
+
+                <div className="mb-6">
+                  <h3 className="text-[15px] font-semibold text-white mb-1">{plan.name}</h3>
+                  <p className="text-[12.5px] text-zinc-500">{plan.desc}</p>
+                </div>
+
+                <div className="mb-6">
+                  {price === 0 ? (
+                    <div className="text-4xl font-semibold text-white tracking-tight">Gratuit</div>
+                  ) : (
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-semibold text-white tracking-tight">{price}</span>
+                      <span className="text-zinc-500 text-sm">€/mois</span>
+                    </div>
+                  )}
+                  {annual && price > 0 && (
+                    <p className="text-[11.5px] text-zinc-600 mt-1.5">Facturé {price * 12}€/an</p>
+                  )}
+                </div>
+
+                <button
+                  onClick={onSignup}
+                  className={`w-full text-[13.5px] font-medium py-2.5 rounded-lg transition-all duration-200 mb-6 ${
+                    plan.featured
+                      ? 'bg-white text-zinc-950 hover:bg-zinc-100 hover:shadow-[0_0_30px_-4px_rgba(255,255,255,0.4)]'
+                      : 'bg-white/[0.04] text-white border border-white/[0.08] hover:bg-white/[0.08]'
+                  }`}
+                >
+                  {plan.cta}
+                </button>
+
+                <div className="space-y-2.5">
+                  {plan.features.map((f) => (
+                    <div key={f} className="flex items-start gap-2.5 text-[13px] text-zinc-300">
+                      <svg className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {f}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <p className="text-center text-[12px] text-zinc-600 mt-10">
+          Paiement Stripe sécurisé · Résiliable à tout moment · TVA incluse
+        </p>
+      </div>
+    </section>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SECTION 5 — CTA FINAL
+   ══════════════════════════════════════════════════════════════════════════ */
+function CtaFinalSection({ onPrimary }: { onPrimary: () => void }) {
+  return (
+    <section className="relative py-32 lg:py-40 overflow-hidden border-t border-white/[0.04]">
+      {/* Ambient glow */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full"
+        style={{
+          background: 'radial-gradient(ellipse, rgba(16,185,129,0.15) 0%, transparent 70%)',
+          filter: 'blur(40px)',
+        }}
+      />
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
+          maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black 30%, transparent 80%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black 30%, transparent 80%)',
+        }}
+      />
+
+      <div className="relative max-w-3xl mx-auto px-6 lg:px-10 text-center space-y-8 reveal">
+        <h2 className="text-[clamp(2.4rem,5vw,4rem)] font-semibold leading-[1.02] tracking-[-0.04em] gt-white">
+          Votre prochain investissement
+          <br />
+          <span className="gradient-text">commence ici.</span>
+        </h2>
+        <p className="text-[17px] text-zinc-400 leading-[1.55] max-w-xl mx-auto">
+          Analysez un bien immobilier en 30 secondes. Gratuit, sans inscription.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <button
-            onClick={onCta}
-            className="group inline-flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-lg px-10 py-5 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-emerald-500/20"
+            onClick={onPrimary}
+            className="group inline-flex items-center gap-2 bg-white text-zinc-950 font-medium text-[15px] px-6 py-3.5 rounded-lg transition-all duration-300 hover:shadow-[0_0_48px_-4px_rgba(255,255,255,0.45)] hover:-translate-y-0.5"
           >
-            Analyser un investissement
-            <svg className="w-5 h-5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            Commencer maintenant
+            <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </button>
         </div>
-
-        <p className="reveal reveal-d3 text-xs text-zinc-700">
-          Aucune carte bancaire · Résiliation à tout moment · Données sécurisées
+        <p className="text-[12.5px] text-zinc-600 pt-2">
+          Aucune carte requise · Résultats en 30 secondes
         </p>
       </div>
     </section>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   FOOTER (minimal)
+   ══════════════════════════════════════════════════════════════════════════ */
+function FooterMinimal() {
+  return (
+    <footer className="border-t border-white/[0.04] py-10">
+      <div className="max-w-6xl mx-auto px-6 lg:px-10 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-5 h-5 rounded-md bg-emerald-500 flex items-center justify-center">
+            <svg className="w-3 h-3 text-zinc-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h14V10" />
+            </svg>
+          </div>
+          <span className="text-zinc-500 text-[12.5px]">Immolyse © {new Date().getFullYear()}</span>
+        </div>
+        <div className="flex gap-6">
+          {['CGU', 'Confidentialité', 'Contact'].map((l) => (
+            <a key={l} href="#" className="text-[12px] text-zinc-600 hover:text-zinc-300 transition-colors">{l}</a>
+          ))}
+        </div>
+      </div>
+    </footer>
   )
 }

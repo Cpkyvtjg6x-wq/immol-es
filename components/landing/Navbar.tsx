@@ -9,7 +9,8 @@ export function Navbar() {
   const router = useRouter()
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40)
+    const fn = () => setScrolled(window.scrollY > 24)
+    fn()
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
@@ -18,48 +19,56 @@ export function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'bg-[#09090b]/80 backdrop-blur-xl border-b border-white/[0.04]'
-          : 'bg-transparent'
+          ? 'bg-[#09090b]/70 backdrop-blur-2xl border-b border-white/[0.05]'
+          : 'bg-transparent border-b border-transparent'
       }`}
-      style={{ padding: scrolled ? '14px 0' : '22px 0' }}
     >
-      <div className="max-w-6xl mx-auto px-8 flex items-center justify-between">
+      <div className={`max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between transition-all duration-500 ${scrolled ? 'h-14' : 'h-[72px]'}`}>
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center transition-transform group-hover:scale-105">
-            <svg className="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          <div className="relative w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-[0_0_24px_-4px_rgba(16,185,129,0.5)] transition-transform group-hover:scale-105">
+            <svg className="w-3.5 h-3.5 text-zinc-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h14V10" />
             </svg>
           </div>
           <span className="text-white font-semibold text-[15px] tracking-tight">Immolyse</span>
         </Link>
 
         {/* Links */}
-        <div className="hidden md:flex items-center gap-8">
-          {['Fonctionnalités', 'Tarifs', 'Blog'].map((l) => (
+        <div className="hidden md:flex items-center gap-1">
+          {[
+            { label: 'Produit', href: '#produit' },
+            { label: 'Fonctionnalités', href: '#features' },
+            { label: 'Tarifs', href: '#pricing' },
+          ].map((l) => (
             <a
-              key={l}
-              href={`#${l.toLowerCase()}`}
-              className="text-sm text-zinc-500 hover:text-white transition-colors duration-200"
+              key={l.label}
+              href={l.href}
+              className="text-[13.5px] text-zinc-400 hover:text-white transition-colors duration-200 px-3 py-1.5 rounded-md"
             >
-              {l}
+              {l.label}
             </a>
           ))}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => router.push('/auth/login')}
-            className="text-sm text-zinc-500 hover:text-white transition-colors duration-200 px-3 py-1.5"
+            className="text-[13.5px] text-zinc-400 hover:text-white transition-colors duration-200 px-3 py-1.5 rounded-md"
           >
-            Connexion
+            Se connecter
           </button>
           <button
             onClick={() => router.push('/analyse')}
-            className="text-sm font-semibold bg-white text-zinc-950 px-4 py-2 rounded-lg hover:bg-zinc-100 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            className="group relative text-[13.5px] font-medium text-zinc-950 bg-white hover:bg-zinc-100 px-3.5 py-1.5 rounded-md transition-all duration-200 hover:shadow-[0_0_24px_-4px_rgba(255,255,255,0.4)]"
           >
-            Commencer
+            <span className="flex items-center gap-1.5">
+              Commencer
+              <svg className="w-3 h-3 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </span>
           </button>
         </div>
       </div>

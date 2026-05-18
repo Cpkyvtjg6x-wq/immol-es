@@ -16,6 +16,7 @@ import { formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations } from '@/lib/hooks/useSimulations'
 import { SaveModal } from '@/components/app/SaveModal'
+import { AppShell } from '@/components/app/AppShell'
 
 type Mode = 'express' | 'advanced'
 
@@ -136,6 +137,7 @@ export default function AnalysePage() {
   }, [result, score, lastParams, saveSimulation])
 
   return (
+    <AppShell>
     <div className="min-h-screen bg-[#09090b] text-white">
       <SaveModal
         isOpen={saveModalOpen}
@@ -147,21 +149,16 @@ export default function AnalysePage() {
         onSave={handleDoSave}
       />
       {/* ── Top bar ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#09090b]/80 backdrop-blur-xl border-b border-white/[0.05]">
-        <div className="max-w-screen-xl mx-auto px-6 h-14 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[#09090b]/90 backdrop-blur-xl border-b border-white/[0.05]">
+        <div className="px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/')} className="flex items-center gap-2 group">
-              <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center transition-transform group-hover:scale-105">
-                <svg className="w-3.5 h-3.5 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-              </div>
-              <span className="text-[13px] font-semibold text-white tracking-tight">Immolyse</span>
+            <button onClick={() => router.push('/dashboard')} className="text-[13px] text-zinc-500 hover:text-white transition-colors font-medium">
+              Dashboard
             </button>
             <svg className="w-4 h-4 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
             </svg>
-            <span className="text-[13px] text-zinc-400 font-medium">Analyser</span>
+            <span className="text-[13px] text-white font-semibold">Analyser</span>
             {result && (
               <>
                 <svg className="w-4 h-4 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,7 +198,7 @@ export default function AnalysePage() {
       </header>
 
       {/* ── Main Layout ── */}
-      <div className="pt-14 flex min-h-screen">
+      <div className="flex min-h-[calc(100vh-56px)]">
         {/* ── Left panel: Form ── */}
         <aside className="w-[360px] shrink-0 border-r border-white/[0.05] flex flex-col">
           <div className="sticky top-14 h-[calc(100vh-56px)] overflow-y-auto">
@@ -362,6 +359,7 @@ export default function AnalysePage() {
         </main>
       </div>
     </div>
+    </AppShell>
   )
 }
 

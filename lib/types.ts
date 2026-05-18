@@ -6,7 +6,9 @@ export interface InvestmentParams {
   surface: number
   ville: string
   quartier?: string
-  typeBien?: string
+  typeBien: string
+  etat: 'ancien' | 'neuf'
+  dpe: string
 
   // Financement
   apport: number
@@ -15,6 +17,7 @@ export interface InvestmentParams {
   assuranceTaux: number
   loanType: 'amortissable' | 'in-fine'
   fraisNotaire: number
+  fraisNotaireAuto: boolean   // true = calculé automatiquement
   travaux: number
 
   // Frais bancaires
@@ -31,7 +34,11 @@ export interface InvestmentParams {
   locType: 'nu' | 'meuble' | 'coloc' | 'saisonnier'
   loyerNu: number
   loyerMeuble: number
-  vacance: number
+  chargesRecuperables: number  // charges récupérables sur locataire (nu)
+  nbChambres: number           // pour colocation
+  loyerParChambre: number      // pour colocation
+  vacance: number              // mois de vacance par an
+  irl: number                  // revalorisation loyer annuelle (%)
 
   // Charges annuelles
   taxeFonciere: number
@@ -42,6 +49,34 @@ export interface InvestmentParams {
   fraisComptable: number
   gliPct: number
   cfe: number
+
+  // Fiscalité
+  tmi: number                  // Tranche marginale d'imposition (%)
+  revenusProAnnuels: number    // Revenus pro du foyer (pour impact fiscal global)
+  lmpEnabled: boolean          // Loueur Meublé Professionnel
+  sciIS: boolean               // SCI à l'IS
+  sarlFamille: boolean         // SARL de famille
+
+  // Structure juridique (détermine les régimes affichés)
+  structure: 'nom-propre' | 'sci-ir' | 'sci-is' | 'sarl-famille'
+  profilFis: 'nouveau' | 'confirme'  // Mode expert pour amort. par composants
+
+  // Amortissement LMNP par composants (mode expert)
+  amortGrosOeuvrePct: number   // % gros œuvre (défaut 50%)
+  amortGrosOeuvreAns: number   // durée (défaut 50 ans)
+  amortFacadePct: number       // % façade (défaut 10%)
+  amortFacadeAns: number       // durée (défaut 30 ans)
+  amortToiturePct: number      // % toiture (défaut 10%)
+  amortToitureAns: number      // durée (défaut 25 ans)
+  amortInstallationsPct: number // % installations (défaut 15%)
+  amortInstallationsAns: number // durée (défaut 15 ans)
+  amortAgencementsPct: number  // % agencements (défaut 15%)
+  amortAgencementsAns: number  // durée (défaut 10 ans)
+  amortTravauxAns: number      // durée amort. travaux (défaut 10 ans)
+
+  // Revente & projection
+  horizonRevente: number       // Horizon de revente en années
+  valorisationAnnuelle: number // Appréciation annuelle du bien (%)
 }
 
 export interface InvestmentResult {
@@ -90,6 +125,15 @@ export interface InvestmentResult {
   roiApport: number
   pointMort: number
 
+  // Revente & TRI
+  prixRevente: number
+  plusValueBrute: number
+  abattementPVIR: number       // abattement IR sur plus-value (%)
+  abattementPVPS: number       // abattement PS sur plus-value (%)
+  impotPlusValue: number
+  patrimoineNetRevente: number
+  tri: number                  // Taux de Rendement Interne (%)
+
   // Tableaux (optionnel — générés à la demande)
   tableauAmortissement?: AmortizationRow[]
   projection?: ProjectionRow[]
@@ -106,6 +150,15 @@ export interface FiscalParams {
   lmpEnabled?: boolean
   sciIS?: boolean
   sarlFamille?: boolean
+  structure?: 'nom-propre' | 'sci-ir' | 'sci-is' | 'sarl-famille'
+  profilFis?: 'nouveau' | 'confirme'
+  // Amort composants (mode expert)
+  amortGrosOeuvrePct?: number; amortGrosOeuvreAns?: number
+  amortFacadePct?: number; amortFacadeAns?: number
+  amortToiturePct?: number; amortToitureAns?: number
+  amortInstallationsPct?: number; amortInstallationsAns?: number
+  amortAgencementsPct?: number; amortAgencementsAns?: number
+  amortTravauxAns?: number
 }
 
 export interface FiscalRegime {
@@ -252,11 +305,12 @@ export interface SubscriptionLimits {
 
 export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, SubscriptionLimits> = {
   free: {
-    simulations: 3,
-    aiInsights: false,
-    export: false,
-    comparaison: false,
-    marketData: false,
+    // OWNER MODE — toutes les fonctionnalités déverrouillées pour les tests
+    simulations: Infinity,
+    aiInsights: true,
+    export: true,
+    comparaison: true,
+    marketData: true,
   },
   pro: {
     simulations: 50,

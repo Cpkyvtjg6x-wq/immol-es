@@ -1,420 +1,328 @@
 import type { InvestmentResult, FiscalParams, FiscalResult, FiscalRegime } from './types'
 
-/**
- * Calcule la fiscalité pour tous les régimes immobiliers français.
- * Porte la logique de calcFis() du calculateur HTML original.
- */
+const PS = 0.172 // Prélèvements sociaux 17.2%
+
+function calcIS(base: number): number {
+  if (base <= 0) return 0
+  if (base <= 42500) return base * 0.15
+  return 42500 * 0.15 + (base - 42500) * 0.25
+}
+
+function fmt(n: number): string {
+  return Math.round(n).toLocaleString('fr-FR') + ' €'
+}
+
+/** Calcule le total d'amortissement annuel LMNP selon les paramètres */
+function calcAmortTotal(params: FiscalParams): number {
+  const base = params.prixAchat * 0.85 // 85% du prix (hors terrain)
+  const travaux = params.travaux ?? 0
+
+  if (params.profilFis === 'confirme') {
+    // Mode expert — amortissement par composants personnalisables
+    const grosOeuvre     = (base * (params.amortGrosOeuvrePct   ?? 50) / 100) / (params.amortGrosOeuvreAns   ?? 50)
+    const facade         = (base * (params.amortFacadePct        ?? 10) / 100) / (params.amortFacadeAns       ?? 30)
+    const toiture        = (base * (params.amortToiturePct       ?? 10) / 100) / (params.amortToitureAns      ?? 25)
+    const installations  = (base * (params.amortInstallationsPct ?? 15) / 100) / (params.amortInstallationsAns ?? 15)
+    const agencements    = (base * (params.amortAgencementsPct   ?? 15) / 100) / (params.amortAgencementsAns   ?? 10)
+    const travauxAmort   = travaux > 0 ? travaux / (params.amortTravauxAns ?? 10) : 0
+    return grosOeuvre + facade + toiture + installations + agencements + travauxAmort
+  }
+
+  // Mode simple (par défaut — identique au HTML mode "nouveau")
+  const amortStructure    = base * 0.70 / 50
+  const amortInstall      = base * 0.15 / 15
+  const amortTravaux      = travaux > 0 ? travaux / 10 : 0
+  return amortStructure + amortInstall + amortTravaux
+}
+
 export function calculateFiscal(
   params: FiscalParams,
   result: InvestmentResult
 ): FiscalResult {
-  const PS = 0.172 // Prélèvements sociaux 17.2%
-  const tmi = params.tmi / 100 // TMI en décimal
+  const tmi = params.tmi / 100
+  const structure = params.structure ?? 'nom-propre'
 
   const revBrut = result.revAnnuel
   const charges = result.totalCharges
   const mensualiteTotale = result.mensualiteTotale
+
+  // Estimation des intérêts annuels (1ère année)
   const interetsAnnuels = result.mensualiteCredit > 0
-    ? result.mensualiteCredit * 12 - (result.montantEmprunte > 0 ? estimerCapitalRembourse(result) : 0)
+    ? Math.max(0, result.montantEmprunte * (result.mensualiteCredit / (result.montantEmprunte || 1)) * 12 * 0.7)
     : 0
 
-  // Amortissement LMNP (par composants)
-  const amortBase = params.prixAchat * 0.85 // 85% du prix (hors terrain)
-  const amortStructure = amortBase * 0.70 / 50 // 70% structure sur 50 ans
-  const amortInstallations = amortBase * 0.15 / 15 // 15% installations sur 15 ans
-  const amortMobilier = (params.travaux ?? 0) * 0.80 / 7 // meubles sur 7 ans
-  const amortTravaux = (params.travaux ?? 0) * 0.20 / 10 // travaux sur 10 ans
-  const amortTotal = amortStructure + amortInstallations + amortMobilier + amortTravaux
-
+  const amortTotal = calcAmortTotal(params)
   const prixRevient = params.prixRevient
+
+  // Déductions selon type de location
+  const isNu     = params.locType === 'nu'
+  const isMeuble = !isNu
+
+  const chargesNu      = charges + interetsAnnuels
+  const chargesMeuble  = charges + interetsAnnuels + amortTotal
+
+  // Conditions d'éligibilité
+  const revMeuble       = isMeuble ? revBrut : 0
+  const revNu           = isNu ? revBrut : 0
+  const lmnpMicroOk     = revMeuble <= 77700
+  const lmpOk           = params.lmpEnabled === true
+  const microFoncierOk  = revNu <= 15000
+
   const regimes: FiscalRegime[] = []
 
-  // ─── 1. MICRO-FONCIER ────────────────────────────────────────────────────────
-  // Abattement 30%, revenus < 15 000€/an, location nue uniquement
-  {
-    const disabled = params.locType !== 'nu' || revBrut > 15000
-    const disabledReason = params.locType !== 'nu'
-      ? 'Réservé à la location nue'
-      : revBrut > 15000
-      ? 'Revenus > 15 000€/an (seuil dépassé)'
-      : undefined
+  function push(r: FiscalRegime) { regimes.push(r) }
 
-    const abattement = revBrut * 0.30
-    const revImposable = Math.max(0, revBrut - abattement)
-    const impot = revImposable * tmi
-    const ps = revImposable * PS
-    const totalFiscal = impot + ps
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
+  // ═══════════════════════════════════════════════════════════
+  // NOM PROPRE
+  // ═══════════════════════════════════════════════════════════
+  if (structure === 'nom-propre') {
 
-    regimes.push({
-      id: 'micro-foncier',
-      name: 'Micro-foncier',
-      shortName: 'Micro-F',
-      category: 'foncier',
-      revImposable,
-      impot,
-      ps,
-      totalFiscal,
-      net,
-      cfNet,
-      rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled,
-      disabledReason,
-    })
-  }
-
-  // ─── 2. RÉEL FONCIER ─────────────────────────────────────────────────────────
-  // Déductibilité des charges réelles, location nue
-  {
-    const disabled = params.locType !== 'nu'
-    const chargesDeductibles = charges + interetsAnnuels
-    const revImposable = Math.max(0, revBrut - chargesDeductibles)
-    const deficitFoncier = Math.min(10700, Math.max(0, chargesDeductibles - revBrut))
-    const impot = revImposable > 0 ? revImposable * tmi : -(deficitFoncier * tmi)
-    const ps = revImposable * PS
-    const totalFiscal = impot + ps
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
-
-    regimes.push({
-      id: 'reel-foncier',
-      name: 'Réel foncier',
-      shortName: 'Réel-F',
-      category: 'foncier',
-      revImposable,
-      impot,
-      ps,
-      totalFiscal,
-      net,
-      cfNet,
-      rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled,
-      disabledReason: disabled ? 'Réservé à la location nue' : undefined,
-      tag: deficitFoncier > 0 ? `Déficit ${Math.round(deficitFoncier)} €` : undefined,
-    })
-  }
-
-  // ─── 3. LMNP MICRO-BIC ──────────────────────────────────────────────────────
-  // Abattement 50% (meublé classique) ou 71% (meublé classé tourisme)
-  // Revenus < 77 700€/an
-  {
-    const disabled = params.locType === 'nu'
-    const isTourisme = params.locType === 'saisonnier'
-    const abattementRate = isTourisme ? 0.71 : 0.50
-    const seuil = isTourisme ? 188700 : 77700
-
-    const disabledReason = disabled ? 'Réservé à la location meublée' : undefined
-    const plafondOk = revBrut <= seuil
-    const abattement = revBrut * abattementRate
-    const revImposable = Math.max(0, revBrut - abattement)
-    const impot = revImposable * tmi
-    const ps = revImposable * PS
-    const totalFiscal = impot + ps
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
-
-    regimes.push({
-      id: 'lmnp-micro-bic',
-      name: `LMNP Micro-BIC (${Math.round(abattementRate * 100)}%)`,
-      shortName: 'Micro-BIC',
-      category: 'bic',
-      revImposable,
-      impot,
-      ps,
-      totalFiscal,
-      net,
-      cfNet,
-      rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled: disabled || !plafondOk,
-      disabledReason: !plafondOk ? `Revenus > ${seuil.toLocaleString('fr-FR')} €` : disabledReason,
-    })
-  }
-
-  // ─── 4. LMNP RÉEL ────────────────────────────────────────────────────────────
-  // Amortissement par composants + déduction charges réelles
-  {
-    const disabled = params.locType === 'nu'
-    const chargesDeductibles = charges + interetsAnnuels + amortTotal
-    const revImposable = Math.max(0, revBrut - chargesDeductibles)
-    // L'amortissement excédentaire est reportable mais pas de déficit sur revenu global
-    const impot = revImposable * tmi
-    const ps = revImposable * PS
-    const totalFiscal = impot + ps
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
-    const amortReporte = Math.max(0, chargesDeductibles - revBrut)
-
-    regimes.push({
-      id: 'lmnp-reel',
-      name: 'LMNP Réel (amortissement)',
-      shortName: 'LMNP Réel',
-      category: 'bic',
-      revImposable,
-      impot,
-      ps,
-      totalFiscal,
-      net,
-      cfNet,
-      rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled,
-      disabledReason: disabled ? 'Réservé à la location meublée' : undefined,
-      tag: amortReporte > 0 ? `Amort. reporté ${Math.round(amortReporte)} €` : undefined,
-    })
-  }
-
-  // ─── 5. LMP (Loueur en Meublé Professionnel) ─────────────────────────────────
-  // Revenus BIC > 23 000€ ET représentent > 50% revenus du foyer
-  {
-    const disabled = params.locType === 'nu' || !params.lmpEnabled
-    const disabledReason = params.locType === 'nu'
-      ? 'Réservé à la location meublée'
-      : !params.lmpEnabled
-      ? 'LMP : revenus > 23k€ et > 50% revenus foyer requis'
-      : undefined
-
-    const chargesDeductibles = charges + interetsAnnuels + amortTotal
-    const revImposable = Math.max(0, revBrut - chargesDeductibles)
-    const deficitLMP = Math.max(0, chargesDeductibles - revBrut)
-    // LMP : déficit imputable sur revenu global (économie d'impôt)
-    const economieDeficit = deficitLMP * tmi
-    const impot = Math.max(0, revImposable * tmi - economieDeficit)
-    const ps = 0 // LMP = TNS, cotisations sociales à la place
-    const cotisationsTNS = revBrut * 0.35 // ~35% pour TNS
-    const totalFiscal = impot + cotisationsTNS
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
-
-    regimes.push({
-      id: 'lmp',
-      name: 'LMP (Loueur Meublé Professionnel)',
-      shortName: 'LMP',
-      category: 'bic',
-      revImposable,
-      impot,
-      ps,
-      totalFiscal,
-      net,
-      cfNet,
-      rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled,
-      disabledReason,
-      tag: deficitLMP > 0 ? `Déficit global ${Math.round(deficitLMP)} €` : undefined,
-    })
-  }
-
-  // ─── 6. SCI À L'IR ──────────────────────────────────────────────────────────
-  // Transparence fiscale, même traitement que réel foncier
-  {
-    const chargesDeductibles = charges + interetsAnnuels
-    const revImposable = Math.max(0, revBrut - chargesDeductibles)
-    const deficitFoncier = Math.min(10700, Math.max(0, chargesDeductibles - revBrut))
-    const impot = revImposable > 0 ? revImposable * tmi : -(deficitFoncier * tmi)
-    const ps = revImposable * PS
-    const totalFiscal = impot + ps
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
-
-    regimes.push({
-      id: 'sci-ir',
-      name: 'SCI à l\'IR',
-      shortName: 'SCI IR',
-      category: 'societe',
-      revImposable,
-      impot,
-      ps,
-      totalFiscal,
-      net,
-      cfNet,
-      rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled: false,
-      tag: 'Transmission facilitée',
-    })
-  }
-
-  // ─── 7. SCI À L'IS ──────────────────────────────────────────────────────────
-  // IS 15% jusqu'à 42 500€, puis 25% + PS sur dividendes
-  {
-    const chargesDeductibles = charges + interetsAnnuels + amortTotal
-    const resultatSociete = revBrut - chargesDeductibles
-    const isRate = resultatSociete <= 42500 ? 0.15 : 0.25
-    const is = resultatSociete > 0 ? resultatSociete * isRate : 0
-    const beneficeApreIs = Math.max(0, resultatSociete - is)
-
-    let impotDividendes = 0
-    let psDividendes = 0
-    if (params.sciIS && beneficeApreIs > 0) {
-      // Flat tax 30% sur dividendes (12.8% IR + 17.2% PS)
-      impotDividendes = beneficeApreIs * 0.128
-      psDividendes = beneficeApreIs * 0.172
+    // 1. Micro-foncier
+    if (isNu) {
+      const base     = Math.max(0, revNu * 0.70)
+      const impot    = base * tmi
+      const ps       = base * PS
+      const net      = revNu - charges - impot - ps
+      push({
+        id: 'micro-foncier', name: 'Micro-foncier', shortName: 'Micro-F', category: 'foncier',
+        revImposable: base, impot, ps, totalFiscal: impot + ps, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: !microFoncierOk,
+        disabledReason: !microFoncierOk ? `Revenus fonciers > 15 000€ → réel obligatoire` : undefined,
+        tag: microFoncierOk ? 'Abat. 30% · Sans comptable' : undefined,
+      })
     }
 
-    const totalFiscal = is + impotDividendes + psDividendes
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
+    // 2. Réel foncier
+    if (isNu) {
+      const base     = Math.max(0, revNu - chargesNu)
+      const deficit  = revNu - chargesNu
+      const impot    = base * tmi
+      const ps       = base * PS
+      const net      = revNu - charges - impot - ps
+      const deficitDed = deficit < 0 ? Math.min(10700, Math.abs(deficit)) : 0
+      push({
+        id: 'reel-foncier', name: 'Réel foncier', shortName: 'Réel-F', category: 'foncier',
+        revImposable: base, impot, ps, totalFiscal: impot + ps, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: false,
+        tag: deficitDed > 0 ? `Déficit foncier ${fmt(deficitDed)} imputable` : 'Charges réelles déductibles',
+      })
+    }
 
-    regimes.push({
-      id: 'sci-is',
-      name: params.sciIS ? 'SCI à l\'IS (avec dividendes)' : 'SCI à l\'IS (capitalisation)',
-      shortName: 'SCI IS',
-      category: 'is',
-      revImposable: Math.max(0, resultatSociete),
-      impot: is,
-      ps: psDividendes,
-      totalFiscal,
-      net,
-      cfNet,
+    // 3. LMNP Micro-BIC
+    if (isMeuble) {
+      const isSaisonnier   = params.locType === 'saisonnier'
+      const abatRate       = isSaisonnier ? 0.71 : 0.50
+      const seuil          = isSaisonnier ? 188700 : 77700
+      const base           = Math.max(0, revMeuble * (1 - abatRate))
+      const impot          = base * tmi
+      const ps             = base * PS
+      const net            = revMeuble - charges - impot - ps
+      push({
+        id: 'lmnp-micro-bic', name: `LMNP Micro-BIC (${Math.round(abatRate * 100)}%)`, shortName: 'Micro-BIC', category: 'bic',
+        revImposable: base, impot, ps, totalFiscal: impot + ps, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: !lmnpMicroOk || revMeuble > seuil,
+        disabledReason: revMeuble > seuil ? `Recettes > ${seuil.toLocaleString('fr-FR')} €` : undefined,
+        tag: `Abat. ${Math.round(abatRate * 100)}% · Sans comptable obligatoire`,
+      })
+    }
+
+    // 4. LMNP Réel ★
+    if (isMeuble) {
+      const base           = Math.max(0, revMeuble - chargesMeuble)
+      const impot          = base * tmi
+      const ps             = base * PS
+      const net            = revMeuble - charges - impot - ps
+      const amortReporte   = Math.max(0, chargesMeuble - revMeuble)
+      push({
+        id: 'lmnp-reel', name: 'LMNP Réel (amortissement)', shortName: 'LMNP Réel', category: 'bic',
+        revImposable: base, impot, ps, totalFiscal: impot + ps, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: false,
+        tag: amortReporte > 0 ? `Amort. reporté ${fmt(amortReporte)}` : `Amort. ${fmt(amortTotal)}/an`,
+      })
+    }
+
+    // 5. LMP
+    if (isMeuble) {
+      const base           = Math.max(0, revMeuble - chargesMeuble)
+      const cotTNS         = revMeuble * 0.35
+      const impot          = base * tmi
+      const net            = revMeuble - charges - impot - cotTNS
+      push({
+        id: 'lmp', name: 'LMP — Loueur Meublé Professionnel', shortName: 'LMP', category: 'bic',
+        revImposable: base, impot, ps: cotTNS, totalFiscal: impot + cotTNS, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: !lmpOk,
+        disabledReason: !lmpOk ? 'Recettes > 23 000€ ET > 50% autres revenus requis' : undefined,
+        tag: 'Cotisations TNS ~35% incluses',
+      })
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // SCI À L'IR
+  // ═══════════════════════════════════════════════════════════
+  if (structure === 'sci-ir') {
+    const base     = Math.max(0, revNu - chargesNu)
+    const deficit  = revNu - chargesNu
+    const impot    = base * tmi
+    const ps       = base * PS
+    const net      = revNu - charges - impot - ps
+    const deficitDed = deficit < 0 ? Math.min(10700, Math.abs(deficit)) : 0
+    push({
+      id: 'sci-ir', name: "SCI à l'IR — Régime réel", shortName: 'SCI IR', category: 'societe',
+      revImposable: base, impot, ps, totalFiscal: impot + ps, net,
+      cfNet: net / 12 - mensualiteTotale,
       rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled: false,
-      tag: params.sciIS ? 'Flat tax dividendes' : 'Capitalisation IS',
+      disabled: isMeuble,
+      disabledReason: isMeuble ? 'SCI IR : location nue uniquement (meublé → IS automatique)' : undefined,
+      tag: deficitDed > 0 ? `Déficit ${fmt(deficitDed)} remonte aux associés` : 'Transmission facilitée',
     })
   }
 
-  // ─── 8. SARL DE FAMILLE — IR MICRO ──────────────────────────────────────────
-  {
-    const disabled = params.locType === 'nu'
-    const abattement = revBrut * 0.50
-    const revImposable = Math.max(0, revBrut - abattement)
-    const impot = revImposable * tmi
-    const ps = revImposable * PS
-    const totalFiscal = impot + ps
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
+  // ═══════════════════════════════════════════════════════════
+  // SCI À L'IS
+  // ═══════════════════════════════════════════════════════════
+  if (structure === 'sci-is') {
+    const loyer      = revBrut
+    const chargDed   = charges + interetsAnnuels + amortTotal
+    const resultat   = loyer - chargDed
+    const is         = calcIS(Math.max(0, resultat))
+    const benefApresIs = Math.max(0, resultat - is)
 
-    regimes.push({
-      id: 'sarl-ir-micro',
-      name: 'SARL Famille — IR Micro-BIC',
-      shortName: 'SARL Micro',
-      category: 'societe',
-      revImposable,
-      impot,
-      ps,
-      totalFiscal,
-      net,
-      cfNet,
-      rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled,
-      disabledReason: disabled ? 'Réservé à la location meublée' : undefined,
-    })
+    // Option A — Capitalisation (pas de dividendes)
+    {
+      const net  = loyer - charges - is
+      push({
+        id: 'sci-is-capi', name: "SCI IS — Capitalisation", shortName: 'SCI IS (K)', category: 'is',
+        revImposable: Math.max(0, resultat), impot: is, ps: 0, totalFiscal: is, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: false,
+        tag: `Amort. inclus · IS ${is > 0 ? Math.round(is / Math.max(1, loyer) * 100) : 0}%`,
+      })
+    }
+
+    // Option B — Avec dividendes (flat tax 30%)
+    {
+      const flatTax  = benefApresIs * 0.30
+      const net      = loyer - charges - is - flatTax
+      push({
+        id: 'sci-is-div', name: "SCI IS — + Dividendes (flat tax 30%)", shortName: 'SCI IS (D)', category: 'is',
+        revImposable: Math.max(0, resultat), impot: is, ps: flatTax, totalFiscal: is + flatTax, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: false,
+        tag: 'IS + Flat tax 30% dividendes',
+      })
+    }
   }
 
-  // ─── 9. SARL DE FAMILLE — IR RÉEL ───────────────────────────────────────────
-  {
-    const disabled = params.locType === 'nu'
-    const chargesDeductibles = charges + interetsAnnuels + amortTotal
-    const revImposable = Math.max(0, revBrut - chargesDeductibles)
-    const impot = revImposable * tmi
-    const ps = revImposable * PS
-    const totalFiscal = impot + ps
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
+  // ═══════════════════════════════════════════════════════════
+  // SARL DE FAMILLE
+  // ═══════════════════════════════════════════════════════════
+  if (structure === 'sarl-famille') {
 
-    regimes.push({
-      id: 'sarl-ir-reel',
-      name: 'SARL Famille — IR Réel',
-      shortName: 'SARL Réel',
-      category: 'societe',
-      revImposable,
-      impot,
-      ps,
-      totalFiscal,
-      net,
-      cfNet,
-      rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled,
-      disabledReason: disabled ? 'Réservé à la location meublée' : undefined,
-      tag: 'Amortissement LMNP',
-    })
+    // A — IR Micro-BIC (abat. 50%)
+    {
+      const base  = Math.max(0, revMeuble * 0.50)
+      const impot = base * tmi
+      const ps    = base * PS
+      const net   = revMeuble - charges - impot - ps
+      push({
+        id: 'sarl-ir-micro', name: 'SARL Famille — IR Micro-BIC', shortName: 'SARL Micro', category: 'societe',
+        revImposable: base, impot, ps, totalFiscal: impot + ps, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: isNu,
+        disabledReason: isNu ? 'SARL famille : location meublée uniquement' : undefined,
+        tag: 'Option IR · Abat. 50%',
+      })
+    }
+
+    // B — IR Réel + amortissement ★
+    {
+      const base  = Math.max(0, revMeuble - chargesMeuble)
+      const impot = base * tmi
+      const ps    = base * PS
+      const net   = revMeuble - charges - impot - ps
+      push({
+        id: 'sarl-ir-reel', name: 'SARL Famille — IR Réel', shortName: 'SARL Réel', category: 'societe',
+        revImposable: base, impot, ps, totalFiscal: impot + ps, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: isNu,
+        disabledReason: isNu ? 'SARL famille : location meublée uniquement' : undefined,
+        tag: `Amort. ${fmt(amortTotal)}/an · Option IR transmissible`,
+      })
+    }
+
+    // C — IS
+    {
+      const resultat  = revMeuble - chargesMeuble
+      const is        = calcIS(Math.max(0, resultat))
+      const benefice  = Math.max(0, resultat - is)
+      const remunDir  = Math.min(benefice * 0.5, 30000)
+      const cotTNS    = remunDir * 0.45
+      const dividende = benefice - remunDir
+      const flatTax   = dividende > 0 ? dividende * 0.30 : 0
+      const totalFis  = is + cotTNS + flatTax
+      const net       = revMeuble - charges - totalFis
+      push({
+        id: 'sarl-is', name: 'SARL Famille — IS', shortName: 'SARL IS', category: 'is',
+        revImposable: Math.max(0, resultat), impot: is, ps: flatTax, totalFiscal: totalFis, net,
+        cfNet: net / 12 - mensualiteTotale,
+        rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
+        disabled: isNu,
+        disabledReason: isNu ? 'SARL famille : location meublée uniquement' : undefined,
+        tag: 'IS 15% + rémunération dirigeant',
+      })
+    }
   }
 
-  // ─── 10. SARL DE FAMILLE — IS ────────────────────────────────────────────────
-  {
-    const disabled = params.locType === 'nu' || !params.sarlFamille
-    const chargesDeductibles = charges + interetsAnnuels + amortTotal
-    const resultat = revBrut - chargesDeductibles
-    const isRate = resultat <= 42500 ? 0.15 : 0.25
-    const is = resultat > 0 ? resultat * isRate : 0
-    const benefice = Math.max(0, resultat - is)
-    // Dirigeant peut se verser une rémunération (cotisations TNS)
-    const remunDir = Math.min(benefice * 0.5, 30000)
-    const cotTNS = remunDir * 0.45
-    const dividende = benefice - remunDir
-    const flatTax = dividende > 0 ? dividende * 0.30 : 0
-    const totalFiscal = is + cotTNS + flatTax
-    const net = revBrut - charges - totalFiscal
-    const cfNet = net / 12 - mensualiteTotale
-
-    regimes.push({
-      id: 'sarl-is',
-      name: 'SARL Famille — IS',
-      shortName: 'SARL IS',
-      category: 'is',
-      revImposable: Math.max(0, resultat),
-      impot: is,
-      ps: flatTax,
-      totalFiscal,
-      net,
-      cfNet,
-      rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
-      disabled,
-      disabledReason: !params.sarlFamille
-        ? 'Activez l\'option SARL de famille dans les paramètres'
-        : disabled ? 'Réservé à la location meublée' : undefined,
-      tag: 'Rémunération dirigeant',
-    })
-  }
-
-  // ─── Sélection du meilleur régime ────────────────────────────────────────────
+  // ─── Meilleur régime ─────────────────────────────────────────────────────────
   const actifs = regimes.filter((r) => !r.disabled)
+  const best   = actifs.length > 0
+    ? actifs.reduce((b, r) => r.net > b.net ? r : b, actifs[0])
+    : regimes[0]
 
-  const bestIdx = actifs.reduce(
-    (bestI, r, i) => (r.net > actifs[bestI].net ? i : bestI),
-    0
-  )
-  const best = actifs[bestIdx] ?? regimes[0]
-
-  const rendNetNet =
-    prixRevient > 0 ? (best.net / prixRevient) * 100 : 0
-
-  const cfNet = best.cfNet
-
-  return { regimes, actifs, best, rendNetNet, cfNet, name: best.name }
+  return {
+    regimes,
+    actifs,
+    best,
+    rendNetNet: prixRevient > 0 ? (best.net / prixRevient) * 100 : 0,
+    cfNet: best.cfNet,
+    name: best.name,
+  }
 }
 
-/**
- * Estime le capital remboursé la première année pour le calcul des intérêts
- * (approximation : on utilise les intérêts de la 1ère mensualité)
- */
-function estimerCapitalRembourse(result: InvestmentResult): number {
-  // Capital remboursé ≈ mensualité crédit * 12 - intérêts approximatifs
-  // Approximation conservative : 30% de la mensualité = capital en début de prêt
-  return result.mensualiteCredit * 12 * 0.3
-}
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * TMI tranches 2024 (pour calcul automatique si non fourni)
- */
 export const TMI_TRANCHES = [
-  { min: 0, max: 11294, taux: 0 },
-  { min: 11294, max: 28797, taux: 11 },
-  { min: 28797, max: 82341, taux: 30 },
-  { min: 82341, max: 177106, taux: 41 },
+  { min: 0,      max: 11294,  taux: 0  },
+  { min: 11294,  max: 28797,  taux: 11 },
+  { min: 28797,  max: 82341,  taux: 30 },
+  { min: 82341,  max: 177106, taux: 41 },
   { min: 177106, max: Infinity, taux: 45 },
 ]
 
 export function getTMI(revenuImposable: number): number {
-  const tranche = TMI_TRANCHES.slice()
-    .reverse()
-    .find((t) => revenuImposable > t.min)
-  return tranche?.taux ?? 0
+  return [...TMI_TRANCHES].reverse().find((t) => revenuImposable > t.min)?.taux ?? 0
 }
 
-/**
- * Default fiscal params
- */
 export const DEFAULT_FISCAL_PARAMS: Omit<FiscalParams, 'prixAchat' | 'travaux' | 'prixRevient' | 'locType'> = {
   tmi: 30,
   lmpEnabled: false,
   sciIS: false,
   sarlFamille: false,
+  structure: 'nom-propre',
+  profilFis: 'nouveau',
 }

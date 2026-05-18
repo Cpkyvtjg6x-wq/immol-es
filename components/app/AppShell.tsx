@@ -4,11 +4,14 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { useSimulations } from '@/lib/hooks/useSimulations'
+import { formatCurrency } from '@/lib/utils'
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const { user } = useAuth()
+  const { simulations } = useSimulations(user?.id ?? null)
 
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
@@ -20,6 +23,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
     router.push('/')
   }
+
+  const recentSims = simulations.slice(0, 4)
 
   const nav = [
     {
@@ -83,6 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-[#09090b] text-white">
       {/* ── Sidebar ── */}
       <aside className="fixed inset-y-0 left-0 w-56 border-r border-white/[0.05] flex flex-col z-40 bg-[#09090b]">
+
         {/* Logo */}
         <div className="h-14 flex items-center px-4 border-b border-white/[0.05] shrink-0">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -97,19 +103,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Plan badge */}
         <div className="px-3 py-2.5 border-b border-white/[0.05] shrink-0">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.07]">
-            <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-            <span className="text-[11px] font-semibold text-zinc-500">Plan Gratuit</span>
-            <Link href="/#pricing" className="ml-auto text-[10px] font-bold text-emerald-500 hover:text-emerald-400 transition-colors">
-              Upgrade →
-            </Link>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="text-[11px] font-semibold text-emerald-400">Business</span>
+            <span className="ml-auto text-[10px] font-bold text-emerald-600">Owner</span>
           </div>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto p-2 pt-3">
+
           {/* Main nav */}
-          <div className="space-y-0.5 mb-6">
+          <div className="space-y-0.5 mb-5">
             {nav.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -132,25 +137,68 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </div>
 
+          {/* Recent simulations */}
+          {recentSims.length > 0 && (
+            <div className="mb-5">
+              <p className="px-3 mb-2 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">Récentes</p>
+              <div className="space-y-0.5">
+                {recentSims.map((sim) => {
+                  const score = sim.score ?? 0
+                  const scoreColor = score >= 70 ? 'text-emerald-400' : score >= 45 ? 'text-amber-400' : 'text-red-400'
+                  const cfSign = sim.cashflowMensuel >= 0
+                  return (
+                    <button
+                      key={sim.id}
+                      onClick={() => router.push('/analyse')}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-all text-left group"
+                    >
+                      {/* Score dot */}
+                      <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                        score >= 70 ? 'bg-emerald-500' : score >= 45 ? 'bg-amber-400' : 'bg-red-400'
+                      }`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] font-medium text-zinc-300 truncate leading-tight">{sim.name}</p>
+                        <p className="text-[10px] text-zinc-600 truncate">
+                          {sim.ville} · {sim.rendementBrut.toFixed(1)}% brut
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={`text-[11px] font-bold tabular-nums ${scoreColor}`}>{score}</p>
+                        <p className={`text-[10px] tabular-nums ${cfSign ? 'text-emerald-500' : 'text-red-400'}`}>
+                          {cfSign ? '+' : ''}{Math.round(sim.cashflowMensuel)}€
+                        </p>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-1.5 px-3 py-1.5 mt-1 text-[10px] font-semibold text-zinc-600 hover:text-zinc-400 transition-colors"
+              >
+                Voir toutes les simulations
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          )}
+
           {/* Tools section */}
           <div>
-            <p className="px-3 mb-2 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">Outils</p>
+            <p className="px-3 mb-2 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">Outils Pro</p>
             <div className="space-y-0.5">
               {tools.map((item) => (
                 <button
                   key={item.label}
-                  disabled={item.disabled}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-zinc-600 cursor-not-allowed opacity-50"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-all opacity-70 cursor-not-allowed"
+                  title="En cours de développement"
                 >
                   <span className="shrink-0">{item.icon}</span>
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.badge && (
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                      item.badge === 'Pro'
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                        : 'bg-white/[0.06] text-zinc-500 border border-white/[0.08]'
-                    }`}>
-                      {item.badge}
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      Bientôt
                     </span>
                   )}
                 </button>

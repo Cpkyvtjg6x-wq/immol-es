@@ -2,13 +2,12 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ExpressForm } from '@/components/app/ExpressForm'
-import { AdvancedForm } from '@/components/app/AdvancedForm'
+import { CalculateurForm } from '@/components/app/CalculateurForm'
 import { KpiGrid } from '@/components/app/KpiGrid'
 import { ScoreCard } from '@/components/app/ScoreCard'
 import { AIInsights } from '@/components/app/AIInsights'
 import { DetailedResults } from '@/components/app/DetailedResults'
-import { calculateInvestment } from '@/lib/calculator'
+import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
 import { InvestmentParams, InvestmentResult, ScoreResult, AIInsight, FiscalRegime } from '@/lib/types'
@@ -18,24 +17,55 @@ import { useSimulations } from '@/lib/hooks/useSimulations'
 import { SaveModal } from '@/components/app/SaveModal'
 import { AppShell } from '@/components/app/AppShell'
 
-type Mode = 'express' | 'advanced'
+const LS_KEY = 'immolyse_last_params'
+
+function runCalculation(params: InvestmentParams) {
+  const res = calculateInvestment(params)
+  const fiscalResult = calculateFiscal(
+    {
+      tmi: params.tmi,
+      prixAchat: params.prixAchat,
+      travaux: params.travaux ?? 0,
+      prixRevient: res.prixRevient,
+      locType: params.locType,
+      lmpEnabled: params.lmpEnabled,
+      sciIS: params.sciIS,
+      sarlFamille: params.sarlFamille,
+    },
+    res
+  )
+  const enabledRegimes = fiscalResult.regimes.filter((r) => !r.disabled)
+  const best = [...enabledRegimes].sort((a, b) => b.rendNetNet - a.rendNetNet)[0]
+  const sc = calculateScore(res, fiscalResult, null)
+  return { res, fiscalResult, best, sc }
+}
 
 export default function AnalysePage() {
   const router = useRouter()
-  const [mode, setMode] = useState<Mode>('express')
+
+  // Restore last params from localStorage
+  const [initialParams] = useState<InvestmentParams>(() => {
+    if (typeof window === 'undefined') return DEFAULT_PARAMS
+    try {
+      const raw = localStorage.getItem(LS_KEY)
+      return raw ? { ...DEFAULT_PARAMS, ...JSON.parse(raw) } : DEFAULT_PARAMS
+    } catch { return DEFAULT_PARAMS }
+  })
+
   const [result, setResult] = useState<InvestmentResult | null>(null)
   const [score, setScore] = useState<ScoreResult | null>(null)
   const [insights, setInsights] = useState<AIInsight[] | null>(null)
   const [fiscalResults, setFiscalResults] = useState<FiscalRegime[] | null>(null)
   const [bestFiscal, setBestFiscal] = useState<{ yield: number; regime: string } | null>(null)
   const [loading, setLoading] = useState(false)
+  const [liveUpdating, setLiveUpdating] = useState(false)
   const [aiLoading, setAiLoading] = useState(false)
-  const [lastParams, setLastParams] = useState<Partial<InvestmentParams> | null>(null)
-  const [lastTmi, setLastTmi] = useState<number>(30)
+  const [lastParams, setLastParams] = useState<InvestmentParams | null>(null)
   const [showResults, setShowResults] = useState(false)
   const [resultsVisible, setResultsVisible] = useState(false)
   const [saveModalOpen, setSaveModalOpen] = useState(false)
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { user } = useAuth()
   const { saveSimulation } = useSimulations(user?.id ?? null)
 
@@ -46,67 +76,45 @@ export default function AnalysePage() {
     }
   }, [showResults])
 
-  // Express mode (no TMI)
-  const handleCalculateExpress = useCallback(async (params: Partial<InvestmentParams>) => {
-    setLoading(true)
+  // Core calculation logic (sync — no artificial delay for live updates)
+  const applyCalculation = useCallback((params: InvestmentParams, isLive = false) => {
+    if (params.prixAchat <= 0) return
+
+    // Persist to localStorage
+    try { localStorage.setItem(LS_KEY, JSON.stringify(params)) } catch {}
+
     setLastParams(params)
-    setLastTmi(30)
-    setInsights(null)
-    setResultsVisible(false)
-    setFiscalResults(null)
-    setBestFiscal(null)
+    if (!isLive) { setInsights(null); setResultsVisible(false) }
 
-    await new Promise((r) => setTimeout(r, 400))
-
-    const res = calculateInvestment(params as InvestmentParams)
-    const sc = calculateScore(res, null, null)
-
-    setResult(res)
-    setScore(sc)
-    setShowResults(true)
-    setLoading(false)
-  }, [])
-
-  // Advanced mode (with TMI → full fiscal)
-  const handleCalculateAdvanced = useCallback(async (params: Partial<InvestmentParams>, tmi: number) => {
-    setLoading(true)
-    setLastParams(params)
-    setLastTmi(tmi)
-    setInsights(null)
-    setResultsVisible(false)
-
-    await new Promise((r) => setTimeout(r, 500))
-
-    const res = calculateInvestment(params as InvestmentParams)
-
-    // Compute full fiscal analysis
-    const fiscalResult = calculateFiscal(
-      {
-        tmi,
-        prixAchat: (params as InvestmentParams).prixAchat,
-        travaux: (params as InvestmentParams).travaux ?? 0,
-        prixRevient: res.prixRevient,
-        locType: (params as InvestmentParams).locType,
-        lmpEnabled: false,
-        sciIS: false,
-        sarlFamille: false,
-      },
-      res
-    )
-
-    const enabledRegimes = fiscalResult.regimes.filter((r) => !r.disabled)
-    const sortedRegimes = [...enabledRegimes].sort((a, b) => b.rendNetNet - a.rendNetNet)
-    const best = sortedRegimes[0]
-
-    const sc = calculateScore(res, fiscalResult, null)
+    const { res, fiscalResult, best, sc } = runCalculation(params)
 
     setResult(res)
     setScore(sc)
     setFiscalResults(fiscalResult.regimes)
     setBestFiscal(best ? { yield: best.rendNetNet, regime: best.name } : null)
     setShowResults(true)
-    setLoading(false)
+    if (!isLive) setResultsVisible(true)
+    setLiveUpdating(false)
   }, [])
+
+  // Live handler (debounced 700ms) — triggered by onChange
+  const handleChange = useCallback((params: InvestmentParams) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (params.prixAchat <= 0) return
+    setLiveUpdating(true)
+    debounceRef.current = setTimeout(() => {
+      applyCalculation(params, true)
+    }, 700)
+  }, [applyCalculation])
+
+  // Submit handler (immediate) — triggered by clicking "Calculer"
+  const handleCalculate = useCallback(async (params: InvestmentParams) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    setLoading(true)
+    await new Promise((r) => setTimeout(r, 300)) // brief transition delay
+    applyCalculation(params, false)
+    setLoading(false)
+  }, [applyCalculation])
 
   const handleGenerateAI = useCallback(async () => {
     if (!lastParams || !result) return
@@ -127,13 +135,11 @@ export default function AnalysePage() {
     }
   }, [lastParams, result])
 
-  const handleSave = useCallback(() => {
-    setSaveModalOpen(true)
-  }, [])
+  const handleSave = useCallback(() => setSaveModalOpen(true), [])
 
   const handleDoSave = useCallback(async (name: string) => {
     if (!result || !score || !lastParams) return { error: 'Aucun résultat à sauvegarder' }
-    return saveSimulation({ name, params: lastParams, results: result, score })
+    return saveSimulation({ name, params: lastParams as Partial<InvestmentParams>, results: result, score })
   }, [result, score, lastParams, saveSimulation])
 
   return (
@@ -200,33 +206,14 @@ export default function AnalysePage() {
       {/* ── Main Layout ── */}
       <div className="flex min-h-[calc(100vh-56px)]">
         {/* ── Left panel: Form ── */}
-        <aside className="w-[360px] shrink-0 border-r border-white/[0.05] flex flex-col">
-          <div className="sticky top-14 h-[calc(100vh-56px)] overflow-y-auto">
-            <div className="p-6">
-              {/* Mode toggle */}
-              <div className="mb-6 flex items-center gap-1 p-1 bg-white/[0.04] rounded-xl border border-white/[0.06]">
-                {(['express', 'advanced'] as Mode[]).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setMode(m)}
-                    className={`flex-1 py-1.5 text-[12px] font-semibold rounded-lg transition-all ${
-                      mode === m
-                        ? 'bg-white text-zinc-950 shadow-sm'
-                        : 'text-zinc-500 hover:text-white'
-                    }`}
-                  >
-                    {m === 'express' ? '⚡ Express' : '🔬 Avancé'}
-                  </button>
-                ))}
-              </div>
-
-              {mode === 'express' ? (
-                <ExpressForm onCalculate={handleCalculateExpress} loading={loading} />
-              ) : (
-                <AdvancedForm onCalculate={handleCalculateAdvanced} loading={loading} />
-              )}
-            </div>
+        <aside className="w-[380px] shrink-0 border-r border-white/[0.05] flex flex-col">
+          <div className="sticky top-14 h-[calc(100vh-56px)] overflow-y-auto flex flex-col">
+            <CalculateurForm
+              onCalculate={handleCalculate}
+              onChange={handleChange}
+              loading={loading}
+              initialParams={initialParams}
+            />
           </div>
         </aside>
 
@@ -237,7 +224,7 @@ export default function AnalysePage() {
             <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-56px)] text-center px-8 relative">
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full anim-glow"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full"
                   style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.04) 0%, transparent 70%)' }}
                 />
               </div>
@@ -248,22 +235,18 @@ export default function AnalysePage() {
                   </svg>
                 </div>
                 <h2 className="text-xl font-bold text-white mb-2" style={{ letterSpacing: '-0.02em' }}>
-                  {mode === 'express' ? 'Analyse rapide' : 'Analyse complète'}
+                  Analyse complète
                 </h2>
-                <p className="text-sm text-zinc-500 max-w-xs leading-relaxed">
-                  {mode === 'express'
-                    ? 'Renseignez les paramètres à gauche et obtenez votre score en 30 secondes.'
-                    : 'Le mode Avancé calcule les 10 régimes fiscaux et la comparaison nette-nette.'}
+                <p className="text-sm text-zinc-500 max-w-sm leading-relaxed">
+                  Renseignez les paramètres à gauche. Le calculateur analyse la rentabilité, la fiscalité et projette votre patrimoine sur 20 ans.
                 </p>
-                {mode === 'advanced' && (
-                  <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                    {['PTZ', 'GLI', 'CFE', 'LMNP Réel', 'SCI IS', 'Projection 20 ans'].map((tag) => (
-                      <span key={tag} className="text-[11px] text-zinc-600 bg-white/[0.04] border border-white/[0.07] px-2.5 py-1 rounded-full">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                  {['PTZ', 'GLI', 'CFE', 'LMNP Réel', 'SCI IS', 'TRI', 'Plus-value', 'Projection 20 ans'].map((tag) => (
+                    <span key={tag} className="text-[11px] text-zinc-600 bg-white/[0.04] border border-white/[0.07] px-2.5 py-1 rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -275,9 +258,7 @@ export default function AnalysePage() {
                 <div className="w-10 h-10 border border-white/[0.08] rounded-full" />
                 <div className="absolute inset-0 w-10 h-10 border-t border-emerald-500 rounded-full animate-spin" />
               </div>
-              <p className="text-sm text-zinc-500">
-                {mode === 'advanced' ? 'Calcul des 10 régimes fiscaux…' : 'Analyse en cours…'}
-              </p>
+              <p className="text-sm text-zinc-500">Calcul des régimes fiscaux & TRI…</p>
             </div>
           )}
 
@@ -295,9 +276,9 @@ export default function AnalysePage() {
                 <div>
                   <div className="flex items-center gap-2.5 mb-0.5">
                     <h2 className="text-base font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
-                      Analyse {mode === 'advanced' ? 'complète' : 'rapide'}
+                      Analyse complète
                     </h2>
-                    {mode === 'advanced' && fiscalResults && (
+                    {fiscalResults && (
                       <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
                         Fiscal inclus
                       </span>
@@ -307,8 +288,17 @@ export default function AnalysePage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-xs text-zinc-500">Calculé</span>
+                    {liveUpdating ? (
+                      <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                        <span className="text-xs text-zinc-500">Mise à jour…</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span className="text-xs text-zinc-500">Calculé</span>
+                      </>
+                    )}
                   </div>
                   <button
                     onClick={handleSave}

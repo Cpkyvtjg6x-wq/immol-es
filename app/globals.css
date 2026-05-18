@@ -129,6 +129,169 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.15);
 }
 
+/* ─── Aurora mesh ────────────────────────────────────────────── */
+.aurora-mesh {
+  position: absolute;
+  inset: -20%;
+  filter: blur(80px);
+  opacity: 0.55;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 40% 30% at 20% 30%, rgba(16,185,129,0.55), transparent 60%),
+    radial-gradient(ellipse 35% 28% at 80% 25%, rgba(99,102,241,0.50), transparent 60%),
+    radial-gradient(ellipse 30% 25% at 50% 80%, rgba(168,85,247,0.40), transparent 60%),
+    radial-gradient(ellipse 28% 22% at 70% 70%, rgba(236,72,153,0.30), transparent 60%);
+  animation: aurora-spin 22s ease-in-out infinite alternate;
+}
+.aurora-mesh.subtle {
+  opacity: 0.35;
+  filter: blur(100px);
+}
+
+@keyframes aurora-spin {
+  0%   { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+  50%  { transform: translate3d(-3%, 2%, 0) rotate(8deg) scale(1.05); }
+  100% { transform: translate3d(2%, -2%, 0) rotate(-6deg) scale(1.02); }
+}
+
+/* ─── 3D tilt support ────────────────────────────────────────── */
+.tilt-3d {
+  transform-style: preserve-3d;
+  transform: perspective(1200px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.tilt-3d > * {
+  transform: translateZ(0);
+}
+.tilt-layer-1 { transform: translateZ(20px); }
+.tilt-layer-2 { transform: translateZ(40px); }
+.tilt-layer-3 { transform: translateZ(60px); }
+
+/* ─── Conic gradient borders (premium edge glow) ─────────────── */
+.conic-border {
+  position: relative;
+  isolation: isolate;
+}
+.conic-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    transparent 0deg,
+    rgba(16,185,129,0.6) 60deg,
+    transparent 120deg,
+    transparent 240deg,
+    rgba(99,102,241,0.5) 300deg,
+    transparent 360deg
+  );
+  animation: conic-rotate 8s linear infinite;
+  z-index: -1;
+}
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes conic-rotate {
+  to { --angle: 360deg; }
+}
+
+/* ─── Marquee (testimonials, logos) ──────────────────────────── */
+.marquee {
+  display: flex;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+.marquee-track {
+  display: flex;
+  gap: 1.25rem;
+  animation: marquee-scroll 40s linear infinite;
+  flex-shrink: 0;
+  min-width: 100%;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+/* ─── Number ticker / count-up ───────────────────────────────── */
+.tabular { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+/* ─── Spotlight cursor (cards) ───────────────────────────────── */
+.spotlight {
+  position: relative;
+  overflow: hidden;
+}
+.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 50%), rgba(16,185,129,0.08), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.spotlight:hover::before { opacity: 1; }
+
+/* ─── Dot pattern ────────────────────────────────────────────── */
+.dot-pattern {
+  background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* ─── Gradient ring ──────────────────────────────────────────── */
+.ring-glow {
+  position: relative;
+}
+.ring-glow::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(16,185,129,0.6), rgba(99,102,241,0.5), rgba(236,72,153,0.4));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ─── Text shimmer (premium highlight) ───────────────────────── */
+.text-shimmer {
+  background: linear-gradient(90deg, #71717a 0%, #fff 50%, #71717a 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shimmer-anim 4s linear infinite;
+}
+@keyframes text-shimmer-anim {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Compare slider ─────────────────────────────────────────── */
+.compare-handle {
+  cursor: ew-resize;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 100%);
+  backdrop-filter: blur(8px);
+}
+
+/* ─── Accordion ──────────────────────────────────────────────── */
+.acc-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.acc-content > div { overflow: hidden; }
+.acc-open .acc-content { grid-template-rows: 1fr; }
+
 /* ─── Keyframes ──────────────────────────────────────────────── */
 @keyframes float {
   0%,100% { transform: translateY(0px); }

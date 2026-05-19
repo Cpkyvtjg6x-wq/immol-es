@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, RefObject } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/landing/Navbar'
 import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
@@ -39,6 +39,69 @@ function useCountUp(target: number, duration = 1800, start = false) {
   return value
 }
 
+function useScrollY() {
+  const [y, setY] = useState(0)
+  useEffect(() => {
+    const h = () => setY(window.scrollY)
+    h()
+    window.addEventListener('scroll', h, { passive: true })
+    return () => window.removeEventListener('scroll', h)
+  }, [])
+  return y
+}
+
+function useScrollProgress() {
+  const [p, setP] = useState(0)
+  useEffect(() => {
+    const h = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      setP(max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0)
+    }
+    h()
+    window.addEventListener('scroll', h, { passive: true })
+    window.addEventListener('resize', h)
+    return () => {
+      window.removeEventListener('scroll', h)
+      window.removeEventListener('resize', h)
+    }
+  }, [])
+  return p
+}
+
+function useMouseParallax(intensity = 1) {
+  const [pos, setPos] = useState({ x: 0, y: 0 })
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      setPos({
+        x: (e.clientX / window.innerWidth - 0.5) * intensity,
+        y: (e.clientY / window.innerHeight - 0.5) * intensity,
+      })
+    }
+    window.addEventListener('mousemove', h, { passive: true })
+    return () => window.removeEventListener('mousemove', h)
+  }, [intensity])
+  return pos
+}
+
+function useInView<T extends HTMLElement>(opts: IntersectionObserverInit = { threshold: 0.2 }, once = true) {
+  const ref = useRef<T>(null)
+  const [inView, setInView] = useState(false)
+  useEffect(() => {
+    if (!ref.current) return
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setInView(true)
+        if (once) obs.disconnect()
+      } else if (!once) {
+        setInView(false)
+      }
+    }, opts)
+    obs.observe(ref.current)
+    return () => obs.disconnect()
+  }, [once])
+  return [ref, inView] as const
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════
    PAGE
    ══════════════════════════════════════════════════════════════════════════ */
@@ -50,6 +113,7 @@ export default function LandingPage() {
 
   return (
     <div className="bg-page text-white overflow-x-hidden selection:bg-emerald-500/30">
+      <ScrollProgressBar />
       <Navbar />
 
       <HeroSection onPrimary={goAnalyse} onSecondary={goLogin} />
@@ -76,7 +140,15 @@ export default function LandingPage() {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────────
-   SHARED — Divider, SectionLabel
+   SCROLL PROGRESS BAR
+   ────────────────────────────────────────────────────────────────────────── */
+function ScrollProgressBar() {
+  const p = useScrollProgress()
+  return <div className="scroll-progress" style={{ width: `${p * 100}%` }} />
+}
+
+/* ──────────────────────────────────────────────────────────────────────────────
+   SHARED
    ────────────────────────────────────────────────────────────────────────── */
 function Divider() {
   return (
@@ -96,29 +168,62 @@ function SectionLabel({ num, children }: { num: string; children: React.ReactNod
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   SECTION — HERO
+   SECTION — HERO (parallax mouse + scroll, particles, word reveal)
    ══════════════════════════════════════════════════════════════════════════ */
 function HeroSection({ onPrimary, onSecondary }: { onPrimary: () => void; onSecondary: () => void }) {
+  const m = useMouseParallax(30)
+  const scrollY = useScrollY()
+  const heroFade = Math.max(0, 1 - scrollY / 700)
+
+  // Headline words with stagger
+  const words1 = ['L\'analyse']
+  const words2 = ['immobilière,']
+  const accentWord = 'redessinée.'
+
   return (
     <section className="relative pt-36 lg:pt-44 pb-24 lg:pb-32 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="glow-em anim-breathe" style={{ top: '-200px', left: '50%', transform: 'translateX(-50%)' }} />
-        <div className="glow-indigo" style={{ top: '20%', right: '-10%' }} />
-        <div className="specks opacity-60" />
+      {/* Background — mouse parallax + scroll parallax */}
+      <div className="absolute inset-0 pointer-events-none" style={{ opacity: heroFade }}>
+        <div
+          className="glow-em anim-breathe"
+          style={{
+            top: '-200px',
+            left: '50%',
+            transform: `translate3d(calc(-50% + ${m.x}px), ${scrollY * 0.15 + m.y}px, 0)`,
+            transition: 'transform 0.6s cubic-bezier(0.16,1,0.3,1)',
+          }}
+        />
+        <div
+          className="glow-indigo"
+          style={{
+            top: '20%',
+            right: '-10%',
+            transform: `translate3d(${-m.x * 0.8}px, ${scrollY * 0.25 + -m.y * 0.8}px, 0)`,
+            transition: 'transform 0.6s cubic-bezier(0.16,1,0.3,1)',
+          }}
+        />
+        <div className="specks opacity-60" style={{ transform: `translateY(${scrollY * 0.1}px)` }} />
         <div className="noise" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a0a0b]" />
+
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="particle drift-1" style={{ top: '70%', left: '15%' }} />
+          <div className="particle drift-2" style={{ top: '85%', left: '55%' }} />
+          <div className="particle drift-3" style={{ top: '78%', left: '75%' }} />
+          <div className="particle drift-1" style={{ top: '88%', left: '35%', animationDelay: '4s' }} />
+          <div className="particle drift-2" style={{ top: '92%', left: '85%', animationDelay: '7s' }} />
+          <div className="particle drift-3" style={{ top: '80%', left: '8%', animationDelay: '9s' }} />
+        </div>
       </div>
 
       <div className="relative max-w-6xl mx-auto px-6 lg:px-10">
         <div className="grid lg:grid-cols-[1.05fr_1fr] gap-14 lg:gap-20 items-center">
-
           {/* LEFT — Copy */}
-          <div className="anim-fadein space-y-10 lg:max-w-xl">
-            {/* Eyebrow */}
+          <div className="space-y-10 lg:max-w-xl">
             <a
               href="#features"
-              className="group inline-flex items-center gap-2.5 text-[11.5px] mono uppercase tracking-[0.2em] text-zinc-400 hover:text-white transition-colors"
+              className="group inline-flex items-center gap-2.5 text-[11.5px] mono uppercase tracking-[0.2em] text-zinc-400 hover:text-white transition-colors anim-fadein"
             >
               <span className="relative flex w-1.5 h-1.5">
                 <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-75 animate-ping" />
@@ -130,20 +235,22 @@ function HeroSection({ onPrimary, onSecondary }: { onPrimary: () => void; onSeco
               </svg>
             </a>
 
-            {/* Headline — typo riche */}
             <h1 className="display-lg text-[clamp(3rem,6.5vw,5.6rem)] gt-white">
-              L'analyse <br />
-              immobilière, <br />
-              <span className="serif-italic text-emerald-300/95">redessinée.</span>
+              <span className="word-reveal" style={{ animationDelay: '0ms' }}>L'analyse</span>{' '}
+              <br />
+              <span className="word-reveal" style={{ animationDelay: '120ms' }}>immobilière,</span>
+              <br />
+              <span className="word-reveal serif-italic text-emerald-300/95" style={{ animationDelay: '260ms' }}>
+                redessinée.
+              </span>
             </h1>
 
-            <p className="text-[17px] lg:text-[18.5px] text-zinc-400 leading-[1.55] max-w-[500px] font-normal">
-              Rentabilité, cashflow, fiscalité optimale.
-              <br className="hidden sm:block" />
+            <p className="text-[17px] lg:text-[18.5px] text-zinc-400 leading-[1.55] max-w-[500px] anim-fadein" style={{ animationDelay: '420ms', animationFillMode: 'both' }}>
+              Rentabilité, cashflow, fiscalité optimale.<br className="hidden sm:block" />
               Trois chiffres. Trente secondes. Une décision.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 anim-fadein" style={{ animationDelay: '540ms', animationFillMode: 'both' }}>
               <button
                 onClick={onPrimary}
                 className="group relative inline-flex items-center gap-2 bg-white text-zinc-950 text-[14px] font-medium px-5 py-3 rounded-lg transition-all duration-300 hover:shadow-[0_0_42px_-4px_rgba(255,255,255,0.45)] hover:-translate-y-0.5"
@@ -162,7 +269,7 @@ function HeroSection({ onPrimary, onSecondary }: { onPrimary: () => void; onSeco
               </button>
             </div>
 
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex items-center gap-3 pt-1 anim-fadein" style={{ animationDelay: '660ms', animationFillMode: 'both' }}>
               <div className="flex -space-x-1.5">
                 {['#10b981', '#6366f1', '#ec4899', '#f59e0b', '#06b6d4'].map((c, i) => (
                   <div
@@ -180,8 +287,8 @@ function HeroSection({ onPrimary, onSecondary }: { onPrimary: () => void; onSeco
             </div>
           </div>
 
-          {/* RIGHT — Product preview */}
-          <div className="relative anim-fadein-slow">
+          {/* RIGHT — Product preview with subtle scroll movement */}
+          <div className="relative anim-fadein-slow" style={{ transform: `translateY(${scrollY * -0.05}px)` }}>
             <ProductPreview />
           </div>
         </div>
@@ -191,13 +298,20 @@ function HeroSection({ onPrimary, onSecondary }: { onPrimary: () => void; onSeco
 }
 
 /* ──────────────────────────────────────────────────────────────────────────────
-   PRODUCT PREVIEW
+   PRODUCT PREVIEW (live ticker + tilt)
    ────────────────────────────────────────────────────────────────────────── */
 function ProductPreview() {
   const wrap = useRef<HTMLDivElement>(null)
   const [tab, setTab] = useState<'analyse' | 'fiscalite' | 'comparer'>('analyse')
   const [prix, setPrix] = useState(245000)
   const [loyer, setLoyer] = useState(1180)
+  const [tick, setTick] = useState(0)
+
+  // Live ticker — subtle fluctuation every 4s
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 4200)
+    return () => clearInterval(id)
+  }, [])
 
   const result = calculateInvestment({
     ...DEFAULT_PARAMS,
@@ -210,7 +324,9 @@ function ProductPreview() {
   const rendBrut = result.rendBrut
   const cf = result.cashflowMensuel
   const cfNegative = cf < 0
-  const score = Math.min(100, Math.max(0, Math.round(rendBrut * 11 + (cf > 0 ? 18 : -5))))
+  // Score with subtle variation
+  const baseScore = Math.min(100, Math.max(0, Math.round(rendBrut * 11 + (cf > 0 ? 18 : -5))))
+  const score = baseScore + (tick % 3 === 0 ? 1 : tick % 3 === 1 ? -1 : 0)
 
   const onMove = useCallback((e: React.MouseEvent) => {
     if (!wrap.current) return
@@ -230,17 +346,15 @@ function ProductPreview() {
 
   return (
     <div className="relative" onMouseMove={onMove} onMouseLeave={onLeave}>
-      <div className="absolute -inset-6 bg-gradient-to-br from-emerald-500/20 via-transparent to-indigo-500/15 rounded-3xl blur-3xl opacity-70" />
+      <div className="absolute -inset-6 bg-gradient-to-br from-emerald-500/20 via-transparent to-indigo-500/15 rounded-3xl blur-3xl opacity-70 anim-breathe" />
 
       <div ref={wrap} className="tilt-3d relative">
-        {/* LIVE chip */}
         <div className="tilt-layer-3 absolute -top-3 -left-3 z-20 bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-full px-2.5 py-1 mono text-[10px] font-medium text-emerald-300 flex items-center gap-1.5 tracking-[0.15em] uppercase">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-tick" />
           Live
         </div>
 
         <div className="relative glass-card rounded-2xl overflow-hidden shadow-[0_50px_120px_-30px_rgba(0,0,0,0.9)]">
-          {/* Chrome */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.05] bg-black/30">
             <div className="flex gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
@@ -259,7 +373,6 @@ function ProductPreview() {
             <div className="w-12" />
           </div>
 
-          {/* Tabs */}
           <div className="flex items-center gap-1 px-4 pt-3 border-b border-white/[0.04]">
             {([
               { id: 'analyse', label: 'Analyse' },
@@ -321,7 +434,7 @@ function ProductPreview() {
             <div className="grid grid-cols-3 gap-2.5">
               <ResultTile label="Rendement" value={`${rendBrut.toFixed(2)}%`} tone={rendBrut >= 6 ? 'good' : rendBrut >= 4 ? 'neutral' : 'warn'} />
               <ResultTile label="Cashflow" value={`${cf >= 0 ? '+' : ''}${Math.round(cf)}€`} tone={cfNegative ? 'warn' : 'good'} />
-              <ResultTile label="Score IA" value={`${score}`} tone={score >= 65 ? 'good' : score >= 45 ? 'neutral' : 'warn'} />
+              <ResultTile label="Score IA" value={`${score}`} tone={score >= 65 ? 'good' : score >= 45 ? 'neutral' : 'warn'} pulse />
             </div>
 
             <MiniChart cf={cf} />
@@ -344,7 +457,6 @@ function ProductPreview() {
           </div>
         </div>
 
-        {/* PDF chip */}
         <div className="tilt-layer-2 absolute -bottom-3 -right-3 z-20 glass-card rounded-xl px-3 py-2 flex items-center gap-2 anim-float">
           <div className="w-7 h-7 rounded-md bg-red-500/15 flex items-center justify-center">
             <svg className="w-3.5 h-3.5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
@@ -371,14 +483,17 @@ function MiniInput({ label, value, slider }: { label: string; value: string; sli
   )
 }
 
-function ResultTile({ label, value, tone }: { label: string; value: string; tone: 'good' | 'neutral' | 'warn' }) {
+function ResultTile({ label, value, tone, pulse = false }: { label: string; value: string; tone: 'good' | 'neutral' | 'warn'; pulse?: boolean }) {
   const colors = {
     good: 'text-emerald-300 bg-emerald-500/[0.04] border-emerald-500/15',
     neutral: 'text-amber-300 bg-amber-500/[0.04] border-amber-500/15',
     warn: 'text-red-300 bg-red-500/[0.04] border-red-500/15',
   }[tone]
   return (
-    <div className={`p-2.5 rounded-lg border ${colors}`}>
+    <div className={`p-2.5 rounded-lg border ${colors} relative overflow-hidden`}>
+      {pulse && (
+        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-current opacity-60 live-tick" />
+      )}
       <div className="mono text-[9px] text-zinc-500 uppercase tracking-[0.15em] font-medium mb-1">{label}</div>
       <div className="text-[15px] font-medium tabular">{value}</div>
     </div>
@@ -386,6 +501,7 @@ function ResultTile({ label, value, tone }: { label: string; value: string; tone
 }
 
 function MiniChart({ cf }: { cf: number }) {
+  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.4 })
   const years = 20
   const points = Array.from({ length: years + 1 }, (_, i) => {
     const base = cf * 12 * i * 1.02
@@ -406,7 +522,7 @@ function MiniChart({ cf }: { cf: number }) {
   const area = `${d} L ${w} ${h} L 0 ${h} Z`
 
   return (
-    <div className="px-2.5 py-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+    <div ref={ref} className="px-2.5 py-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05]">
       <div className="flex items-center justify-between mb-1.5">
         <span className="mono text-[9.5px] text-zinc-500 uppercase tracking-[0.15em] font-medium">Patrimoine · 20 ans</span>
         <span className="mono text-[11px] text-emerald-300 font-medium">+{(max / 1000).toFixed(0)}k €</span>
@@ -418,8 +534,8 @@ function MiniChart({ cf }: { cf: number }) {
             <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
           </linearGradient>
         </defs>
-        <path d={area} fill="url(#chart-fill)" />
-        <path d={d} fill="none" stroke="#34d399" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={area} fill="url(#chart-fill)" className={`chart-fill ${inView ? 'in-view' : ''}`} />
+        <path d={d} fill="none" stroke="#34d399" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={`chart-draw ${inView ? 'in-view' : ''}`} />
       </svg>
     </div>
   )
@@ -429,19 +545,11 @@ function MiniChart({ cf }: { cf: number }) {
    STATS STRIP
    ══════════════════════════════════════════════════════════════════════════ */
 function StatsStrip() {
-  const [start, setStart] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!ref.current) return
-    const obs = new IntersectionObserver(([e]) => e.isIntersecting && setStart(true), { threshold: 0.3 })
-    obs.observe(ref.current)
-    return () => obs.disconnect()
-  }, [])
-
-  const v1 = useCountUp(12547, 1800, start)
-  const v2 = useCountUp(34, 1500, start)
-  const v3 = useCountUp(49, 1500, start)
-  const v4 = useCountUp(98, 1500, start)
+  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.3 })
+  const v1 = useCountUp(12547, 1800, inView)
+  const v2 = useCountUp(34, 1500, inView)
+  const v3 = useCountUp(49, 1500, inView)
+  const v4 = useCountUp(98, 1500, inView)
 
   return (
     <section ref={ref} className="relative py-16 lg:py-20">
@@ -567,15 +675,36 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 }
 
 function BentoScoreDial() {
-  const score = 87
+  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.4 })
+  const score = useCountUp(87, 1800, inView)
+  const v1 = useCountUp(92, 1400, inView)
+  const v2 = useCountUp(88, 1400, inView)
+  const v3 = useCountUp(81, 1400, inView)
+  const v4 = useCountUp(86, 1400, inView)
+
   const circ = 2 * Math.PI * 70
   const offset = circ - (score / 100) * circ
+
+  const subs = [
+    { l: 'Rendement', v: v1 },
+    { l: 'Cashflow', v: v2 },
+    { l: 'Fiscalité', v: v3 },
+    { l: 'Marché', v: v4 },
+  ]
+
   return (
-    <div className="flex items-center gap-6 mt-8">
+    <div ref={ref} className="flex items-center gap-6 mt-8">
       <div className="relative w-40 h-40 flex-shrink-0">
         <svg viewBox="0 0 160 160" className="w-full h-full -rotate-90">
           <circle cx="80" cy="80" r="70" stroke="rgba(255,255,255,0.06)" strokeWidth="5" fill="none" />
-          <circle cx="80" cy="80" r="70" stroke="url(#dial-grad)" strokeWidth="5" fill="none" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} />
+          <circle
+            cx="80" cy="80" r="70"
+            stroke="url(#dial-grad)"
+            strokeWidth="5" fill="none" strokeLinecap="round"
+            strokeDasharray={circ}
+            strokeDashoffset={offset}
+            style={{ transition: 'stroke-dashoffset 1.8s cubic-bezier(0.16,1,0.3,1)' }}
+          />
           <defs>
             <linearGradient id="dial-grad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#6ee7b7" />
@@ -589,19 +718,17 @@ function BentoScoreDial() {
         </div>
       </div>
       <div className="space-y-2 flex-1">
-        {[
-          { l: 'Rendement', v: 92 },
-          { l: 'Cashflow', v: 88 },
-          { l: 'Fiscalité', v: 81 },
-          { l: 'Marché', v: 86 },
-        ].map((s) => (
+        {subs.map((s) => (
           <div key={s.l} className="space-y-1">
             <div className="flex justify-between text-[10.5px]">
               <span className="text-zinc-400">{s.l}</span>
               <span className="mono text-zinc-300 tabular">{s.v}</span>
             </div>
             <div className="h-[3px] rounded-full bg-white/[0.05] overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-emerald-400/80 to-emerald-300 rounded-full" style={{ width: `${s.v}%` }} />
+              <div
+                className="h-full bg-gradient-to-r from-emerald-400/80 to-emerald-300 rounded-full"
+                style={{ width: `${s.v}%`, transition: 'width 1.2s cubic-bezier(0.16,1,0.3,1)' }}
+              />
             </div>
           </div>
         ))}
@@ -713,14 +840,33 @@ function BentoScenarios() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   COMPARISON
+   COMPARISON (auto-animate position on view)
    ══════════════════════════════════════════════════════════════════════════ */
 function ComparisonSection() {
-  const [pos, setPos] = useState(50)
-  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState(5)
+  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.35 })
   const dragging = useRef(false)
+  const userControlled = useRef(false)
 
-  const onDown = () => { dragging.current = true }
+  // Animate from 5 to 50 on entry
+  useEffect(() => {
+    if (!inView || userControlled.current) return
+    const start = performance.now()
+    const from = 5
+    const to = 50
+    const dur = 1800
+    let raf: number
+    const step = (t: number) => {
+      const p = Math.min(1, (t - start) / dur)
+      const eased = 1 - Math.pow(1 - p, 3)
+      setPos(from + (to - from) * eased)
+      if (p < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [inView])
+
+  const onDown = () => { dragging.current = true; userControlled.current = true }
   const onMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!dragging.current || !ref.current) return
     const r = ref.current.getBoundingClientRect()
@@ -743,7 +889,9 @@ function ComparisonSection() {
     <section className="relative py-32 lg:py-40">
       <div className="max-w-6xl mx-auto px-6 lg:px-10">
         <div className="text-center max-w-2xl mx-auto mb-14 reveal">
-          <SectionLabel num="02">Avant / Après</SectionLabel>
+          <div className="inline-block">
+            <SectionLabel num="02">Avant / Après</SectionLabel>
+          </div>
           <h2 className="display text-[clamp(2.2rem,4.5vw,3.6rem)] gt-white mt-6">
             Du tableur infernal,<br />
             <span className="serif-italic gradient-text">à la décision claire.</span>
@@ -757,7 +905,7 @@ function ComparisonSection() {
           onTouchMove={onMove}
           className="relative aspect-[16/9] w-full max-w-5xl mx-auto rounded-2xl overflow-hidden border border-white/[0.08] glass-card cursor-ew-resize reveal reveal-d1 select-none"
         >
-          <ImmolyseScreenshot />
+          <ImmolyseScreenshot inView={inView} />
           <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
             <ExcelScreenshot />
           </div>
@@ -841,7 +989,11 @@ function ExcelScreenshot() {
   )
 }
 
-function ImmolyseScreenshot() {
+function ImmolyseScreenshot({ inView }: { inView: boolean }) {
+  const score = useCountUp(87, 1800, inView)
+  const circ = 2 * Math.PI * 40
+  const offset = circ - (score / 100) * circ
+
   return (
     <div className="absolute inset-0 bg-[#0a0a0b]">
       <div className="absolute inset-0 specks opacity-50" />
@@ -854,7 +1006,7 @@ function ImmolyseScreenshot() {
             <span className="text-[13px] font-medium text-white">Analyse · Lyon 2ᵉ</span>
           </div>
           <div className="flex gap-1.5">
-            <div className="px-2 py-0.5 mono text-[9.5px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded">SCORE 87</div>
+            <div className="px-2 py-0.5 mono text-[9.5px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded">SCORE {score}</div>
           </div>
         </div>
 
@@ -882,8 +1034,8 @@ function ImmolyseScreenshot() {
                 <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
               </linearGradient>
             </defs>
-            <path d="M 0 70 Q 50 60 100 40 T 200 8 L 200 80 L 0 80 Z" fill="url(#im-grad)" />
-            <path d="M 0 70 Q 50 60 100 40 T 200 8" fill="none" stroke="#34d399" strokeWidth="1.5" />
+            <path d="M 0 70 Q 50 60 100 40 T 200 8 L 200 80 L 0 80 Z" fill="url(#im-grad)" className={`chart-fill ${inView ? 'in-view' : ''}`} />
+            <path d="M 0 70 Q 50 60 100 40 T 200 8" fill="none" stroke="#34d399" strokeWidth="1.5" className={`chart-draw ${inView ? 'in-view' : ''}`} />
           </svg>
         </div>
 
@@ -891,9 +1043,17 @@ function ImmolyseScreenshot() {
           <div className="relative w-24 h-24">
             <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
               <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.05)" strokeWidth="4" fill="none" />
-              <circle cx="50" cy="50" r="40" stroke="#34d399" strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray={2 * Math.PI * 40} strokeDashoffset={2 * Math.PI * 40 * 0.13} />
+              <circle
+                cx="50" cy="50" r="40"
+                stroke="#34d399"
+                strokeWidth="4"
+                fill="none" strokeLinecap="round"
+                strokeDasharray={circ}
+                strokeDashoffset={offset}
+                style={{ transition: 'stroke-dashoffset 1.8s cubic-bezier(0.16,1,0.3,1)' }}
+              />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center display-lg text-[28px] tabular text-white">87</div>
+            <div className="absolute inset-0 flex items-center justify-center display-lg text-[28px] tabular text-white">{score}</div>
           </div>
           <div className="mono text-[9.5px] text-zinc-500 uppercase tracking-[0.18em] mt-2">Score IA</div>
         </div>
@@ -907,27 +1067,9 @@ function ImmolyseScreenshot() {
    ══════════════════════════════════════════════════════════════════════════ */
 function PersonasSection({ onCta }: { onCta: () => void }) {
   const personas = [
-    {
-      tag: 'Débutant',
-      title: 'Votre premier bien',
-      desc: 'On vous dit ce qui est rentable, ce qui ne l\'est pas, et pourquoi. Aucune connaissance fiscale requise.',
-      points: ['Score clair', 'Recommandation IA', 'Glossaire intégré'],
-      icon: '01',
-    },
-    {
-      tag: 'Multi-bien',
-      title: '3 biens ou plus',
-      desc: 'Comparez vos investissements, identifiez ceux qui sous-performent, optimisez votre fiscalité globale.',
-      points: ['Comparaison multi-biens', 'Optimisation fiscale', 'Bibliothèque centralisée'],
-      icon: '02',
-    },
-    {
-      tag: 'Pro',
-      title: 'CGP, agent, courtier',
-      desc: 'Présentez à vos clients des analyses complètes en quelques secondes, avec votre logo en PDF.',
-      points: ['Rapports white-label', 'Accès API', 'Multi-comptes équipe'],
-      icon: '03',
-    },
+    { tag: 'Débutant', title: 'Votre premier bien', desc: 'On vous dit ce qui est rentable, ce qui ne l\'est pas, et pourquoi. Aucune connaissance fiscale requise.', points: ['Score clair', 'Recommandation IA', 'Glossaire intégré'], icon: '01' },
+    { tag: 'Multi-bien', title: '3 biens ou plus', desc: 'Comparez vos investissements, identifiez ceux qui sous-performent, optimisez votre fiscalité globale.', points: ['Comparaison multi-biens', 'Optimisation fiscale', 'Bibliothèque centralisée'], icon: '02' },
+    { tag: 'Pro', title: 'CGP, agent, courtier', desc: 'Présentez à vos clients des analyses complètes en quelques secondes, avec votre logo en PDF.', points: ['Rapports white-label', 'Accès API', 'Multi-comptes équipe'], icon: '03' },
   ]
 
   return (
@@ -960,10 +1102,7 @@ function PersonasSection({ onCta }: { onCta: () => void }) {
                   </div>
                 ))}
               </div>
-              <button
-                onClick={onCta}
-                className="text-[12.5px] text-emerald-300 hover:text-emerald-200 font-medium inline-flex items-center gap-1.5 group"
-              >
+              <button onClick={onCta} className="text-[12.5px] text-emerald-300 hover:text-emerald-200 font-medium inline-flex items-center gap-1.5 group">
                 Essayer pour ce profil
                 <svg className="w-3 h-3 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -978,13 +1117,38 @@ function PersonasSection({ onCta }: { onCta: () => void }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   EXPLICATION
+   EXPLICATION — Sticky scroll style Linear
    ══════════════════════════════════════════════════════════════════════════ */
 function ExplicationSection() {
+  const [active, setActive] = useState(0)
+  const refs: RefObject<HTMLDivElement>[] = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)]
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const idx = parseInt(e.target.getAttribute('data-i') || '0', 10)
+            setActive(idx)
+          }
+        })
+      },
+      { rootMargin: '-45% 0px -45% 0px', threshold: 0 }
+    )
+    refs.forEach((r) => r.current && obs.observe(r.current))
+    return () => obs.disconnect()
+  }, [])
+
+  const steps = [
+    { num: '01', title: 'Analyser', accent: 'un bien.', description: 'Prix d\'achat, loyer estimé, ville. Immolyse calcule instantanément le rendement brut, net, et nette-nette avec des données de marché actualisées.', visual: <ZoomVisualAnalyse /> },
+    { num: '02', title: 'Comparer', accent: 'les régimes fiscaux.', description: 'L\'outil simule 10 régimes (LMNP, LMP, SCI IS/IR, micro-foncier, réel...) et recommande celui qui optimise votre cashflow net après impôt.', visual: <ZoomVisualFiscal /> },
+    { num: '03', title: 'Exporter', accent: 'en un clic.', description: 'Rapport de présentation bancaire en PDF, tableau d\'amortissement complet en Excel. Les documents que votre courtier attend, en 5 secondes.', visual: <ZoomVisualExport /> },
+  ]
+
   return (
     <section id="produit" className="relative py-32 lg:py-40">
       <div className="max-w-6xl mx-auto px-6 lg:px-10">
-        <div className="max-w-2xl mb-24 reveal">
+        <div className="max-w-2xl mb-16 reveal">
           <SectionLabel num="04">Comment ça marche</SectionLabel>
           <h2 className="display text-[clamp(2.2rem,4.5vw,3.6rem)] gt-white mt-6">
             Du bien à la décision,<br />
@@ -992,49 +1156,59 @@ function ExplicationSection() {
           </h2>
         </div>
 
-        <div className="space-y-28">
-          <ExpliBlock
-            num="01"
-            title="Analyser"
-            accent="un bien."
-            description="Prix d'achat, loyer estimé, ville. Immolyse calcule instantanément le rendement brut, net, et nette-nette avec des données de marché actualisées."
-            visual={<ZoomVisualAnalyse />}
-            reverse={false}
-          />
-          <ExpliBlock
-            num="02"
-            title="Comparer"
-            accent="les régimes fiscaux."
-            description="L'outil simule 10 régimes (LMNP, LMP, SCI IS/IR, micro-foncier, réel...) et recommande celui qui optimise votre cashflow net après impôt."
-            visual={<ZoomVisualFiscal />}
-            reverse={true}
-          />
-          <ExpliBlock
-            num="03"
-            title="Exporter"
-            accent="en un clic."
-            description="Rapport de présentation bancaire en PDF, tableau d'amortissement complet en Excel. Les documents que votre courtier attend, en 5 secondes."
-            visual={<ZoomVisualExport />}
-            reverse={false}
-          />
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 relative">
+          {/* LEFT — Scrolling steps */}
+          <div>
+            {steps.map((s, i) => (
+              <div
+                key={i}
+                ref={refs[i]}
+                data-i={i}
+                className="lg:min-h-[80vh] flex items-center py-10 lg:py-0"
+              >
+                <div className={`space-y-5 transition-all duration-700 ${active === i ? 'lg:opacity-100' : 'lg:opacity-30'}`}>
+                  {/* Step indicator */}
+                  <div className="flex items-center gap-3">
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-full border transition-all duration-500 ${
+                      active === i ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300' : 'bg-white/[0.03] border-white/10 text-zinc-500'
+                    }`}>
+                      <span className="mono text-[10px] font-medium">{s.num}</span>
+                    </div>
+                    <div className={`h-px flex-1 max-w-[80px] transition-all duration-500 ${active === i ? 'bg-emerald-500/40' : 'bg-white/10'}`} />
+                  </div>
+
+                  <h3 className="display text-[clamp(1.8rem,3.5vw,2.8rem)] gt-white">
+                    {s.title} <span className="serif-italic text-zinc-400">{s.accent}</span>
+                  </h3>
+                  <p className="text-[15px] text-zinc-400 leading-[1.7] max-w-md">{s.description}</p>
+
+                  {/* Mobile visual */}
+                  <div className="lg:hidden mt-8">{s.visual}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* RIGHT — Sticky visual that crossfades */}
+          <div className="hidden lg:block">
+            <div className="sticky top-32 h-[70vh] flex items-center">
+              <div className="relative w-full">
+                {steps.map((s, i) => (
+                  <div
+                    key={i}
+                    className={`transition-all duration-700 ${
+                      active === i ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 absolute inset-0 pointer-events-none'
+                    }`}
+                  >
+                    {s.visual}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
-  )
-}
-
-function ExpliBlock({ num, title, accent, description, visual, reverse }: { num: string; title: string; accent: string; description: string; visual: React.ReactNode; reverse: boolean }) {
-  return (
-    <div className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center reveal ${reverse ? 'lg:[&>*:first-child]:order-2' : ''}`}>
-      <div className="space-y-6">
-        <div className="mono text-[11px] text-emerald-400/80 tracking-[0.22em]">{num} ——</div>
-        <h3 className="display text-[clamp(1.8rem,3.5vw,2.8rem)] gt-white">
-          {title} <span className="serif-italic text-zinc-400">{accent}</span>
-        </h3>
-        <p className="text-[15px] text-zinc-500 leading-[1.7] max-w-md">{description}</p>
-      </div>
-      <div className="relative">{visual}</div>
-    </div>
   )
 }
 
@@ -1045,7 +1219,10 @@ function ZoomVisualAnalyse() {
       <div className="relative glass-card rounded-xl p-5 space-y-3.5 shadow-2xl">
         <div className="flex items-center justify-between">
           <div className="mono text-[10px] text-zinc-500 uppercase tracking-[0.18em]">Analyse express</div>
-          <div className="mono text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/15 rounded-full px-2 py-0.5">en direct</div>
+          <div className="mono text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/15 rounded-full px-2 py-0.5 flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full bg-emerald-400 live-tick" />
+            en direct
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           {[
@@ -1095,12 +1272,13 @@ function ZoomVisualFiscal() {
           <div className="mono text-[10px] text-indigo-300 bg-indigo-500/10 border border-indigo-500/15 rounded-full px-2 py-0.5">10 régimes</div>
         </div>
         <div className="space-y-1.5">
-          {rows.map((r) => (
+          {rows.map((r, i) => (
             <div
               key={r.name}
-              className={`flex items-center justify-between px-3 py-2 rounded-lg text-[12.5px] ${
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-[12.5px] transition-all duration-500 ${
                 r.best ? 'bg-emerald-500/[0.08] border border-emerald-500/25' : 'bg-white/[0.02] border border-white/[0.04]'
               }`}
+              style={{ animation: `fade-in 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 90}ms both` }}
             >
               <span className="flex items-center gap-2 text-zinc-200">
                 {r.best && <span className="mono text-[8.5px] text-emerald-300 bg-emerald-500/15 px-1.5 py-0.5 rounded">OPTI</span>}
@@ -1131,8 +1309,12 @@ function ZoomVisualExport() {
             { name: 'rapport-banque.pdf', size: '420 Ko', color: 'red' },
             { name: 'amortissement.xlsx', size: '186 Ko', color: 'emerald' },
             { name: 'comparatif-fiscal.pdf', size: '312 Ko', color: 'red' },
-          ].map((f) => (
-            <div key={f.name} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-colors">
+          ].map((f, i) => (
+            <div
+              key={f.name}
+              className="flex items-center gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-colors"
+              style={{ animation: `fade-in 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 100}ms both` }}
+            >
               <div className={`w-8 h-8 rounded-md flex items-center justify-center ${f.color === 'red' ? 'bg-red-500/15 text-red-300' : 'bg-emerald-500/15 text-emerald-300'}`}>
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m-6-8h6M5 7v13a1 1 0 001 1h12a1 1 0 001-1V8.414a1 1 0 00-.293-.707l-4.414-4.414A1 1 0 0013.586 3H6a1 1 0 00-1 1v3z" />
@@ -1189,10 +1371,7 @@ function TestimonialsSection() {
               </p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-medium text-white border border-white/10"
-                    style={{ background: `linear-gradient(135deg, ${t.color}, ${t.color}99)` }}
-                  >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-medium text-white border border-white/10" style={{ background: `linear-gradient(135deg, ${t.color}, ${t.color}99)` }}>
                     {t.avatar}
                   </div>
                   <div>
@@ -1200,9 +1379,7 @@ function TestimonialsSection() {
                     <div className="mono text-[10px] text-zinc-500 tracking-wider">{t.role}</div>
                   </div>
                 </div>
-                <div className="px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 mono text-[10px] text-emerald-300">
-                  {t.result}
-                </div>
+                <div className="px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 mono text-[10px] text-emerald-300">{t.result}</div>
               </div>
             </div>
           ))}
@@ -1231,14 +1408,11 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
             <SectionLabel num="06">Tarifs</SectionLabel>
           </div>
           <h2 className="display text-[clamp(2.2rem,4.5vw,3.6rem)] gt-white mt-6">
-            Simple. <span className="serif-italic text-zinc-400">Honnête.</span>
-            <br />Sans surprise.
+            Simple. <span className="serif-italic text-zinc-400">Honnête.</span><br />
+            Sans surprise.
           </h2>
-
           <div className="inline-flex items-center gap-1 p-1 mt-8 rounded-full bg-white/[0.04] border border-white/[0.07]">
-            <button onClick={() => setAnnual(false)} className={`px-4 py-1.5 rounded-full text-[12.5px] font-medium transition-all ${!annual ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-white'}`}>
-              Mensuel
-            </button>
+            <button onClick={() => setAnnual(false)} className={`px-4 py-1.5 rounded-full text-[12.5px] font-medium transition-all ${!annual ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-white'}`}>Mensuel</button>
             <button onClick={() => setAnnual(true)} className={`px-4 py-1.5 rounded-full text-[12.5px] font-medium transition-all flex items-center gap-2 ${annual ? 'bg-white text-zinc-950' : 'text-zinc-400 hover:text-white'}`}>
               Annuel
               <span className={`mono text-[9.5px] px-1.5 py-0.5 rounded ${annual ? 'bg-emerald-500/15 text-emerald-700' : 'bg-emerald-500/15 text-emerald-300'}`}>−35%</span>
@@ -1250,25 +1424,16 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
           {plans.map((plan) => {
             const price = annual ? plan.price.annual : plan.price.monthly
             return (
-              <div
-                key={plan.name}
-                className={`relative rounded-xl p-8 transition-all duration-300 ${
-                  plan.featured
-                    ? 'bg-gradient-to-b from-emerald-500/[0.06] to-transparent border border-emerald-500/30 shadow-[0_0_60px_-15px_rgba(16,185,129,0.25)]'
-                    : 'bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.12]'
-                }`}
-              >
+              <div key={plan.name} className={`relative rounded-xl p-8 transition-all duration-300 ${plan.featured ? 'bg-gradient-to-b from-emerald-500/[0.06] to-transparent border border-emerald-500/30 shadow-[0_0_60px_-15px_rgba(16,185,129,0.25)]' : 'bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.12]'}`}>
                 {plan.featured && (
                   <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500 text-zinc-950 mono text-[10px] font-medium uppercase tracking-wider">
                     Le plus choisi
                   </div>
                 )}
-
                 <div className="mb-6">
                   <h3 className="text-[15px] font-medium text-white mb-1">{plan.name}</h3>
                   <p className="text-[12.5px] text-zinc-500">{plan.desc}</p>
                 </div>
-
                 <div className="mb-6">
                   {price === 0 ? (
                     <div className="display-lg text-[44px] text-white">Gratuit</div>
@@ -1278,22 +1443,11 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
                       <span className="serif-italic text-zinc-500 text-sm">€/mois</span>
                     </div>
                   )}
-                  {annual && price > 0 && (
-                    <p className="mono text-[11px] text-zinc-600 mt-1.5">Facturé {price * 12}€/an</p>
-                  )}
+                  {annual && price > 0 && <p className="mono text-[11px] text-zinc-600 mt-1.5">Facturé {price * 12}€/an</p>}
                 </div>
-
-                <button
-                  onClick={onSignup}
-                  className={`w-full text-[13.5px] font-medium py-2.5 rounded-lg transition-all duration-200 mb-6 ${
-                    plan.featured
-                      ? 'bg-white text-zinc-950 hover:bg-zinc-100 hover:shadow-[0_0_30px_-4px_rgba(255,255,255,0.4)]'
-                      : 'bg-white/[0.04] text-white border border-white/[0.08] hover:bg-white/[0.08]'
-                  }`}
-                >
+                <button onClick={onSignup} className={`w-full text-[13.5px] font-medium py-2.5 rounded-lg transition-all duration-200 mb-6 ${plan.featured ? 'bg-white text-zinc-950 hover:bg-zinc-100 hover:shadow-[0_0_30px_-4px_rgba(255,255,255,0.4)]' : 'bg-white/[0.04] text-white border border-white/[0.08] hover:bg-white/[0.08]'}`}>
                   {plan.cta}
                 </button>
-
                 <div className="space-y-2.5">
                   {plan.features.map((f) => (
                     <div key={f} className="flex items-start gap-2.5 text-[13px] text-zinc-300">
@@ -1308,7 +1462,6 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
             )
           })}
         </div>
-
         <p className="text-center mono text-[11px] text-zinc-600 mt-10 tracking-wider">
           Paiement Stripe sécurisé · Résiliable à tout moment · TVA incluse
         </p>
@@ -1327,10 +1480,9 @@ function FaqSection() {
     { q: 'D\'où viennent les données de marché ?', a: 'Les prix au m² et rendements moyens sont issus de sources publiques (DVF, MeilleursAgents, Notaires.fr, INSEE) et mises à jour mensuellement. 18 villes et 44 quartiers sont couverts.' },
     { q: 'Mes données sont-elles confidentielles ?', a: 'Oui. Toutes les simulations sont chiffrées (AES-256), stockées en Europe (Supabase Frankfurt), et ne sont jamais partagées avec des tiers. Conforme RGPD.' },
     { q: 'L\'analyse tient-elle compte de ma situation personnelle ?', a: 'Oui : tranche marginale d\'imposition, situation matrimoniale, biens existants, autres revenus locatifs. Plus les informations sont précises, plus la recommandation est juste.' },
-    { q: 'Puis-je résilier à tout moment ?', a: 'Oui, en un clic depuis votre compte, sans engagement, sans pénalité, sans appel téléphonique forcé. Remboursement au prorata.' },
-    { q: 'Est-ce que ça remplace mon comptable ?', a: 'Non — c\'est un outil d\'analyse pour décider vite. Pour la déclaration fiscale et l\'optimisation pointue, un expert reste recommandé. Immolyse vous prépare un dossier propre à lui soumettre.' },
+    { q: 'Puis-je résilier à tout moment ?', a: 'Oui, en un clic depuis votre compte, sans engagement, sans pénalité. Remboursement au prorata.' },
+    { q: 'Est-ce que ça remplace mon comptable ?', a: 'Non — c\'est un outil d\'analyse pour décider vite. Pour la déclaration fiscale, un expert reste recommandé. Immolyse vous prépare un dossier propre à lui soumettre.' },
   ]
-
   return (
     <section className="relative py-32 lg:py-40">
       <div className="max-w-3xl mx-auto px-6 lg:px-10">
@@ -1342,7 +1494,6 @@ function FaqSection() {
             Tout ce qu'on vous <span className="serif-italic text-zinc-400">demande.</span>
           </h2>
         </div>
-
         <div className="space-y-2 reveal reveal-d1">
           {faqs.map((f, i) => (
             <div key={i} className={`rounded-xl border border-white/[0.05] hover:border-white/[0.12] transition-all bg-white/[0.015] ${open === i ? 'acc-open bg-white/[0.03] border-white/[0.1]' : ''}`}>
@@ -1366,7 +1517,7 @@ function FaqSection() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   CTA FINAL
+   CTA FINAL — orbe pulsant
    ══════════════════════════════════════════════════════════════════════════ */
 function CtaFinalSection({ onPrimary }: { onPrimary: () => void }) {
   return (
@@ -1375,6 +1526,13 @@ function CtaFinalSection({ onPrimary }: { onPrimary: () => void }) {
         <div className="glow-em anim-breathe" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
         <div className="specks opacity-50" />
         <div className="noise" />
+
+        {/* Orbe rings */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="orb-ring orb-ring-1 w-[280px] h-[280px] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 absolute" />
+          <div className="orb-ring orb-ring-2 w-[440px] h-[440px] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 absolute" />
+          <div className="orb-ring orb-ring-3 w-[620px] h-[620px] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 absolute" />
+        </div>
       </div>
 
       <div className="relative max-w-3xl mx-auto px-6 lg:px-10 text-center space-y-9 reveal">
@@ -1386,10 +1544,7 @@ function CtaFinalSection({ onPrimary }: { onPrimary: () => void }) {
           Analysez un bien en 30 secondes. Gratuit, sans inscription.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-          <button
-            onClick={onPrimary}
-            className="group relative inline-flex items-center gap-2 bg-white text-zinc-950 text-[15px] font-medium px-6 py-3.5 rounded-lg transition-all duration-300 hover:shadow-[0_0_56px_-4px_rgba(255,255,255,0.5)] hover:-translate-y-0.5"
-          >
+          <button onClick={onPrimary} className="group relative inline-flex items-center gap-2 bg-white text-zinc-950 text-[15px] font-medium px-6 py-3.5 rounded-lg transition-all duration-300 hover:shadow-[0_0_56px_-4px_rgba(255,255,255,0.5)] hover:-translate-y-0.5">
             <span className="absolute -inset-px rounded-lg bg-gradient-to-r from-emerald-400/0 via-emerald-400/40 to-emerald-400/0 opacity-0 group-hover:opacity-100 blur-md transition-opacity" />
             <span className="relative">Commencer maintenant</span>
             <svg className="relative w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>

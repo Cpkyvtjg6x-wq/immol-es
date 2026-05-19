@@ -302,7 +302,106 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.18); }
 .acc-content > div { overflow: hidden; }
 .acc-open .acc-content { grid-template-rows: 1fr; }
 
-/* ─── Animations ─────────────────────────────────────────────── */
+/* ─── Particles ──────────────────────────────────────────────── */
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(110,231,183,0.6);
+  filter: blur(0.4px);
+  pointer-events: none;
+  box-shadow: 0 0 8px rgba(110,231,183,0.5);
+}
+@keyframes drift-1 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.7; }
+  100% { transform: translate(180px, -260px) scale(0.6); opacity: 0; }
+}
+@keyframes drift-2 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+  10%  { opacity: 0.5; }
+  90%  { opacity: 0.5; }
+  100% { transform: translate(-220px, -320px) scale(0.6); opacity: 0; }
+}
+@keyframes drift-3 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.6; }
+  100% { transform: translate(140px, -380px) scale(0.5); opacity: 0; }
+}
+.drift-1 { animation: drift-1 11s linear infinite; }
+.drift-2 { animation: drift-2 14s linear infinite; animation-delay: 3s; }
+.drift-3 { animation: drift-3 17s linear infinite; animation-delay: 6s; }
+
+/* ─── Scroll progress bar ────────────────────────────────────── */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #10b981 30%, #6ee7b7 70%, transparent);
+  z-index: 100;
+  transition: width 80ms linear;
+  box-shadow: 0 0 10px rgba(16,185,129,0.4);
+}
+
+/* ─── Word reveal on hero headline ───────────────────────────── */
+.word-reveal {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: word-reveal 0.85s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes word-reveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Chart draw ─────────────────────────────────────────────── */
+.chart-draw {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  transition: stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1);
+}
+.chart-draw.in-view { stroke-dashoffset: 0; }
+
+.chart-fill {
+  opacity: 0;
+  transition: opacity 1.4s ease 0.6s;
+}
+.chart-fill.in-view { opacity: 1; }
+
+/* ─── Bar grow ───────────────────────────────────────────────── */
+.bar-grow {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.2s cubic-bezier(0.16,1,0.3,1);
+}
+.bar-grow.in-view { transform: scaleX(1); }
+
+/* ─── Live dot subtle pulse (different from animate-ping) ────── */
+@keyframes live-tick {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+.live-tick { animation: live-tick 1.6s ease-in-out infinite; }
+
+/* ─── CTA orbe rings ─────────────────────────────────────────── */
+.orb-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(16,185,129,0.18);
+  pointer-events: none;
+}
+@keyframes ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50%      { transform: scale(1.08); opacity: 0.7; }
+}
+.orb-ring-1 { animation: ring-pulse 6s ease-in-out infinite; }
+.orb-ring-2 { animation: ring-pulse 8s ease-in-out infinite 1s; }
+.orb-ring-3 { animation: ring-pulse 10s ease-in-out infinite 2s; }
+
+/* ─── Animations (existing) ──────────────────────────────────── */
 @keyframes float-soft {
   0%,100% { transform: translateY(0); }
   50%     { transform: translateY(-6px); }

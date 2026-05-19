@@ -40,10 +40,6 @@ async function generateBankPDF(
   const { jsPDF } = jsPDFModule
 
   const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-  const scoreNum = score.global
-  const scoreColor = scoreNum >= 65 ? '#10b981' : scoreNum >= 40 ? '#f59e0b' : '#ef4444'
-  const scoreBg = scoreNum >= 65 ? '#f0fdf4' : scoreNum >= 40 ? '#fffbeb' : '#fef2f2'
-  const scoreBorder = scoreNum >= 65 ? '#6ee7b7' : scoreNum >= 40 ? '#fcd34d' : '#fca5a5'
 
   const enabledRegimes = fiscal.regimes.filter(r => !r.disabled)
   const bestRegime = enabledRegimes.length > 0
@@ -56,7 +52,7 @@ async function generateBankPDF(
 
   const PAGE_W = 794
   const PAGE_H = 1123
-  const PS = `style="width:${PAGE_W}px;min-height:${PAGE_H}px;padding:44px 52px;font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0f172a;background:#fff;box-sizing:border-box;overflow:hidden;position:relative"`
+  const PS = `style="width:${PAGE_W}px;height:${PAGE_H}px;padding:44px 52px;font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0f172a;background:#fff;box-sizing:border-box;overflow:hidden;position:relative"`
 
   // ── Composants HTML réutilisables ──────────────────────────────────────────
   const HEADER = (subtitle: string) => `
@@ -101,53 +97,90 @@ async function generateBankPDF(
   const hasCompany = profile.modeAcquisition !== 'nom-propre'
   const TOTAL_PAGES = hasCompany ? 8 : 7
 
+  // Couleurs cashflow (calculées ici pour usage dans la couverture)
+  const coverCfColor = result.cashflowMensuel >= 100 ? '#34d399' : result.cashflowMensuel >= 0 ? '#fbbf24' : '#f87171'
+
   // ════════════════════════════════════════════════════════════════════════════
   // PAGE DE COUVERTURE
   // ════════════════════════════════════════════════════════════════════════════
   const coverPage = `<div ${PS}>
-    <!-- Background décoratif -->
-    <div style="position:absolute;top:0;left:0;right:0;height:320px;background:linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#134e4a 100%)"></div>
+    <!-- Background décoratif (zone sombre en haut) -->
+    <div style="position:absolute;top:0;left:0;right:0;height:340px;background:#0f172a;border-bottom:3px solid #10b981"></div>
 
-    <!-- Logo -->
-    <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;margin-bottom:60px">
+    <!-- Logo + date -->
+    <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px">
       <div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px">IMMO<span style="color:#10b981">RA</span></div>
-      <div style="font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase">Dossier de financement</div>
+      <div style="text-align:right;font-size:9px;color:rgba(255,255,255,.45);line-height:1.8">
+        <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.7)">Dossier de financement immobilier</div>
+        <div>Confidentiel · Généré le ${today}</div>
+      </div>
     </div>
 
     <!-- Titre principal -->
-    <div style="position:relative;z-index:1;margin-bottom:40px">
-      <div style="font-size:11px;font-weight:600;color:#10b981;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px">Demande de financement immobilier locatif</div>
-      <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.15;margin-bottom:8px">${params.ville || 'Investissement locatif'}</div>
-      <div style="font-size:15px;color:rgba(255,255,255,.65)">${params.surface ? params.surface + ' m²' : ''} ${params.typeBien ? '· ' + params.typeBien : ''} ${params.dpe ? '· DPE ' + params.dpe : ''}</div>
-    </div>
-
-    <!-- Score hero -->
-    <div style="position:relative;z-index:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:20px 28px;display:inline-flex;align-items:center;gap:24px;margin-bottom:220px">
-      <div>
-        <div style="font-size:52px;font-weight:800;color:${scoreColor};line-height:1">${scoreNum}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">/100 score IMMORA</div>
-      </div>
-      <div style="width:1px;height:52px;background:rgba(255,255,255,.1)"></div>
-      <div>
-        <div style="font-size:16px;font-weight:700;color:#fff">${score.label}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:4px;max-width:260px">${score.summary}</div>
+    <div style="position:relative;z-index:1;margin-bottom:28px">
+      <div style="font-size:10px;font-weight:600;color:#10b981;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px">Demande de financement immobilier locatif</div>
+      <div style="font-size:34px;font-weight:800;color:#fff;line-height:1.12;margin-bottom:6px">${params.ville || 'Investissement locatif'}</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.55);font-weight:400">
+        ${params.surface ? params.surface + ' m²' : ''} ${params.typeBien ? '· ' + params.typeBien : ''} ${params.dpe ? '· DPE ' + params.dpe : ''} ${params.etat === 'neuf' ? '· Neuf' : '· Ancien'}
       </div>
     </div>
 
-    <!-- Infos emprunteur + structure -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <!-- KPIs financiers clés (sur fond sombre) -->
+    <div style="position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:50px">
+      <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:14px 16px">
+        <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.45);margin-bottom:6px">Montant emprunté</div>
+        <div style="font-size:20px;font-weight:800;color:#fff;line-height:1">${fE(result.montantEmprunte)}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:4px">${params.duree} ans · ${fP(params.taux)} · assur. ${fP(params.assuranceTaux)}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:14px 16px">
+        <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.45);margin-bottom:6px">Mensualité totale</div>
+        <div style="font-size:20px;font-weight:800;color:#fff;line-height:1">${fE(result.mensualiteTotale)}<span style="font-size:12px;font-weight:500">/mois</span></div>
+        <div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:4px">Capital + intérêts + assurance</div>
+      </div>
+      <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:14px 16px">
+        <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.45);margin-bottom:6px">Cashflow net mensuel</div>
+        <div style="font-size:20px;font-weight:800;color:${coverCfColor};line-height:1">${(result.cashflowMensuel >= 0 ? '+' : '') + fE(result.cashflowMensuel)}<span style="font-size:12px;font-weight:500">/mois</span></div>
+        <div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:4px">Loyer ${fE(result.loyer)} · Rend. brut ${fP(result.rendBrut)}</div>
+      </div>
+    </div>
+
+    <!-- Infos emprunteur + structure (sur fond blanc) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px 22px">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:10px">Emprunteur</div>
-        <div style="font-size:16px;font-weight:800;color:#0f172a;margin-bottom:4px">${profile.nomPrenom}</div>
-        <div style="font-size:11px;color:#475569">${typeContratLabel(profile.typeContrat)} · ${profile.anciennetePoste} an${profile.anciennetePoste > 1 ? 's' : ''} d'ancienneté</div>
-        <div style="font-size:11px;color:#475569;margin-top:2px">${situationFamLabel(profile.situationFamiliale)} · ${profile.nbParts} part${profile.nbParts > 1 ? 's' : ''} fiscale${profile.nbParts > 1 ? 's' : ''}</div>
-        <div style="font-size:11px;color:#475569;margin-top:2px">${profile.profession}</div>
+        <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:10px">Emprunteur</div>
+        <div style="font-size:17px;font-weight:800;color:#0f172a;margin-bottom:5px">${profile.nomPrenom || '—'}</div>
+        <div style="font-size:11px;color:#475569;margin-bottom:2px">${typeContratLabel(profile.typeContrat)} · ${profile.anciennetePoste} an${profile.anciennetePoste > 1 ? 's' : ''} d'ancienneté</div>
+        <div style="font-size:11px;color:#475569;margin-bottom:2px">${situationFamLabel(profile.situationFamiliale)} · ${profile.nbParts} part${profile.nbParts > 1 ? 's' : ''} fiscale${profile.nbParts > 1 ? 's' : ''}</div>
+        <div style="font-size:11px;color:#64748b">${profile.profession || '—'}</div>
       </div>
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px 22px">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:10px">Structure d'acquisition</div>
+        <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:10px">Structure d'acquisition</div>
         <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px">${structureLabel(profile.modeAcquisition)}</div>
-        ${profile.nomSociete ? `<div style="font-size:11px;color:#475569">${profile.nomSociete}${profile.siren ? ' · SIREN ' + profile.siren : ''}</div>` : ''}
-        <div style="margin-top:8px;font-size:10px;color:#10b981;font-weight:600">✦ Financement : ${fE(result.montantEmprunte)} sur ${params.duree} ans à ${fP(params.taux)}</div>
+        ${profile.nomSociete ? `<div style="font-size:11px;color:#475569;margin-bottom:2px">${profile.nomSociete}${profile.siren ? ' · SIREN ' + profile.siren : ''}</div>` : ''}
+        <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+          <div style="width:6px;height:6px;background:#10b981;border-radius:50%;flex-shrink:0"></div>
+          <div style="font-size:10px;color:#10b981;font-weight:600">${fE(result.montantEmprunte)} · ${params.duree} ans · ${fP(params.taux)}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bande de bas de page avec infos clés -->
+    <div style="background:#0f172a;border-radius:10px;padding:14px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <div style="text-align:center">
+        <div style="font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:4px">Prix de revient</div>
+        <div style="font-size:13px;font-weight:700;color:#fff">${fE(result.prixRevient)}</div>
+      </div>
+      <div style="text-align:center;border-left:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:4px">Apport</div>
+        <div style="font-size:13px;font-weight:700;color:#fff">${fE(params.apport)}</div>
+      </div>
+      <div style="text-align:center;border-left:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:4px">Rend. net</div>
+        <div style="font-size:13px;font-weight:700;color:#10b981">${fP(result.rendNet)}</div>
+      </div>
+      <div style="text-align:center;border-left:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:4px">TRI ${params.horizonRevente} ans</div>
+        <div style="font-size:13px;font-weight:700;color:#10b981">${fP(result.tri)}</div>
       </div>
     </div>
 
@@ -317,7 +350,7 @@ async function generateBankPDF(
     </div>
 
     ${SECTION('Synthèse de l\'analyste')}
-    <div style="background:${scoreBg};border:1px solid ${scoreBorder};border-radius:8px;padding:14px 18px;font-size:10.5px;color:#1e293b;line-height:1.65">
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px 18px;font-size:10.5px;color:#1e293b;line-height:1.65">
       ${ratios.recommandationBanquier}
     </div>
 
@@ -550,14 +583,15 @@ async function generateBankPDF(
     container.innerHTML = pages[i]
     await new Promise(r => setTimeout(r, 80))
     const canvas = await html2canvas(container.firstElementChild as HTMLElement, {
-      scale: 2,
+      scale: 3,
       useCORS: true,
       logging: false,
       width: PAGE_W,
       height: PAGE_H,
+      backgroundColor: '#ffffff',
     })
     if (i > 0) pdf.addPage([PAGE_W, PAGE_H], 'portrait')
-    pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, PAGE_W, PAGE_H)
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, PAGE_W, PAGE_H)
   }
 
   document.body.removeChild(container)

@@ -50,15 +50,15 @@ export function calculateBankRatios(
       : 0
 
   // ── Taux d'endettement APRÈS projet ────────────────────────────────────────
-  // La banque ajoute la mensualité du nouveau crédit et intègre les futurs loyers
+  // Revenus HCSF : salaires + 70 % autres loyers existants + 70 % nouveau loyer
   const revenusAvecNouveauxLoyers =
     profile.revenusNetsProFoyer + autresLoyersIntegres + loyerIntegreBanque
-  // Déduit l'ancien loyer si l'investisseur était locataire (sinon il double-compte)
-  // Convention : si le saut de charges est positif, l'ancien loyer disparaît
+  // Charges HCSF : loyer actuel de la RP (locataire) OU mensualité RP (propriétaire)
+  // + autres crédits en cours + nouvelle mensualité d'investissement
+  // Le loyer actuel est TOUJOURS compté car la banque ne suppose pas que l'investisseur
+  // quitte sa résidence principale pour se logement dans le bien locatif.
   const chargesApresProjet =
-    profile.autresCreditsMensualites + mensualite
-    // Note : on retire le loyer actuel car il est remplacé par la mensualité
-    // sauf si l'investisseur conserve sa RP (propriétaire) — dans ce cas on garde les deux
+    profile.loyerActuel + profile.autresCreditsMensualites + mensualite
   const tauxEndettementApres =
     revenusAvecNouveauxLoyers > 0
       ? Math.round((chargesApresProjet / revenusAvecNouveauxLoyers) * 1000) / 10
@@ -69,23 +69,26 @@ export function calculateBankRatios(
     mensualite > 0 ? Math.round((loyer / mensualite) * 1000) / 10 : 0
 
   // ── Reste à vivre ──────────────────────────────────────────────────────────
-  // Revenus nets – toutes charges mensuelles (logement + crédits + effort épargne projet)
-  const effortEpargne = Math.max(0, -result.cashflowMensuel) // si CF négatif → effort mensuel
+  // Revenus nets du foyer – logement actuel – autres crédits + cashflow net du projet
+  // cashflowMensuel = loyer - mensualite - charges/12 (peut être positif ou négatif)
+  // Si CF négatif, le projet coûte de l'argent chaque mois → réduit le reste à vivre
+  // Si CF positif, le projet génère un revenu net → augmente le reste à vivre
   const resteAVivre =
     profile.revenusNetsProFoyer
     + (profile.autresRevenusLocatifs ?? 0)
+    - profile.loyerActuel
     - profile.autresCreditsMensualites
-    - mensualite
-    - effortEpargne
-    + loyer // les loyers encaissés compensent l'effort
+    + result.cashflowMensuel
 
   // Cible empirique : 800 € personne seule, +400 € par part fiscale supplémentaire
   const resteAVivreCible = 800 + Math.max(0, profile.nbParts - 1) * 400
 
   // ── Saut de charges mensuel ────────────────────────────────────────────────
-  // Delta entre la situation mensuelle actuelle et après projet
-  // Positif = coût supplémentaire net pour l'emprunteur
-  const sautCharges = Math.round(mensualite - loyer - profile.loyerActuel)
+  // Effort financier NET du projet pour l'emprunteur (définition bancaire standard) :
+  // mensualité du nouveau crédit – loyer futur intégré à 70 % (méthode HCSF)
+  // Si positif : le projet coûte plus qu'il ne rapporte (effort de l'emprunteur)
+  // Si négatif : le projet s'autofinance et dégage un surplus
+  const sautCharges = Math.round(mensualite - loyerIntegreBanque)
 
   // ══════════════════════════════════════════════════════════════════════════
   // STRESS TESTS

@@ -491,17 +491,17 @@ async function generatePDF(
     for (let i = 0; i < allPages.length; i++) {
       if (i > 0) doc.addPage()
       const canvas = await html2canvas(allPages[i] as HTMLElement, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
         width: 794,
         windowWidth: 794,
       })
-      const imgData = canvas.toDataURL('image/jpeg', 0.95)
+      const imgData = canvas.toDataURL('image/png')
       const ratio = canvas.height / canvas.width
       const pdfH = Math.min(297, Math.round(210 * ratio * 10) / 10)
-      doc.addImage(imgData, 'JPEG', 0, 0, 210, pdfH)
+      doc.addImage(imgData, 'PNG', 0, 0, 210, pdfH)
     }
 
     const safeName = (simName || 'immolyse').replace(/[^a-z0-9]/gi, '_')

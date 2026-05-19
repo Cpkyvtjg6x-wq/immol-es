@@ -10,7 +10,7 @@ import { formatCurrency } from '@/lib/utils'
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, isPro, tier } = useAuth()
   const { simulations } = useSimulations(user?.id ?? null)
 
   const firstName =
@@ -101,14 +101,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
 
-        {/* Plan badge — only for logged-in users */}
+        {/* Plan badge — tier réel */}
         {user && (
           <div className="px-3 py-2.5 border-b border-white/[0.05] shrink-0">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[11px] font-semibold text-emerald-400">Pro</span>
-              <span className="ml-auto text-[10px] font-bold text-emerald-600">Actif</span>
-            </div>
+            {isPro ? (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="text-[11px] font-semibold text-emerald-400">
+                  {tier === 'business' ? 'Agence' : 'Pro'}
+                </span>
+                <span className="ml-auto text-[10px] font-bold text-emerald-600">Actif</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => router.push('/#pricing')}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:border-emerald-500/30 transition-all group"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
+                <span className="text-[11px] font-semibold text-zinc-500 group-hover:text-zinc-300">Gratuit</span>
+                <span className="ml-auto text-[10px] font-bold text-emerald-500 group-hover:text-emerald-400">→ Pro</span>
+              </button>
+            )}
           </div>
         )}
 

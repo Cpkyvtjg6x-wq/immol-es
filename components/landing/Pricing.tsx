@@ -5,25 +5,26 @@ import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 const plans = [
   {
     id: 'free',
     name: 'Gratuit',
     price: { monthly: 0, annual: 0 },
+    priceId: { monthly: null, annual: null },
     description: 'Pour découvrir et tester',
     badge: null,
     features: [
-      'Analyse express illimitée',
-      'Score d\'opportunité basique',
+      'Calculateur complet illimité',
+      'Score d\'opportunité',
       '3 simulations sauvegardées',
-      'Export PDF (filigrane)',
       'Données marché basiques',
     ],
     missing: [
-      'Fiscalité avancée',
+      'Export PDF & Excel pro',
+      'Dossier bancaire',
       'Analyse IA',
-      'Export Excel',
       'Comparaison multi-biens',
     ],
     cta: 'Commencer gratuitement',
@@ -33,17 +34,21 @@ const plans = [
     id: 'pro',
     name: 'Pro',
     price: { monthly: 29, annual: 19 },
+    priceId: {
+      monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY ?? null,
+      annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL ?? null,
+    },
     description: 'Pour l\'investisseur sérieux',
     badge: 'Populaire',
     features: [
       'Tout le plan Gratuit',
-      'Fiscalité : 10 régimes analysés',
-      'Analyse IA (GPT-4) incluse',
-      'Export PDF & Excel pro',
       'Simulations illimitées',
+      'Export PDF & Excel pro',
+      'Dossier bancaire complet',
+      'Analyse IA (GPT-4) incluse',
       'Comparaison multi-biens',
+      'Fiscalité : 10 régimes analysés',
       'Données marché complètes',
-      'Support prioritaire',
     ],
     missing: [],
     cta: 'Essai 14 jours gratuit',
@@ -53,6 +58,10 @@ const plans = [
     id: 'agency',
     name: 'Agence',
     price: { monthly: 79, annual: 59 },
+    priceId: {
+      monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY ?? null,
+      annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL ?? null,
+    },
     description: 'Pour les professionnels',
     badge: null,
     features: [
@@ -62,7 +71,7 @@ const plans = [
       'API access',
       'Exports en masse',
       'Onboarding dédié',
-      'SLA 99.9%',
+      'SLA 99.9 %',
     ],
     missing: [],
     cta: 'Contacter l\'équipe',
@@ -72,7 +81,56 @@ const plans = [
 
 export function Pricing() {
   const [annual, setAnnual] = useState(true)
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const router = useRouter()
+
+  async function handleCta(plan: typeof plans[number]) {
+    if (plan.id === 'free') {
+      router.push('/auth/signup')
+      return
+    }
+    if (plan.id === 'agency') {
+      router.push('/contact')
+      return
+    }
+
+    const priceId = annual ? plan.priceId.annual : plan.priceId.monthly
+
+    // Vérifier si l'utilisateur est connecté
+    const supabase = createBrowserSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      // Pas connecté → inscription puis checkout
+      router.push(`/auth/signup?redirect=checkout&plan=${plan.id}`)
+      return
+    }
+
+    if (!priceId) {
+      // Prix Stripe non configuré — fallback vers contact
+      router.push('/contact')
+      return
+    }
+
+    setLoadingPlan(plan.id)
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId, planName: plan.id }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        console.error('Checkout error:', data.error)
+      }
+    } catch (err) {
+      console.error('Checkout fetch error:', err)
+    } finally {
+      setLoadingPlan(null)
+    }
+  }
 
   return (
     <section id="pricing" className="py-24 relative">
@@ -87,7 +145,7 @@ export function Pricing() {
             Commencez gratuitement. Passez Pro quand vous êtes prêt.
           </p>
 
-          {/* Toggle */}
+          {/* Toggle annuel / mensuel */}
           <div className="flex items-center justify-center gap-3 pt-2">
             <span className={`text-sm ${!annual ? 'text-white' : 'text-zinc-500'}`}>Mensuel</span>
             <button
@@ -98,7 +156,7 @@ export function Pricing() {
             </button>
             <span className={`text-sm ${annual ? 'text-white' : 'text-zinc-500'}`}>
               Annuel
-              <Badge variant="emerald" className="ml-2 text-xs">-35%</Badge>
+              <Badge variant="emerald" className="ml-2 text-xs">-35 %</Badge>
             </span>
           </div>
         </div>
@@ -107,6 +165,7 @@ export function Pricing() {
           {plans.map((plan) => {
             const price = annual ? plan.price.annual : plan.price.monthly
             const isPro = plan.id === 'pro'
+            const isLoading = loadingPlan === plan.id
 
             return (
               <Card
@@ -133,12 +192,16 @@ export function Pricing() {
                   {annual && price > 0 && (
                     <p className="text-xs text-zinc-500 mt-1">Facturé {price * 12}€/an</p>
                   )}
+                  {plan.id !== 'free' && plan.id !== 'agency' && (
+                    <p className="text-xs text-emerald-500 mt-1 font-medium">✦ 14 jours gratuits, sans carte</p>
+                  )}
                 </div>
 
                 <Button
                   variant={plan.ctaVariant}
                   className="w-full"
-                  onClick={() => router.push(plan.id === 'agency' ? '/contact' : '/auth/signup')}
+                  loading={isLoading}
+                  onClick={() => handleCta(plan)}
                 >
                   {plan.cta}
                 </Button>

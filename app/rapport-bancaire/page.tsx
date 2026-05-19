@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/app/AppShell'
+import { useAuth } from '@/lib/hooks/useAuth'
 import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
@@ -626,6 +628,8 @@ const DEFAULT_PROFILE: BankReportProfile = {
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 export default function RapportBancairePage() {
+  const router = useRouter()
+  const { isPro, loading: authLoading } = useAuth()
   const [params, setParams] = useState<InvestmentParams>(DEFAULT_PARAMS)
   const [result, setResult] = useState<InvestmentResult | null>(null)
   const [fiscal, setFiscal] = useState<FiscalResult | null>(null)
@@ -697,6 +701,46 @@ export default function RapportBancairePage() {
   const coverColor = !ratios ? 'text-zinc-400' : ratios.tauxCouverture >= 110 ? 'text-emerald-400' : ratios.tauxCouverture >= 85 ? 'text-amber-400' : 'text-red-400'
   const ravColor = !ratios ? 'text-zinc-400' : ratios.resteAVivre >= (ratios?.resteAVivreCible ?? 800) ? 'text-emerald-400' : 'text-amber-400'
   const sautColor = !ratios ? 'text-zinc-400' : ratios.sautCharges <= 0 ? 'text-emerald-400' : ratios.sautCharges <= 200 ? 'text-amber-400' : 'text-red-400'
+
+  // ── Guard Pro ──────────────────────────────────────────────────────────────
+  if (!authLoading && !isPro) {
+    return (
+      <AppShell>
+        <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center p-8">
+          <div className="max-w-md text-center space-y-6">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
+              <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Fonctionnalité Pro</h2>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Le générateur de dossier bancaire est réservé aux membres Pro. Passez à Pro pour créer des dossiers professionnels en quelques minutes.
+              </p>
+            </div>
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 text-left space-y-2">
+              {['Ratios bancaires HCSF calculés automatiquement', 'Stress tests intégrés', 'Structures juridiques (SCI, SARL…)', 'PDF 8 pages prêt à envoyer à la banque'].map(f => (
+                <div key={f} className="flex items-center gap-2 text-sm text-zinc-300">
+                  <span className="text-emerald-400 text-xs">✓</span> {f}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => router.push('/#pricing')}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3 rounded-xl text-sm transition-all">
+                Passer à Pro — 14j gratuits
+              </button>
+              <button onClick={() => router.back()}
+                className="px-4 py-3 rounded-xl text-sm text-zinc-500 hover:text-white border border-white/[0.06] hover:border-white/20 transition-all">
+                Retour
+              </button>
+            </div>
+          </div>
+        </div>
+      </AppShell>
+    )
+  }
 
   return (
     <AppShell>

@@ -139,7 +139,18 @@ function getTierFromSession(session: Stripe.Checkout.Session): string {
 function getTierFromSubscription(subscription: Stripe.Subscription): string {
   const priceId = subscription.items.data[0]?.price?.id
   if (!priceId) return 'pro'
-  if (priceId === process.env.STRIPE_PRICE_ID_BUSINESS) return 'business'
-  if (priceId === process.env.STRIPE_PRICE_ID_PRO) return 'pro'
+
+  const agencyPrices = [
+    process.env.STRIPE_PRICE_AGENCY_MONTHLY,
+    process.env.STRIPE_PRICE_AGENCY_ANNUAL,
+  ].filter(Boolean) as string[]
+
+  const proPrices = [
+    process.env.STRIPE_PRICE_PRO_MONTHLY,
+    process.env.STRIPE_PRICE_PRO_ANNUAL,
+  ].filter(Boolean) as string[]
+
+  if (agencyPrices.includes(priceId)) return 'business'
+  if (proPrices.includes(priceId)) return 'pro'
   return 'pro'
 }

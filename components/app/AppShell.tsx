@@ -72,10 +72,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       ),
     },
     {
-      href: '#',
-      label: 'Rapport banquier',
-      disabled: true,
-      badge: 'Bientôt' as string | null,
+      href: '/rapport-bancaire',
+      label: 'Dossier bancaire',
+      disabled: false,
+      badge: 'Pro' as string | null,
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -216,6 +216,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Link key={item.label} href={item.href} className={cls}>
                     <span className="shrink-0">{item.icon}</span>
                     <span className="flex-1">{item.label}</span>
+                    {item.badge && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/[0.12] text-emerald-500 border border-emerald-500/20">
+                        {item.badge}
+                      </span>
+                    )}
                   </Link>
                 )
               })}

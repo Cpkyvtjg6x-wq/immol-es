@@ -281,6 +281,89 @@ export interface SimulationRecord {
   updated_at: string
 }
 
+// ─── Bank Report Types ────────────────────────────────────────────────────────
+
+/** Données profil emprunteur à saisir (non disponibles dans le calculateur) */
+export interface BankReportProfile {
+  // Identité
+  nomPrenom: string
+  situationFamiliale: 'celibataire' | 'marie' | 'pacse' | 'divorce' | 'veuf'
+  nbParts: number                  // parts fiscales du foyer
+  nbEnfants: number
+
+  // Situation professionnelle
+  profession: string
+  typeContrat: 'cdi' | 'cdd' | 'independant' | 'fonctionnaire' | 'retraite' | 'autre'
+  anciennetePoste: number          // années
+
+  // Revenus mensuels nets du foyer
+  revenusNetsProFoyer: number      // salaires + indemnités
+  autresRevenusLocatifs: number    // loyers perçus sur d'autres biens (optionnel)
+
+  // Charges mensuelles actuelles
+  loyerActuel: number              // loyer ou mensualité RP actuelle
+  autresCreditsMensualites: number // autres crédits en cours (auto, conso…)
+
+  // Patrimoine
+  epargneTotale: number            // épargne totale disponible (pas juste l'apport)
+
+  // Structure juridique (reprend/affine params.structure)
+  modeAcquisition: 'nom-propre' | 'sci-ir' | 'sci-is' | 'sarl-famille' | 'holding-sci'
+
+  // Société (si applicable)
+  nomSociete?: string
+  siren?: string
+  dateCreationSociete?: string     // "MM/AAAA"
+  associes?: { nom: string; partsPct: number }[]
+  capitalSocial?: number
+
+  // Bien immobilier — informations qualitatives
+  adresseBien?: string
+  descriptionQuartier?: string
+  sourceEstimationLoyer?: string   // "Agent immobilier", "Leboncoin", "PAP"…
+}
+
+/** Ratios bancaires calculés automatiquement */
+export interface BankRatios {
+  // Taux d'endettement
+  tauxEndettementAvant: number     // % avant le projet
+  tauxEndettementApres: number     // % après le projet
+  limiteHCSF: number               // 35% règle HCSF
+
+  // Couverture
+  tauxCouverture: number           // loyer / mensualité × 100
+  loyerIntegreBanque: number       // loyer × 70% (méthode bancaire standard)
+
+  // Reste à vivre
+  resteAVivre: number              // €/mois après toutes charges
+  resteAVivreCible: number         // objectif cible (800–1200€ selon profil)
+
+  // Saut de charges
+  sautCharges: number              // delta mensuel entre situation avant/après
+
+  // Stress tests
+  stressTaux1Pct: {
+    nouvelleMensualite: number
+    deltaVsMensualiteBase: number
+    nouveauCashflow: number
+    tauxEndettement: number
+  }
+  stressLoyer10Pct: {
+    nouveauLoyer: number
+    nouveauCashflow: number
+    tauxCouverture: number
+  }
+  stressVacance2Mois: {
+    perteLoyersAnnuelle: number
+    nouveauCashflowMensuelMoyen: number
+  }
+
+  // Synthèse
+  pointsForts: string[]
+  pointsVigilance: string[]
+  recommandationBanquier: string
+}
+
 // ─── User / Auth Types ─────────────────────────────────────────────────────────
 
 export type SubscriptionTier = 'free' | 'pro' | 'business'

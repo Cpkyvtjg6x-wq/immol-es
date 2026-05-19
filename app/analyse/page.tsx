@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { CalculateurForm } from '@/components/app/CalculateurForm'
 import { KpiGrid } from '@/components/app/KpiGrid'
 import { ScoreCard } from '@/components/app/ScoreCard'
@@ -43,22 +43,22 @@ function runCalculation(params: InvestmentParams) {
 
 export default function AnalysePage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   // Restore params — priorité : URL params (extension) > localStorage > DEFAULT
   const [initialParams] = useState<InvestmentParams>(() => {
     if (typeof window === 'undefined') return DEFAULT_PARAMS
 
-    // Lire les params URL injectés par l'extension Chrome
-    const urlPrix    = searchParams.get('prix')
-    const urlSurface = searchParams.get('surface')
-    const urlVille   = searchParams.get('ville')
-    const urlDpe     = searchParams.get('dpe')
-    const urlLocType = searchParams.get('locType')
-    const urlLoyer   = searchParams.get('loyer')
-    const urlApport  = searchParams.get('apport')
-    const urlTmi     = searchParams.get('tmi')
-    const urlSource  = searchParams.get('source')
+    // Lire les params URL injectés par l'extension Chrome (pas de useSearchParams pour éviter Suspense)
+    const sp = new URLSearchParams(window.location.search)
+    const urlPrix    = sp.get('prix')
+    const urlSurface = sp.get('surface')
+    const urlVille   = sp.get('ville')
+    const urlDpe     = sp.get('dpe')
+    const urlLocType = sp.get('locType')
+    const urlLoyer   = sp.get('loyer')
+    const urlApport  = sp.get('apport')
+    const urlTmi     = sp.get('tmi')
+    const urlSource  = sp.get('source')
 
     if (urlSource === 'extension' && urlPrix) {
       const prix    = parseInt(urlPrix, 10)
@@ -119,7 +119,8 @@ export default function AnalysePage() {
 
   // Auto-calcul si on arrive depuis l'extension Chrome
   useEffect(() => {
-    if (searchParams.get('source') === 'extension' && searchParams.get('prix')) {
+    const sp = new URLSearchParams(window.location.search)
+    if (sp.get('source') === 'extension' && sp.get('prix')) {
       setTimeout(() => applyCalculation(initialParams, false), 400)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

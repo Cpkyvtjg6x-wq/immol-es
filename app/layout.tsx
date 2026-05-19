@@ -17,8 +17,8 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: {
-    default: 'ImmoAnalyse — Calculateur d\'investissement immobilier',
-    template: '%s | ImmoAnalyse',
+    default: 'IMMORA — Calculateur d\'investissement immobilier',
+    template: '%s | IMMORA',
   },
   description:
     'Analysez vos investissements immobiliers avec précision : rendement, cash-flow, fiscalité (LMNP, SCI, Réel), score IA et données de marché pour toutes les villes françaises.',
@@ -31,14 +31,14 @@ export const metadata: Metadata = {
     'rendement locatif',
     'fiscalité immobilier',
   ],
-  authors: [{ name: 'ImmoAnalyse' }],
-  creator: 'ImmoAnalyse',
+  authors: [{ name: 'IMMORA' }],
+  creator: 'IMMORA',
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
     url: process.env.NEXT_PUBLIC_APP_URL,
-    siteName: 'ImmoAnalyse',
-    title: 'ImmoAnalyse — Calculateur d\'investissement immobilier',
+    siteName: 'IMMORA',
+    title: 'IMMORA — Calculateur d\'investissement immobilier',
     description:
       'Analysez vos investissements immobiliers : rendement, cash-flow, fiscalité et score IA.',
     images: [
@@ -46,13 +46,13 @@ export const metadata: Metadata = {
         url: `${process.env.NEXT_PUBLIC_APP_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: 'ImmoAnalyse',
+        alt: 'IMMORA',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ImmoAnalyse — Calculateur d\'investissement immobilier',
+    title: 'IMMORA — Calculateur d\'investissement immobilier',
     description: 'Analysez vos investissements immobiliers avec précision.',
     images: [`${process.env.NEXT_PUBLIC_APP_URL}/og-image.png`],
   },

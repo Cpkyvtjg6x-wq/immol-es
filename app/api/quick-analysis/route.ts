@@ -155,7 +155,7 @@ function estimerTaxeFonciere(prixAchat: number): number {
 }
 
 function buildAnalyseUrl(params: InvestmentParams, loyerEstime: number): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://immol-es-rljf.vercel.app'
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://immora.app'
   const loyer = params.locType === 'meuble' ? params.loyerMeuble : params.loyerNu
   const p = new URLSearchParams({
     prix:      String(params.prixAchat),

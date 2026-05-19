@@ -305,6 +305,7 @@ export default function AnalysePage() {
                     result={result}
                     fiscalResults={fiscalResults}
                     params={lastParams}
+                    score={score}
                     simName={`${result.ville} — ${new Date().toLocaleDateString('fr-FR')}`}
                   />
                   <button

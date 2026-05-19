@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CalculateurForm } from '@/components/app/CalculateurForm'
 import { KpiGrid } from '@/components/app/KpiGrid'
 import { ScoreCard } from '@/components/app/ScoreCard'
@@ -43,10 +43,50 @@ function runCalculation(params: InvestmentParams) {
 
 export default function AnalysePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  // Restore last params from localStorage
+  // Restore params — priorité : URL params (extension) > localStorage > DEFAULT
   const [initialParams] = useState<InvestmentParams>(() => {
     if (typeof window === 'undefined') return DEFAULT_PARAMS
+
+    // Lire les params URL injectés par l'extension Chrome
+    const urlPrix    = searchParams.get('prix')
+    const urlSurface = searchParams.get('surface')
+    const urlVille   = searchParams.get('ville')
+    const urlDpe     = searchParams.get('dpe')
+    const urlLocType = searchParams.get('locType')
+    const urlLoyer   = searchParams.get('loyer')
+    const urlApport  = searchParams.get('apport')
+    const urlTmi     = searchParams.get('tmi')
+    const urlSource  = searchParams.get('source')
+
+    if (urlSource === 'extension' && urlPrix) {
+      const prix    = parseInt(urlPrix, 10)
+      const surface = urlSurface ? parseInt(urlSurface, 10) : DEFAULT_PARAMS.surface
+      const loyer   = urlLoyer   ? parseInt(urlLoyer, 10)   : Math.round(prix * 0.05 / 12)
+      const apport  = urlApport  ? parseInt(urlApport, 10)  : Math.round(prix * 0.20)
+      const locType = (urlLocType === 'nu' || urlLocType === 'meuble') ? urlLocType : 'meuble'
+      return {
+        ...DEFAULT_PARAMS,
+        prixAchat:    prix,
+        surface,
+        ville:        urlVille   ?? DEFAULT_PARAMS.ville,
+        dpe:          (urlDpe as InvestmentParams['dpe']) ?? DEFAULT_PARAMS.dpe,
+        locType,
+        apport,
+        fraisNotaire: Math.round(prix * 0.08),
+        fraisNotaireAuto: false,
+        loyerMeuble:  locType === 'meuble' ? loyer : DEFAULT_PARAMS.loyerMeuble,
+        loyerNu:      locType === 'nu'     ? loyer : DEFAULT_PARAMS.loyerNu,
+        tmi:          urlTmi ? parseInt(urlTmi, 10) : DEFAULT_PARAMS.tmi,
+        chargesCopro: Math.round(surface * 30),
+        taxeFonciere: Math.round(prix * 0.005),
+        assurancePno: Math.round(prix * 0.001),
+        cfe:          locType === 'meuble' ? 500 : 0,
+      }
+    }
+
+    // Fallback localStorage
     try {
       const raw = localStorage.getItem(LS_KEY)
       return raw ? { ...DEFAULT_PARAMS, ...JSON.parse(raw) } : DEFAULT_PARAMS
@@ -76,6 +116,14 @@ export default function AnalysePage() {
       return () => clearTimeout(t)
     }
   }, [showResults])
+
+  // Auto-calcul si on arrive depuis l'extension Chrome
+  useEffect(() => {
+    if (searchParams.get('source') === 'extension' && searchParams.get('prix')) {
+      setTimeout(() => applyCalculation(initialParams, false), 400)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Core calculation logic (sync — no artificial delay for live updates)
   const applyCalculation = useCallback((params: InvestmentParams, isLive = false) => {

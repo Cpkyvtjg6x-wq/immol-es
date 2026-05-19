@@ -86,6 +86,17 @@ export async function POST(req: NextRequest) {
       ? enabledRegimes.reduce((b, r) => r.rendNetNet > b.rendNetNet ? r : b, enabledRegimes[0])
       : null
 
+    // ── Prix max conseillé (offre à faire) ────────────────────────────────────
+    // Valeur juste : loyer annuel / rendement cible (6% meublé, 5% nu)
+    const targetGrossYield = locType === 'meuble' ? 0.06 : 0.05
+    const fairValue = Math.round((loyerCible * 12) / targetGrossYield)
+    // Ne jamais suggérer moins de -10% du prix demandé (réaliste sur le marché FR)
+    const prixMaxBas = Math.round(prixAchat * 0.90)
+    const prixMax = Math.max(prixMaxBas, Math.min(fairValue, prixAchat))
+    const economie = prixAchat - prixMax
+    const negoPct = parseFloat((economie / prixAchat * 100).toFixed(1))
+    const prixM2 = (surface && surface > 0) ? Math.round(prixAchat / surface) : null
+
     // ── Réponse ────────────────────────────────────────────────────────────────
     return NextResponse.json({
       // Indicateurs principaux
@@ -109,13 +120,20 @@ export async function POST(req: NextRequest) {
         impot:      Math.round(bestRegime.impot),
       } : null,
 
+      // Offre conseillée
+      prixMax,
+      economie,
+      negoPct,
+      prixM2,
+      fairValue,
+
       // Paramètres estimés (pour affichage dans le widget)
       loyerEstime:  loyerCible,
       apportEstime: apport,
       fraisNotaire,
 
-      // URL vers l'app pré-remplie
-      analyseUrl: buildAnalyseUrl(params),
+      // URL vers l'app pré-remplie (tous les paramètres utiles)
+      analyseUrl: buildAnalyseUrl(params, loyerCible),
     }, { status: 200, headers: CORS })
 
   } catch (err) {
@@ -136,15 +154,19 @@ function estimerTaxeFonciere(prixAchat: number): number {
   return Math.round(prixAchat * 0.005)
 }
 
-function buildAnalyseUrl(params: InvestmentParams): string {
+function buildAnalyseUrl(params: InvestmentParams, loyerEstime: number): string {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://immol-es-rljf.vercel.app'
+  const loyer = params.locType === 'meuble' ? params.loyerMeuble : params.loyerNu
   const p = new URLSearchParams({
-    prix:    String(params.prixAchat),
-    surface: String(params.surface),
-    ville:   params.ville,
-    dpe:     params.dpe,
-    locType: params.locType,
-    source:  'extension',
+    prix:      String(params.prixAchat),
+    surface:   String(params.surface),
+    ville:     params.ville,
+    dpe:       params.dpe,
+    locType:   params.locType,
+    loyer:     String(loyer || loyerEstime),
+    apport:    String(params.apport),
+    tmi:       String(params.tmi),
+    source:    'extension',
   })
   return `${base}/analyse?${p.toString()}`
 }

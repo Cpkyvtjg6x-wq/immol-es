@@ -324,8 +324,13 @@ function ProductPreview() {
   const rendBrut = result.rendBrut
   const cf = result.cashflowMensuel
   const cfNegative = cf < 0
-  // Score with subtle variation
-  const baseScore = Math.min(100, Math.max(0, Math.round(rendBrut * 11 + (cf > 0 ? 18 : -5))))
+  // Score demo — approximation de la vraie formule pour la preview
+  const baseScore = Math.min(95, Math.max(10, Math.round(
+    (rendBrut >= 7 ? 26 : rendBrut >= 5 ? 18 : 12) +   // rendBrut
+    (result.rendNet >= 5 ? 17 : result.rendNet >= 3 ? 9 : 5) + // rendNet
+    (cf >= 200 ? 21 : cf >= 0 ? 17 : cf >= -200 ? 7 : 3) +    // cashflow
+    8 + 3                                                         // fiscal/roi moyens
+  )))
   const score = baseScore + (tick % 3 === 0 ? 1 : tick % 3 === 1 ? -1 : 0)
 
   const onMove = useCallback((e: React.MouseEvent) => {

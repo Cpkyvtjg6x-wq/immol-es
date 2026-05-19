@@ -367,7 +367,7 @@ function ProductPreview() {
                   <circle cx="12" cy="11" r="9" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0-1.1.9-2 2-2s2 .9 2 2-2 4-2 4-2-2.9-2-4z" />
                 </svg>
-                immolyse.app/analyse
+                immora.app/analyse
               </div>
             </div>
             <div className="w-12" />
@@ -689,13 +689,13 @@ function BentoFeatures() {
   return (
     <section id="features" className="relative py-32 lg:py-40">
       <div className="relative max-w-6xl mx-auto px-6 lg:px-10">
-        <div className="max-w-2xl mb-20 reveal">
+        <div className="max-w-2xl mx-auto mb-20 reveal text-center">
           <SectionLabel num="01">Fonctionnalités</SectionLabel>
           <h2 className="display text-[clamp(2.2rem,4.5vw,3.6rem)] gt-white mt-6">
             Une boîte à outils complète,<br />
             <span className="serif-italic text-zinc-400">pensée comme un produit.</span>
           </h2>
-          <p className="text-[15.5px] text-zinc-500 leading-[1.6] mt-6 max-w-lg">
+          <p className="text-[15.5px] text-zinc-500 leading-[1.6] mt-6 max-w-lg mx-auto">
             Tout ce dont un investisseur immobilier a besoin — sans tableur, sans approximation.
           </p>
         </div>
@@ -1031,7 +1031,7 @@ function ComparisonSection() {
             Excel · 47 min
           </div>
           <div className="absolute top-4 right-4 px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-500/25 mono text-[10px] text-emerald-300 uppercase tracking-[0.15em]">
-            Immolyse · 30 sec
+            IMMORA · 30 sec
           </div>
         </div>
       </div>
@@ -1202,7 +1202,7 @@ function PersonasSection({ onCta }: { onCta: () => void }) {
   return (
     <section className="relative py-32 lg:py-40">
       <div className="max-w-6xl mx-auto px-6 lg:px-10">
-        <div className="max-w-2xl mb-16 reveal">
+        <div className="max-w-2xl mx-auto mb-16 reveal text-center">
           <SectionLabel num="03">Pour qui</SectionLabel>
           <h2 className="display text-[clamp(2.2rem,4.5vw,3.6rem)] gt-white mt-6">
             Conçu pour vous,<br />
@@ -1402,7 +1402,7 @@ function ExplicationSection() {
   }, [])
 
   const steps = [
-    { num: '01', title: 'Analyser', accent: 'un bien.', description: 'Prix d\'achat, loyer estimé, ville. Immolyse calcule instantanément le rendement brut, net, et nette-nette avec des données de marché actualisées.', visual: <ZoomVisualAnalyse /> },
+    { num: '01', title: 'Analyser', accent: 'un bien.', description: 'Prix d\'achat, loyer estimé, ville. IMMORA calcule instantanément le rendement brut, net, et nette-nette avec des données de marché actualisées.', visual: <ZoomVisualAnalyse /> },
     { num: '02', title: 'Comparer', accent: 'les régimes fiscaux.', description: 'L\'outil simule 10 régimes (LMNP, LMP, SCI IS/IR, micro-foncier, réel...) et recommande celui qui optimise votre cashflow net après impôt.', visual: <ZoomVisualFiscal /> },
     { num: '03', title: 'Exporter', accent: 'en un clic.', description: 'Rapport de présentation bancaire en PDF, tableau d\'amortissement complet en Excel. Les documents que votre courtier attend, en 5 secondes.', visual: <ZoomVisualExport /> },
   ]
@@ -1410,7 +1410,7 @@ function ExplicationSection() {
   return (
     <section id="produit" className="relative py-32 lg:py-40">
       <div className="max-w-6xl mx-auto px-6 lg:px-10">
-        <div className="max-w-2xl mb-16 reveal">
+        <div className="max-w-2xl mx-auto mb-16 reveal text-center">
           <SectionLabel num="04">Comment ça marche</SectionLabel>
           <h2 className="display text-[clamp(2.2rem,4.5vw,3.6rem)] gt-white mt-6">
             Du bien à la décision,<br />
@@ -1541,7 +1541,7 @@ function ZoomVisualFiscal() {
           </div>
           <div className="flex-1 flex justify-center">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white/[0.04] mono text-[10px] text-zinc-500">
-              immolyse.app/analyse/fiscalite
+              immora.app/analyse/fiscalite
             </div>
           </div>
           <div className="w-10" />
@@ -1752,7 +1752,7 @@ function ZoomVisualExport() {
    ══════════════════════════════════════════════════════════════════════════ */
 function TestimonialsSection() {
   const items = [
-    { name: 'Antoine M.', role: 'Investisseur · 7 biens', quote: 'J\'ai économisé 14 000€/an en basculant en LMNP, alors que mon comptable me jurait que le micro-foncier était optimal. Immolyse a vu juste en 30 secondes.', result: '+14 000 €/an', avatar: 'A', color: '#10b981' },
+    { name: 'Antoine M.', role: 'Investisseur · 7 biens', quote: 'J\'ai économisé 14 000€/an en basculant en LMNP, alors que mon comptable me jurait que le micro-foncier était optimal. IMMORA a vu juste en 30 secondes.', result: '+14 000 €/an', avatar: 'A', color: '#10b981' },
     { name: 'Sophie T.', role: 'Première acquisition', quote: 'J\'allais signer un T2 à Bordeaux que je pensais rentable. L\'outil m\'a montré un cashflow réel de −230€/mois. J\'ai évité une catastrophe.', result: 'Décision évitée', avatar: 'S', color: '#6366f1' },
     { name: 'Mehdi R.', role: 'CGP indépendant', quote: 'Je fais 3 analyses par jour pour mes clients. Avant : 1h chacune sur Excel. Maintenant : 30 secondes avec un PDF white-label. Imbattable.', result: '×120 plus rapide', avatar: 'M', color: '#ec4899' },
     { name: 'Julie B.', role: 'Investisseuse · 3 biens', quote: 'Le score IA m\'a fait découvrir qu\'un de mes biens sous-performait à cause de la fiscalité. 4 800€/an récupérés.', result: '+4 800 €/an', avatar: 'J', color: '#f59e0b' },
@@ -1763,13 +1763,13 @@ function TestimonialsSection() {
   return (
     <section className="relative py-32 lg:py-40 overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 lg:px-10 mb-14">
-        <div className="max-w-2xl reveal">
+        <div className="max-w-2xl mx-auto mb-14 reveal text-center">
           <SectionLabel num="05">Témoignages</SectionLabel>
           <h2 className="display text-[clamp(2.2rem,4.5vw,3.6rem)] gt-white mt-6">
             Des décisions, <span className="serif-italic text-zinc-400">pas des promesses.</span>
           </h2>
-          <p className="text-[15px] text-zinc-500 leading-[1.6] mt-5 max-w-lg">
-            Ce que disent celles et ceux qui utilisent Immolyse au quotidien.
+          <p className="text-[15px] text-zinc-500 leading-[1.6] mt-5 max-w-lg mx-auto">
+            Ce que disent celles et ceux qui utilisent IMMORA au quotidien.
           </p>
         </div>
       </div>
@@ -1893,7 +1893,7 @@ function FaqSection() {
     { q: 'Mes données sont-elles confidentielles ?', a: 'Oui. Toutes les simulations sont chiffrées (AES-256), stockées en Europe (Supabase Frankfurt), et ne sont jamais partagées avec des tiers. Conforme RGPD.' },
     { q: 'L\'analyse tient-elle compte de ma situation personnelle ?', a: 'Oui : tranche marginale d\'imposition, situation matrimoniale, biens existants, autres revenus locatifs. Plus les informations sont précises, plus la recommandation est juste.' },
     { q: 'Puis-je résilier à tout moment ?', a: 'Oui, en un clic depuis votre compte, sans engagement, sans pénalité. Remboursement au prorata.' },
-    { q: 'Est-ce que ça remplace mon comptable ?', a: 'Non — c\'est un outil d\'analyse pour décider vite. Pour la déclaration fiscale, un expert reste recommandé. Immolyse vous prépare un dossier propre à lui soumettre.' },
+    { q: 'Est-ce que ça remplace mon comptable ?', a: 'Non — c\'est un outil d\'analyse pour décider vite. Pour la déclaration fiscale, un expert reste recommandé. IMMORA vous prépare un dossier propre à lui soumettre.' },
   ]
   return (
     <section className="relative py-32 lg:py-40">
@@ -2072,7 +2072,7 @@ function FooterMinimal() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h14V10" />
             </svg>
           </div>
-          <span className="mono text-[11px] text-zinc-500 tracking-wider">Immolyse © {new Date().getFullYear()}</span>
+          <span className="mono text-[11px] text-zinc-500 tracking-wider">IMMORA © {new Date().getFullYear()}</span>
         </div>
         <div className="flex gap-6">
           {['CGU', 'Confidentialité', 'Contact'].map((l) => (

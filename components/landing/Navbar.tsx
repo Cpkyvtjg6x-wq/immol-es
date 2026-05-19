@@ -4,6 +4,41 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+/* Logo mark — ascending bars (analytics × real estate) */
+function ImmoraLogo({ size = 28 }: { size?: number }) {
+  return (
+    <div
+      className="relative flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden"
+      style={{
+        width: size,
+        height: size,
+        background: 'linear-gradient(135deg, #0d0d0f 0%, #111114 100%)',
+        boxShadow: '0 0 0 1px rgba(16,185,129,0.25), 0 0 20px -4px rgba(16,185,129,0.35)',
+      }}
+    >
+      {/* Inner glow */}
+      <div
+        className="absolute inset-0 rounded-xl"
+        style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.18) 0%, transparent 70%)' }}
+      />
+      {/* Ascending bars */}
+      <svg
+        width={size * 0.56}
+        height={size * 0.56}
+        viewBox="0 0 16 16"
+        fill="none"
+        className="relative z-10"
+      >
+        <rect x="1"   y="9"  width="3" height="6" rx="0.8" fill="#10b981" opacity="0.45" />
+        <rect x="5.5" y="5"  width="3" height="10" rx="0.8" fill="#10b981" opacity="0.75" />
+        <rect x="10"  y="1"  width="3" height="14" rx="0.8" fill="#10b981" />
+        {/* Top glow dot on tallest bar */}
+        <circle cx="11.5" cy="2" r="1" fill="#6ee7b7" opacity="0.9" />
+      </svg>
+    </div>
+  )
+}
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const router = useRouter()
@@ -23,23 +58,30 @@ export function Navbar() {
           : 'bg-transparent border-b border-transparent'
       }`}
     >
-      <div className={`max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between transition-all duration-500 ${scrolled ? 'h-14' : 'h-[72px]'}`}>
+      <div
+        className={`max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between transition-all duration-500 ${
+          scrolled ? 'h-14' : 'h-[72px]'
+        }`}
+      >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="relative w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-[0_0_24px_-4px_rgba(16,185,129,0.5)] transition-transform group-hover:scale-105">
-            <svg className="w-3.5 h-3.5 text-zinc-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h14V10" />
-            </svg>
+          <div className="transition-transform duration-300 group-hover:scale-105">
+            <ImmoraLogo size={28} />
           </div>
-          <span className="text-white font-semibold text-[15px] tracking-tight">Immolyse</span>
+          <span
+            className="font-bold text-[15px] tracking-[-0.03em] text-white select-none"
+            style={{ letterSpacing: '-0.025em' }}
+          >
+            IMMO<span className="text-emerald-400">RA</span>
+          </span>
         </Link>
 
         {/* Links */}
         <div className="hidden md:flex items-center gap-1">
           {[
-            { label: 'Produit', href: '#produit' },
-            { label: 'Fonctionnalités', href: '#features' },
-            { label: 'Tarifs', href: '#pricing' },
+            { label: 'Produit',        href: '#produit'   },
+            { label: 'Fonctionnalités', href: '#features'  },
+            { label: 'Tarifs',          href: '#pricing'   },
           ].map((l) => (
             <a
               key={l.label}
@@ -61,11 +103,21 @@ export function Navbar() {
           </button>
           <button
             onClick={() => router.push('/analyse')}
-            className="group relative text-[13.5px] font-medium text-zinc-950 bg-white hover:bg-zinc-100 px-3.5 py-1.5 rounded-md transition-all duration-200 hover:shadow-[0_0_24px_-4px_rgba(255,255,255,0.4)]"
+            className="group relative text-[13.5px] font-semibold text-zinc-950 px-4 py-1.5 rounded-md transition-all duration-200 overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, #34d399 0%, #10b981 60%, #059669 100%)',
+              boxShadow: '0 0 16px -4px rgba(16,185,129,0.5)',
+            }}
           >
-            <span className="flex items-center gap-1.5">
+            <span className="relative flex items-center gap-1.5">
               Commencer
-              <svg className="w-3 h-3 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <svg
+                className="w-3 h-3 transition-transform group-hover:translate-x-0.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </span>

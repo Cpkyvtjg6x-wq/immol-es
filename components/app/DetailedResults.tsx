@@ -133,9 +133,51 @@ function CashflowTab({ result }: { result: InvestmentResult }) {
   )
 }
 
+/* ─── Fiscal helpers ──────────────────────────────────────────────────────── */
+
+const REGIME_PROS_CONS: Record<string, { pros: string[]; cons: string[] }> = {
+  'micro-foncier': {
+    pros: ['Abattement forfaitaire 30% — simple', 'Aucun comptable requis', 'Déclaration simplifiée'],
+    cons: ['Plafonné à 15 000 €/an de revenus', 'Pas de déduction réelle des charges', 'Moins optimal si charges élevées'],
+  },
+  'reel-foncier': {
+    pros: ['Déduction de toutes les charges réelles', 'Déficit foncier imputable sur revenus (10 700 €)', 'Idéal si travaux importants'],
+    cons: ['Déclaration plus complexe', 'Comptable recommandé', 'Durée de 3 ans minimum'],
+  },
+  'micro-bic': {
+    pros: ['Abattement 50% (ou 71% saisonnier)', 'Pas de comptable obligatoire', 'Simple et rapide'],
+    cons: ['Plafonné à 77 700 €/an (meublé)', 'Pas de déduction des amortissements', 'Moins efficace que le réel LMNP'],
+  },
+  'lmnp-reel': {
+    pros: ['Amortissement bien + travaux déductible', 'Peut générer 0 impôt pendant 10–15 ans', 'Déficit reportable indéfiniment'],
+    cons: ['Comptable obligatoire (~500–1000 €/an)', 'Imposition plus-value à la revente', 'Charges à justifier'],
+  },
+  'lmp': {
+    pros: ['Déficit imputable sur revenus globaux', 'Exonération plus-value après 5 ans (si <90 000 €)', 'Amortissements + charges déductibles'],
+    cons: ['Revenus meublés > 23 000 € ET > 50% des revenus', 'Cotisations sociales (~40%)', 'Statut difficile à maintenir'],
+  },
+  'sci-ir': {
+    pros: ['Transparence fiscale — pas d\'IS', 'Facilite la transmission familiale', 'Régime réel foncier disponible'],
+    cons: ['Formalisme juridique (statuts, AG)', 'Revenus imposés au TMI de chaque associé', 'Pas d\'amortissement du bien'],
+  },
+  'sci-is': {
+    pros: ['IS à 15% sur les 42 500 premiers €', 'Amortissement du bien déductible', 'Capitalisation des bénéfices en société'],
+    cons: ['Double imposition dividendes (IS + IR)', 'Plus-value à la revente importante', 'Gestion comptable obligatoire'],
+  },
+  'sarl-famille': {
+    pros: ['Option IR — transparence fiscale', 'Amortissements LMNP disponibles', 'Pas de cotisations sociales élevées'],
+    cons: ['Réservé aux membres d\'une même famille', 'Formalisme juridique requis', 'Plus complexe qu\'en nom propre'],
+  },
+}
+
+function getProsCons(regimeId: string) {
+  return REGIME_PROS_CONS[regimeId] ?? null
+}
+
 /* ─── Fiscal tab ───────────────────────────────────────────────────────────── */
 function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) {
   const [showAll, setShowAll] = useState(false)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   if (!fiscalResults || fiscalResults.length === 0) {
     return (
@@ -147,7 +189,7 @@ function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) 
         </div>
         <div>
           <p className="text-sm font-semibold text-white mb-1">Renseignez votre TMI</p>
-          <p className="text-xs text-zinc-500 max-w-xs mx-auto">Dans la section Fiscalité du formulaire, sélectionnez votre tranche marginale pour comparer les 10 régimes fiscaux.</p>
+          <p className="text-xs text-zinc-500 max-w-xs mx-auto">Dans la section Fiscalité du formulaire, sélectionnez votre tranche marginale pour comparer les régimes fiscaux.</p>
         </div>
       </div>
     )
@@ -157,47 +199,84 @@ function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) 
   const disabled = fiscalResults.filter((r) => r.disabled)
   const sorted = [...enabled].sort((a, b) => b.rendNetNet - a.rendNetNet)
   const best = sorted[0]
-  const displayed = showAll ? sorted : sorted.slice(0, 5)
+  const worst = sorted[sorted.length - 1]
+  const displayed = showAll ? sorted : sorted.slice(0, 6)
+  const economie = best && worst && sorted.length > 1 ? best.net - worst.net : 0
 
   // Chart data
-  const chartData = sorted.slice(0, 6).map((r) => ({
+  const chartData = sorted.slice(0, 7).map((r) => ({
     name: r.shortName || r.name.split(' ')[0],
     rendement: parseFloat(r.rendNetNet.toFixed(2)),
     impot: Math.round(r.totalFiscal),
+    fill: r.rendNetNet >= 4 ? '#10b981' : r.rendNetNet >= 2 ? '#f59e0b' : '#ef4444',
   }))
 
   return (
-    <div className="space-y-6">
-      {/* Best regime banner */}
+    <div className="space-y-5">
+
+      {/* ── Bannière régime optimal ───────────────────────────────────────────── */}
       {best && (
-        <div className="rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20 p-4 flex items-center justify-between">
-          <div>
-            <p className="text-[11px] text-emerald-400/80 font-semibold uppercase tracking-wider mb-1">⭐ Régime recommandé</p>
-            <p className="text-base font-bold text-white">{best.name}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">Rendement nette-nette le plus élevé dans votre situation</p>
+        <div className={`rounded-xl p-4 border flex items-center gap-4 ${
+          best.rendNetNet >= 4
+            ? 'bg-emerald-500/[0.07] border-emerald-500/25'
+            : best.rendNetNet >= 2
+            ? 'bg-amber-500/[0.07] border-amber-500/25'
+            : 'bg-red-500/[0.07] border-red-500/25'
+        }`}>
+          <div className={`text-2xl shrink-0 ${
+            best.rendNetNet >= 4 ? 'text-emerald-400' : best.rendNetNet >= 2 ? 'text-amber-400' : 'text-red-400'
+          }`}>★</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-0.5">Régime recommandé</p>
+            <p className="text-sm font-bold text-white truncate">{best.name}</p>
+            <div className="flex items-center gap-3 mt-1 flex-wrap">
+              <span className="text-[11px] text-zinc-500">
+                Net/an : <span className="text-white font-semibold">{formatCurrency(best.net)}</span>
+              </span>
+              <span className="text-[11px] text-zinc-500">
+                CF/mois : <span className={`font-semibold ${best.cfNet >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {best.cfNet >= 0 ? '+' : ''}{formatCurrency(best.cfNet)}
+                </span>
+              </span>
+              <span className="text-[11px] text-zinc-500">
+                Impôt : <span className="text-red-400 font-semibold">{formatCurrency(best.impot)}</span>
+              </span>
+            </div>
           </div>
-          <div className="text-right shrink-0 ml-4">
-            <p className="text-2xl font-black text-emerald-400" style={{ letterSpacing: '-0.04em' }}>{formatPct(best.rendNetNet)}</p>
-            <p className="text-[11px] text-zinc-600">nette-nette</p>
+          <div className="text-right shrink-0">
+            <p className={`text-2xl font-black tabular-nums ${
+              best.rendNetNet >= 4 ? 'text-emerald-400' : best.rendNetNet >= 2 ? 'text-amber-400' : 'text-red-400'
+            }`} style={{ letterSpacing: '-0.04em' }}>
+              {formatPct(best.rendNetNet)}
+            </p>
+            <p className="text-[10px] text-zinc-600">nette-nette</p>
           </div>
         </div>
       )}
 
-      {/* Bar chart comparison */}
+      {/* ── Économie possible ────────────────────────────────────────────────── */}
+      {economie > 500 && (
+        <div className="rounded-lg bg-blue-500/[0.06] border border-blue-500/15 px-3 py-2.5 flex items-center gap-2">
+          <span className="text-blue-400 text-sm">💡</span>
+          <p className="text-[11px] text-blue-400">
+            Choisir le meilleur régime vous fait économiser{' '}
+            <strong>{formatCurrency(economie)}/an</strong> vs le moins avantageux
+          </p>
+        </div>
+      )}
+
+      {/* ── Graphique ────────────────────────────────────────────────────────── */}
       {chartData.length > 1 && (
         <div>
-          <p className="text-[11px] text-zinc-600 mb-3">Rendement nette-nette par régime</p>
-          <ResponsiveContainer width="100%" height={160}>
-            <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barCategoryGap="30%">
+          <p className="text-[11px] text-zinc-600 mb-3">Rendement nette-nette par régime (classé du meilleur au moins bon)</p>
+          <ResponsiveContainer width="100%" height={150}>
+            <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barCategoryGap="28%">
               <XAxis dataKey="name" tick={{ fill: '#52525b', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#52525b', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
               <Tooltip {...tooltipStyle} formatter={(v: number) => [`${v}%`, 'Rdt nette-nette']} />
               <Bar dataKey="rendement" radius={[4, 4, 0, 0]}>
                 {chartData.map((entry, i) => (
-                  <Cell
-                    key={i}
-                    fill={i === 0 ? '#10b981' : 'rgba(255,255,255,0.08)'}
-                  />
+                  <Cell key={i} fill={entry.fill} fillOpacity={i === 0 ? 1 : 0.55} />
                 ))}
               </Bar>
             </BarChart>
@@ -205,54 +284,168 @@ function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) 
         </div>
       )}
 
-      {/* Regime list */}
+      {/* ── Liste des régimes (cartes cliquables) ────────────────────────────── */}
       <div className="space-y-1.5">
-        <div className="grid grid-cols-[1fr_80px_80px_80px_70px] gap-2 px-3 mb-1">
-          {['Régime', 'Impôts', 'Charges soc.', 'Net/an', 'Rdt N-N'].map((h) => (
-            <span key={h} className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">{h}</span>
-          ))}
-        </div>
+        <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">
+          Tous les régimes — cliquez pour voir les détails
+        </p>
 
         {displayed.map((r, i) => {
           const isBest = i === 0
-          const nnColor = r.rendNetNet >= 5 ? 'text-emerald-400' : r.rendNetNet >= 3 ? 'text-amber-400' : 'text-red-400'
+          const nnGood = r.rendNetNet >= 4
+          const nnOk = r.rendNetNet >= 2
+          const borderColor = nnGood ? 'border-emerald-500/25' : nnOk ? 'border-amber-500/25' : 'border-red-500/20'
+          const bgColor = nnGood
+            ? (isBest ? 'bg-emerald-500/[0.07]' : 'bg-emerald-500/[0.03]')
+            : nnOk ? 'bg-amber-500/[0.03]' : 'bg-red-500/[0.03]'
+          const nnColor = nnGood ? 'text-emerald-400' : nnOk ? 'text-amber-400' : 'text-red-400'
+          const isExpanded = expandedId === r.id
+          const pc = getProsCons(r.id)
+
+          // Barre de performance relative au meilleur
+          const barPct = best && best.rendNetNet > 0
+            ? Math.max(8, Math.round((r.rendNetNet / best.rendNetNet) * 100))
+            : 50
+          const barColor = nnGood ? '#10b981' : nnOk ? '#f59e0b' : '#ef4444'
+
           return (
             <div
               key={r.id}
-              className={`grid grid-cols-[1fr_80px_80px_80px_70px] gap-2 items-center px-3 py-3 rounded-xl transition-colors ${
-                isBest ? 'bg-emerald-500/[0.06] border border-emerald-500/15' : 'bg-white/[0.02] hover:bg-white/[0.04]'
+              className={`rounded-xl border transition-all cursor-pointer ${bgColor} ${borderColor} ${
+                isBest ? 'ring-1 ring-emerald-500/20' : ''
               }`}
+              onClick={() => setExpandedId(isExpanded ? null : r.id)}
             >
-              <div>
-                <p className="text-xs font-semibold text-white">{r.name}</p>
-                {r.tag && <span className="text-[10px] text-zinc-600">{r.tag}</span>}
+              {/* Ligne principale */}
+              <div className="flex items-center gap-3 px-3 py-3">
+                {/* Rang */}
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                  isBest ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/[0.05] text-zinc-600'
+                }`}>
+                  {i + 1}
+                </div>
+
+                {/* Nom + tag */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className={`text-xs font-bold ${isBest ? 'text-white' : 'text-zinc-300'}`}>{r.name}</p>
+                    {isBest && <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">★ OPTIMAL</span>}
+                    {r.tag && <span className="text-[9px] text-zinc-600 bg-white/[0.04] px-1.5 py-0.5 rounded-full">{r.tag}</span>}
+                  </div>
+                  {/* Barre performance */}
+                  <div className="mt-1.5 h-1 bg-white/[0.06] rounded-full overflow-hidden w-full">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${barPct}%`, background: barColor }}
+                    />
+                  </div>
+                </div>
+
+                {/* Valeurs clés */}
+                <div className="hidden sm:flex items-center gap-4 text-right shrink-0">
+                  <div>
+                    <p className="text-[9px] text-zinc-600">Impôt</p>
+                    <p className="text-[11px] text-red-400 tabular-nums font-medium">{formatCurrency(r.impot)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] text-zinc-600">Net/an</p>
+                    <p className={`text-[11px] tabular-nums font-semibold ${r.net >= 0 ? 'text-white' : 'text-red-400'}`}>{formatCurrency(r.net)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] text-zinc-600">CF/mois</p>
+                    <p className={`text-[11px] tabular-nums font-semibold ${r.cfNet >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {r.cfNet >= 0 ? '+' : ''}{formatCurrency(r.cfNet)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Rendement nette-nette */}
+                <div className="text-right shrink-0 ml-2">
+                  <p className={`text-base font-black tabular-nums ${nnColor}`} style={{ letterSpacing: '-0.03em' }}>
+                    {formatPct(r.rendNetNet)}
+                  </p>
+                  <p className="text-[9px] text-zinc-600">N-N</p>
+                </div>
+
+                {/* Chevron expand */}
+                <svg
+                  className={`w-3.5 h-3.5 text-zinc-600 transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-              <span className="text-xs text-red-400 tabular-nums">{formatCurrency(r.impot)}</span>
-              <span className="text-xs text-amber-400 tabular-nums">{formatCurrency(r.ps)}</span>
-              <span className="text-xs text-white tabular-nums font-medium">{formatCurrency(r.net)}</span>
-              <span className={`text-xs font-bold tabular-nums ${nnColor}`}>{formatPct(r.rendNetNet)}</span>
+
+              {/* Panel expandé — détails + pros/cons */}
+              {isExpanded && (
+                <div className="px-3 pb-3 border-t border-white/[0.05] pt-3 space-y-3">
+                  {/* Détail chiffres */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { label: 'Rev. imposable', value: formatCurrency(r.revImposable), color: 'text-zinc-300' },
+                      { label: 'Impôt IR', value: formatCurrency(r.impot), color: 'text-red-400' },
+                      { label: 'Prélèv. soc.', value: formatCurrency(r.ps), color: 'text-amber-400' },
+                      { label: 'Total fiscal', value: formatCurrency(r.totalFiscal), color: 'text-red-400' },
+                    ].map((m) => (
+                      <div key={m.label} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2 text-center">
+                        <p className="text-[9px] text-zinc-600 mb-0.5">{m.label}</p>
+                        <p className={`text-[11px] font-bold tabular-nums ${m.color}`}>{m.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pros / Cons */}
+                  {pc && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-lg bg-emerald-500/[0.05] border border-emerald-500/15 p-2.5">
+                        <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-wide mb-1.5">✅ Avantages</p>
+                        <div className="space-y-1">
+                          {pc.pros.map((pro, i) => (
+                            <p key={i} className="text-[10px] text-zinc-400 flex gap-1.5 leading-snug">
+                              <span className="text-emerald-500 shrink-0 mt-0.5">·</span>
+                              {pro}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-lg bg-red-500/[0.05] border border-red-500/15 p-2.5">
+                        <p className="text-[9px] font-bold text-red-400 uppercase tracking-wide mb-1.5">⚠️ Points de vigilance</p>
+                        <div className="space-y-1">
+                          {pc.cons.map((con, i) => (
+                            <p key={i} className="text-[10px] text-zinc-400 flex gap-1.5 leading-snug">
+                              <span className="text-red-500 shrink-0 mt-0.5">·</span>
+                              {con}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )
         })}
 
-        {enabled.length > 5 && (
+        {enabled.length > 6 && (
           <button
             onClick={() => setShowAll((s) => !s)}
             className="w-full text-xs text-zinc-600 hover:text-zinc-400 transition-colors py-2"
           >
-            {showAll ? '↑ Afficher moins' : `↓ Voir ${enabled.length - 5} régimes de plus`}
+            {showAll ? '↑ Afficher moins' : `↓ Voir ${enabled.length - 6} régimes de plus`}
           </button>
         )}
       </div>
 
+      {/* ── Régimes non éligibles ─────────────────────────────────────────────── */}
       {disabled.length > 0 && (
         <div className="pt-3 border-t border-white/[0.05]">
           <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Non éligibles dans votre situation</p>
           <div className="space-y-1">
             {disabled.map((r) => (
-              <div key={r.id} className="flex items-center justify-between px-3 py-2 rounded-lg opacity-40">
+              <div key={r.id} className="flex items-center justify-between px-3 py-2 rounded-lg opacity-35">
                 <p className="text-xs text-zinc-500 line-through">{r.name}</p>
-                <p className="text-[10px] text-zinc-600">{r.disabledReason}</p>
+                <p className="text-[10px] text-zinc-600 text-right max-w-[60%]">{r.disabledReason}</p>
               </div>
             ))}
           </div>

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import type { InvestmentParams } from '@/lib/types'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import type { InvestmentParams, InvestmentResult } from '@/lib/types'
 import { DEFAULT_PARAMS, calculerFraisNotaire } from '@/lib/calculator'
+import { calculateFiscal } from '@/lib/fiscal'
 import { VILLES } from '@/lib/market-data'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
   onChange?: (params: InvestmentParams) => void
   loading: boolean
   initialParams?: InvestmentParams
+  result?: InvestmentResult | null
 }
 
 // ─── UI primitives ─────────────────────────────────────────────────────────────
@@ -174,7 +176,7 @@ function Divider() {
 
 // ─── Main form ─────────────────────────────────────────────────────────────────
 
-export function CalculateurForm({ onCalculate, onChange, loading, initialParams }: Props) {
+export function CalculateurForm({ onCalculate, onChange, loading, initialParams, result }: Props) {
   const [p, setP] = useState<InvestmentParams>(initialParams ?? DEFAULT_PARAMS)
   const [openSections, setOpenSections] = useState({
     bien: true,
@@ -214,6 +216,34 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams 
   }
 
   const isMeuble = p.locType === 'meuble' || p.locType === 'saisonnier'
+
+  // ─── Preview fiscal par structure (calculé en live si result disponible) ──────
+  const structurePreviews = useMemo(() => {
+    if (!result || result.prixRevient <= 0) return {}
+    const structs = ['nom-propre', 'sci-ir', 'sci-is', 'sarl-famille'] as const
+    const out: Record<string, { rendNetNet: number; bestName: string; cfNet: number }> = {}
+    for (const s of structs) {
+      try {
+        const fr = calculateFiscal({
+          tmi: p.tmi,
+          prixAchat: p.prixAchat,
+          travaux: p.travaux ?? 0,
+          prixRevient: result.prixRevient,
+          locType: p.locType,
+          lmpEnabled: p.lmpEnabled,
+          sciIS: s === 'sci-is',
+          sarlFamille: s === 'sarl-famille',
+          structure: s,
+        }, result)
+        const enabled = fr.regimes.filter(r => !r.disabled)
+        if (enabled.length > 0) {
+          const best = enabled.reduce((b, r) => r.rendNetNet > b.rendNetNet ? r : b, enabled[0])
+          out[s] = { rendNetNet: best.rendNetNet, bestName: best.name, cfNet: best.cfNet }
+        }
+      } catch { /* ignore */ }
+    }
+    return out
+  }, [result, p.tmi, p.prixAchat, p.travaux, p.locType, p.lmpEnabled])
   const isColoc = p.locType === 'coloc'
   const isNu = p.locType === 'nu'
 
@@ -744,13 +774,31 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams 
 
               <div className="grid grid-cols-2 gap-2">
                 {([
-                  { id: 'nom-propre', icon: '👤', label: 'Nom propre', desc: 'Location directe — fiscalité foncier ou BIC' },
-                  { id: 'sci-ir', icon: '🏛️', label: 'SCI à l\'IR', desc: 'Transparence fiscale — idéal pour la succession' },
-                  { id: 'sci-is', icon: '⚖️', label: 'SCI à l\'IS', desc: 'Capitalisation — IS 15%/25%, dividendes en sortie' },
-                  { id: 'sarl-famille', icon: '👨‍👩‍👧', label: 'SARL famille', desc: 'Meublé option IR — avantages LMP sans cotisations' },
+                  { id: 'nom-propre', icon: '👤', label: 'Nom propre', desc: 'Location directe — foncier ou BIC' },
+                  { id: 'sci-ir', icon: '🏛️', label: 'SCI à l\'IR', desc: 'Transparence fiscale — succession' },
+                  { id: 'sci-is', icon: '⚖️', label: 'SCI à l\'IS', desc: 'IS 15%/25% — capitalisation' },
+                  { id: 'sarl-famille', icon: '👨‍👩‍👧', label: 'SARL famille', desc: 'Meublé IR — avantages LMP' },
                 ] as const).map(({ id, icon, label, desc }) => {
                   const active = p.structure === id
                   const disabled = id === 'sarl-famille' && isNu
+                  const preview = structurePreviews[id]
+                  const rendNN = preview?.rendNetNet ?? null
+                  const previewColor = rendNN === null
+                    ? ''
+                    : rendNN >= 4 ? 'text-emerald-400'
+                    : rendNN >= 2 ? 'text-amber-400'
+                    : 'text-red-400'
+                  const previewBorder = rendNN === null
+                    ? (active ? 'border-emerald-500/30' : 'border-white/[0.07]')
+                    : rendNN >= 4 ? (active ? 'border-emerald-500/40' : 'border-emerald-500/20')
+                    : rendNN >= 2 ? (active ? 'border-amber-500/40' : 'border-amber-500/20')
+                    : (active ? 'border-red-500/40' : 'border-red-500/20')
+                  const previewBg = rendNN === null
+                    ? (active ? 'bg-emerald-500/[0.08]' : 'bg-white/[0.03]')
+                    : rendNN >= 4 ? (active ? 'bg-emerald-500/[0.10]' : 'bg-emerald-500/[0.04]')
+                    : rendNN >= 2 ? (active ? 'bg-amber-500/[0.10]' : 'bg-amber-500/[0.04]')
+                    : (active ? 'bg-red-500/[0.10]' : 'bg-red-500/[0.04]')
+
                   return (
                     <button
                       key={id}
@@ -766,21 +814,64 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams 
                           lmpEnabled: id === 'nom-propre' ? prev.lmpEnabled : false,
                         }))
                       }}
-                      className={`flex flex-col items-start gap-1 p-3 rounded-xl border transition-all text-left ${
+                      className={`flex flex-col items-start gap-0.5 p-3 rounded-xl border transition-all text-left relative ${
                         disabled
                           ? 'opacity-30 cursor-not-allowed bg-white/[0.02] border-white/[0.05]'
-                          : active
-                          ? 'bg-emerald-500/[0.08] border-emerald-500/30'
-                          : 'bg-white/[0.03] border-white/[0.07] hover:bg-white/[0.06] hover:border-white/[0.12]'
+                          : `${previewBg} ${previewBorder} hover:brightness-110`
                       }`}
                     >
+                      {/* Indicateur actif */}
+                      {active && (
+                        <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      )}
                       <span className="text-base leading-none">{icon}</span>
-                      <p className={`text-[12px] font-bold leading-tight mt-1 ${active ? 'text-emerald-400' : 'text-white'}`}>{label}</p>
+                      <p className={`text-[12px] font-bold leading-tight mt-1 ${active ? 'text-white' : 'text-zinc-300'}`}>{label}</p>
                       <p className="text-[10px] text-zinc-500 leading-snug">{desc}</p>
+
+                      {/* Preview rendement nette-nette */}
+                      {preview && !disabled && (
+                        <div className="mt-1.5 pt-1.5 border-t border-white/[0.06] w-full flex items-center justify-between gap-1">
+                          <span className="text-[9px] text-zinc-600 uppercase tracking-wide">Meilleur régime</span>
+                          <span className={`text-[11px] font-black tabular-nums ${previewColor}`}>
+                            {preview.rendNetNet.toFixed(2)}%
+                          </span>
+                        </div>
+                      )}
+                      {!preview && result && !disabled && (
+                        <div className="mt-1.5 pt-1.5 border-t border-white/[0.06] w-full">
+                          <span className="text-[9px] text-zinc-600">Non applicable</span>
+                        </div>
+                      )}
                     </button>
                   )
                 })}
               </div>
+
+              {/* Résumé de la structure sélectionnée */}
+              {structurePreviews[p.structure] && (
+                <div className={`rounded-lg px-3 py-2.5 border flex items-center justify-between gap-3 ${
+                  (structurePreviews[p.structure]?.rendNetNet ?? 0) >= 4
+                    ? 'bg-emerald-500/[0.06] border-emerald-500/20'
+                    : (structurePreviews[p.structure]?.rendNetNet ?? 0) >= 2
+                    ? 'bg-amber-500/[0.06] border-amber-500/20'
+                    : 'bg-red-500/[0.06] border-red-500/20'
+                }`}>
+                  <div>
+                    <p className="text-[10px] text-zinc-500">Régime optimal pour cette structure</p>
+                    <p className="text-[12px] font-semibold text-white mt-0.5">{structurePreviews[p.structure]?.bestName}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className={`text-lg font-black tabular-nums ${
+                      (structurePreviews[p.structure]?.rendNetNet ?? 0) >= 4 ? 'text-emerald-400'
+                      : (structurePreviews[p.structure]?.rendNetNet ?? 0) >= 2 ? 'text-amber-400'
+                      : 'text-red-400'
+                    }`}>
+                      {(structurePreviews[p.structure]?.rendNetNet ?? 0).toFixed(2)}%
+                    </p>
+                    <p className="text-[9px] text-zinc-600">nette-nette</p>
+                  </div>
+                </div>
+              )}
 
               {/* LMP toggle — uniquement nom propre + meublé */}
               {p.structure === 'nom-propre' && isMeuble && (

@@ -214,6 +214,7 @@ export default function AnalysePage() {
               onChange={handleChange}
               loading={loading}
               initialParams={initialParams}
+              result={result}
             />
           </div>
         </aside>

@@ -424,6 +424,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.18); }
 }
 
 .anim-float       { animation: float-soft 7s ease-in-out infinite; }
+.anim-float-slow  { animation: float-soft 11s ease-in-out infinite; }
 .anim-fadein      { animation: fade-in 0.8s cubic-bezier(0.16,1,0.3,1) both; }
 .anim-fadein-slow { animation: fade-in-slow 1.1s cubic-bezier(0.16,1,0.3,1) both; }
 .anim-breathe     { animation: glow-breathe 6s ease-in-out infinite; }

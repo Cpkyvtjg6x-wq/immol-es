@@ -235,10 +235,10 @@ function HeroSection({ onPrimary, onSecondary }: { onPrimary: () => void; onSeco
               </svg>
             </a>
 
-            <h1 className="display-lg text-[clamp(3rem,6.5vw,5.6rem)] gt-white">
-              <span className="word-reveal" style={{ animationDelay: '0ms' }}>L'analyse</span>{' '}
+            <h1 className="display-lg text-[clamp(3rem,6.5vw,5.6rem)]">
+              <span className="word-reveal gt-white" style={{ animationDelay: '0ms' }}>L'analyse</span>{' '}
               <br />
-              <span className="word-reveal" style={{ animationDelay: '120ms' }}>immobilière,</span>
+              <span className="word-reveal gt-white" style={{ animationDelay: '120ms' }}>immobilière,</span>
               <br />
               <span className="word-reveal serif-italic text-emerald-300/95" style={{ animationDelay: '260ms' }}>
                 redessinée.
@@ -552,14 +552,18 @@ function StatsStrip() {
   const v4 = useCountUp(98, 1500, inView)
 
   return (
-    <section ref={ref} className="relative py-16 lg:py-20">
-      <div className="max-w-6xl mx-auto px-6 lg:px-10">
+    <section ref={ref} className="relative py-20 lg:py-24">
+      <div className="max-w-6xl mx-auto px-6 lg:px-10 space-y-10">
+        {/* 4 chiffres clés */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-8">
           <Stat value={`${v1.toLocaleString('fr-FR')}`} suffix="" label="Biens analysés" />
           <Stat value={`${v2}`} suffix=" M€" label="Économies fiscales détectées" />
           <Stat value={`${(v3 / 10).toFixed(1)}`} suffix="/5" label="Note utilisateurs" />
           <Stat value={`${v4}`} suffix="%" label="Décisions plus rapides" />
         </div>
+
+        {/* Live activity panel */}
+        <LiveActivityPanel inView={inView} />
       </div>
     </section>
   )
@@ -572,6 +576,108 @@ function Stat({ value, suffix, label }: { value: string; suffix: string; label: 
         {value}<span className="serif-italic text-emerald-300 ml-0.5">{suffix}</span>
       </div>
       <div className="mono text-[10.5px] text-zinc-500 mt-2 uppercase tracking-[0.18em]">{label}</div>
+    </div>
+  )
+}
+
+function LiveActivityPanel({ inView }: { inView: boolean }) {
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    if (!inView) return
+    const id = setInterval(() => setTick((t) => t + 1), 2400)
+    return () => clearInterval(id)
+  }, [inView])
+
+  // Rotating list of recent analyses
+  const analyses = [
+    { city: 'Lyon 2ᵉ', price: '245 k€', score: 87, tone: 'good' as const },
+    { city: 'Paris 11ᵉ', price: '480 k€', score: 62, tone: 'neutral' as const },
+    { city: 'Marseille', price: '180 k€', score: 91, tone: 'good' as const },
+    { city: 'Bordeaux', price: '320 k€', score: 54, tone: 'neutral' as const },
+    { city: 'Nantes', price: '215 k€', score: 78, tone: 'good' as const },
+    { city: 'Toulouse', price: '195 k€', score: 84, tone: 'good' as const },
+    { city: 'Lille', price: '165 k€', score: 89, tone: 'good' as const },
+  ]
+  const visible = Array.from({ length: 4 }, (_, i) => analyses[(tick + i) % analyses.length])
+
+  // Sparkline data — synthetic "today's activity"
+  const sparkPoints = Array.from({ length: 24 }, (_, i) => {
+    return 30 + Math.sin(i * 0.6 + tick * 0.3) * 10 + Math.cos(i * 0.3) * 6 + (i / 24) * 20
+  })
+  const sparkW = 600
+  const sparkH = 60
+  const max = Math.max(...sparkPoints)
+  const min = Math.min(...sparkPoints)
+  const sparkD = sparkPoints
+    .map((p, i) => {
+      const x = (i / (sparkPoints.length - 1)) * sparkW
+      const y = sparkH - ((p - min) / (max - min || 1)) * sparkH
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`
+    })
+    .join(' ')
+
+  return (
+    <div className="reveal reveal-d2 grid lg:grid-cols-[1.4fr_1fr] gap-3 rounded-2xl bg-gradient-to-b from-white/[0.02] to-white/[0.005] border border-white/[0.05] overflow-hidden">
+      {/* Left: Sparkline — Activity today */}
+      <div className="relative p-6 lg:p-7 border-b lg:border-b-0 lg:border-r border-white/[0.05]">
+        <div className="flex items-center justify-between mb-5">
+          <div className="space-y-1">
+            <div className="mono text-[10px] text-zinc-500 uppercase tracking-[0.2em]">Activité aujourd'hui</div>
+            <div className="flex items-baseline gap-2">
+              <span className="display text-[28px] text-white tabular">847</span>
+              <span className="serif-italic text-emerald-300 text-sm">analyses</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-tick" />
+            <span className="mono text-[10px] text-emerald-300 uppercase tracking-wider">en ligne</span>
+          </div>
+        </div>
+
+        <svg viewBox={`0 0 ${sparkW} ${sparkH}`} preserveAspectRatio="none" className="w-full h-16">
+          <defs>
+            <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={`${sparkD} L ${sparkW} ${sparkH} L 0 ${sparkH} Z`} fill="url(#spark-fill)" className={`chart-fill ${inView ? 'in-view' : ''}`} />
+          <path d={sparkD} fill="none" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" className={`chart-draw ${inView ? 'in-view' : ''}`} />
+        </svg>
+
+        <div className="flex justify-between mt-2 mono text-[9.5px] text-zinc-600 tracking-wider">
+          <span>00h</span><span>06h</span><span>12h</span><span>18h</span><span>maintenant</span>
+        </div>
+      </div>
+
+      {/* Right: Live feed of analyses */}
+      <div className="p-6 lg:p-7">
+        <div className="flex items-center justify-between mb-4">
+          <div className="mono text-[10px] text-zinc-500 uppercase tracking-[0.2em]">Dernières analyses</div>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        </div>
+        <div className="space-y-1.5">
+          {visible.map((a, i) => (
+            <div
+              key={`${a.city}-${tick}-${i}`}
+              className="flex items-center gap-3 px-2.5 py-2 rounded-md bg-white/[0.02] border border-white/[0.04]"
+              style={{
+                animation: `fade-in 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 60}ms both`,
+                opacity: 1 - i * 0.18,
+              }}
+            >
+              <span className="mono text-[10px] text-zinc-600 w-4">{i === 0 ? '●' : ''}</span>
+              <span className="text-[12px] text-zinc-200 flex-1">{a.city}</span>
+              <span className="mono text-[10.5px] text-zinc-500 tabular">{a.price}</span>
+              <span className={`mono text-[10.5px] tabular font-medium ${
+                a.tone === 'good' ? 'text-emerald-300' : 'text-amber-300'
+              }`}>
+                {a.score}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
@@ -1067,9 +1173,30 @@ function ImmolyseScreenshot({ inView }: { inView: boolean }) {
    ══════════════════════════════════════════════════════════════════════════ */
 function PersonasSection({ onCta }: { onCta: () => void }) {
   const personas = [
-    { tag: 'Débutant', title: 'Votre premier bien', desc: 'On vous dit ce qui est rentable, ce qui ne l\'est pas, et pourquoi. Aucune connaissance fiscale requise.', points: ['Score clair', 'Recommandation IA', 'Glossaire intégré'], icon: '01' },
-    { tag: 'Multi-bien', title: '3 biens ou plus', desc: 'Comparez vos investissements, identifiez ceux qui sous-performent, optimisez votre fiscalité globale.', points: ['Comparaison multi-biens', 'Optimisation fiscale', 'Bibliothèque centralisée'], icon: '02' },
-    { tag: 'Pro', title: 'CGP, agent, courtier', desc: 'Présentez à vos clients des analyses complètes en quelques secondes, avec votre logo en PDF.', points: ['Rapports white-label', 'Accès API', 'Multi-comptes équipe'], icon: '03' },
+    {
+      tag: 'Débutant',
+      title: 'Votre premier bien',
+      desc: 'On vous dit ce qui est rentable, ce qui ne l\'est pas, et pourquoi. Aucune connaissance fiscale requise.',
+      points: ['Score clair', 'Recommandation IA', 'Glossaire intégré'],
+      icon: '01',
+      visual: <PersonaVisualBeginner />,
+    },
+    {
+      tag: 'Multi-bien',
+      title: '3 biens ou plus',
+      desc: 'Comparez vos investissements, identifiez ceux qui sous-performent, optimisez votre fiscalité globale.',
+      points: ['Comparaison multi-biens', 'Optimisation fiscale', 'Bibliothèque centralisée'],
+      icon: '02',
+      visual: <PersonaVisualMulti />,
+    },
+    {
+      tag: 'Pro',
+      title: 'CGP, agent, courtier',
+      desc: 'Présentez à vos clients des analyses complètes en quelques secondes, avec votre logo en PDF.',
+      points: ['Rapports white-label', 'Accès API', 'Multi-comptes équipe'],
+      icon: '03',
+      visual: <PersonaVisualPro />,
+    },
   ]
 
   return (
@@ -1085,14 +1212,18 @@ function PersonasSection({ onCta }: { onCta: () => void }) {
 
         <div className="grid md:grid-cols-3 gap-3 reveal reveal-d1">
           {personas.map((p) => (
-            <div key={p.tag} className="spotlight relative rounded-xl p-8 bg-gradient-to-b from-white/[0.025] to-white/[0.005] border border-white/[0.05] hover:border-white/[0.12] transition-all duration-500">
-              <div className="flex items-center justify-between mb-8">
+            <div key={p.tag} className="spotlight relative rounded-xl p-7 bg-gradient-to-b from-white/[0.025] to-white/[0.005] border border-white/[0.05] hover:border-white/[0.12] transition-all duration-500 flex flex-col">
+              <div className="flex items-center justify-between mb-6">
                 <div className="mono text-[9.5px] text-emerald-300/80 uppercase tracking-[0.22em]">{p.tag}</div>
                 <div className="mono text-[28px] text-zinc-700 leading-none">{p.icon}</div>
               </div>
-              <h3 className="display text-[22px] gt-white mb-4">{p.title}</h3>
-              <p className="text-[13.5px] text-zinc-500 leading-[1.65] mb-6">{p.desc}</p>
-              <div className="space-y-2 mb-6">
+              <h3 className="display text-[22px] gt-white mb-3">{p.title}</h3>
+              <p className="text-[13.5px] text-zinc-500 leading-[1.65] mb-5">{p.desc}</p>
+
+              {/* Mini calculateur visual */}
+              <div className="mb-5">{p.visual}</div>
+
+              <div className="space-y-2 mb-5">
                 {p.points.map((pt) => (
                   <div key={pt} className="flex items-center gap-2 text-[12.5px] text-zinc-300">
                     <svg className="w-3 h-3 text-emerald-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -1102,7 +1233,7 @@ function PersonasSection({ onCta }: { onCta: () => void }) {
                   </div>
                 ))}
               </div>
-              <button onClick={onCta} className="text-[12.5px] text-emerald-300 hover:text-emerald-200 font-medium inline-flex items-center gap-1.5 group">
+              <button onClick={onCta} className="mt-auto text-[12.5px] text-emerald-300 hover:text-emerald-200 font-medium inline-flex items-center gap-1.5 group self-start">
                 Essayer pour ce profil
                 <svg className="w-3 h-3 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -1113,6 +1244,137 @@ function PersonasSection({ onCta }: { onCta: () => void }) {
         </div>
       </div>
     </section>
+  )
+}
+
+/* Mini visuels calculateur pour chaque persona ───────────────────────────── */
+function PersonaVisualBeginner() {
+  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.3 })
+  const score = useCountUp(87, 1600, inView)
+  const circ = 2 * Math.PI * 32
+  const offset = circ - (score / 100) * circ
+
+  return (
+    <div ref={ref} className="relative rounded-lg bg-black/30 border border-white/[0.05] p-3.5 overflow-hidden">
+      <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-50" style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.2), transparent 60%)', filter: 'blur(20px)' }} />
+
+      <div className="relative flex items-center gap-4">
+        {/* Score dial */}
+        <div className="relative w-[72px] h-[72px] flex-shrink-0">
+          <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
+            <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.06)" strokeWidth="4" fill="none" />
+            <circle cx="40" cy="40" r="32" stroke="#34d399" strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} style={{ transition: 'stroke-dashoffset 1.6s cubic-bezier(0.16,1,0.3,1)' }} />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="display text-[22px] text-white tabular leading-none">{score}</div>
+            <div className="mono text-[8px] text-zinc-500 uppercase tracking-wider">/100</div>
+          </div>
+        </div>
+
+        {/* Verdict */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-tick" />
+            <span className="mono text-[9px] text-emerald-300 uppercase tracking-wider">Verdict IA</span>
+          </div>
+          <p className="serif text-[14px] text-white leading-[1.3]">
+            <span className="serif-italic text-emerald-300">Bon investissement.</span>
+          </p>
+          <p className="text-[10.5px] text-zinc-500 leading-[1.4] mt-1">Procédez en LMNP réel.</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PersonaVisualMulti() {
+  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.3 })
+  const properties = [
+    { name: 'Lyon T3', rd: '5.8', best: true },
+    { name: 'Paris T2', rd: '3.4' },
+    { name: 'Nice T4', rd: '4.2' },
+  ]
+  return (
+    <div ref={ref} className="relative rounded-lg bg-black/30 border border-white/[0.05] p-3.5">
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="mono text-[9px] text-zinc-500 uppercase tracking-wider">Vos 3 biens</span>
+        <span className="mono text-[9px] text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-1.5 py-0.5">classés</span>
+      </div>
+      <div className="space-y-1.5">
+        {properties.map((p, i) => (
+          <div
+            key={p.name}
+            className={`flex items-center justify-between px-2.5 py-1.5 rounded-md border ${
+              p.best ? 'bg-emerald-500/[0.08] border-emerald-500/25' : 'bg-white/[0.02] border-white/[0.04]'
+            }`}
+            style={{ animation: inView ? `fade-in 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 120}ms both` : 'none' }}
+          >
+            <div className="flex items-center gap-2">
+              <div className={`w-1.5 h-1.5 rounded-full ${p.best ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+              <span className="text-[11.5px] text-zinc-200">{p.name}</span>
+              {p.best && <span className="mono text-[8px] text-emerald-300 bg-emerald-500/15 px-1 py-0.5 rounded">TOP</span>}
+            </div>
+            <span className={`mono text-[11px] tabular font-medium ${p.best ? 'text-emerald-300' : 'text-zinc-400'}`}>{p.rd}%</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2.5 pt-2.5 border-t border-white/[0.05] flex items-center justify-between">
+        <span className="mono text-[9px] text-zinc-600 uppercase tracking-wider">Δ vs marché</span>
+        <span className="mono text-[10px] text-emerald-300 tabular font-medium">+0.7 pts</span>
+      </div>
+    </div>
+  )
+}
+
+function PersonaVisualPro() {
+  return (
+    <div className="relative rounded-lg bg-black/30 border border-white/[0.05] p-3.5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="mono text-[9px] text-zinc-500 uppercase tracking-wider">rapport-client.pdf</span>
+        <span className="mono text-[9px] text-pink-300 bg-pink-500/10 border border-pink-500/20 rounded-full px-1.5 py-0.5">white-label</span>
+      </div>
+      <div className="rounded-md bg-white/[0.025] border border-white/[0.05] p-3 space-y-2">
+        {/* Faux header avec logo placeholder */}
+        <div className="flex items-center justify-between pb-2 border-b border-white/[0.05]">
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 rounded-sm bg-gradient-to-br from-pink-400 to-indigo-400" />
+            <span className="text-[10px] font-medium text-white">Votre Cabinet</span>
+          </div>
+          <span className="mono text-[8.5px] text-zinc-500">M. Dupont</span>
+        </div>
+
+        {/* Faux contenu */}
+        <div className="space-y-1">
+          <div className="h-1 rounded bg-white/[0.08] w-3/4" />
+          <div className="h-1 rounded bg-white/[0.04] w-full" />
+          <div className="h-1 rounded bg-white/[0.04] w-5/6" />
+        </div>
+
+        {/* Mini stat row */}
+        <div className="grid grid-cols-3 gap-1.5 pt-1">
+          {[
+            { l: 'Rendt', v: '5.8%' },
+            { l: 'CF', v: '+128€' },
+            { l: 'Score', v: '87' },
+          ].map((s) => (
+            <div key={s.l} className="p-1.5 rounded bg-emerald-500/[0.06] border border-emerald-500/15 text-center">
+              <div className="mono text-[7.5px] text-zinc-500 uppercase tracking-wider">{s.l}</div>
+              <div className="text-[10px] font-medium text-emerald-300 tabular">{s.v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Faux export button row */}
+      <div className="flex items-center gap-1.5 mt-2.5">
+        <div className="flex-1 px-2 py-1 rounded border border-white/[0.06] text-center mono text-[9px] text-zinc-400 bg-white/[0.02]">
+          Exporter
+        </div>
+        <div className="px-2 py-1 rounded bg-emerald-500/15 border border-emerald-500/30 mono text-[9px] text-emerald-300">
+          ↓ PDF
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -1521,7 +1783,7 @@ function FaqSection() {
    ══════════════════════════════════════════════════════════════════════════ */
 function CtaFinalSection({ onPrimary }: { onPrimary: () => void }) {
   return (
-    <section className="relative py-36 lg:py-44 overflow-hidden">
+    <section className="relative py-36 lg:py-48 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="glow-em anim-breathe" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
         <div className="specks opacity-50" />
@@ -1532,6 +1794,85 @@ function CtaFinalSection({ onPrimary }: { onPrimary: () => void }) {
           <div className="orb-ring orb-ring-1 w-[280px] h-[280px] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 absolute" />
           <div className="orb-ring orb-ring-2 w-[440px] h-[440px] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 absolute" />
           <div className="orb-ring orb-ring-3 w-[620px] h-[620px] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 absolute" />
+        </div>
+
+        {/* Floating UI chips */}
+        <div className="hidden md:block">
+          {/* Top-left : Score chip */}
+          <div className="absolute top-[18%] left-[8%] anim-float-slow" style={{ animationDelay: '0s' }}>
+            <FloatingChip>
+              <div className="flex items-center gap-2.5">
+                <div className="relative w-8 h-8">
+                  <svg viewBox="0 0 32 32" className="w-full h-full -rotate-90">
+                    <circle cx="16" cy="16" r="12" stroke="rgba(255,255,255,0.08)" strokeWidth="2.5" fill="none" />
+                    <circle cx="16" cy="16" r="12" stroke="#34d399" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeDasharray={2 * Math.PI * 12} strokeDashoffset={2 * Math.PI * 12 * 0.13} />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center mono text-[9px] text-white">87</div>
+                </div>
+                <div className="leading-tight">
+                  <div className="mono text-[8.5px] text-zinc-500 uppercase tracking-wider">Score IA</div>
+                  <div className="text-[10px] text-emerald-300 font-medium">Excellent</div>
+                </div>
+              </div>
+            </FloatingChip>
+          </div>
+
+          {/* Top-right : Cashflow chip */}
+          <div className="absolute top-[14%] right-[10%] anim-float-slow" style={{ animationDelay: '1.5s' }}>
+            <FloatingChip>
+              <div>
+                <div className="mono text-[8.5px] text-zinc-500 uppercase tracking-wider mb-0.5">Cashflow/mois</div>
+                <div className="display text-[18px] text-emerald-300 tabular">+128 €</div>
+              </div>
+            </FloatingChip>
+          </div>
+
+          {/* Bottom-left : Régime chip */}
+          <div className="absolute bottom-[18%] left-[12%] anim-float-slow" style={{ animationDelay: '3s' }}>
+            <FloatingChip>
+              <div className="flex items-center gap-2">
+                <span className="mono text-[8.5px] text-emerald-300 bg-emerald-500/15 px-1.5 py-0.5 rounded">★ OPTI</span>
+                <span className="text-[11px] font-medium text-white">LMNP réel</span>
+              </div>
+              <div className="mono text-[8.5px] text-zinc-500 mt-1 uppercase tracking-wider">Régime recommandé</div>
+            </FloatingChip>
+          </div>
+
+          {/* Bottom-right : Sparkline chip */}
+          <div className="absolute bottom-[20%] right-[8%] anim-float-slow" style={{ animationDelay: '4.5s' }}>
+            <FloatingChip>
+              <div className="mono text-[8.5px] text-zinc-500 uppercase tracking-wider mb-1.5">Patrimoine · 20 ans</div>
+              <svg viewBox="0 0 80 24" preserveAspectRatio="none" className="w-20 h-6">
+                <path d="M 0 22 Q 20 18 40 10 T 80 2" fill="none" stroke="#34d399" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+              <div className="mono text-[9px] text-emerald-300 mt-1">+248k €</div>
+            </FloatingChip>
+          </div>
+
+          {/* Mid-left : PDF chip */}
+          <div className="absolute top-[50%] left-[5%] anim-float-slow" style={{ animationDelay: '2.2s' }}>
+            <FloatingChip>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-red-500/15 flex items-center justify-center">
+                  <svg className="w-3 h-3 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m-6-8h6M5 7v13a1 1 0 001 1h12a1 1 0 001-1V8.414a1 1 0 00-.293-.707l-4.414-4.414A1 1 0 0013.586 3H6a1 1 0 00-1 1v3z" />
+                  </svg>
+                </div>
+                <div className="leading-tight">
+                  <div className="text-[10px] font-medium text-white">rapport.pdf</div>
+                  <div className="mono text-[8.5px] text-zinc-500">420 Ko</div>
+                </div>
+              </div>
+            </FloatingChip>
+          </div>
+
+          {/* Mid-right : Rendement chip */}
+          <div className="absolute top-[55%] right-[6%] anim-float-slow" style={{ animationDelay: '3.7s' }}>
+            <FloatingChip>
+              <div className="mono text-[8.5px] text-zinc-500 uppercase tracking-wider mb-0.5">Rendement net</div>
+              <div className="display text-[18px] text-white tabular">5.78%</div>
+            </FloatingChip>
+          </div>
         </div>
       </div>
 
@@ -1557,6 +1898,14 @@ function CtaFinalSection({ onPrimary }: { onPrimary: () => void }) {
         </p>
       </div>
     </section>
+  )
+}
+
+function FloatingChip({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="glass-card rounded-xl px-3 py-2.5 shadow-2xl backdrop-blur-xl">
+      {children}
+    </div>
   )
 }
 

@@ -379,6 +379,11 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.18); }
 }
 .bar-grow.in-view { transform: scaleX(1); }
 
+@keyframes bar-grow-anim {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+
 /* ─── Live dot subtle pulse (different from animate-ping) ────── */
 @keyframes live-tick {
   0%, 100% { opacity: 1; }

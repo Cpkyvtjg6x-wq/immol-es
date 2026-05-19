@@ -1453,16 +1453,16 @@ function ExplicationSection() {
 
           {/* RIGHT — Sticky visual that crossfades */}
           <div className="hidden lg:block">
-            <div className="sticky top-32 h-[70vh] flex items-center">
-              <div className="relative w-full">
+            <div className="sticky top-32 h-[70vh] flex items-center justify-center">
+              <div className="relative w-full" style={{ height: 'min(560px, 70vh)' }}>
                 {steps.map((s, i) => (
                   <div
                     key={i}
-                    className={`transition-all duration-700 ${
-                      active === i ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 absolute inset-0 pointer-events-none'
+                    className={`absolute inset-0 flex items-center transition-all duration-700 ${
+                      active === i ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
                     }`}
                   >
-                    {s.visual}
+                    <div className="w-full">{s.visual}</div>
                   </div>
                 ))}
               </div>
@@ -1519,38 +1519,90 @@ function ZoomVisualAnalyse() {
 
 function ZoomVisualFiscal() {
   const rows = [
-    { name: 'Micro-foncier', net: '-1 240 €', tone: 'bad' },
-    { name: 'Réel foncier', net: '-480 €', tone: 'bad' },
-    { name: 'LMNP réel', net: '+1 540 €', tone: 'good', best: true },
-    { name: 'LMNP micro', net: '+620 €', tone: 'good' },
-    { name: 'SCI à l\'IS', net: '+340 €', tone: 'good' },
+    { name: 'LMNP réel', net: 1540, pct: 100, tone: 'good', best: true },
+    { name: 'LMP réel', net: 1180, pct: 76, tone: 'good' },
+    { name: 'LMNP micro-BIC', net: 620, pct: 40, tone: 'good' },
+    { name: 'SCI à l\'IS', net: 340, pct: 22, tone: 'good' },
+    { name: 'SARL famille', net: 180, pct: 12, tone: 'good' },
+    { name: 'Indivision', net: 80, pct: 5, tone: 'good' },
+    { name: 'Réel foncier', net: -480, pct: 31, tone: 'bad' },
+    { name: 'Micro-foncier', net: -1240, pct: 80, tone: 'bad' },
   ]
   return (
     <div className="relative">
-      <div className="absolute -inset-6 bg-gradient-to-tl from-indigo-500/15 to-transparent rounded-3xl blur-2xl" />
-      <div className="relative glass-card rounded-xl p-5 space-y-3 shadow-2xl">
-        <div className="flex items-center justify-between">
-          <div className="mono text-[10px] text-zinc-500 uppercase tracking-[0.18em]">Comparateur fiscal</div>
-          <div className="mono text-[10px] text-indigo-300 bg-indigo-500/10 border border-indigo-500/15 rounded-full px-2 py-0.5">10 régimes</div>
-        </div>
-        <div className="space-y-1.5">
-          {rows.map((r, i) => (
-            <div
-              key={r.name}
-              className={`flex items-center justify-between px-3 py-2 rounded-lg text-[12.5px] transition-all duration-500 ${
-                r.best ? 'bg-emerald-500/[0.08] border border-emerald-500/25' : 'bg-white/[0.02] border border-white/[0.04]'
-              }`}
-              style={{ animation: `fade-in 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 90}ms both` }}
-            >
-              <span className="flex items-center gap-2 text-zinc-200">
-                {r.best && <span className="mono text-[8.5px] text-emerald-300 bg-emerald-500/15 px-1.5 py-0.5 rounded">OPTI</span>}
-                {r.name}
-              </span>
-              <span className={`mono font-medium tabular ${r.tone === 'good' ? 'text-emerald-300' : 'text-red-300'}`}>
-                {r.net}/mois
-              </span>
+      <div className="absolute -inset-8 bg-gradient-to-tl from-indigo-500/20 via-emerald-500/8 to-transparent rounded-3xl blur-3xl" />
+      <div className="relative glass-card rounded-2xl shadow-2xl overflow-hidden">
+        {/* Header bar with window controls */}
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.05] bg-black/30">
+          <div className="flex gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-zinc-700" />
+            <span className="w-2 h-2 rounded-full bg-zinc-700" />
+            <span className="w-2 h-2 rounded-full bg-zinc-700" />
+          </div>
+          <div className="flex-1 flex justify-center">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white/[0.04] mono text-[10px] text-zinc-500">
+              immolyse.app/analyse/fiscalite
             </div>
-          ))}
+          </div>
+          <div className="w-10" />
+        </div>
+
+        <div className="p-5 space-y-4">
+          {/* Title row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 live-tick" />
+              <div className="mono text-[10.5px] text-zinc-400 uppercase tracking-[0.18em]">Comparateur fiscal</div>
+            </div>
+            <div className="mono text-[10px] text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-2 py-0.5">10 régimes</div>
+          </div>
+
+          {/* Régimes list with bars */}
+          <div className="space-y-1.5">
+            {rows.map((r, i) => {
+              const pos = r.tone === 'good'
+              const barColor = pos ? 'bg-gradient-to-r from-emerald-500/60 to-emerald-400/30' : 'bg-gradient-to-r from-red-500/60 to-red-400/20'
+              return (
+                <div
+                  key={r.name}
+                  className={`relative flex items-center justify-between px-3 py-2 rounded-lg text-[12px] ${
+                    r.best ? 'bg-emerald-500/[0.10] border border-emerald-500/30' : 'bg-white/[0.02] border border-white/[0.04]'
+                  }`}
+                  style={{ animation: `fade-in 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 60}ms both` }}
+                >
+                  {/* Background bar showing relative weight */}
+                  <div
+                    className={`absolute inset-y-0 left-0 ${barColor} opacity-30 rounded-lg`}
+                    style={{ width: `${r.pct}%`, animation: `bar-grow-anim 1s cubic-bezier(0.16,1,0.3,1) ${i * 60 + 200}ms both` }}
+                  />
+                  <span className="relative flex items-center gap-2 text-zinc-100">
+                    {r.best && <span className="mono text-[8.5px] text-emerald-200 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded">★ OPTI</span>}
+                    {r.name}
+                  </span>
+                  <span className={`relative mono font-semibold tabular text-[12.5px] ${pos ? 'text-emerald-200' : 'text-red-200'}`}>
+                    {r.net >= 0 ? '+' : '−'}{Math.abs(r.net).toLocaleString('fr-FR')} €
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Économie callout */}
+          <div className="relative overflow-hidden flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-emerald-500/[0.10] via-emerald-500/[0.04] to-transparent border border-emerald-500/25">
+            <div className="w-9 h-9 rounded-md bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="mono text-[9.5px] text-zinc-500 uppercase tracking-[0.15em]">Économie annuelle</div>
+              <div className="text-[11.5px] text-emerald-200 font-medium">avec LMNP réel vs micro-foncier</div>
+            </div>
+            <div className="text-right">
+              <div className="display text-[22px] text-emerald-300 tabular leading-none">+14 040</div>
+              <div className="mono text-[10px] text-emerald-400/80 tabular">€ / an</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1560,37 +1612,135 @@ function ZoomVisualFiscal() {
 function ZoomVisualExport() {
   return (
     <div className="relative">
-      <div className="absolute -inset-6 bg-gradient-to-br from-amber-500/10 to-transparent rounded-3xl blur-2xl" />
-      <div className="relative glass-card rounded-xl p-5 space-y-3.5 shadow-2xl">
-        <div className="flex items-center justify-between">
-          <div className="mono text-[10px] text-zinc-500 uppercase tracking-[0.18em]">Exports</div>
-          <div className="mono text-[10px] text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-0.5">prêt</div>
-        </div>
-        <div className="space-y-2">
-          {[
-            { name: 'rapport-banque.pdf', size: '420 Ko', color: 'red' },
-            { name: 'amortissement.xlsx', size: '186 Ko', color: 'emerald' },
-            { name: 'comparatif-fiscal.pdf', size: '312 Ko', color: 'red' },
-          ].map((f, i) => (
-            <div
-              key={f.name}
-              className="flex items-center gap-3 p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-colors"
-              style={{ animation: `fade-in 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 100}ms both` }}
-            >
-              <div className={`w-8 h-8 rounded-md flex items-center justify-center ${f.color === 'red' ? 'bg-red-500/15 text-red-300' : 'bg-emerald-500/15 text-emerald-300'}`}>
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m-6-8h6M5 7v13a1 1 0 001 1h12a1 1 0 001-1V8.414a1 1 0 00-.293-.707l-4.414-4.414A1 1 0 0013.586 3H6a1 1 0 00-1 1v3z" />
+      <div className="absolute -inset-8 bg-gradient-to-br from-amber-500/15 via-red-500/8 to-transparent rounded-3xl blur-3xl" />
+
+      <div className="relative">
+        {/* Stacked PDF pages (back layers, transparent) */}
+        <div
+          className="absolute top-8 -right-3 w-[92%] h-[88%] glass-card rounded-xl opacity-25"
+          style={{ transform: 'rotate(4deg)' }}
+        />
+        <div
+          className="absolute top-4 -right-1 w-[96%] h-[94%] glass-card rounded-xl opacity-50"
+          style={{ transform: 'rotate(2deg)' }}
+        />
+
+        {/* Main PDF preview (front) */}
+        <div className="relative glass-card rounded-xl shadow-2xl overflow-hidden">
+          {/* Window chrome */}
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.05] bg-black/30">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-red-500/15 border border-red-500/20 flex items-center justify-center">
+                <svg className="w-3 h-3 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6M5 7v13a1 1 0 001 1h12a1 1 0 001-1V8.414a1 1 0 00-.293-.707l-4.414-4.414A1 1 0 0013.586 3H6a1 1 0 00-1 1v3z" />
                 </svg>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[12.5px] font-medium text-white truncate">{f.name}</div>
-                <div className="mono text-[10px] text-zinc-500">{f.size}</div>
+              <span className="text-[12px] font-medium text-white">rapport-banque.pdf</span>
+              <span className="mono text-[9.5px] text-zinc-500">· 12 pages</span>
+            </div>
+            <span className="mono text-[9.5px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/15 rounded-full px-2 py-0.5">prêt</span>
+          </div>
+
+          {/* PDF "page" content preview */}
+          <div className="p-5 space-y-4 bg-gradient-to-b from-white/[0.01] to-white/[0.005]">
+            {/* Cover */}
+            <div className="flex items-start justify-between pb-3 border-b border-white/[0.05]">
+              <div>
+                <div className="mono text-[9px] text-zinc-500 uppercase tracking-[0.18em] mb-1">Analyse d'investissement</div>
+                <div className="text-[14px] font-medium text-white">12 rue Vaubecour</div>
+                <div className="text-[11px] text-zinc-500">69002 Lyon · T3 · 68 m²</div>
               </div>
-              <svg className="w-3.5 h-3.5 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+              <div className="text-right">
+                <div className="mono text-[9px] text-zinc-500">Édité le</div>
+                <div className="text-[11px] text-zinc-400">19 mai 2026</div>
+              </div>
+            </div>
+
+            {/* Mini chart preview */}
+            <div className="rounded-lg bg-white/[0.025] border border-white/[0.05] p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="mono text-[9.5px] text-zinc-500 uppercase tracking-[0.15em]">Patrimoine projeté · 20 ans</div>
+                <span className="mono text-[10px] text-emerald-300 tabular">+248 k€</span>
+              </div>
+              <svg viewBox="0 0 240 50" preserveAspectRatio="none" className="w-full h-10">
+                <defs>
+                  <linearGradient id="export-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path d="M 0 42 Q 50 38 100 26 T 200 8 L 240 4 L 240 50 L 0 50 Z" fill="url(#export-grad)" />
+                <path d="M 0 42 Q 50 38 100 26 T 200 8 L 240 4" fill="none" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </div>
-          ))}
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { l: 'Rendt brut', v: '5.78%', c: 'emerald' },
+                { l: 'Cashflow', v: '+128€', c: 'emerald' },
+                { l: 'Régime', v: 'LMNP', c: 'indigo' },
+                { l: 'Score', v: '87', c: 'emerald' },
+              ].map((s) => (
+                <div
+                  key={s.l}
+                  className={`p-2 rounded-md text-center ${
+                    s.c === 'emerald' ? 'bg-emerald-500/[0.06] border border-emerald-500/15' : 'bg-indigo-500/[0.06] border border-indigo-500/15'
+                  }`}
+                >
+                  <div className="mono text-[8.5px] text-zinc-500 uppercase tracking-wider">{s.l}</div>
+                  <div className={`mono text-[12px] font-semibold tabular mt-0.5 ${s.c === 'emerald' ? 'text-emerald-300' : 'text-indigo-300'}`}>{s.v}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Verdict block */}
+            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-gradient-to-r from-emerald-500/[0.06] to-transparent border border-emerald-500/20">
+              <div className="w-6 h-6 rounded-md bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                <svg className="w-3 h-3 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-[11px] font-medium text-emerald-200">Verdict bancaire</div>
+                <div className="text-[10.5px] text-zinc-400 leading-relaxed">Dossier solide · Endettement maîtrisé · Cashflow positif dès le 1ᵉʳ mois.</div>
+              </div>
+            </div>
+
+            {/* Footer fake content */}
+            <div className="space-y-1.5">
+              <div className="h-1 rounded bg-white/[0.06] w-3/4" />
+              <div className="h-1 rounded bg-white/[0.04] w-full" />
+              <div className="h-1 rounded bg-white/[0.04] w-5/6" />
+            </div>
+          </div>
+
+          {/* Action footer */}
+          <div className="flex items-center gap-2 px-4 py-2.5 border-t border-white/[0.05] bg-black/20">
+            <span className="mono text-[9.5px] text-zinc-500 flex-1">Page 1 / 12</span>
+            <div className="flex items-center gap-1.5">
+              <div className="px-2 py-1 rounded-md border border-white/[0.06] bg-white/[0.02] mono text-[9.5px] text-zinc-400">Excel</div>
+              <div className="px-2 py-1 rounded-md bg-white text-zinc-950 mono text-[9.5px] font-medium flex items-center gap-1">
+                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                </svg>
+                Télécharger PDF
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Floating XLSX chip below */}
+        <div className="absolute -bottom-4 -left-3 z-20 glass-card rounded-lg px-2.5 py-1.5 flex items-center gap-2 anim-float-slow" style={{ animationDelay: '1.5s' }}>
+          <div className="w-6 h-6 rounded-md bg-emerald-500/15 flex items-center justify-center">
+            <svg className="w-3 h-3 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6M5 7v13a1 1 0 001 1h12a1 1 0 001-1V8.414a1 1 0 00-.293-.707l-4.414-4.414A1 1 0 0013.586 3H6a1 1 0 00-1 1v3z" />
+            </svg>
+          </div>
+          <div className="leading-tight">
+            <div className="text-[10.5px] font-medium text-white">amortissement.xlsx</div>
+            <div className="mono text-[9px] text-zinc-500">186 Ko · 240 lignes</div>
+          </div>
         </div>
       </div>
     </div>

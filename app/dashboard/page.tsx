@@ -193,17 +193,22 @@ export default function DashboardPage() {
   // Vérifier si l'utilisateur a complété l'onboarding
   useEffect(() => {
     if (!user) return
-    const supabase = createBrowserSupabaseClient()
-    supabase
-      .from('profiles')
-      .select('onboarding_completed')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => {
+    const checkOnboarding = async () => {
+      try {
+        const supabase = createBrowserSupabaseClient()
+        const { data } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', user.id)
+          .single()
         if (data && data.onboarding_completed === false) {
           setShowOnboarding(true)
         }
-      })
+      } catch {
+        // table absente ou colonne manquante — ne pas bloquer le dashboard
+      }
+    }
+    checkOnboarding()
   }, [user])
 
   // Détecter retour de checkout Stripe

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Space_Grotesk } from 'next/font/google'
-import { Toaster } from 'react-hot-toast'
+import { ToastProvider } from '@/components/ui/Toast'
 import './globals.css'
 
 const inter = Inter({
@@ -80,25 +80,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="bg-zinc-950 text-zinc-50 antialiased min-h-screen">
-        {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: '#18181B',
-              color: '#FAFAFA',
-              border: '1px solid #27272A',
-              borderRadius: '12px',
-              fontSize: '14px',
-            },
-            success: {
-              iconTheme: { primary: '#10B981', secondary: '#ECFDF5' },
-            },
-            error: {
-              iconTheme: { primary: '#EF4444', secondary: '#FEF2F2' },
-            },
-          }}
-        />
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   )

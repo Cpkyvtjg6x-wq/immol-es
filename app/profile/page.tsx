@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AppShell } from '@/components/app/AppShell'
+import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 
@@ -60,12 +61,11 @@ export default function ProfilePage() {
   const router = useRouter()
   const { user, loading: authLoading, tier, isPro } = useAuth()
 
+  const toast = useToast()
   const [displayName, setDisplayName] = useState('')
   const [saving, setSaving] = useState(false)
-  const [saveMsg, setSaveMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
   const [portalLoading, setPortalLoading] = useState(false)
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' })
-  const [pwMsg, setPwMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
   const [pwLoading, setPwLoading] = useState(false)
 
   useEffect(() => {
@@ -88,16 +88,14 @@ export default function ProfilePage() {
   async function saveProfile() {
     if (!user) return
     setSaving(true)
-    setSaveMsg(null)
     const supabase = createBrowserSupabaseClient()
     const { error } = await supabase.auth.updateUser({
       data: { full_name: displayName },
     })
     if (error) {
-      setSaveMsg({ type: 'err', text: error.message })
+      toast.error(error.message)
     } else {
-      setSaveMsg({ type: 'ok', text: 'Profil mis à jour ✓' })
-      setTimeout(() => setSaveMsg(null), 3000)
+      toast.success('Profil mis à jour ✓')
     }
     setSaving(false)
   }
@@ -120,27 +118,25 @@ export default function ProfilePage() {
 
   async function changePassword() {
     if (!pwForm.next || !pwForm.confirm) {
-      setPwMsg({ type: 'err', text: 'Veuillez remplir tous les champs.' })
+      toast.warning('Veuillez remplir tous les champs.')
       return
     }
     if (pwForm.next !== pwForm.confirm) {
-      setPwMsg({ type: 'err', text: 'Les mots de passe ne correspondent pas.' })
+      toast.error('Les mots de passe ne correspondent pas.')
       return
     }
     if (pwForm.next.length < 8) {
-      setPwMsg({ type: 'err', text: 'Le mot de passe doit faire au moins 8 caractères.' })
+      toast.error('Le mot de passe doit faire au moins 8 caractères.')
       return
     }
     setPwLoading(true)
-    setPwMsg(null)
     const supabase = createBrowserSupabaseClient()
     const { error } = await supabase.auth.updateUser({ password: pwForm.next })
     if (error) {
-      setPwMsg({ type: 'err', text: error.message })
+      toast.error(error.message)
     } else {
-      setPwMsg({ type: 'ok', text: 'Mot de passe mis à jour ✓' })
+      toast.success('Mot de passe mis à jour ✓')
       setPwForm({ current: '', next: '', confirm: '' })
-      setTimeout(() => setPwMsg(null), 3000)
     }
     setPwLoading(false)
   }
@@ -220,15 +216,6 @@ export default function ProfilePage() {
               <p className="text-xs text-zinc-600">
                 Pour modifier votre adresse e-mail, contactez le support.
               </p>
-              {saveMsg && (
-                <div className={`rounded-xl px-4 py-3 text-sm font-medium ${
-                  saveMsg.type === 'ok'
-                    ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                    : 'bg-red-500/10 border border-red-500/20 text-red-400'
-                }`}>
-                  {saveMsg.text}
-                </div>
-              )}
               <button
                 onClick={saveProfile}
                 disabled={saving}
@@ -320,15 +307,6 @@ export default function ProfilePage() {
                 placeholder="Répétez le nouveau mot de passe"
                 onChange={v => setPwForm(f => ({ ...f, confirm: v }))}
               />
-              {pwMsg && (
-                <div className={`rounded-xl px-4 py-3 text-sm font-medium ${
-                  pwMsg.type === 'ok'
-                    ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                    : 'bg-red-500/10 border border-red-500/20 text-red-400'
-                }`}>
-                  {pwMsg.text}
-                </div>
-              )}
               <button
                 onClick={changePassword}
                 disabled={pwLoading || !pwForm.next}

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations } from '@/lib/hooks/useSimulations'
+import { NotificationBell } from '@/components/app/NotificationBell'
 import { formatCurrency } from '@/lib/utils'
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -110,10 +111,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <span className="text-sm font-bold text-white">IMMO<span className="text-emerald-400">RA</span></span>
         </Link>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center text-zinc-300 hover:bg-white/[0.1] transition-colors"
-        >
+        <div className="flex items-center gap-2">
+          <NotificationBell simulationCount={simulations.length} isPro={isPro} />
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center text-zinc-300 hover:bg-white/[0.1] transition-colors"
+          >
           {mobileOpen ? (
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -123,7 +126,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           )}
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* ── Mobile overlay ── */}
@@ -295,6 +299,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="p-2 border-t border-white/[0.05] shrink-0 space-y-0.5">
           {user ? (
             <>
+              <div className="flex items-center gap-1 px-1 pb-1">
+                <NotificationBell simulationCount={simulations.length} isPro={isPro} />
+                <p className="text-[10px] text-zinc-600 ml-1">Notifications</p>
+              </div>
               <Link
                 href="/profile"
                 className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-all group"

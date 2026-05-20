@@ -16,6 +16,8 @@ import {
 } from 'recharts'
 import { AppShell } from '@/components/app/AppShell'
 import { OnboardingWizard } from '@/components/app/OnboardingWizard'
+import { ProfileCompletion } from '@/components/app/ProfileCompletion'
+import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
@@ -155,18 +157,33 @@ function EmptyState() {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
+  const toast = useToast()
+  const { user, loading: authLoading, isPro } = useAuth()
   const { simulations, loading: simsLoading, deleteSimulation, toggleFavorite } = useSimulations(
     user?.id ?? null
   )
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [checkoutBanner, setCheckoutBanner] = useState(false)
+  const [search, setSearch] = useState('')
+  const [filterTab, setFilterTab] = useState<'tous' | 'favoris' | 'top' | 'positif'>('tous')
+  const [sortBy, setSortBy] = useState<'date' | 'score' | 'rendement' | 'cashflow'>('date')
 
   function loadSimulation(sim: ReturnType<typeof useSimulations>['simulations'][number]) {
     if (sim.params && Object.keys(sim.params).length > 0) {
       localStorage.setItem('immolyse_last_params', JSON.stringify(sim.params))
     }
+    toast.info('Simulation chargée — paramètres restaurés')
     router.push('/analyse')
+  }
+
+  async function handleDelete(id: string) {
+    await deleteSimulation(id)
+    toast.success('Simulation supprimée')
+  }
+
+  async function handleToggleFavorite(id: string, isFav: boolean) {
+    await toggleFavorite(id, isFav)
+    toast.success(isFav ? 'Retiré des favoris' : 'Ajouté aux favoris ⭐')
   }
 
   useEffect(() => {
@@ -212,10 +229,6 @@ export default function DashboardPage() {
       </div>
     )
   }
-
-  const [search, setSearch] = useState('')
-  const [filterTab, setFilterTab] = useState<'tous' | 'favoris' | 'top' | 'positif'>('tous')
-  const [sortBy, setSortBy] = useState<'date' | 'score' | 'rendement' | 'cashflow'>('date')
 
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
@@ -352,6 +365,14 @@ export default function DashboardPage() {
               icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
             />
           </div>
+
+          {/* ── Profile completion ── */}
+          <ProfileCompletion
+            hasEmail={!!user?.email}
+            hasName={!!(user?.user_metadata?.full_name || user?.user_metadata?.name)}
+            simulationCount={simulations.length}
+            isPro={!!isPro}
+          />
 
           {/* ── Best simulation highlight ── */}
           {best && (
@@ -599,10 +620,10 @@ export default function DashboardPage() {
                             <button onClick={() => loadSimulation(sim)} className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-emerald-400 transition-colors" title="Charger">
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                             </button>
-                            <button onClick={() => toggleFavorite(sim.id, sim.is_favorite)} className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-amber-400 transition-colors">
+                            <button onClick={() => handleToggleFavorite(sim.id, sim.is_favorite)} className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-amber-400 transition-colors">
                               <svg className={`w-3.5 h-3.5 ${sim.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} fill={sim.is_favorite ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                             </button>
-                            <button onClick={() => deleteSimulation(sim.id)} className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors">
+                            <button onClick={() => handleDelete(sim.id)} className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors">
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                           </div>
@@ -645,10 +666,10 @@ export default function DashboardPage() {
                           <button onClick={() => loadSimulation(sim)} className="flex-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 py-2 rounded-lg hover:bg-emerald-500/20 transition-colors">
                             Ouvrir →
                           </button>
-                          <button onClick={() => toggleFavorite(sim.id, sim.is_favorite)} className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-zinc-500 hover:text-amber-400 transition-colors">
+                          <button onClick={() => handleToggleFavorite(sim.id, sim.is_favorite)} className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-zinc-500 hover:text-amber-400 transition-colors">
                             <svg className={`w-4 h-4 ${sim.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} fill={sim.is_favorite ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                           </button>
-                          <button onClick={() => deleteSimulation(sim.id)} className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-zinc-500 hover:text-red-400 transition-colors">
+                          <button onClick={() => handleDelete(sim.id)} className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-zinc-500 hover:text-red-400 transition-colors">
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                           </button>
                         </div>

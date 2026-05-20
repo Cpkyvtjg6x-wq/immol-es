@@ -12,10 +12,12 @@ create table if not exists public.profiles (
   email               text        not null,
   full_name           text,
   avatar_url          text,
-  subscription_tier   text        not null default 'free' check (subscription_tier in ('free', 'pro', 'business')),
-  stripe_customer_id  text        unique,
-  created_at          timestamptz not null default now(),
-  updated_at          timestamptz not null default now()
+  subscription_tier    text        not null default 'free' check (subscription_tier in ('free', 'pro', 'business')),
+  stripe_customer_id   text        unique,
+  onboarding_completed boolean     not null default false,
+  investor_profile     text        check (investor_profile in ('debutant', 'experimente', 'professionnel')),
+  created_at           timestamptz not null default now(),
+  updated_at           timestamptz not null default now()
 );
 
 -- ─── Table: simulations ───────────────────────────────────────────────────────

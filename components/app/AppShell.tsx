@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
@@ -12,6 +13,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { user, isPro, tier } = useAuth()
   const { simulations } = useSimulations(user?.id ?? null)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
@@ -82,12 +84,60 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </svg>
       ),
     },
+    {
+      href: '/revente',
+      label: 'Simulateur revente',
+      disabled: false,
+      badge: null as string | null,
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      ),
+    },
   ]
 
   return (
     <div className="flex min-h-screen bg-[#09090b] text-white">
-      {/* ── Sidebar ── */}
-      <aside className="fixed inset-y-0 left-0 w-56 border-r border-white/[0.05] flex flex-col z-40 bg-[#09090b]">
+
+      {/* ── Mobile top bar ── */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-[#09090b]/95 backdrop-blur-md border-b border-white/[0.05] flex items-center justify-between px-4">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
+            <svg className="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          </div>
+          <span className="text-sm font-bold text-white">IMMO<span className="text-emerald-400">RA</span></span>
+        </Link>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center text-zinc-300 hover:bg-white/[0.1] transition-colors"
+        >
+          {mobileOpen ? (
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* ── Mobile overlay ── */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* ── Sidebar (desktop always visible / mobile slide-in) ── */}
+      <aside className={`fixed inset-y-0 left-0 w-56 border-r border-white/[0.05] flex flex-col z-40 bg-[#09090b] transition-transform duration-200 ${
+        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
 
         {/* Logo */}
         <div className="h-14 flex items-center px-4 border-b border-white/[0.05] shrink-0">
@@ -245,15 +295,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="p-2 border-t border-white/[0.05] shrink-0 space-y-0.5">
           {user ? (
             <>
-              <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-all group"
+              >
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-[11px] font-bold text-white uppercase shrink-0">
                   {firstName.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-white leading-tight truncate capitalize">{firstName}</p>
-                  <p className="text-[10px] text-zinc-600 leading-tight truncate">{user.email}</p>
+                  <p className="text-[10px] text-zinc-600 leading-tight truncate group-hover:text-zinc-500 transition-colors">Mon profil</p>
                 </div>
-              </div>
+                <svg className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
               <button
                 onClick={signOut}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-zinc-600 hover:text-zinc-300 hover:bg-white/[0.04] transition-all"
@@ -279,7 +335,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ── Main content ── */}
-      <div className="pl-56 flex-1 min-h-screen">
+      <div className="lg:pl-56 flex-1 min-h-screen pt-14 lg:pt-0">
         {children}
       </div>
     </div>

@@ -15,8 +15,10 @@ import {
   Cell,
 } from 'recharts'
 import { AppShell } from '@/components/app/AppShell'
+import { OnboardingWizard } from '@/components/app/OnboardingWizard'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { formatCurrency, formatPct, formatDate } from '@/lib/utils'
 
 /* ─────────────────────────── helpers ─────────────────────────── */
@@ -105,27 +107,46 @@ const CustomTooltip = ({
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="w-16 h-16 rounded-2xl border border-white/[0.08] bg-white/[0.03] flex items-center justify-center mb-6">
-        <svg className="w-7 h-7 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      {/* Icon */}
+      <div className="w-20 h-20 rounded-2xl border border-dashed border-white/[0.12] bg-white/[0.02] flex items-center justify-center mb-6 text-3xl">
+        🏘️
       </div>
-      <p className="text-base font-semibold text-white mb-2" style={{ letterSpacing: '-0.02em' }}>
-        Votre portefeuille est vide
+      <p className="text-lg font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>
+        Analysez votre premier bien
       </p>
       <p className="text-sm text-zinc-500 mb-8 max-w-sm leading-relaxed">
-        Analysez votre premier bien immobilier. Le résultat sera automatiquement sauvegardé ici avec tous vos indicateurs de performance.
+        Entrez les paramètres d&apos;un investissement et obtenez instantanément le rendement, le cashflow, la fiscalité et le dossier bancaire.
       </p>
+
+      {/* Steps */}
+      <div className="flex items-center gap-2 mb-8 text-xs text-zinc-600">
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] font-black text-zinc-950">1</div>
+          <span>Entrez le bien</span>
+        </div>
+        <div className="w-6 h-px bg-white/[0.1]" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full bg-white/[0.08] flex items-center justify-center text-[10px] font-bold text-zinc-400">2</div>
+          <span>Résultats instantanés</span>
+        </div>
+        <div className="w-6 h-px bg-white/[0.1]" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full bg-white/[0.08] flex items-center justify-center text-[10px] font-bold text-zinc-400">3</div>
+          <span>Sauvegarde auto</span>
+        </div>
+      </div>
+
       <Link
         href="/analyse"
-        className="flex items-center gap-2 text-sm font-semibold bg-emerald-500 text-zinc-950 px-5 py-2.5 rounded-xl hover:bg-emerald-400 transition-all hover:scale-[1.02]"
+        className="flex items-center gap-2 text-sm font-bold bg-emerald-500 text-zinc-950 px-6 py-3.5 rounded-xl hover:bg-emerald-400 transition-all hover:scale-[1.02] active:scale-[0.98]"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
         </svg>
-        Analyser un bien
+        Analyser mon premier bien
       </Link>
+      <p className="text-xs text-zinc-700 mt-4">Gratuit · Résultats en 30 secondes</p>
     </div>
   )
 }
@@ -138,6 +159,8 @@ export default function DashboardPage() {
   const { simulations, loading: simsLoading, deleteSimulation, toggleFavorite } = useSimulations(
     user?.id ?? null
   )
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [checkoutBanner, setCheckoutBanner] = useState(false)
 
   function loadSimulation(sim: ReturnType<typeof useSimulations>['simulations'][number]) {
     if (sim.params && Object.keys(sim.params).length > 0) {
@@ -149,6 +172,35 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!authLoading && !user) router.push('/auth/login')
   }, [authLoading, user, router])
+
+  // Vérifier si l'utilisateur a complété l'onboarding
+  useEffect(() => {
+    if (!user) return
+    const supabase = createBrowserSupabaseClient()
+    supabase
+      .from('profiles')
+      .select('onboarding_completed')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data && data.onboarding_completed === false) {
+          setShowOnboarding(true)
+        }
+      })
+  }, [user])
+
+  // Détecter retour de checkout Stripe
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('checkout') === 'success') {
+        setCheckoutBanner(true)
+        // Nettoyer l'URL
+        window.history.replaceState({}, '', '/dashboard')
+        setTimeout(() => setCheckoutBanner(false), 6000)
+      }
+    }
+  }, [])
 
   if (authLoading) {
     return (
@@ -224,10 +276,32 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
+      {/* ── Onboarding ── */}
+      {showOnboarding && user && (
+        <OnboardingWizard
+          userId={user.id}
+          onComplete={() => setShowOnboarding(false)}
+        />
+      )}
+
       <div className="min-h-screen bg-[#09090b]">
 
+        {/* ── Banner checkout success ── */}
+        {checkoutBanner && (
+          <div className="mx-8 mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-5 py-4 flex items-center gap-4">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">✓</div>
+            <div>
+              <p className="text-sm font-bold text-white">Abonnement activé ! 🎉</p>
+              <p className="text-xs text-zinc-400">Bienvenue dans IMMORA Pro. Toutes les fonctionnalités sont maintenant débloquées.</p>
+            </div>
+            <button onClick={() => setCheckoutBanner(false)} className="ml-auto text-zinc-600 hover:text-zinc-300">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+        )}
+
         {/* ── Top bar ── */}
-        <div className="border-b border-white/[0.05] px-8 py-5 flex items-center justify-between">
+        <div className="border-b border-white/[0.05] px-4 md:px-8 py-4 md:py-5 flex items-center justify-between">
           <div>
             <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-widest mb-0.5">
               Tableau de bord
@@ -247,7 +321,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="px-8 py-8 space-y-8">
+        <div className="px-4 md:px-8 py-6 md:py-8 space-y-6 md:space-y-8">
 
           {/* ── KPI Cards ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -491,105 +565,97 @@ export default function DashboardPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-white/[0.07] overflow-hidden">
-                    {/* Table header */}
+                  <>
+                  {/* Table desktop */}
+                  <div className="hidden md:block rounded-xl border border-white/[0.07] overflow-hidden">
                     <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_100px] gap-4 px-5 py-3 border-b border-white/[0.05] bg-white/[0.02]">
                       {['Simulation', 'Rendement', 'Cashflow', 'Prix achat', 'Score', ''].map((h) => (
-                        <span key={h} className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">
-                          {h}
-                        </span>
+                        <span key={h} className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">{h}</span>
                       ))}
                     </div>
-
-                    {/* Rows */}
                     <div className="divide-y divide-white/[0.04]">
                       {filteredSims.map((sim: SavedSimulation) => (
-                        <div
-                          key={sim.id}
-                          className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_100px] gap-4 items-center px-5 py-4 hover:bg-white/[0.02] transition-colors group"
-                        >
-                          {/* Name */}
+                        <div key={sim.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_100px] gap-4 items-center px-5 py-4 hover:bg-white/[0.02] transition-colors">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
                               <p className="text-sm font-semibold text-white truncate">{sim.name}</p>
-                              {sim.is_favorite && (
-                                <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                </svg>
-                              )}
+                              {sim.is_favorite && <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>}
                             </div>
-                            <p className="text-[11px] text-zinc-600">
-                              {sim.ville} · {formatDate(sim.created_at)}
-                            </p>
+                            <p className="text-[11px] text-zinc-600">{sim.ville} · {formatDate(sim.created_at)}</p>
                           </div>
-
-                          {/* Rendement */}
                           <div>
                             <p className="text-sm font-semibold text-white tabular-nums">{formatPct(sim.rendementBrut)}</p>
                             <p className="text-[11px] text-zinc-600">{formatPct(sim.rendementNet)} net</p>
                           </div>
-
-                          {/* Cashflow */}
                           <div>
                             <p className={`text-sm font-bold tabular-nums ${sim.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                               {sim.cashflowMensuel >= 0 ? '+' : ''}{Math.round(sim.cashflowMensuel)} €
                             </p>
                             <p className="text-[11px] text-zinc-600">par mois</p>
                           </div>
-
-                          {/* Prix */}
-                          <div>
-                            <p className="text-sm text-white tabular-nums">{formatCurrency(sim.prixAchat)}</p>
-                          </div>
-
-                          {/* Score */}
-                          <div>
-                            {sim.score !== null ? <ScoreBadge score={sim.score} /> : <span className="text-xs text-zinc-600">—</span>}
-                          </div>
-
-                          {/* Actions */}
+                          <div><p className="text-sm text-white tabular-nums">{formatCurrency(sim.prixAchat)}</p></div>
+                          <div>{sim.score !== null ? <ScoreBadge score={sim.score} /> : <span className="text-xs text-zinc-600">—</span>}</div>
                           <div className="flex items-center gap-1 justify-end">
-                            {/* Ouvrir dans le calculateur */}
-                            <button
-                              onClick={() => loadSimulation(sim)}
-                              className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-emerald-400 transition-colors"
-                              title="Charger dans le calculateur"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                              </svg>
+                            <button onClick={() => loadSimulation(sim)} className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-emerald-400 transition-colors" title="Charger">
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                             </button>
-                            {/* Favori */}
-                            <button
-                              onClick={() => toggleFavorite(sim.id, sim.is_favorite)}
-                              className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-amber-400 transition-colors"
-                              title={sim.is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                            >
-                              <svg
-                                className={`w-3.5 h-3.5 ${sim.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`}
-                                fill={sim.is_favorite ? 'currentColor' : 'none'}
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                              </svg>
+                            <button onClick={() => toggleFavorite(sim.id, sim.is_favorite)} className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-amber-400 transition-colors">
+                              <svg className={`w-3.5 h-3.5 ${sim.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} fill={sim.is_favorite ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                             </button>
-                            {/* Supprimer */}
-                            <button
-                              onClick={() => deleteSimulation(sim.id)}
-                              className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors"
-                              title="Supprimer"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
+                            <button onClick={() => deleteSimulation(sim.id)} className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors">
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
+
+                  {/* Cards mobile */}
+                  <div className="md:hidden space-y-3">
+                    {filteredSims.map((sim: SavedSimulation) => (
+                      <div key={sim.id} className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-bold text-white truncate">{sim.name}</p>
+                              {sim.is_favorite && <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>}
+                            </div>
+                            <p className="text-[11px] text-zinc-500 mt-0.5">{sim.ville} · {formatDate(sim.created_at)}</p>
+                          </div>
+                          {sim.score !== null && <ScoreBadge score={sim.score} />}
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 mb-3">
+                          <div className="bg-white/[0.03] rounded-lg p-2.5 text-center">
+                            <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wide">Rendement</p>
+                            <p className="text-sm font-bold text-white tabular-nums">{formatPct(sim.rendementBrut)}</p>
+                          </div>
+                          <div className="bg-white/[0.03] rounded-lg p-2.5 text-center">
+                            <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wide">Cashflow</p>
+                            <p className={`text-sm font-bold tabular-nums ${sim.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {sim.cashflowMensuel >= 0 ? '+' : ''}{Math.round(sim.cashflowMensuel)} €
+                            </p>
+                          </div>
+                          <div className="bg-white/[0.03] rounded-lg p-2.5 text-center">
+                            <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wide">Prix</p>
+                            <p className="text-sm font-bold text-white tabular-nums">{Math.round(sim.prixAchat / 1000)}k€</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => loadSimulation(sim)} className="flex-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 py-2 rounded-lg hover:bg-emerald-500/20 transition-colors">
+                            Ouvrir →
+                          </button>
+                          <button onClick={() => toggleFavorite(sim.id, sim.is_favorite)} className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-zinc-500 hover:text-amber-400 transition-colors">
+                            <svg className={`w-4 h-4 ${sim.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} fill={sim.is_favorite ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                          </button>
+                          <button onClick={() => deleteSimulation(sim.id)} className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-zinc-500 hover:text-red-400 transition-colors">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  </>
                 )}
               </div>
             )}

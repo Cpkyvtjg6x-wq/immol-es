@@ -39,6 +39,8 @@ export default function SignupPage() {
       setError(authError.message)
       setLoading(false)
     } else {
+      // Déclencher l'email de bienvenue (fire & forget)
+      fetch('/api/send-welcome-email', { method: 'POST' }).catch(() => null)
       setSuccess(true)
     }
   }

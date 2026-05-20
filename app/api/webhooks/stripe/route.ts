@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase-server'
+import { sendEmail, emailPaiementConfirme } from '@/lib/email'
 
 export const runtime = 'nodejs'
 
@@ -90,15 +91,28 @@ async function handleCheckoutCompleted(
 
   const tier = getTierFromSession(session)
 
-  await supabase
+  const { data: profile } = await supabase
     .from('profiles')
     .update({
       stripe_customer_id: session.customer as string,
       subscription_tier: tier,
     })
     .eq('id', session.metadata.userId)
+    .select('email, full_name')
+    .single()
 
   console.log(`[Stripe] Checkout complété → user ${session.metadata.userId} → ${tier}`)
+
+  // Email de confirmation paiement
+  if (profile?.email) {
+    const firstName = profile.full_name?.split(' ')[0] || profile.email.split('@')[0]
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://immora.fr'
+    await sendEmail({
+      to: profile.email,
+      subject: `Bienvenue dans IMMORA ${tier === 'business' ? 'Agence' : 'Pro'} 🎉`,
+      html: emailPaiementConfirme(firstName, tier, appUrl),
+    })
+  }
 }
 
 async function handleSubscriptionChange(

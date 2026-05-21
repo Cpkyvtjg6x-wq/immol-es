@@ -78,7 +78,7 @@ function NumInput({
         min={min}
         step={step}
         placeholder={placeholder ?? '0'}
-        className={`w-full bg-white/[0.04] border border-white/[0.07] rounded-lg text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-emerald-500/40 transition-all pl-3 ${suffix ? 'pr-9' : 'pr-3'} py-2 tabular-nums ${readOnly ? 'opacity-50 cursor-default' : ''}`}
+        className={`w-full bg-white/[0.04] border border-white/[0.07] rounded-lg text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-emerald-500/40 transition-all pl-3 ${suffix ? 'pr-9' : 'pr-3'} py-2 tabular-nums appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${readOnly ? 'opacity-50 cursor-default' : ''}`}
       />
       {suffix && (
         <span className="absolute right-3 text-[11px] text-zinc-500 pointer-events-none">{suffix}</span>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import type { InvestmentParams, InvestmentResult } from '@/lib/types'
+import type { InvestmentParams, InvestmentResult, LotGroup } from '@/lib/types'
 import { DEFAULT_PARAMS, calculerFraisNotaire } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { VILLES } from '@/lib/market-data'
@@ -267,6 +267,32 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
   const isSaisonnier = p.locType === 'saisonnier'
   const isImmeuble = p.locType === 'immeuble'
 
+  // ─── Lot group helpers (immeuble de rapport) ──────────────────────────────────
+  const makeLotGroup = (overrides?: Partial<LotGroup>): LotGroup => ({
+    id: Math.random().toString(36).slice(2),
+    label: 'T2',
+    nb: 1,
+    regime: 'meuble',
+    loyer: 650,
+    vacance: 1,
+    prixVente: 0,
+    ...overrides,
+  })
+
+  const setLotGroups = (groups: LotGroup[]) => setP(prev => ({ ...prev, lotGroups: groups }))
+
+  const addLotGroup = () => {
+    setLotGroups([...(p.lotGroups ?? []), makeLotGroup()])
+  }
+
+  const removeLotGroup = (id: string) => {
+    setLotGroups((p.lotGroups ?? []).filter(g => g.id !== id))
+  }
+
+  const updateLotGroup = (id: string, patch: Partial<LotGroup>) => {
+    setLotGroups((p.lotGroups ?? []).map(g => g.id === id ? { ...g, ...patch } : g))
+  }
+
   // ─── Preview fiscal par structure (calculé en live si result disponible) ──────
   const structurePreviews = useMemo(() => {
     if (!result || result.prixRevient <= 0) return {}
@@ -317,17 +343,45 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 <BtnGroup
                   cols={3}
                   value={p.typeBien ?? 'Appartement'}
-                  onChange={(v) => set('typeBien', v)}
+                  onChange={(v) => {
+                    const wasImmeuble = p.typeBien === 'Immeuble'
+                    const nowImmeuble = v === 'Immeuble'
+                    setP(prev => {
+                      const next: InvestmentParams = { ...prev, typeBien: v }
+                      if (nowImmeuble && !wasImmeuble) {
+                        // Auto-basculer en mode immeuble + initialiser avec 2 groupes par défaut
+                        next.locType = 'immeuble'
+                        if (!prev.lotGroups || prev.lotGroups.length === 0) {
+                          next.lotGroups = [
+                            { id: Math.random().toString(36).slice(2), label: 'T2', nb: 2, regime: 'meuble', loyer: 650, vacance: 1, prixVente: 0 },
+                            { id: Math.random().toString(36).slice(2), label: 'T3', nb: 2, regime: 'nu', loyer: 850, vacance: 1, prixVente: 0 },
+                          ]
+                        }
+                      } else if (!nowImmeuble && wasImmeuble) {
+                        // Sortie du mode immeuble → revenir à meublé
+                        next.locType = 'meuble'
+                      }
+                      return next
+                    })
+                  }}
                   options={[
                     { value: 'Appartement', label: 'Appart.' },
                     { value: 'Maison', label: 'Maison' },
                     { value: 'Studio', label: 'Studio' },
-                    { value: 'Immeuble', label: 'Immeuble' },
+                    { value: 'Immeuble', label: '🏢 Immeuble' },
                     { value: 'Parking', label: 'Parking' },
                     { value: 'Commercial', label: 'Local' },
                   ]}
                 />
               </div>
+
+              {/* Badge immeuble */}
+              {isImmeuble && (
+                <div className="flex items-center gap-2 py-2 px-3 rounded-lg bg-sky-500/[0.06] border border-sky-500/20">
+                  <span className="text-sky-400 text-sm">🏢</span>
+                  <span className="text-[11px] text-sky-300 font-medium">Mode Immeuble de rapport activé — configurez vos lots dans la section Location</span>
+                </div>
+              )}
 
               {/* État */}
               <div>
@@ -853,22 +907,23 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           {openSections.location && (
             <div className="px-5 pb-5 space-y-4">
 
-              {/* Type location */}
-              <div>
-                <Label>Régime locatif</Label>
-                <BtnGroup
-                  cols={3}
-                  value={p.locType}
-                  onChange={(v) => set('locType', v as InvestmentParams['locType'])}
-                  options={[
-                    { value: 'nu', label: '🏠 Nu' },
-                    { value: 'meuble', label: '🛋 Meublé' },
-                    { value: 'coloc', label: '👥 Coloc' },
-                    { value: 'saisonnier', label: '🌴 Saisonnier' },
-                    { value: 'immeuble', label: '🏢 Immeuble' },
-                  ]}
-                />
-              </div>
+              {/* Type location — masqué pour immeuble (piloté par Section 1) */}
+              {!isImmeuble && (
+                <div>
+                  <Label>Régime locatif</Label>
+                  <BtnGroup
+                    cols={2}
+                    value={p.locType}
+                    onChange={(v) => set('locType', v as InvestmentParams['locType'])}
+                    options={[
+                      { value: 'nu', label: '🏠 Nu' },
+                      { value: 'meuble', label: '🛋 Meublé' },
+                      { value: 'coloc', label: '👥 Coloc' },
+                      { value: 'saisonnier', label: '🌴 Saisonnier' },
+                    ]}
+                  />
+                </div>
+              )}
 
               {/* ── NU ─────────────────────────────────────────────── */}
               {isNu && (
@@ -1005,59 +1060,168 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 </div>
               )}
 
-              {/* ── IMMEUBLE ───────────────────────────────────────── */}
+              {/* ── IMMEUBLE — Configurateur de lots ───────────────── */}
               {isImmeuble && (
-                <div className="space-y-4">
-                  {/* Nb lots slider */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <Label>Nombre de lots</Label>
-                      <span className="text-sm font-bold text-white">{p.nbLots ?? 4} logements</span>
-                    </div>
-                    <input
-                      type="range" min={2} max={20} step={1} value={p.nbLots ?? 4}
-                      onChange={(e) => set('nbLots', parseInt(e.target.value))}
-                      className="w-full accent-emerald-500 cursor-pointer h-1.5"
-                    />
-                    <div className="flex justify-between text-[10px] text-zinc-700 mt-1">
-                      <span>2</span><span>10</span><span>20 lots</span>
-                    </div>
+                <div className="space-y-3">
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">
+                      🏢 Composition de l&apos;immeuble
+                    </p>
+                    <span className="text-[10px] text-zinc-600">
+                      {(p.lotGroups ?? []).reduce((s, g) => s + g.nb, 0)} lots au total
+                    </span>
                   </div>
 
-                  <Row2>
-                    <div>
-                      <Label>Loyer moyen / lot</Label>
-                      <NumInput value={p.loyerParLot ?? 600} onChange={(v) => set('loyerParLot', v)} suffix="€/mois" />
-                    </div>
-                    <div>
-                      <Label>Vacance / lot</Label>
-                      <NumInput value={p.vacanceParLot ?? 1} onChange={(v) => set('vacanceParLot', Math.max(0, Math.min(12, v)))} suffix=" mois/an" step={0.5} />
-                    </div>
-                  </Row2>
+                  {/* Liste des groupes */}
+                  <div className="space-y-2">
+                    {(p.lotGroups ?? []).map((g, idx) => (
+                      <div key={g.id} className="rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
+
+                        {/* Ligne header du groupe */}
+                        <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.05]">
+                          {/* Label éditable */}
+                          <input
+                            type="text"
+                            value={g.label}
+                            onChange={(e) => updateLotGroup(g.id, { label: e.target.value })}
+                            className="flex-1 bg-transparent text-[12px] font-bold text-white focus:outline-none placeholder:text-zinc-600"
+                            placeholder="T2, Studio…"
+                          />
+                          {/* Nb lots stepper */}
+                          <div className="flex items-center gap-1">
+                            <button type="button" onClick={() => updateLotGroup(g.id, { nb: Math.max(1, g.nb - 1) })}
+                              className="w-5 h-5 rounded-md bg-white/[0.06] text-zinc-400 hover:text-white text-sm flex items-center justify-center transition-colors">−</button>
+                            <span className="text-[12px] font-bold text-white w-5 text-center tabular-nums">{g.nb}</span>
+                            <button type="button" onClick={() => updateLotGroup(g.id, { nb: g.nb + 1 })}
+                              className="w-5 h-5 rounded-md bg-white/[0.06] text-zinc-400 hover:text-white text-sm flex items-center justify-center transition-colors">+</button>
+                          </div>
+                          <span className="text-[10px] text-zinc-600">lot{g.nb > 1 ? 's' : ''}</span>
+                          {/* Supprimer */}
+                          {(p.lotGroups ?? []).length > 1 && (
+                            <button type="button" onClick={() => removeLotGroup(g.id)}
+                              className="ml-1 w-5 h-5 rounded-md bg-red-500/10 text-red-500/60 hover:text-red-400 hover:bg-red-500/20 flex items-center justify-center transition-colors text-[11px]">✕</button>
+                          )}
+                        </div>
+
+                        {/* Régime */}
+                        <div className="px-3 py-2 border-b border-white/[0.04]">
+                          <div className="grid grid-cols-3 gap-1">
+                            {([
+                              { v: 'meuble', label: '🛋 Meublé' },
+                              { v: 'nu', label: '🏠 Nu' },
+                              { v: 'vendre', label: '🏷 À vendre' },
+                            ] as { v: LotGroup['regime']; label: string }[]).map(opt => (
+                              <button key={opt.v} type="button"
+                                onClick={() => updateLotGroup(g.id, { regime: opt.v })}
+                                className={`py-1 rounded-lg text-[10px] font-semibold border transition-all ${
+                                  g.regime === opt.v
+                                    ? opt.v === 'vendre'
+                                      ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                                      : 'bg-sky-500/20 border-sky-500/40 text-sky-300'
+                                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-500 hover:border-white/20'
+                                }`}>
+                                {opt.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Champs selon régime */}
+                        <div className="px-3 py-2.5">
+                          {g.regime !== 'vendre' ? (
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Loyer / lot / mois</p>
+                                <NumInput value={g.loyer} onChange={(v) => updateLotGroup(g.id, { loyer: v })} suffix="€" />
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Vacance / lot</p>
+                                <NumInput value={g.vacance} onChange={(v) => updateLotGroup(g.id, { vacance: Math.max(0, Math.min(12, v)) })} suffix="mois/an" step={0.5} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Prix de cession / lot</p>
+                              <NumInput value={g.prixVente} onChange={(v) => updateLotGroup(g.id, { prixVente: v })} suffix="€" step={1000} />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Mini synthèse par groupe */}
+                        <div className="px-3 pb-2.5">
+                          {g.regime !== 'vendre' ? (
+                            <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+                              <span className="text-[10px] text-zinc-600">{g.nb} lot{g.nb > 1 ? 's' : ''} → revenu annuel</span>
+                              <span className="text-[11px] font-bold text-sky-400 tabular-nums">
+                                {Math.round(g.loyer * g.nb * (12 - g.vacance)).toLocaleString('fr-FR')} €/an
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-amber-500/[0.04] border border-amber-500/15">
+                              <span className="text-[10px] text-zinc-600">{g.nb} lot{g.nb > 1 ? 's' : ''} → produit de cession</span>
+                              <span className="text-[11px] font-bold text-amber-400 tabular-nums">
+                                {Math.round(g.prixVente * g.nb).toLocaleString('fr-FR')} €
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Ajouter un groupe */}
+                  <button
+                    type="button"
+                    onClick={addLotGroup}
+                    className="w-full py-2 rounded-xl border border-dashed border-white/[0.12] text-[11px] font-semibold text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 transition-all"
+                  >
+                    + Ajouter un groupe de lots
+                  </button>
 
                   {/* Synthèse consolidée */}
                   {(() => {
-                    const nbLots = p.nbLots ?? 4
-                    const loyerLot = p.loyerParLot ?? 0
-                    const vacLot = p.vacanceParLot ?? 1
-                    const revMensuel = loyerLot * nbLots
-                    const revAnnuel = Math.round(revMensuel * (12 - vacLot))
-                    const tauxVac = Math.round((vacLot / 12) * 100)
-                    return revMensuel > 0 ? (
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { label: 'Loyer total/mois', val: `${revMensuel.toLocaleString('fr-FR')} €` },
-                          { label: 'Vacance mutualisée', val: `${tauxVac}%` },
-                          { label: 'Revenu annuel', val: `${revAnnuel.toLocaleString('fr-FR')} €`, highlight: true },
-                        ].map((s, i) => (
-                          <div key={i} className={`py-2 px-3 rounded-lg border text-center ${s.highlight ? 'bg-emerald-500/[0.07] border-emerald-500/20' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                            <div className="text-[10px] text-zinc-500">{s.label}</div>
-                            <div className={`text-[13px] font-bold tabular-nums mt-0.5 ${s.highlight ? 'text-emerald-400' : 'text-white'}`}>{s.val}</div>
-                          </div>
-                        ))}
+                    const groups = p.lotGroups ?? []
+                    const loues = groups.filter(g => g.regime !== 'vendre')
+                    const avendre = groups.filter(g => g.regime === 'vendre')
+                    const loyerMensuel = loues.reduce((s, g) => s + g.loyer * g.nb, 0)
+                    const revAnnuel = loues.reduce((s, g) => s + g.loyer * g.nb * (12 - g.vacance), 0)
+                    const prodCession = avendre.reduce((s, g) => s + g.prixVente * g.nb, 0)
+                    const nbLouesTotal = loues.reduce((s, g) => s + g.nb, 0)
+                    const nbVendreTotal = avendre.reduce((s, g) => s + g.nb, 0)
+                    if (groups.length === 0) return null
+                    return (
+                      <div className="rounded-xl border border-sky-500/20 bg-sky-500/[0.04] p-3 space-y-2">
+                        <p className="text-[10px] font-bold text-sky-400 uppercase tracking-wider mb-2">Synthèse immeuble</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {nbLouesTotal > 0 && (
+                            <>
+                              <div className="py-1.5 px-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
+                                <div className="text-[9px] text-zinc-600 mb-0.5">{nbLouesTotal} lot{nbLouesTotal > 1 ? 's' : ''} loués · loyer/mois</div>
+                                <div className="text-[13px] font-bold text-white tabular-nums">{loyerMensuel.toLocaleString('fr-FR')} €</div>
+                              </div>
+                              <div className="py-1.5 px-2 rounded-lg bg-emerald-500/[0.07] border border-emerald-500/20 text-center">
+                                <div className="text-[9px] text-emerald-400/70 mb-0.5">Revenu locatif / an</div>
+                                <div className="text-[13px] font-bold text-emerald-400 tabular-nums">{Math.round(revAnnuel).toLocaleString('fr-FR')} €</div>
+                              </div>
+                            </>
+                          )}
+                          {nbVendreTotal > 0 && (
+                            <div className="col-span-2 py-1.5 px-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/20 flex items-center justify-between">
+                              <div>
+                                <div className="text-[9px] text-zinc-500">{nbVendreTotal} lot{nbVendreTotal > 1 ? 's' : ''} à vendre</div>
+                                <div className="text-[10px] text-zinc-600 mt-0.5">Ces produits peuvent rembourser partiellement le crédit</div>
+                              </div>
+                              <div className="text-[13px] font-bold text-amber-400 tabular-nums">{Math.round(prodCession).toLocaleString('fr-FR')} €</div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    ) : null
+                    )
                   })()}
+
                 </div>
               )}
 

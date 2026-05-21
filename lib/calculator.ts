@@ -64,6 +64,9 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
   let revAnnuel: number
   let loyerAnnuelBrut: number
   let chargesSaisonnierAnnuel = 0 // charges spécifiques saisonnier
+  let venteProduits = 0            // produit cession lots immeuble
+  let nbLotsLoues = 0
+  let nbLotsVendre = 0
 
   if (params.locType === 'saisonnier') {
     // Modèle prix/nuit × taux occupation × 365
@@ -92,14 +95,41 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
     moisLoues = Math.round(tauxOcc * 12 * 10) / 10
 
   } else if (params.locType === 'immeuble') {
-    // Multi-lots : loyer total = loyer par lot × nb lots
-    const nbLots = Math.max(1, params.nbLots ?? 4)
-    const loyerLot = params.loyerParLot ?? 0
-    const vacLot = params.vacanceParLot ?? 1
-    loyerRef = loyerLot * nbLots
-    moisLoues = Math.max(0, 12 - vacLot)
-    loyerAnnuelBrut = loyerRef * 12
-    revAnnuel = loyerRef * moisLoues
+    const groups = (params.lotGroups ?? []).filter(g => g.nb > 0)
+
+    if (groups.length > 0) {
+      // Mode configurateur par groupes de lots
+      const rentedGroups = groups.filter(g => g.regime !== 'vendre')
+      const vendreGroups = groups.filter(g => g.regime === 'vendre')
+
+      nbLotsLoues = rentedGroups.reduce((s, g) => s + g.nb, 0)
+      nbLotsVendre = vendreGroups.reduce((s, g) => s + g.nb, 0)
+      venteProduits = vendreGroups.reduce((s, g) => s + g.prixVente * g.nb, 0)
+
+      // Revenu locatif mensuel total (plein, sans vacance)
+      loyerRef = rentedGroups.reduce((s, g) => s + g.loyer * g.nb, 0)
+      loyerAnnuelBrut = loyerRef * 12
+
+      // Revenu annuel réel (avec vacances par groupe)
+      revAnnuel = rentedGroups.reduce((s, g) => s + g.loyer * g.nb * Math.max(0, 12 - g.vacance), 0)
+
+      // Mois loués moyen pour affichage
+      const totalLots = nbLotsLoues
+      const vacanceMoyenne = totalLots > 0
+        ? rentedGroups.reduce((s, g) => s + g.vacance * g.nb, 0) / totalLots
+        : 1
+      moisLoues = Math.max(0, 12 - vacanceMoyenne)
+
+    } else {
+      // Fallback legacy : nbLots + loyerParLot
+      const nbLots = Math.max(1, params.nbLots ?? 4)
+      const loyerLot = params.loyerParLot ?? 0
+      const vacLot = params.vacanceParLot ?? 1
+      loyerRef = loyerLot * nbLots
+      moisLoues = Math.max(0, 12 - vacLot)
+      loyerAnnuelBrut = loyerRef * 12
+      revAnnuel = loyerRef * moisLoues
+    }
 
   } else if (params.locType === 'coloc') {
     loyerRef = (params.loyerParChambre || 0) * (params.nbChambres || 1)
@@ -251,6 +281,8 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
     // Tableaux
     tableauAmortissement,
     projection,
+    // Immeuble
+    ...(params.locType === 'immeuble' ? { venteProduits, nbLotsLoues, nbLotsVendre } : {}),
   }
 }
 
@@ -485,6 +517,7 @@ export const DEFAULT_PARAMS: InvestmentParams = {
   vacanceParLot: 1,
   entretienPartiesCommunes: 2000,
   assuranceImmeuble: 800,
+  lotGroups: [],
 
   // Charges
   taxeFonciere: 800,

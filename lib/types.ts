@@ -1,5 +1,16 @@
 // ─── Investment Calculator Types ───────────────────────────────────────────
 
+/** Un groupe de lots homogènes dans un immeuble de rapport */
+export interface LotGroup {
+  id: string
+  label: string            // ex: "T2 meublé", "Studio", "T3 nu"
+  nb: number               // nombre de lots dans ce groupe
+  regime: 'nu' | 'meuble' | 'vendre'
+  loyer: number            // €/mois par lot (si loué)
+  vacance: number          // mois de vacance par lot / an (si loué)
+  prixVente: number        // €/lot (si à vendre)
+}
+
 export interface InvestmentParams {
   // Bien
   prixAchat: number
@@ -53,11 +64,12 @@ export interface InvestmentParams {
   nbPersonnesMax: number       // capacité du logement (pour taxe de séjour)
 
   // Immeuble de rapport
-  nbLots: number               // nombre de logements
-  loyerParLot: number          // loyer mensuel moyen par lot (€)
-  vacanceParLot: number        // mois de vacance par lot par an
+  nbLots: number               // nombre de logements (legacy — utilisé si lotGroups vide)
+  loyerParLot: number          // loyer mensuel moyen par lot (legacy)
+  vacanceParLot: number        // mois de vacance par lot par an (legacy)
   entretienPartiesCommunes: number // €/an (hall, cage escalier, toiture, façade)
   assuranceImmeuble: number    // €/an (multirisque immeuble)
+  lotGroups: LotGroup[]        // configuration détaillée par groupe de lots
 
   // Charges annuelles
   taxeFonciere: number
@@ -152,6 +164,11 @@ export interface InvestmentResult {
   impotPlusValue: number
   patrimoineNetRevente: number
   tri: number                  // Taux de Rendement Interne (%)
+
+  // Immeuble — synthèse lots
+  venteProduits?: number        // produit total des lots "à vendre" (€)
+  nbLotsLoues?: number          // nombre de lots loués
+  nbLotsVendre?: number         // nombre de lots à vendre
 
   // Tableaux (optionnel — générés à la demande)
   tableauAmortissement?: AmortizationRow[]

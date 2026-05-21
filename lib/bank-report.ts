@@ -35,12 +35,17 @@ export function calculateBankRatios(
   const mensualite = result.mensualiteTotale
   const loyer = result.loyer
 
+  // ── Revenus combinés (emprunteur + co-emprunteur éventuel) ────────────────
+  const revenusCoEmprunteur = (profile.hasCoEmprunteur && profile.coemprunteurRevenus)
+    ? profile.coemprunteurRevenus
+    : 0
+  const revenusFoyer = profile.revenusNetsProFoyer + revenusCoEmprunteur
+
   // ── Revenus de référence bancaire ──────────────────────────────────────────
   // La banque intègre les loyers futurs à 70 % (méthode prudentielle HCSF)
   const loyerIntegreBanque = loyer * 0.70
   const autresLoyersIntegres = (profile.autresRevenusLocatifs ?? 0) * 0.70
-  const revenusReferenceBancaire =
-    profile.revenusNetsProFoyer + autresLoyersIntegres
+  const revenusReferenceBancaire = revenusFoyer + autresLoyersIntegres
 
   // ── Taux d'endettement AVANT projet ────────────────────────────────────────
   const chargesAvantProjet = profile.loyerActuel + profile.autresCreditsMensualites
@@ -51,8 +56,7 @@ export function calculateBankRatios(
 
   // ── Taux d'endettement APRÈS projet ────────────────────────────────────────
   // Revenus HCSF : salaires + 70 % autres loyers existants + 70 % nouveau loyer
-  const revenusAvecNouveauxLoyers =
-    profile.revenusNetsProFoyer + autresLoyersIntegres + loyerIntegreBanque
+  const revenusAvecNouveauxLoyers = revenusFoyer + autresLoyersIntegres + loyerIntegreBanque
   // Charges HCSF : loyer actuel de la RP (locataire) OU mensualité RP (propriétaire)
   // + autres crédits en cours + nouvelle mensualité d'investissement
   // Le loyer actuel est TOUJOURS compté car la banque ne suppose pas que l'investisseur
@@ -74,7 +78,7 @@ export function calculateBankRatios(
   // Si CF négatif, le projet coûte de l'argent chaque mois → réduit le reste à vivre
   // Si CF positif, le projet génère un revenu net → augmente le reste à vivre
   const resteAVivre =
-    profile.revenusNetsProFoyer
+    revenusFoyer
     + (profile.autresRevenusLocatifs ?? 0)
     - profile.loyerActuel
     - profile.autresCreditsMensualites
@@ -155,9 +159,16 @@ export function calculateBankRatios(
     pointsVigilance.push(`Reste à vivre estimé à ${Math.round(resteAVivre).toLocaleString('fr-FR')} €/mois — en dessous du seuil recommandé de ${resteAVivreCible.toLocaleString('fr-FR')} €.`)
   }
 
+  // Co-emprunteur
+  if (profile.hasCoEmprunteur && profile.coemprunteurRevenus && profile.coemprunteurRevenus > 0) {
+    pointsForts.push(`Dossier en co-emprunt — revenus combinés de ${revenusFoyer.toLocaleString('fr-FR')} €/mois, ce qui renforce significativement la capacité de remboursement.`)
+  }
+
   // Contrat de travail
   if (profile.typeContrat === 'cdi' || profile.typeContrat === 'fonctionnaire') {
-    pointsForts.push(`Situation professionnelle stable (${profile.typeContrat === 'cdi' ? 'CDI' : 'Fonctionnaire'}) avec ${profile.anciennetePoste} an${profile.anciennetePoste > 1 ? 's' : ''} d'ancienneté.`)
+    const coStr = (profile.hasCoEmprunteur && profile.coemprunteurTypeContrat && (profile.coemprunteurTypeContrat === 'cdi' || profile.coemprunteurTypeContrat === 'fonctionnaire'))
+      ? ` + co-emprunteur ${profile.coemprunteurTypeContrat === 'cdi' ? 'CDI' : 'Fonctionnaire'}` : ''
+    pointsForts.push(`Situation professionnelle stable (${profile.typeContrat === 'cdi' ? 'CDI' : 'Fonctionnaire'}) avec ${profile.anciennetePoste} an${profile.anciennetePoste > 1 ? 's' : ''} d'ancienneté${coStr}.`)
   } else if (profile.typeContrat === 'independant') {
     pointsVigilance.push(`Statut indépendant : la banque demandera 3 ans de bilans. Préparer les liasses fiscales N, N-1, N-2.`)
   }

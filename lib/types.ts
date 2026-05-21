@@ -296,8 +296,16 @@ export interface BankReportProfile {
   typeContrat: 'cdi' | 'cdd' | 'independant' | 'fonctionnaire' | 'retraite' | 'autre'
   anciennetePoste: number          // années
 
+  // Co-emprunteur (optionnel)
+  hasCoEmprunteur?: boolean
+  coemprunteurNom?: string
+  coemprunteurProfession?: string
+  coemprunteurTypeContrat?: 'cdi' | 'cdd' | 'independant' | 'fonctionnaire' | 'retraite' | 'autre'
+  coemprunteurAnciennete?: number
+  coemprunteurRevenus?: number     // revenus nets mensuels du co-emprunteur
+
   // Revenus mensuels nets du foyer
-  revenusNetsProFoyer: number      // salaires + indemnités
+  revenusNetsProFoyer: number      // salaires + indemnités emprunteur principal
   autresRevenusLocatifs: number    // loyers perçus sur d'autres biens (optionnel)
 
   // Charges mensuelles actuelles

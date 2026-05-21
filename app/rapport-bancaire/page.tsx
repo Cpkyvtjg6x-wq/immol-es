@@ -48,59 +48,70 @@ async function generateBankPDF(
     ? enabledRegimes.reduce((b, r) => r.rendNetNet > b.rendNetNet ? r : b, enabledRegimes[0])
     : null
 
-  const endDot = (pct: number) => pct <= 30 ? '#10b981' : pct <= 35 ? '#f59e0b' : '#ef4444'
-  const coverDot = (pct: number) => pct >= 110 ? '#10b981' : pct >= 85 ? '#f59e0b' : '#ef4444'
-  const ravDot = (v: number, c: number) => v >= c ? '#10b981' : v >= c * 0.8 ? '#f59e0b' : '#ef4444'
+  const endDot  = (pct: number) => pct <= 30 ? '#059669' : pct <= 35 ? '#d97706' : '#dc2626'
+  const coverDot = (pct: number) => pct >= 110 ? '#059669' : pct >= 85 ? '#d97706' : '#dc2626'
+  const ravDot   = (v: number, c: number) => v >= c ? '#059669' : v >= c * 0.8 ? '#d97706' : '#dc2626'
+
+  // Tronque et sécurise les strings pour le HTML
+  const trunc = (s: string | undefined | null, n: number): string =>
+    !s ? '—' : s.length > n ? s.slice(0, n) + '…' : s
 
   const PAGE_W = 794
   const PAGE_H = 1123
-  const PS = `style="width:${PAGE_W}px;height:${PAGE_H}px;padding:44px 52px;font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0f172a;background:#fff;box-sizing:border-box;overflow:hidden;position:relative"`
+  const FONT = `font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif`
+  const PS = `style="width:${PAGE_W}px;height:${PAGE_H}px;padding:40px 52px 32px;${FONT};font-size:12px;color:#0f172a;background:#fff;box-sizing:border-box;overflow:hidden;position:relative"`
 
-  // ── Composants HTML réutilisables ──────────────────────────────────────────
+  // ── Composants HTML — version 2.0 (overflow-safe, premium) ──────────────────
   const HEADER = (subtitle: string) => `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #10b981;padding-bottom:14px;margin-bottom:22px">
-      <div>
-        <div style="font-size:20px;font-weight:800;letter-spacing:-.4px;color:#0f172a">IMMO<span style="color:#10b981">RA</span></div>
-        <div style="font-size:10px;color:#64748b;margin-top:3px;font-weight:500">Dossier de financement immobilier</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:11px;border-bottom:2px solid #10b981">
+      <div style="display:flex;align-items:center;gap:10px;overflow:hidden">
+        <div style="font-size:16px;font-weight:800;letter-spacing:-.3px;color:#0f172a;flex-shrink:0">IMMO<span style="color:#10b981">RA</span></div>
+        <div style="width:1px;height:14px;background:#e2e8f0;flex-shrink:0"></div>
+        <div style="font-size:10px;font-weight:500;color:#475569;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${trunc(subtitle, 70)}</div>
       </div>
-      <div style="text-align:right;font-size:10px;color:#64748b;line-height:1.8">
-        <div style="font-size:11px;font-weight:700;color:#0f172a">Confidentiel — À l'attention du chargé de clientèle</div>
-        <div>Généré le ${today}</div>
-        <div style="margin-top:2px">${subtitle}</div>
+      <div style="text-align:right;flex-shrink:0;margin-left:12px">
+        <div style="font-size:8.5px;color:#94a3b8;white-space:nowrap">Confidentiel · ${today}</div>
       </div>
     </div>`
 
   const SECTION = (title: string) => `
-    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:#10b981;margin:18px 0 8px;padding-bottom:5px;border-bottom:1.5px solid #e2e8f0">${title}</div>`
+    <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:#10b981;margin:14px 0 6px;padding-bottom:4px;border-bottom:1.5px solid #e2e8f0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${title}</div>`
 
   const ROW = (label: string, value: string, note = '') => `
-    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid #f8fafc">
-      <div style="font-size:10.5px;color:#475569">${label}${note ? `<span style="font-size:9px;color:#94a3b8;margin-left:6px">${note}</span>` : ''}</div>
-      <div style="font-size:11px;font-weight:700;color:#0f172a">${value}</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:4.5px 0;border-bottom:1px solid #f8fafc;overflow:hidden;min-width:0">
+      <div style="font-size:9.5px;color:#64748b;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0;padding-right:8px">${trunc(label, 55)}${note ? `<span style="font-size:8px;color:#94a3b8;margin-left:5px">${note}</span>` : ''}</div>
+      <div style="font-size:10px;font-weight:700;color:#0f172a;flex-shrink:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:210px;text-align:right">${trunc(value, 32)}</div>
     </div>`
 
   const KPIB = (label: string, value: string, sub: string, dot: string) => `
-    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid ${dot};border-radius:8px;padding:11px 14px">
-      <div style="font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:5px">${label}</div>
-      <div style="font-size:20px;font-weight:800;color:#0f172a;line-height:1">${value}</div>
-      <div style="font-size:9px;color:#64748b;margin-top:4px">${sub}</div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid ${dot};border-radius:8px;padding:11px 13px;overflow:hidden">
+      <div style="font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${trunc(label, 45)}</div>
+      <div style="font-size:19px;font-weight:800;color:#0f172a;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${value}</div>
+      <div style="font-size:8.5px;color:#94a3b8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${trunc(sub, 55)}</div>
     </div>`
 
   const BADGE = (text: string, good: boolean) => `
-    <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;background:${good ? '#f0fdf4' : '#fef2f2'};color:${good ? '#16a34a' : '#dc2626'};border:1px solid ${good ? '#bbf7d0' : '#fecaca'}">${good ? '✓' : '⚠'} ${text}</span>`
+    <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:8.5px;font-weight:700;background:${good ? '#f0fdf4' : '#fef2f2'};color:${good ? '#059669' : '#dc2626'};border:1px solid ${good ? '#bbf7d0' : '#fecaca'};white-space:nowrap">${good ? '✓' : '⚠'} ${text}</span>`
 
   const FOOTER = (page: number, total: number) => `
-    <div style="position:absolute;bottom:18px;left:52px;right:52px;border-top:1px solid #e2e8f0;padding-top:8px;font-size:8.5px;color:#94a3b8;display:flex;justify-content:space-between">
-      <span>IMMORA · Dossier confidentiel · Ne constitue pas un conseil financier ou juridique</span>
-      <span>${page} / ${total}</span>
+    <div style="position:absolute;bottom:14px;left:52px;right:52px;border-top:1px solid #e2e8f0;padding-top:7px;font-size:7.5px;color:#94a3b8;display:flex;justify-content:space-between;align-items:center">
+      <span>IMMORA · Dossier de financement confidentiel · Ne constitue pas un conseil financier ou juridique</span>
+      <span style="font-weight:600;color:#64748b;flex-shrink:0;margin-left:12px">${page} / ${total}</span>
     </div>`
 
   const docs = documentsRequis(profile.modeAcquisition)
   const hasCompany = profile.modeAcquisition !== 'nom-propre'
   const TOTAL_PAGES = hasCompany ? 8 : 7
 
-  // Couleurs cashflow (calculées ici pour usage dans la couverture)
-  const coverCfColor = result.cashflowMensuel >= 100 ? '#34d399' : result.cashflowMensuel >= 0 ? '#fbbf24' : '#f87171'
+  // Co-emprunteur
+  const revenusCoEmp = (profile.hasCoEmprunteur && profile.coemprunteurRevenus) ? profile.coemprunteurRevenus : 0
+  const revenusTotaux = profile.revenusNetsProFoyer + revenusCoEmp
+  const locTypeLabel: Record<string, string> = { nu: 'Location nue', meuble: 'Location meublée', coloc: 'Colocation', saisonnier: 'Saisonnier' }
+  const prixM2 = params.surface > 0 ? Math.round(params.prixAchat / params.surface) : 0
+  const cfColor = result.cashflowMensuel >= 100 ? '#059669' : result.cashflowMensuel >= 0 ? '#d97706' : '#dc2626'
+  const coverCfColor = cfColor
+  const rnColor = result.rendNet >= 4 ? '#059669' : result.rendNet >= 2.5 ? '#d97706' : '#dc2626'
+  const rbColor = result.rendBrut >= 6 ? '#059669' : result.rendBrut >= 4 ? '#d97706' : '#dc2626'
 
   // ════════════════════════════════════════════════════════════════════════════
   // PAGE DE COUVERTURE
@@ -206,6 +217,11 @@ async function generateBankPDF(
         ${ROW('Profession', profile.profession)}
         ${ROW('Type de contrat', typeContratLabel(profile.typeContrat))}
         ${ROW('Ancienneté', profile.anciennetePoste + ' an' + (profile.anciennetePoste > 1 ? 's' : ''))}
+        ${profile.hasCoEmprunteur && profile.coemprunteurNom ? `
+          <div style="margin-top:4px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;font-size:9.5px;color:#166534">
+            <div style="font-weight:700;margin-bottom:3px">Co-emprunteur : ${trunc(profile.coemprunteurNom, 35)}</div>
+            <div>${trunc(profile.coemprunteurProfession || '—', 35)} · ${profile.coemprunteurTypeContrat ? typeContratLabel(profile.coemprunteurTypeContrat) : '—'} · ${profile.coemprunteurAnciennete ?? 0} an${(profile.coemprunteurAnciennete ?? 0) > 1 ? 's' : ''}</div>
+          </div>` : ''}
 
         ${SECTION('Patrimoine')}
         ${ROW('Épargne totale disponible', fE(profile.epargneTotale))}
@@ -214,10 +230,12 @@ async function generateBankPDF(
       </div>
       <div>
         ${SECTION('Revenus mensuels nets du foyer')}
-        ${ROW('Revenus professionnels nets', fE(profile.revenusNetsProFoyer))}
+        ${ROW('Revenus emprunteur principal', fE(profile.revenusNetsProFoyer))}
+        ${revenusCoEmp > 0 ? ROW('Revenus co-emprunteur', fE(revenusCoEmp)) : ''}
+        ${revenusCoEmp > 0 ? ROW('Total revenus nets du foyer', fE(revenusTotaux)) : ''}
         ${profile.autresRevenusLocatifs > 0 ? ROW('Autres revenus locatifs', fE(profile.autresRevenusLocatifs)) : ''}
         ${ROW('Intégration bancaire des loyers', fE(ratios.loyerIntegreBanque), '(70 % du loyer, méthode HCSF)')}
-        ${ROW('Base de revenus retenue par la banque', fE(profile.revenusNetsProFoyer + ratios.loyerIntegreBanque), '(référence HCSF)')}
+        ${ROW('Base de revenus retenue par la banque', fE(revenusTotaux + ratios.loyerIntegreBanque), '(référence HCSF)')}
 
         ${SECTION('Charges mensuelles actuelles')}
         ${ROW('Loyer / mensualité résidence principale', fE(profile.loyerActuel))}
@@ -236,9 +254,6 @@ async function generateBankPDF(
   // ════════════════════════════════════════════════════════════════════════════
   // PAGE 2 — LE PROJET IMMOBILIER
   // ════════════════════════════════════════════════════════════════════════════
-  const prixM2 = params.surface > 0 ? Math.round(params.prixAchat / params.surface) : 0
-  const locTypeLabel: Record<string, string> = { nu: 'Location nue', meuble: 'Location meublée', coloc: 'Colocation', saisonnier: 'Saisonnier' }
-
   const page2 = `<div ${PS}>
     ${HEADER('Le projet immobilier')}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
@@ -362,10 +377,6 @@ async function generateBankPDF(
   // ════════════════════════════════════════════════════════════════════════════
   // PAGE 4 — ANALYSE DE RENTABILITÉ
   // ════════════════════════════════════════════════════════════════════════════
-  const cfColor = result.cashflowMensuel >= 100 ? '#10b981' : result.cashflowMensuel >= 0 ? '#f59e0b' : '#ef4444'
-  const rnColor = result.rendNet >= 4 ? '#10b981' : result.rendNet >= 2.5 ? '#f59e0b' : '#ef4444'
-  const rbColor = result.rendBrut >= 6 ? '#10b981' : result.rendBrut >= 4 ? '#f59e0b' : '#ef4444'
-
   const page4 = `<div ${PS}>
     ${HEADER('Analyse de rentabilité')}
 
@@ -610,6 +621,12 @@ const DEFAULT_PROFILE: BankReportProfile = {
   profession: '',
   typeContrat: 'cdi',
   anciennetePoste: 1,
+  hasCoEmprunteur: false,
+  coemprunteurNom: '',
+  coemprunteurProfession: '',
+  coemprunteurTypeContrat: 'cdi',
+  coemprunteurAnciennete: 1,
+  coemprunteurRevenus: 0,
   revenusNetsProFoyer: 0,
   autresRevenusLocatifs: 0,
   loyerActuel: 0,
@@ -740,11 +757,53 @@ export default function RapportBancairePage() {
   const [hasData, setHasData] = useState(false)
   const [nbAssocies, setNbAssocies] = useState(1)
   const [methode, setMethode] = useState<'globale' | 'differentielle'>('differentielle')
+  const [checkedDocs, setCheckedDocs] = useState<Record<string, boolean>>({})
 
   const montageOpt = useMemo<MontageOptResult | null>(() => {
     if (!result) return null
     return calcMontageOpt(params, result, profile)
   }, [params, result, profile])
+
+  // Score de bancabilité (0-100) — UI uniquement, pas dans le PDF
+  const scoreBancabilite = useMemo(() => {
+    if (!ratios || !profile.revenusNetsProFoyer) return null
+    // Taux d'endettement : 40 pts
+    const endPts = ratios.tauxEndettementApres <= 25 ? 40
+      : ratios.tauxEndettementApres <= 30 ? 32
+      : ratios.tauxEndettementApres <= 33 ? 22
+      : ratios.tauxEndettementApres <= 35 ? 12 : 0
+    // Reste à vivre : 25 pts
+    const ravPts = ratios.resteAVivre >= ratios.resteAVivreCible * 1.5 ? 25
+      : ratios.resteAVivre >= ratios.resteAVivreCible * 1.2 ? 18
+      : ratios.resteAVivre >= ratios.resteAVivreCible ? 10 : 0
+    // Stabilité professionnelle : 20 pts
+    const proPts = (profile.typeContrat === 'cdi' || profile.typeContrat === 'fonctionnaire') && profile.anciennetePoste >= 3 ? 20
+      : (profile.typeContrat === 'cdi' || profile.typeContrat === 'fonctionnaire') ? 14
+      : profile.typeContrat === 'retraite' ? 18
+      : profile.typeContrat === 'independant' ? 7 : 5
+    // Épargne résiduelle : 15 pts
+    const epar = Math.max(0, (profile.epargneTotale || 0) - params.apport)
+    const montantProjet = result?.prixRevient || params.prixAchat
+    const eparPts = epar >= montantProjet * 0.15 ? 15
+      : epar >= montantProjet * 0.08 ? 10
+      : epar >= 5000 ? 5 : 0
+    const total = endPts + ravPts + proPts + eparPts
+    const label = total >= 80 ? 'Dossier solide' : total >= 60 ? 'Dossier correct' : total >= 40 ? 'À renforcer' : 'Dossier fragile'
+    const color = total >= 80 ? 'emerald' : total >= 60 ? 'amber' : 'red'
+    return {
+      total, label, color,
+      details: [
+        { label: 'Taux d\'endettement', pts: endPts, max: 40 },
+        { label: 'Reste à vivre', pts: ravPts, max: 25 },
+        { label: 'Stabilité professionnelle', pts: proPts, max: 20 },
+        { label: 'Épargne résiduelle', pts: eparPts, max: 15 },
+      ]
+    }
+  }, [ratios, profile, params, result])
+
+  function toggleDoc(key: string) {
+    setCheckedDocs(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
   // Charger les params depuis localStorage
   useEffect(() => {
@@ -984,6 +1043,60 @@ export default function RapportBancairePage() {
                       <input type="number" min={1} step={0.5} value={profile.nbParts} onChange={e => updateProfile('nbParts', Number(e.target.value))}
                         className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
                     </div>
+                  </div>
+
+                  {/* ── Co-emprunteur ── */}
+                  <div className="col-span-2 pt-3 border-t border-white/[0.05]">
+                    <button
+                      onClick={() => updateProfile('hasCoEmprunteur', !profile.hasCoEmprunteur)}
+                      className={`flex items-center gap-2 text-xs font-semibold transition-all ${profile.hasCoEmprunteur ? 'text-emerald-400' : 'text-zinc-500 hover:text-white'}`}
+                    >
+                      <div className={`w-8 h-4 rounded-full transition-all relative ${profile.hasCoEmprunteur ? 'bg-emerald-500' : 'bg-white/10'}`}>
+                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${profile.hasCoEmprunteur ? 'left-4' : 'left-0.5'}`} />
+                      </div>
+                      Ajouter un co-emprunteur
+                    </button>
+
+                    {profile.hasCoEmprunteur && (
+                      <div className="mt-3 p-4 bg-emerald-500/[0.04] border border-emerald-500/20 rounded-xl grid grid-cols-2 gap-3">
+                        <div className="col-span-2 text-[10px] text-emerald-400 font-semibold uppercase tracking-widest">Co-emprunteur</div>
+                        <div>
+                          <label className="text-[11px] text-zinc-500 mb-1 block">Nom & Prénom</label>
+                          <input value={profile.coemprunteurNom ?? ''} onChange={e => updateProfile('coemprunteurNom', e.target.value)}
+                            placeholder="Marie Dupont" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-zinc-500 mb-1 block">Profession</label>
+                          <input value={profile.coemprunteurProfession ?? ''} onChange={e => updateProfile('coemprunteurProfession', e.target.value)}
+                            placeholder="Infirmière, Comptable…" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-zinc-500 mb-1 block">Type de contrat</label>
+                          <select value={profile.coemprunteurTypeContrat ?? 'cdi'} onChange={e => updateProfile('coemprunteurTypeContrat', e.target.value)}
+                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50">
+                            <option value="cdi">CDI</option>
+                            <option value="fonctionnaire">Fonctionnaire</option>
+                            <option value="independant">Indépendant</option>
+                            <option value="cdd">CDD</option>
+                            <option value="retraite">Retraité(e)</option>
+                            <option value="autre">Autre</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-zinc-500 mb-1 block">Ancienneté (années)</label>
+                          <input type="number" min={0} value={profile.coemprunteurAnciennete ?? 1} onChange={e => updateProfile('coemprunteurAnciennete', Number(e.target.value))}
+                            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="text-[11px] text-zinc-500 mb-1 block">Revenus nets mensuels <span className="text-zinc-600">(salaires)</span></label>
+                          <div className="relative">
+                            <input type="number" min={0} value={profile.coemprunteurRevenus || ''} onChange={e => updateProfile('coemprunteurRevenus', Number(e.target.value))}
+                              placeholder="2 800" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </section>
@@ -1311,6 +1424,53 @@ export default function RapportBancairePage() {
                 </div>
               )}
 
+              {/* Score de bancabilité */}
+              {scoreBancabilite && (
+                <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Score bancabilité</div>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                      scoreBancabilite.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400'
+                      : scoreBancabilite.color === 'amber' ? 'bg-amber-500/10 text-amber-400'
+                      : 'bg-red-500/10 text-red-400'
+                    }`}>{scoreBancabilite.label}</span>
+                  </div>
+                  {/* Jauge */}
+                  <div className="mb-3">
+                    <div className="flex items-baseline gap-2 mb-1.5">
+                      <span className={`text-3xl font-black ${
+                        scoreBancabilite.color === 'emerald' ? 'text-emerald-400'
+                        : scoreBancabilite.color === 'amber' ? 'text-amber-400' : 'text-red-400'
+                      }`}>{scoreBancabilite.total}</span>
+                      <span className="text-sm text-zinc-500">/100</span>
+                    </div>
+                    <div className="w-full bg-white/5 rounded-full h-2">
+                      <div className={`h-2 rounded-full transition-all ${
+                        scoreBancabilite.color === 'emerald' ? 'bg-emerald-500'
+                        : scoreBancabilite.color === 'amber' ? 'bg-amber-400' : 'bg-red-500'
+                      }`} style={{ width: `${scoreBancabilite.total}%` }} />
+                    </div>
+                  </div>
+                  {/* Détail des critères */}
+                  <div className="space-y-1.5">
+                    {scoreBancabilite.details.map(d => (
+                      <div key={d.label} className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <div className="text-[10px] text-zinc-500">{d.label}</div>
+                          <div className="w-full bg-white/5 rounded-full h-1 mt-0.5">
+                            <div className={`h-1 rounded-full transition-all ${d.pts === d.max ? 'bg-emerald-500' : d.pts >= d.max * 0.5 ? 'bg-amber-400' : 'bg-red-500'}`}
+                              style={{ width: `${(d.pts / d.max) * 100}%` }} />
+                          </div>
+                        </div>
+                        <div className={`text-[10px] font-bold tabular-nums w-8 text-right ${d.pts === d.max ? 'text-emerald-400' : d.pts >= d.max * 0.5 ? 'text-amber-400' : 'text-red-400'}`}>
+                          {d.pts}/{d.max}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Ratios bancaires */}
               <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
                 <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Ratios bancaires</div>
@@ -1402,16 +1562,41 @@ export default function RapportBancairePage() {
                 </p>
               )}
 
-              {/* Contenu du PDF */}
-              <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-                <div className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-2">Contenu du dossier PDF</div>
-                {['Couverture & synthèse', 'Profil emprunteur', 'Le projet immobilier', 'Indicateurs bancaires + stress tests', 'Analyse de rentabilité', 'Optimisation fiscale', 'Documents à fournir', ...(isCompany ? ['Structure juridique & gouvernance'] : [])].map((item, i) => (
-                  <div key={item} className="flex items-center gap-2 py-1.5 border-b border-white/[0.03] last:border-0">
-                    <span className="text-[9px] text-zinc-700 w-4">{i + 1}</span>
-                    <span className="text-[10.5px] text-zinc-500">{item}</span>
+              {/* Checklist documents */}
+              {(() => {
+                const docsList = documentsRequis(profile.modeAcquisition)
+                const checked = docsList.filter((_, i) => checkedDocs[`${profile.modeAcquisition}_${i}`]).length
+                const pct = docsList.length > 0 ? Math.round((checked / docsList.length) * 100) : 0
+                return (
+                  <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Checklist documents</div>
+                      <span className={`text-[10px] font-bold ${pct === 100 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-zinc-500'}`}>{checked}/{docsList.length}</span>
+                    </div>
+                    <div className="w-full bg-white/5 rounded-full h-1 mb-3">
+                      <div className={`h-1 rounded-full transition-all ${pct === 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-zinc-600'}`} style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="space-y-0.5 max-h-64 overflow-y-auto pr-1">
+                      {docsList.map((doc, i) => {
+                        const key = `${profile.modeAcquisition}_${i}`
+                        const isChecked = !!checkedDocs[key]
+                        return (
+                          <button key={key} onClick={() => toggleDoc(key)}
+                            className="w-full flex items-start gap-2 py-1.5 text-left hover:bg-white/[0.02] rounded-lg px-1 transition-colors">
+                            <div className={`w-3.5 h-3.5 rounded shrink-0 mt-0.5 border transition-all flex items-center justify-center ${isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'}`}>
+                              {isChecked && <svg className="w-2 h-2 text-zinc-950" fill="none" viewBox="0 0 10 10" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M1.5 5l2.5 2.5 4.5-4.5" /></svg>}
+                            </div>
+                            <span className={`text-[10.5px] leading-relaxed ${isChecked ? 'text-zinc-600 line-through' : 'text-zinc-400'}`}>{doc}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {pct === 100 && (
+                      <div className="mt-2 text-[10px] text-emerald-400 text-center font-semibold">✓ Dossier complet — prêt à envoyer</div>
+                    )}
                   </div>
-                ))}
-              </div>
+                )
+              })()}
             </div>
           </div>
         </div>

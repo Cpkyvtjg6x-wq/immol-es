@@ -199,6 +199,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
   const [renoProfile, setRenoProfile] = useState<ProfileRevenu>('intermediaire')
   const [renoBudgetInput, setRenoBudgetInput] = useState('')
   const [renoBudgetCustom, setRenoBudgetCustom] = useState<number | undefined>(undefined)
+  // Mémorise les valeurs appliquées — bouton désactivé tant qu'elles n'ont pas changé
+  const [renoApplied, setRenoApplied] = useState<{ prixAchat: number; travaux: number } | null>(null)
   const [showPtz, setShowPtz] = useState(false)
   const [showFinancementAvance, setShowFinancementAvance] = useState(false)
 
@@ -1265,21 +1267,42 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       )}
                     </div>
 
-                    {/* Bouton appliquer */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const travaux = reno.coutNet
-                        const prixAchat = reno.prixAvecDecote > 0 ? reno.prixAvecDecote : p.prixAchat
-                        setP(prev => ({ ...prev, travaux, prixAchat }))
-                      }}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 hover:bg-emerald-500/20 transition-all"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Appliquer : travaux {formatCurrency(reno.coutNet)}{reno.decotePct > 0 ? ` + prix ${formatCurrency(reno.prixAvecDecote)}` : ''}
-                    </button>
+                    {/* Bouton appliquer — désactivé si scénario déjà appliqué et params inchangés */}
+                    {(() => {
+                      const travauxCible = reno.coutNet
+                      const prixCible = reno.prixAvecDecote > 0 ? reno.prixAvecDecote : p.prixAchat
+                      const dejaApplique =
+                        renoApplied !== null &&
+                        renoApplied.prixAchat === p.prixAchat &&
+                        renoApplied.travaux === p.travaux
+
+                      return (
+                        <button
+                          type="button"
+                          disabled={dejaApplique}
+                          onClick={() => {
+                            setP(prev => ({ ...prev, travaux: travauxCible, prixAchat: prixCible }))
+                            setRenoApplied({ prixAchat: prixCible, travaux: travauxCible })
+                          }}
+                          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-semibold transition-all border ${
+                            dejaApplique
+                              ? 'text-zinc-600 bg-white/[0.02] border-white/[0.06] cursor-not-allowed'
+                              : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25 hover:bg-emerald-500/20'
+                          }`}
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d={dejaApplique
+                              ? "M5 13l4 4L19 7"
+                              : "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            } />
+                          </svg>
+                          {dejaApplique
+                            ? 'Scénario appliqué — modifiez les infos pour recalculer'
+                            : `Appliquer : travaux ${formatCurrency(travauxCible)}${reno.decotePct > 0 ? ` + prix ${formatCurrency(prixCible)}` : ''}`
+                          }
+                        </button>
+                      )
+                    })()}
                   </>
                 )}
 

@@ -16,15 +16,6 @@ interface DetailedResultsProps {
   onApplyRenovationScenario?: (travaux: number, prixAchat: number) => void
 }
 
-const tabs = [
-  { id: 'cashflow',  label: 'Cashflow' },
-  { id: 'renovation', label: 'Rénovation DPE' },
-  { id: 'fiscal',    label: 'Fiscalité' },
-  { id: 'revente',   label: 'Revente & TRI' },
-  { id: 'amort',     label: 'Amortissement' },
-  { id: 'projection', label: 'Projection 20 ans' },
-]
-
 const tooltipStyle = {
   contentStyle: { background: '#18181b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '8px 12px' },
   labelStyle: { color: '#a1a1aa', fontSize: 11, marginBottom: 4 },
@@ -32,19 +23,29 @@ const tooltipStyle = {
 }
 
 export function DetailedResults({ result, fiscalResults, params, onApplyRenovationScenario }: DetailedResultsProps) {
-  const [tab, setTab] = useState('cashflow')
-  const [renoActive, setRenoActive] = useState(false)
-
-  const hasFiscal   = fiscalResults && fiscalResults.filter(r => !r.disabled).length > 0
-  const hasRevente  = result.prixRevente != null && result.prixRevente > 0
   const dpe         = params?.dpe ?? 'D'
   const dpeUrgent   = ['F', 'G'].includes(dpe)
   const dpeAttention = dpe === 'E'
 
+  // Onglet actif par défaut : Rénovation si DPE urgent, sinon Cashflow
+  const [tab, setTab] = useState(dpeUrgent ? 'renovation' : 'cashflow')
+
+  const hasFiscal  = fiscalResults && fiscalResults.filter(r => !r.disabled).length > 0
+  const hasRevente = result.prixRevente != null && result.prixRevente > 0
+
+  const tabs = [
+    { id: 'cashflow',   label: 'Cashflow' },
+    { id: 'renovation', label: 'Rénovation DPE' },
+    { id: 'fiscal',     label: 'Fiscalité' },
+    { id: 'revente',    label: 'Revente & TRI' },
+    { id: 'amort',      label: 'Amortissement' },
+    { id: 'projection', label: 'Projection 20 ans' },
+  ]
+
   return (
     <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
       {/* Tab nav */}
-      <div className="flex border-b border-white/[0.06] overflow-x-auto">
+      <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -57,17 +58,14 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
             {tab === t.id && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
             )}
-            {/* Badge Fiscalité */}
             {t.id === 'fiscal' && hasFiscal && (
               <span className="ml-1.5 text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full">
                 {fiscalResults!.filter(r => !r.disabled).length}
               </span>
             )}
-            {/* Badge Revente */}
             {t.id === 'revente' && hasRevente && (
               <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block align-middle" />
             )}
-            {/* Badge DPE urgent / attention */}
             {t.id === 'renovation' && dpeUrgent && (
               <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-red-500 inline-block align-middle animate-pulse" />
             )}
@@ -81,13 +79,17 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
       <div className="p-6">
         {tab === 'cashflow'   && <CashflowTab result={result} />}
         {tab === 'renovation' && (
-          <RenovationTab
-            params={params ?? null}
-            result={result}
-            active={renoActive}
-            onActivate={() => setRenoActive(true)}
-            onApplyScenario={onApplyRenovationScenario}
-          />
+          params ? (
+            <DpeRenovationPanel
+              params={params}
+              result={result}
+              onApplyScenario={onApplyRenovationScenario}
+            />
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-sm text-zinc-500">Lancez un calcul pour accéder au simulateur rénovation.</p>
+            </div>
+          )
         )}
         {tab === 'fiscal'     && <FiscalTab fiscalResults={fiscalResults} />}
         {tab === 'revente'    && <ReventeTab result={result} />}
@@ -95,129 +97,6 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
         {tab === 'projection' && <ProjectionTab result={result} />}
       </div>
     </div>
-  )
-}
-
-/* ─── Renovation tab ───────────────────────────────────────────────────────── */
-function RenovationTab({
-  params,
-  result,
-  active,
-  onActivate,
-  onApplyScenario,
-}: {
-  params: InvestmentParams | null
-  result: InvestmentResult
-  active: boolean
-  onActivate: () => void
-  onApplyScenario?: (travaux: number, prixAchat: number) => void
-}) {
-  const dpe       = params?.dpe ?? 'D'
-  const dpeUrgent = ['F', 'G'].includes(dpe)
-  const dpeAttention = dpe === 'E'
-
-  if (!active) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center gap-5">
-        {/* Icône DPE */}
-        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black border ${
-          dpeUrgent    ? 'bg-red-500/10 border-red-500/30 text-red-400' :
-          dpeAttention ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
-                         'bg-white/[0.04] border-white/[0.08] text-zinc-400'
-        }`}>
-          {dpe}
-        </div>
-
-        {/* Message contextuel selon DPE */}
-        {dpeUrgent ? (
-          <>
-            <div>
-              <p className="text-[14px] font-bold text-white mb-1">
-                DPE {dpe} — {dpe === 'G' ? 'Interdit à la location' : 'Interdit dès 2028'}
-              </p>
-              <p className="text-[12px] text-zinc-500 max-w-sm leading-relaxed">
-                Ce bien est une passoire thermique. Simulez la rénovation pour voir si la
-                décote d'achat + les aides de l'État rendent l'opération rentable.
-              </p>
-            </div>
-          </>
-        ) : dpeAttention ? (
-          <>
-            <div>
-              <p className="text-[14px] font-bold text-white mb-1">DPE E — À anticiper avant 2034</p>
-              <p className="text-[12px] text-zinc-500 max-w-sm leading-relaxed">
-                Ce bien sera interdit à la location en 2034. Simulez la rénovation pour
-                planifier les travaux et optimiser la rentabilité.
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            <div>
-              <p className="text-[14px] font-bold text-white mb-1">Simulateur rénovation DPE</p>
-              <p className="text-[12px] text-zinc-500 max-w-sm leading-relaxed">
-                Estimez le coût des travaux, les aides disponibles (MaPrimeRénov', Eco-PTZ,
-                CEE) et leur impact sur la rentabilité et votre dossier bancaire.
-              </p>
-            </div>
-          </>
-        )}
-
-        {/* Ce que la simulation va calculer */}
-        <div className="flex flex-wrap justify-center gap-2 max-w-sm">
-          {[
-            'Coût travaux estimé',
-            'MaPrimeRénov\'',
-            'Eco-PTZ à 0 %',
-            'CEE + TVA réduite',
-            'Amortissement LMNP',
-            'Impact dossier bancaire',
-          ].map(tag => (
-            <span key={tag} className="text-[11px] text-zinc-600 bg-white/[0.03] border border-white/[0.05] px-2.5 py-1 rounded-full">
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {/* Bouton activation */}
-        <button
-          onClick={onActivate}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-[13px] transition-all border ${
-            dpeUrgent
-              ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
-              : dpeAttention
-              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
-              : 'bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20'
-          }`}
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          Activer l'analyse rénovation
-        </button>
-
-        <p className="text-[10px] text-zinc-700">
-          Vous pouvez continuer sans activer cette analyse
-        </p>
-      </div>
-    )
-  }
-
-  // Simulation active
-  if (!params) {
-    return (
-      <p className="text-center text-zinc-600 text-sm py-8">
-        Lancez d'abord un calcul pour activer la simulation rénovation.
-      </p>
-    )
-  }
-
-  return (
-    <DpeRenovationPanel
-      params={params}
-      result={result}
-      onApplyScenario={onApplyScenario}
-    />
   )
 }
 

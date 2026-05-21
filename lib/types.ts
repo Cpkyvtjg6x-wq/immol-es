@@ -31,7 +31,7 @@ export interface InvestmentParams {
   ptzDuree: number
 
   // Location
-  locType: 'nu' | 'meuble' | 'coloc' | 'saisonnier'
+  locType: 'nu' | 'meuble' | 'coloc' | 'saisonnier' | 'immeuble'
   loyerNu: number
   loyerMeuble: number
   chargesRecuperables: number  // charges récupérables sur locataire (nu)
@@ -39,6 +39,25 @@ export interface InvestmentParams {
   loyerParChambre: number      // pour colocation
   vacance: number              // mois de vacance par an
   irl: number                  // revalorisation loyer annuelle (%)
+
+  // Location saisonnière (Airbnb / Booking)
+  prixNuit: number             // prix moyen par nuit (€)
+  tauxOccupation: number       // taux d'occupation annuel (0–100 %)
+  dureeSejourMoyen: number     // durée moyenne d'un séjour (nuits) — pour calcul rotations
+  commissionPlateforme: number // % commission plateforme (Airbnb 3%, Booking 15%)
+  fraisMenageParRotation: number // €/rotation (entrée-sortie)
+  fraisConciergerie: number    // €/mois (gestion clés, check-in, urgences)
+  fournituresConsommables: number // €/mois (linge, produits, accueil)
+  electriciteEau: number       // €/mois (charges énergie à la charge du propriétaire)
+  taxeSejour: number           // €/nuit/personne (collectée pour la mairie)
+  nbPersonnesMax: number       // capacité du logement (pour taxe de séjour)
+
+  // Immeuble de rapport
+  nbLots: number               // nombre de logements
+  loyerParLot: number          // loyer mensuel moyen par lot (€)
+  vacanceParLot: number        // mois de vacance par lot par an
+  entretienPartiesCommunes: number // €/an (hall, cage escalier, toiture, façade)
+  assuranceImmeuble: number    // €/an (multirisque immeuble)
 
   // Charges annuelles
   taxeFonciere: number
@@ -146,7 +165,7 @@ export interface FiscalParams {
   prixAchat: number
   travaux: number
   prixRevient: number
-  locType: 'nu' | 'meuble' | 'coloc' | 'saisonnier'
+  locType: 'nu' | 'meuble' | 'coloc' | 'saisonnier' | 'immeuble'
   lmpEnabled?: boolean
   sciIS?: boolean
   sarlFamille?: boolean

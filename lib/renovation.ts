@@ -126,7 +126,7 @@ export function calculateRenovation(
   montantEmprunte: number,
   tmi: number,
   profileRevenu: ProfileRevenu,
-  locType: 'nu' | 'meuble' | 'coloc' | 'saisonnier',
+  locType: 'nu' | 'meuble' | 'coloc' | 'saisonnier' | 'immeuble',
   budgetCustom?: number,
 ): RenovationCalc {
   const ordre: DpeClass[] = ['G', 'F', 'E', 'D', 'C', 'B', 'A']

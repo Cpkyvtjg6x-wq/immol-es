@@ -60,52 +60,110 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
 
   // ─── Loyer de référence ─────────────────────────────────────────────────────
   let loyerRef: number
-  if (params.locType === 'coloc') {
-    // Colocation : loyer total = loyer par chambre × nombre de chambres
+  let moisLoues: number
+  let revAnnuel: number
+  let loyerAnnuelBrut: number
+  let chargesSaisonnierAnnuel = 0 // charges spécifiques saisonnier
+
+  if (params.locType === 'saisonnier') {
+    // Modèle prix/nuit × taux occupation × 365
+    const tauxOcc = (params.tauxOccupation ?? 65) / 100
+    const prixNuit = params.prixNuit ?? 0
+    const nuitesLouees = Math.round(365 * tauxOcc)
+    const revenuBrut = prixNuit * nuitesLouees
+    const commission = (params.commissionPlateforme ?? 15) / 100
+    const revenuApresCommission = revenuBrut * (1 - commission)
+
+    // Calcul rotations = nuits louées / durée moyenne séjour
+    const dureeSejourMoyen = Math.max(1, params.dureeSejourMoyen ?? 3)
+    const nbRotations = nuitesLouees / dureeSejourMoyen
+
+    // Charges spécifiques saisonnier (annualisées)
+    const menageAnnuel = (params.fraisMenageParRotation ?? 0) * nbRotations
+    const conciergerieAnnuel = (params.fraisConciergerie ?? 0) * 12
+    const fournituresAnnuel = (params.fournituresConsommables ?? 0) * 12
+    const electriciteAnnuel = (params.electriciteEau ?? 0) * 12
+    const taxeSejourAnnuel = (params.taxeSejour ?? 0) * (params.nbPersonnesMax ?? 2) * nuitesLouees
+    chargesSaisonnierAnnuel = menageAnnuel + conciergerieAnnuel + fournituresAnnuel + electriciteAnnuel + taxeSejourAnnuel
+
+    loyerRef = revenuApresCommission / 12 // équivalent loyer mensuel net plateforme
+    loyerAnnuelBrut = revenuBrut
+    revAnnuel = revenuApresCommission
+    moisLoues = Math.round(tauxOcc * 12 * 10) / 10
+
+  } else if (params.locType === 'immeuble') {
+    // Multi-lots : loyer total = loyer par lot × nb lots
+    const nbLots = Math.max(1, params.nbLots ?? 4)
+    const loyerLot = params.loyerParLot ?? 0
+    const vacLot = params.vacanceParLot ?? 1
+    loyerRef = loyerLot * nbLots
+    moisLoues = Math.max(0, 12 - vacLot)
+    loyerAnnuelBrut = loyerRef * 12
+    revAnnuel = loyerRef * moisLoues
+
+  } else if (params.locType === 'coloc') {
     loyerRef = (params.loyerParChambre || 0) * (params.nbChambres || 1)
-  } else if (params.locType === 'meuble' || params.locType === 'saisonnier') {
+    moisLoues = Math.max(0, 12 - (params.vacance || 0))
+    loyerAnnuelBrut = loyerRef * 12
+    revAnnuel = loyerRef * moisLoues
+
+  } else if (params.locType === 'meuble') {
     loyerRef = params.loyerMeuble
+    moisLoues = Math.max(0, 12 - (params.vacance || 0))
+    loyerAnnuelBrut = loyerRef * 12
+    revAnnuel = loyerRef * moisLoues
+
   } else {
     // Nu : loyer hors charges + charges récupérables
     loyerRef = params.loyerNu + (params.chargesRecuperables || 0)
+    moisLoues = Math.max(0, 12 - (params.vacance || 0))
+    loyerAnnuelBrut = loyerRef * 12
+    revAnnuel = loyerRef * moisLoues
   }
 
   // ─── Charges annuelles ──────────────────────────────────────────────────────
   const loyerBase = params.locType === 'nu'
-    ? params.loyerNu  // base de calcul des frais de gestion = loyer HC pour le nu
+    ? params.loyerNu
     : loyerRef
 
   const fraisGestionAnnuel = (loyerBase * 12 * params.fraisGestionPct) / 100
   const provisionAnnuelle = (loyerBase * 12 * params.provisionPct) / 100
-  const gliAnnuel = (loyerBase * 12 * params.gliPct) / 100
+  const gliAnnuel = params.locType !== 'saisonnier' && params.locType !== 'immeuble'
+    ? (loyerBase * 12 * params.gliPct) / 100
+    : 0
 
   // CFE uniquement pour meublé, coloc et saisonnier
   const cfe = ['meuble', 'coloc', 'saisonnier'].includes(params.locType) ? params.cfe : 0
 
+  // Charges spécifiques immeuble
+  const chargesImmeuble = params.locType === 'immeuble'
+    ? (params.entretienPartiesCommunes ?? 0) + (params.assuranceImmeuble ?? 0)
+    : 0
+
+  // Copro : pour immeuble, le propriétaire = syndicat, donc chargesCopro = 0 (remplacé par chargesImmeuble)
+  const chargesCopro = params.locType === 'immeuble' ? 0 : params.chargesCopro
+
   const totalCharges =
     params.taxeFonciere +
-    params.chargesCopro +
+    chargesCopro +
     params.assurancePno +
     fraisGestionAnnuel +
     provisionAnnuelle +
     params.fraisComptable +
     gliAnnuel +
-    cfe
-
-  // ─── Revenus locatifs ───────────────────────────────────────────────────────
-  const moisLoues = Math.max(0, 12 - (params.vacance || 0))
-  const loyer = loyerRef
-  const revAnnuel = loyer * moisLoues
+    cfe +
+    chargesSaisonnierAnnuel +
+    chargesImmeuble
 
   // ─── Rendements ─────────────────────────────────────────────────────────────
-  const rendBrut = params.prixAchat > 0 ? ((loyer * 12) / params.prixAchat) * 100 : 0
+  const loyer = loyerRef
+  const rendBrut = params.prixAchat > 0 ? (loyerAnnuelBrut / params.prixAchat) * 100 : 0
   const rendNet = prixRevient > 0 ? ((revAnnuel - totalCharges) / prixRevient) * 100 : 0
 
   const cashflowMensuel = (revAnnuel - totalCharges) / 12 - mensualiteTotale
   const roiApport = params.apport > 0 ? ((cashflowMensuel * 12) / params.apport) * 100 : 0
   const pointMort = Math.ceil(mensualiteTotale + totalCharges / 12)
 
-  const loyerAnnuelBrut = loyer * 12
   const loyerAnnuelNet = revAnnuel
   const chargesAnnuelles = totalCharges
   const cashflowAnnuel = cashflowMensuel * 12
@@ -408,6 +466,25 @@ export const DEFAULT_PARAMS: InvestmentParams = {
   loyerParChambre: 350,
   vacance: 0.5,
   irl: 1.5,
+
+  // Saisonnier
+  prixNuit: 80,
+  tauxOccupation: 65,
+  dureeSejourMoyen: 3,
+  commissionPlateforme: 15,
+  fraisMenageParRotation: 50,
+  fraisConciergerie: 0,
+  fournituresConsommables: 0,
+  electriciteEau: 0,
+  taxeSejour: 0,
+  nbPersonnesMax: 2,
+
+  // Immeuble
+  nbLots: 4,
+  loyerParLot: 600,
+  vacanceParLot: 1,
+  entretienPartiesCommunes: 2000,
+  assuranceImmeuble: 800,
 
   // Charges
   taxeFonciere: 800,

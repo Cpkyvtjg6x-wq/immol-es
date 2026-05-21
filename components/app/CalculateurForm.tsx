@@ -263,7 +263,9 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
     onCalculate(p)
   }
 
-  const isMeuble = p.locType === 'meuble' || p.locType === 'saisonnier'
+  const isMeuble = p.locType === 'meuble'
+  const isSaisonnier = p.locType === 'saisonnier'
+  const isImmeuble = p.locType === 'immeuble'
 
   // ─── Preview fiscal par structure (calculé en live si result disponible) ──────
   const structurePreviews = useMemo(() => {
@@ -855,19 +857,20 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               <div>
                 <Label>Régime locatif</Label>
                 <BtnGroup
-                  cols={2}
+                  cols={3}
                   value={p.locType}
                   onChange={(v) => set('locType', v as InvestmentParams['locType'])}
                   options={[
-                    { value: 'nu', label: '🏠 Nu (foncier)' },
-                    { value: 'meuble', label: '🛋 Meublé (BIC)' },
-                    { value: 'coloc', label: '👥 Colocation' },
+                    { value: 'nu', label: '🏠 Nu' },
+                    { value: 'meuble', label: '🛋 Meublé' },
+                    { value: 'coloc', label: '👥 Coloc' },
                     { value: 'saisonnier', label: '🌴 Saisonnier' },
+                    { value: 'immeuble', label: '🏢 Immeuble' },
                   ]}
                 />
               </div>
 
-              {/* Loyer selon type */}
+              {/* ── NU ─────────────────────────────────────────────── */}
               {isNu && (
                 <Row2>
                   <div>
@@ -881,6 +884,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 </Row2>
               )}
 
+              {/* ── MEUBLÉ ─────────────────────────────────────────── */}
               {isMeuble && (
                 <div>
                   <Label>Loyer charges comprises / mois</Label>
@@ -888,6 +892,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 </div>
               )}
 
+              {/* ── COLOCATION ─────────────────────────────────────── */}
               {isColoc && (
                 <div className="space-y-3">
                   <div>
@@ -917,34 +922,177 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 </div>
               )}
 
+              {/* ── SAISONNIER ─────────────────────────────────────── */}
+              {isSaisonnier && (
+                <div className="space-y-4">
+                  {/* Prix / nuit + taux occupation */}
+                  <Row2>
+                    <div>
+                      <Label>Prix moyen / nuit</Label>
+                      <NumInput value={p.prixNuit ?? 80} onChange={(v) => set('prixNuit', v)} suffix="€" />
+                    </div>
+                    <div>
+                      <Label>Durée moy. séjour</Label>
+                      <NumInput value={p.dureeSejourMoyen ?? 3} onChange={(v) => set('dureeSejourMoyen', Math.max(1, v))} suffix=" nuits" step={1} />
+                    </div>
+                  </Row2>
+
+                  {/* Taux d'occupation slider */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <Label>Taux d&apos;occupation</Label>
+                      <span className="text-sm font-bold text-white">{p.tauxOccupation ?? 65}%</span>
+                    </div>
+                    <input
+                      type="range" min={10} max={100} step={5} value={p.tauxOccupation ?? 65}
+                      onChange={(e) => set('tauxOccupation', parseInt(e.target.value))}
+                      className="w-full accent-emerald-500 cursor-pointer h-1.5"
+                    />
+                    <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
+                      <span>10% faible</span><span>65% correct</span><span>80% excellent</span>
+                    </div>
+                  </div>
+
+                  {/* Commission plateforme */}
+                  <div>
+                    <Label>Commission plateforme</Label>
+                    <div className="grid grid-cols-3 gap-1.5 mt-1">
+                      {[
+                        { label: 'Direct', value: 0 },
+                        { label: 'Airbnb hôte', value: 3 },
+                        { label: 'Booking', value: 15 },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => set('commissionPlateforme', opt.value)}
+                          className={`py-1.5 px-2 rounded-lg text-[11px] font-medium border transition-all ${
+                            (p.commissionPlateforme ?? 15) === opt.value
+                              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                              : 'bg-white/[0.03] border-white/[0.08] text-zinc-400 hover:border-white/20'
+                          }`}
+                        >
+                          {opt.label}<br />
+                          <span className="font-bold">{opt.value === 0 ? '0%' : `${opt.value}%`}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-zinc-600 mt-1.5">Autre montant : <NumInput value={p.commissionPlateforme ?? 15} onChange={(v) => set('commissionPlateforme', v)} suffix="%" step={1} /></p>
+                  </div>
+
+                  {/* Stats auto-calculées */}
+                  {(() => {
+                    const tauxOcc = (p.tauxOccupation ?? 65) / 100
+                    const nuits = Math.round(365 * tauxOcc)
+                    const rotations = Math.round(nuits / Math.max(1, p.dureeSejourMoyen ?? 3))
+                    const revBrut = Math.round((p.prixNuit ?? 0) * nuits)
+                    const revNet = Math.round(revBrut * (1 - (p.commissionPlateforme ?? 15) / 100))
+                    return (p.prixNuit ?? 0) > 0 ? (
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { label: 'Nuits louées', val: `${nuits}/an` },
+                          { label: 'Rotations', val: `${rotations}/an` },
+                          { label: 'Rev. net plateforme', val: `${revNet.toLocaleString('fr-FR')} €/an`, highlight: true },
+                        ].map((s, i) => (
+                          <div key={i} className={`py-2 px-3 rounded-lg border text-center ${s.highlight ? 'bg-emerald-500/[0.07] border-emerald-500/20' : 'bg-white/[0.02] border-white/[0.06]'}`}>
+                            <div className="text-[10px] text-zinc-500">{s.label}</div>
+                            <div className={`text-[13px] font-bold tabular-nums mt-0.5 ${s.highlight ? 'text-emerald-400' : 'text-white'}`}>{s.val}</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null
+                  })()}
+                </div>
+              )}
+
+              {/* ── IMMEUBLE ───────────────────────────────────────── */}
+              {isImmeuble && (
+                <div className="space-y-4">
+                  {/* Nb lots slider */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <Label>Nombre de lots</Label>
+                      <span className="text-sm font-bold text-white">{p.nbLots ?? 4} logements</span>
+                    </div>
+                    <input
+                      type="range" min={2} max={20} step={1} value={p.nbLots ?? 4}
+                      onChange={(e) => set('nbLots', parseInt(e.target.value))}
+                      className="w-full accent-emerald-500 cursor-pointer h-1.5"
+                    />
+                    <div className="flex justify-between text-[10px] text-zinc-700 mt-1">
+                      <span>2</span><span>10</span><span>20 lots</span>
+                    </div>
+                  </div>
+
+                  <Row2>
+                    <div>
+                      <Label>Loyer moyen / lot</Label>
+                      <NumInput value={p.loyerParLot ?? 600} onChange={(v) => set('loyerParLot', v)} suffix="€/mois" />
+                    </div>
+                    <div>
+                      <Label>Vacance / lot</Label>
+                      <NumInput value={p.vacanceParLot ?? 1} onChange={(v) => set('vacanceParLot', Math.max(0, Math.min(12, v)))} suffix=" mois/an" step={0.5} />
+                    </div>
+                  </Row2>
+
+                  {/* Synthèse consolidée */}
+                  {(() => {
+                    const nbLots = p.nbLots ?? 4
+                    const loyerLot = p.loyerParLot ?? 0
+                    const vacLot = p.vacanceParLot ?? 1
+                    const revMensuel = loyerLot * nbLots
+                    const revAnnuel = Math.round(revMensuel * (12 - vacLot))
+                    const tauxVac = Math.round((vacLot / 12) * 100)
+                    return revMensuel > 0 ? (
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { label: 'Loyer total/mois', val: `${revMensuel.toLocaleString('fr-FR')} €` },
+                          { label: 'Vacance mutualisée', val: `${tauxVac}%` },
+                          { label: 'Revenu annuel', val: `${revAnnuel.toLocaleString('fr-FR')} €`, highlight: true },
+                        ].map((s, i) => (
+                          <div key={i} className={`py-2 px-3 rounded-lg border text-center ${s.highlight ? 'bg-emerald-500/[0.07] border-emerald-500/20' : 'bg-white/[0.02] border-white/[0.06]'}`}>
+                            <div className="text-[10px] text-zinc-500">{s.label}</div>
+                            <div className={`text-[13px] font-bold tabular-nums mt-0.5 ${s.highlight ? 'text-emerald-400' : 'text-white'}`}>{s.val}</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null
+                  })()}
+                </div>
+              )}
+
               <Divider />
 
-              {/* Vacance locative */}
-              <SliderRow
-                label="Vacance locative"
-                value={p.vacance}
-                onChange={(v) => set('vacance', v)}
-                min={0}
-                max={3}
-                step={0.5}
-                suffix=" mois/an"
-                hint={`${Math.round((p.vacance / 12) * 100)}% de vacance — ${12 - p.vacance} mois loués / an`}
-              />
+              {/* Vacance — uniquement pour nu, meublé, coloc */}
+              {!isSaisonnier && !isImmeuble && (
+                <SliderRow
+                  label="Vacance locative"
+                  value={p.vacance}
+                  onChange={(v) => set('vacance', v)}
+                  min={0}
+                  max={3}
+                  step={0.5}
+                  suffix=" mois/an"
+                  hint={`${Math.round((p.vacance / 12) * 100)}% de vacance — ${12 - p.vacance} mois loués / an`}
+                />
+              )}
 
-              {/* IRL */}
-              <SliderRow
-                label="Revalorisation loyer (IRL)"
-                value={p.irl ?? 1.5}
-                onChange={(v) => set('irl', v)}
-                min={0}
-                max={4}
-                step={0.5}
-                suffix="%/an"
-                hint="Indexation annuelle estimée des loyers (IRL moyen ~2%)"
-              />
+              {/* IRL — pas pour saisonnier */}
+              {!isSaisonnier && (
+                <SliderRow
+                  label="Revalorisation loyer (IRL)"
+                  value={p.irl ?? 1.5}
+                  onChange={(v) => set('irl', v)}
+                  min={0}
+                  max={4}
+                  step={0.5}
+                  suffix="%/an"
+                  hint="Indexation annuelle estimée des loyers (IRL moyen ~2%)"
+                />
+              )}
 
-              {/* Revenu annuel estimé */}
-              {(() => {
+              {/* Revenu annuel estimé — nu / meublé / coloc */}
+              {!isSaisonnier && !isImmeuble && (() => {
                 const loyer = isColoc
                   ? p.loyerParChambre * p.nbChambres
                   : isMeuble
@@ -979,15 +1127,89 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <Label>Taxe foncière</Label>
                   <NumInput value={p.taxeFonciere} onChange={(v) => set('taxeFonciere', v)} suffix="€" />
                 </div>
-                <div>
-                  <Label>Charges copro</Label>
-                  <NumInput value={p.chargesCopro} onChange={(v) => set('chargesCopro', v)} suffix="€" />
-                </div>
+                {!isImmeuble && (
+                  <div>
+                    <Label>Charges copro</Label>
+                    <NumInput value={p.chargesCopro} onChange={(v) => set('chargesCopro', v)} suffix="€" />
+                  </div>
+                )}
                 <div>
                   <Label>Assurance PNO</Label>
                   <NumInput value={p.assurancePno} onChange={(v) => set('assurancePno', v)} suffix="€" />
                 </div>
               </Row3>
+
+              {/* Charges immeuble de rapport */}
+              {isImmeuble && (
+                <div className="rounded-xl border border-sky-500/20 bg-sky-500/[0.04] p-3 space-y-3">
+                  <p className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">Immeuble de rapport</p>
+                  <Row2>
+                    <div>
+                      <Label>Entretien parties communes</Label>
+                      <NumInput value={p.entretienPartiesCommunes} onChange={(v) => set('entretienPartiesCommunes', v)} suffix="€/an" step={100} />
+                    </div>
+                    <div>
+                      <Label>Assurance immeuble</Label>
+                      <NumInput value={p.assuranceImmeuble} onChange={(v) => set('assuranceImmeuble', v)} suffix="€/an" step={100} />
+                    </div>
+                  </Row2>
+                  <p className="text-[10px] text-zinc-600">Charges copro supprimées — vous êtes le seul copropriétaire (syndicat = vous)</p>
+                </div>
+              )}
+
+              {/* Charges saisonnières spécifiques */}
+              {isSaisonnier && (
+                <div className="rounded-xl border border-orange-500/20 bg-orange-500/[0.04] p-3 space-y-3">
+                  <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">Charges exploitation saisonnière</p>
+                  <Row3>
+                    <div>
+                      <Label>Ménage / rotation</Label>
+                      <NumInput value={p.fraisMenageParRotation} onChange={(v) => set('fraisMenageParRotation', v)} suffix="€" step={5} />
+                    </div>
+                    <div>
+                      <Label>Conciergerie</Label>
+                      <NumInput value={p.fraisConciergerie} onChange={(v) => set('fraisConciergerie', v)} suffix="€/mois" step={10} />
+                    </div>
+                    <div>
+                      <Label>Linge & consommables</Label>
+                      <NumInput value={p.fournituresConsommables} onChange={(v) => set('fournituresConsommables', v)} suffix="€/mois" step={5} />
+                    </div>
+                  </Row3>
+                  <Row3>
+                    <div>
+                      <Label>Électricité / eau</Label>
+                      <NumInput value={p.electriciteEau} onChange={(v) => set('electriciteEau', v)} suffix="€/mois" step={10} />
+                    </div>
+                    <div>
+                      <Label>Taxe de séjour</Label>
+                      <NumInput value={p.taxeSejour} onChange={(v) => set('taxeSejour', v)} suffix="€/nuit/pers." step={0.1} />
+                    </div>
+                    <div>
+                      <Label>Capacité max</Label>
+                      <NumInput value={p.nbPersonnesMax} onChange={(v) => set('nbPersonnesMax', v)} suffix="pers." step={1} />
+                    </div>
+                  </Row3>
+                  {(() => {
+                    const tauxOcc = (p.tauxOccupation ?? 65) / 100
+                    const nuits = Math.round(365 * tauxOcc)
+                    const rotations = p.dureeSejourMoyen > 0 ? Math.round(nuits / p.dureeSejourMoyen) : 0
+                    const menageAn = rotations * (p.fraisMenageParRotation ?? 0)
+                    const conciergeAn = (p.fraisConciergerie ?? 0) * 12
+                    const fournituresAn = (p.fournituresConsommables ?? 0) * 12
+                    const elecAn = (p.electriciteEau ?? 0) * 12
+                    const taxeAn = (p.taxeSejour ?? 0) * (p.nbPersonnesMax ?? 2) * nuits
+                    const totalSaison = menageAn + conciergeAn + fournituresAn + elecAn + taxeAn
+                    return totalSaison > 0 ? (
+                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                        <span className="text-[11px] text-zinc-500">Total charges exploitation estimé</span>
+                        <span className="text-sm font-bold text-orange-400 tabular-nums">
+                          {Math.round(totalSaison).toLocaleString('fr-FR')} €/an
+                        </span>
+                      </div>
+                    ) : null
+                  })()}
+                </div>
+              )}
 
               {/* Charges variables */}
               <Row3>
@@ -999,12 +1221,16 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <Label>Provision</Label>
                   <NumInput value={p.provisionPct} onChange={(v) => set('provisionPct', v)} suffix="%" step={0.5} />
                 </div>
-                <div>
-                  <Label>GLI</Label>
-                  <NumInput value={p.gliPct} onChange={(v) => set('gliPct', v)} suffix="%" step={0.1} />
-                </div>
+                {!isSaisonnier && (
+                  <div>
+                    <Label>GLI</Label>
+                    <NumInput value={p.gliPct} onChange={(v) => set('gliPct', v)} suffix="%" step={0.1} />
+                  </div>
+                )}
               </Row3>
-              <p className="text-[10px] text-zinc-600 -mt-1">GLI : garantie loyers impayés — optionnel, ~2.5% du loyer</p>
+              {!isSaisonnier && (
+                <p className="text-[10px] text-zinc-600 -mt-1">GLI : garantie loyers impayés — optionnel, ~2.5% du loyer</p>
+              )}
 
               {/* CFE & Comptable — uniquement meublé/coloc/saisonnier */}
               {!isNu && (
@@ -1022,18 +1248,37 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
 
               {/* Total charges estimé */}
               {(() => {
-                const loyer = isColoc
-                  ? p.loyerParChambre * p.nbChambres
-                  : isMeuble ? p.loyerMeuble : p.loyerNu
+                let loyer = 0
+                if (isColoc) loyer = p.loyerParChambre * p.nbChambres
+                else if (isMeuble) loyer = p.loyerMeuble
+                else if (isSaisonnier) {
+                  const tauxOcc = (p.tauxOccupation ?? 65) / 100
+                  const commission = (p.commissionPlateforme ?? 15) / 100
+                  loyer = (p.prixNuit ?? 0) * 365 * tauxOcc * (1 - commission) / 12
+                } else if (isImmeuble) loyer = (p.loyerParLot ?? 0) * (p.nbLots ?? 4)
+                else loyer = p.loyerNu
                 const loyerAn = loyer * 12
+                const chargesImmeuble = isImmeuble ? (p.entretienPartiesCommunes ?? 0) + (p.assuranceImmeuble ?? 0) : 0
+                const chargesSaison = isSaisonnier ? (() => {
+                  const tauxOcc = (p.tauxOccupation ?? 65) / 100
+                  const nuits = Math.round(365 * tauxOcc)
+                  const rotations = p.dureeSejourMoyen > 0 ? Math.round(nuits / p.dureeSejourMoyen) : 0
+                  return rotations * (p.fraisMenageParRotation ?? 0)
+                    + (p.fraisConciergerie ?? 0) * 12
+                    + (p.fournituresConsommables ?? 0) * 12
+                    + (p.electriciteEau ?? 0) * 12
+                    + (p.taxeSejour ?? 0) * (p.nbPersonnesMax ?? 2) * nuits
+                })() : 0
                 const total = Math.round(
                   p.taxeFonciere +
-                  p.chargesCopro +
+                  (isImmeuble ? 0 : p.chargesCopro) +
                   p.assurancePno +
                   loyerAn * (p.fraisGestionPct / 100) +
                   loyerAn * (p.provisionPct / 100) +
-                  loyerAn * (p.gliPct / 100) +
-                  (isNu ? 0 : p.cfe + p.fraisComptable)
+                  (isSaisonnier ? 0 : loyerAn * (p.gliPct / 100)) +
+                  (isNu ? 0 : p.cfe + p.fraisComptable) +
+                  chargesImmeuble +
+                  chargesSaison
                 )
                 return total > 0 ? (
                   <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">

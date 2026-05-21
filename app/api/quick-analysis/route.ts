@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { calculateInvestment, DEFAULT_PARAMS, calculerFraisNotaire } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
+import {
+  getMarcheRef,
+  estimerLoyerMarche,
+  getAmeniteAdjustment,
+  getPositionnementMarche,
+  type Amenities,
+} from '@/lib/marche-reference'
 import type { InvestmentParams } from '@/lib/types'
 
-// CORS headers — l'extension Chrome appelle depuis une origine différente
+// CORS — l'extension Chrome appelle depuis une origine différente
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -22,52 +29,97 @@ export async function POST(req: NextRequest) {
     const {
       prixAchat,
       surface,
-      ville,
-      dpe = 'D',
-      locType = 'meuble',
-      tmi = 30,
-      // Optionnels
+      ville        = '',
+      dpe          = 'D',
+      locType      = 'meuble',
+      tmi          = 30,
+      codePostal,
+      // Enrichissements extraits de la description
+      amenities,
+      etage,
+      etat,
+      chauffage,
+      nbPieces,
+      // Optionnels explicites
       loyerEstime,
+      loyerActuel,   // loyer actuel si bien déjà loué (source la plus fiable)
       chargesCopro,
       taxeFonciere,
     } = body
 
-    // Validation minimale
+    // ── Validation ────────────────────────────────────────────────────────────
     if (!prixAchat || prixAchat < 10000) {
       return NextResponse.json({ error: 'Prix manquant ou invalide' }, { status: 400, headers: CORS })
     }
 
-    // ── Estimation automatique du loyer si non fourni ──────────────────────────
-    // Règle simple : rendement brut cible 5% en meublé, 4% en nu
-    const loyerCible = loyerEstime
-      ? loyerEstime
-      : Math.round((prixAchat * (locType === 'meuble' ? 0.05 : 0.04)) / 12)
+    // ── 1. Données marché local ────────────────────────────────────────────────
+    const marcheRef = getMarcheRef(ville, codePostal)
 
-    // ── Paramètres avec valeurs par défaut intelligentes ───────────────────────
+    // ── 2. Estimation du loyer marché (source par ordre de priorité) ──────────
+    // Priorité 1: loyer actuel mentionné dans l'annonce (le plus fiable)
+    // Priorité 2: loyer explicitement fourni (ex: utilisateur l'a saisi)
+    // Priorité 3: estimation via référentiel marché local + aménités
+    // Priorité 4: fallback simplifié sur rendement cible
+    let loyerEstimeFinal: number
+    let loyerSource: 'annonce' | 'fourni' | 'marche' | 'fallback'
+
+    if (loyerActuel && loyerActuel > 100) {
+      loyerEstimeFinal = loyerActuel
+      loyerSource = 'annonce'
+    } else if (loyerEstime && loyerEstime > 100) {
+      loyerEstimeFinal = loyerEstime
+      loyerSource = 'fourni'
+    } else if (surface && surface > 5) {
+      loyerEstimeFinal = estimerLoyerMarche(
+        surface, locType, marcheRef, amenities, etage, etat, nbPieces
+      )
+      loyerSource = 'marche'
+    } else {
+      // Fallback sur rendement cible si pas de surface
+      loyerEstimeFinal = Math.round(prixAchat * (locType === 'meuble' ? 0.05 : 0.04) / 12)
+      loyerSource = 'fallback'
+    }
+
+    // ── 3. Ajustements aménités ────────────────────────────────────────────────
+    const amenAdj = getAmeniteAdjustment(amenities as Amenities | undefined, surface ?? 50, etage, etat)
+
+    // ── 4. Positionnement marché ──────────────────────────────────────────────
+    const posMarche = surface && surface > 5
+      ? getPositionnementMarche(prixAchat, surface, marcheRef)
+      : null
+
+    // ── 5. Paramètres de calcul ───────────────────────────────────────────────
     const fraisNotaire = calculerFraisNotaire(prixAchat, 'ancien')
-    const apport = Math.round(prixAchat * 0.20) // 20% apport standard
+    const apport = Math.round(prixAchat * 0.20)
+
+    // Estimation charges copro depuis la description ou référentiel
+    const chargesCoproFinal = chargesCopro
+      ?? estimerChargesCopro(surface ?? 50, etat, chauffage)
+
+    // Estimation taxe foncière depuis la description ou estimation
+    const taxeFonciereFinal = taxeFonciere
+      ?? estimerTaxeFonciere(prixAchat)
 
     const params: InvestmentParams = {
       ...DEFAULT_PARAMS,
       prixAchat,
-      surface:    surface ?? DEFAULT_PARAMS.surface,
-      ville:      ville   ?? DEFAULT_PARAMS.ville,
+      surface:      surface  ?? DEFAULT_PARAMS.surface,
+      ville:        ville    || DEFAULT_PARAMS.ville,
       dpe,
       locType,
       tmi,
       fraisNotaire,
       fraisNotaireAuto: false,
       apport,
-      loyerNu:     locType === 'nu'      ? loyerCible : DEFAULT_PARAMS.loyerNu,
-      loyerMeuble: locType === 'meuble'  ? loyerCible : DEFAULT_PARAMS.loyerMeuble,
-      chargesCopro: chargesCopro ?? estimerChargesCopro(surface ?? 50),
-      taxeFonciere: taxeFonciere ?? estimerTaxeFonciere(prixAchat),
-      // Estimation assurance PNO
+      loyerNu:      locType === 'nu'     ? loyerEstimeFinal : DEFAULT_PARAMS.loyerNu,
+      loyerMeuble:  locType === 'meuble' ? loyerEstimeFinal : DEFAULT_PARAMS.loyerMeuble,
+      chargesCopro: chargesCoproFinal,
+      taxeFonciere: taxeFonciereFinal,
       assurancePno: Math.round(prixAchat * 0.001),
-      cfe: locType === 'meuble' ? 500 : 0,
+      cfe:          locType === 'meuble' ? 500 : 0,
     }
 
-    // ── Calcul ─────────────────────────────────────────────────────────────────
+    // ── 6. Calculs ────────────────────────────────────────────────────────────
     const result = calculateInvestment(params)
 
     const fiscalResult = calculateFiscal({
@@ -86,18 +138,35 @@ export async function POST(req: NextRequest) {
       ? enabledRegimes.reduce((b, r) => r.rendNetNet > b.rendNetNet ? r : b, enabledRegimes[0])
       : null
 
-    // ── Prix max conseillé (offre à faire) ────────────────────────────────────
-    // Valeur juste : loyer annuel / rendement cible (6% meublé, 5% nu)
+    // ── 7. Prix max conseillé ─────────────────────────────────────────────────
+    // Base: valeur juste par le rendement cible
     const targetGrossYield = locType === 'meuble' ? 0.06 : 0.05
-    const fairValue = Math.round((loyerCible * 12) / targetGrossYield)
-    // Ne jamais suggérer moins de -10% du prix demandé (réaliste sur le marché FR)
+    const fairValue = Math.round((loyerEstimeFinal * 12) / targetGrossYield)
+    // Ajustement selon positionnement marché : plus précis si on a la ref
     const prixMaxBas = Math.round(prixAchat * 0.90)
     const prixMax = Math.max(prixMaxBas, Math.min(fairValue, prixAchat))
     const economie = prixAchat - prixMax
     const negoPct = parseFloat((economie / prixAchat * 100).toFixed(1))
     const prixM2 = (surface && surface > 0) ? Math.round(prixAchat / surface) : null
 
-    // ── Réponse ────────────────────────────────────────────────────────────────
+    // ── 8. Contexte marché local ─────────────────────────────────────────────
+    const marcheContext = {
+      ville:          marcheRef.label ?? ville,
+      source:         marcheRef.source,
+      prixM2Ref:      marcheRef.prixM2,
+      loyerM2Ref:     locType === 'nu' ? marcheRef.loyerNu : marcheRef.loyerMeuble,
+      tension:        marcheRef.tension,
+      loyerSource,
+      amenitesBonus:  amenAdj.details,
+      ...(posMarche ? {
+        positionnement: posMarche.positionnement,
+        positionnementLabel: posMarche.label,
+        prixM2Bien:  posMarche.prixM2Bien,
+        ecartMarche: posMarche.ecartPct,
+      } : {}),
+    }
+
+    // ── 9. Réponse ────────────────────────────────────────────────────────────
     return NextResponse.json({
       // Indicateurs principaux
       rendBrut:        parseFloat(result.rendBrut.toFixed(2)),
@@ -108,8 +177,8 @@ export async function POST(req: NextRequest) {
       prixRevient:     Math.round(result.prixRevient),
 
       // Score
-      score:     score.global,
-      scoreLbl:  score.label,
+      score:      Math.round(score.global),
+      scoreLbl:   score.label,
       scoreColor: score.color,
 
       // Fiscal
@@ -127,13 +196,17 @@ export async function POST(req: NextRequest) {
       prixM2,
       fairValue,
 
-      // Paramètres estimés (pour affichage dans le widget)
-      loyerEstime:  loyerCible,
+      // Données estimées
+      loyerEstime:  loyerEstimeFinal,
+      loyerSource,
       apportEstime: apport,
       fraisNotaire,
 
-      // URL vers l'app pré-remplie (tous les paramètres utiles)
-      analyseUrl: buildAnalyseUrl(params, loyerCible),
+      // Contexte marché local (la nouveauté !)
+      marcheContext,
+
+      // URL pré-remplie
+      analyseUrl: buildAnalyseUrl(params, loyerEstimeFinal),
     }, { status: 200, headers: CORS })
 
   } catch (err) {
@@ -144,29 +217,32 @@ export async function POST(req: NextRequest) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function estimerChargesCopro(surface: number): number {
-  // ~25–35 €/m²/an pour un immeuble standard
-  return Math.round(surface * 30)
+function estimerChargesCopro(surface: number, etat?: string | null, chauffage?: string | null): number {
+  // Charges selon état et type de chauffage
+  let base = surface * 28  // ~28 €/m²/an standard
+  if (etat === 'neuf') base = surface * 15       // immeuble neuf = charges basses
+  if (chauffage === 'collectif-gaz' || chauffage === 'collectif') base += 400  // collectif coûte plus
+  return Math.round(base)
 }
 
 function estimerTaxeFonciere(prixAchat: number): number {
-  // ~0.5% du prix d'achat en moyenne nationale
+  // ~0.45-0.55% du prix d'achat selon les communes
   return Math.round(prixAchat * 0.005)
 }
 
 function buildAnalyseUrl(params: InvestmentParams, loyerEstime: number): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://immora.app'
+  const base  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://immora.app'
   const loyer = params.locType === 'meuble' ? params.loyerMeuble : params.loyerNu
   const p = new URLSearchParams({
-    prix:      String(params.prixAchat),
-    surface:   String(params.surface),
-    ville:     params.ville,
-    dpe:       params.dpe,
-    locType:   params.locType,
-    loyer:     String(loyer || loyerEstime),
-    apport:    String(params.apport),
-    tmi:       String(params.tmi),
-    source:    'extension',
+    prix:    String(params.prixAchat),
+    surface: String(params.surface),
+    ville:   params.ville,
+    dpe:     params.dpe,
+    locType: params.locType,
+    loyer:   String(loyer || loyerEstime),
+    apport:  String(params.apport),
+    tmi:     String(params.tmi),
+    source:  'extension',
   })
   return `${base}/analyse?${p.toString()}`
 }

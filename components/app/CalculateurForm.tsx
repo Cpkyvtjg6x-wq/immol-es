@@ -412,15 +412,11 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         key={d}
                         type="button"
                         onClick={() => set('dpe', d)}
-                        className="flex-1 py-2 rounded-lg text-[11px] font-bold transition-all"
-                        style={{
-                          color: col.bg,
-                          backgroundColor: selected ? col.bg + '22' : 'transparent',
-                          border: selected
-                            ? `1.5px solid ${col.bg}55`
-                            : `1.5px solid ${col.bg}22`,
-                          opacity: selected ? 1 : 0.45,
-                        }}
+                        className="flex-1 h-8 rounded-lg text-[11px] font-bold transition-all"
+                        style={selected
+                          ? { backgroundColor: col.bg, color: col.text, border: `1.5px solid ${col.bg}` }
+                          : { backgroundColor: 'transparent', color: col.bg, border: `1.5px solid ${col.bg}40` }
+                        }
                       >
                         {d}
                       </button>

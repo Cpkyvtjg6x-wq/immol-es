@@ -990,76 +990,172 @@ export default function RapportBancairePage() {
                 </section>
               )}
 
-              {/* ── Profil emprunteur ── */}
-              <section className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-                <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Profil emprunteur</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Nom & Prénom *</label>
-                    <input value={profile.nomPrenom} onChange={e => updateProfile('nomPrenom', e.target.value)}
-                      placeholder="Jean Dupont" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+              {/* ── Emprunteur principal ── */}
+              <section className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+                {/* En-tête section */}
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.05]">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                   </div>
                   <div>
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Profession *</label>
-                    <input value={profile.profession} onChange={e => updateProfile('profession', e.target.value)}
-                      placeholder="Ingénieur, Médecin…" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                    <h2 className="text-sm font-bold text-white">Emprunteur principal</h2>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Identité, situation pro, revenus & charges</p>
                   </div>
-                  <div>
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Type de contrat</label>
-                    <select value={profile.typeContrat} onChange={e => updateProfile('typeContrat', e.target.value as BankReportProfile['typeContrat'])}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50">
-                      <option value="cdi">CDI</option>
-                      <option value="fonctionnaire">Fonctionnaire</option>
-                      <option value="independant">Indépendant / Libéral</option>
-                      <option value="cdd">CDD</option>
-                      <option value="retraite">Retraité(e)</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Ancienneté au poste (années)</label>
-                    <input type="number" min={0} value={profile.anciennetePoste} onChange={e => updateProfile('anciennetePoste', Number(e.target.value))}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Situation familiale</label>
-                    <select value={profile.situationFamiliale} onChange={e => updateProfile('situationFamiliale', e.target.value as BankReportProfile['situationFamiliale'])}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50">
-                      <option value="celibataire">Célibataire</option>
-                      <option value="marie">Marié(e)</option>
-                      <option value="pacse">Pacsé(e)</option>
-                      <option value="divorce">Divorcé(e)</option>
-                      <option value="veuf">Veuf / Veuve</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[11px] text-zinc-500 mb-1 block">Enfants à charge</label>
-                      <input type="number" min={0} value={profile.nbEnfants} onChange={e => updateProfile('nbEnfants', Number(e.target.value))}
-                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
-                    </div>
-                    <div>
-                      <label className="text-[11px] text-zinc-500 mb-1 block">Parts fiscales</label>
-                      <input type="number" min={1} step={0.5} value={profile.nbParts} onChange={e => updateProfile('nbParts', Number(e.target.value))}
-                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
-                    </div>
-                  </div>
+                </div>
 
-                  {/* ── Co-emprunteur ── */}
-                  <div className="col-span-2 pt-3 border-t border-white/[0.05]">
-                    <button
-                      onClick={() => updateProfile('hasCoEmprunteur', !profile.hasCoEmprunteur)}
-                      className={`flex items-center gap-2 text-xs font-semibold transition-all ${profile.hasCoEmprunteur ? 'text-emerald-400' : 'text-zinc-500 hover:text-white'}`}
-                    >
-                      <div className={`w-8 h-4 rounded-full transition-all relative ${profile.hasCoEmprunteur ? 'bg-emerald-500' : 'bg-white/10'}`}>
-                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${profile.hasCoEmprunteur ? 'left-4' : 'left-0.5'}`} />
+                <div className="p-5 space-y-5">
+                  {/* Identité */}
+                  <div>
+                    <div className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Identité</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Nom & Prénom *</label>
+                        <input value={profile.nomPrenom} onChange={e => updateProfile('nomPrenom', e.target.value)}
+                          placeholder="Jean Dupont" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
                       </div>
-                      Ajouter un co-emprunteur
-                    </button>
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Situation familiale</label>
+                        <select value={profile.situationFamiliale} onChange={e => updateProfile('situationFamiliale', e.target.value as BankReportProfile['situationFamiliale'])}
+                          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50">
+                          <option value="celibataire">Célibataire</option>
+                          <option value="marie">Marié(e)</option>
+                          <option value="pacse">Pacsé(e)</option>
+                          <option value="divorce">Divorcé(e)</option>
+                          <option value="veuf">Veuf / Veuve</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Enfants à charge</label>
+                        <input type="number" min={0} value={profile.nbEnfants} onChange={e => updateProfile('nbEnfants', Number(e.target.value))}
+                          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Parts fiscales</label>
+                        <input type="number" min={1} step={0.5} value={profile.nbParts} onChange={e => updateProfile('nbParts', Number(e.target.value))}
+                          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
+                      </div>
+                    </div>
+                  </div>
 
-                    {profile.hasCoEmprunteur && (
-                      <div className="mt-3 p-4 bg-emerald-500/[0.04] border border-emerald-500/20 rounded-xl grid grid-cols-2 gap-3">
-                        <div className="col-span-2 text-[10px] text-emerald-400 font-semibold uppercase tracking-widest">Co-emprunteur</div>
+                  {/* Situation professionnelle */}
+                  <div className="pt-4 border-t border-white/[0.05]">
+                    <div className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Situation professionnelle</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Profession *</label>
+                        <input value={profile.profession} onChange={e => updateProfile('profession', e.target.value)}
+                          placeholder="Ingénieur, Médecin…" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Type de contrat</label>
+                        <select value={profile.typeContrat} onChange={e => updateProfile('typeContrat', e.target.value as BankReportProfile['typeContrat'])}
+                          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50">
+                          <option value="cdi">CDI</option>
+                          <option value="fonctionnaire">Fonctionnaire</option>
+                          <option value="independant">Indépendant / Libéral</option>
+                          <option value="cdd">CDD</option>
+                          <option value="retraite">Retraité(e)</option>
+                          <option value="autre">Autre</option>
+                        </select>
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Ancienneté au poste (années)</label>
+                        <input type="number" min={0} value={profile.anciennetePoste} onChange={e => updateProfile('anciennetePoste', Number(e.target.value))}
+                          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Revenus & charges */}
+                  <div className="pt-4 border-t border-white/[0.05]">
+                    <div className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Revenus & charges mensuels</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Revenus nets mensuels * <span className="text-zinc-600">(salaires, pensions…)</span></label>
+                        <div className="relative">
+                          <input type="number" min={0} value={profile.revenusNetsProFoyer || ''} onChange={e => updateProfile('revenusNetsProFoyer', Number(e.target.value))}
+                            placeholder="3 500" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Autres revenus locatifs <span className="text-zinc-600">(autres biens)</span></label>
+                        <div className="relative">
+                          <input type="number" min={0} value={profile.autresRevenusLocatifs || ''} onChange={e => updateProfile('autresRevenusLocatifs', Number(e.target.value))}
+                            placeholder="0" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Loyer / mensualité RP actuelle</label>
+                        <div className="relative">
+                          <input type="number" min={0} value={profile.loyerActuel || ''} onChange={e => updateProfile('loyerActuel', Number(e.target.value))}
+                            placeholder="900" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Autres crédits en cours <span className="text-zinc-600">(mensualités)</span></label>
+                        <div className="relative">
+                          <input type="number" min={0} value={profile.autresCreditsMensualites || ''} onChange={e => updateProfile('autresCreditsMensualites', Number(e.target.value))}
+                            placeholder="0" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
+                        </div>
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Épargne totale disponible <span className="text-zinc-600">(apport + réserve)</span></label>
+                        <div className="relative">
+                          <input type="number" min={0} value={profile.epargneTotale || ''} onChange={e => updateProfile('epargneTotale', Number(e.target.value))}
+                            placeholder="50 000" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* ── Bouton co-emprunteur ── */}
+              <button
+                onClick={() => updateProfile('hasCoEmprunteur', !profile.hasCoEmprunteur)}
+                className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl border transition-all text-sm font-semibold ${
+                  profile.hasCoEmprunteur
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/[0.06]'
+                    : 'bg-white/[0.02] border-white/[0.06] border-dashed text-zinc-500 hover:border-white/20 hover:text-white'
+                }`}
+              >
+                {profile.hasCoEmprunteur ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    Co-emprunteur ajouté — cliquer pour retirer
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    Ajouter un co-emprunteur
+                  </>
+                )}
+              </button>
+
+              {/* ── Co-emprunteur ── */}
+              {profile.hasCoEmprunteur && (
+                <section className="bg-emerald-500/[0.03] border border-emerald-500/20 rounded-2xl overflow-hidden">
+                  {/* En-tête section */}
+                  <div className="flex items-center gap-3 px-5 py-4 border-b border-emerald-500/10">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-white">Co-emprunteur</h2>
+                      <p className="text-[10px] text-emerald-400/60 mt-0.5">Ses revenus s'ajoutent au calcul du taux d'endettement</p>
+                    </div>
+                  </div>
+
+                  <div className="p-5 space-y-5">
+                    {/* Identité co-emprunteur */}
+                    <div>
+                      <div className="text-[9px] font-bold text-emerald-500/50 uppercase tracking-widest mb-3">Identité</div>
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="text-[11px] text-zinc-500 mb-1 block">Nom & Prénom</label>
                           <input value={profile.coemprunteurNom ?? ''} onChange={e => updateProfile('coemprunteurNom', e.target.value)}
@@ -1070,83 +1166,54 @@ export default function RapportBancairePage() {
                           <input value={profile.coemprunteurProfession ?? ''} onChange={e => updateProfile('coemprunteurProfession', e.target.value)}
                             placeholder="Infirmière, Comptable…" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Situation pro co-emprunteur */}
+                    <div className="pt-4 border-t border-emerald-500/[0.08]">
+                      <div className="text-[9px] font-bold text-emerald-500/50 uppercase tracking-widest mb-3">Situation professionnelle</div>
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="text-[11px] text-zinc-500 mb-1 block">Type de contrat</label>
                           <select value={profile.coemprunteurTypeContrat ?? 'cdi'} onChange={e => updateProfile('coemprunteurTypeContrat', e.target.value)}
                             className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50">
                             <option value="cdi">CDI</option>
                             <option value="fonctionnaire">Fonctionnaire</option>
-                            <option value="independant">Indépendant</option>
+                            <option value="independant">Indépendant / Libéral</option>
                             <option value="cdd">CDD</option>
                             <option value="retraite">Retraité(e)</option>
                             <option value="autre">Autre</option>
                           </select>
                         </div>
                         <div>
-                          <label className="text-[11px] text-zinc-500 mb-1 block">Ancienneté (années)</label>
+                          <label className="text-[11px] text-zinc-500 mb-1 block">Ancienneté au poste (années)</label>
                           <input type="number" min={0} value={profile.coemprunteurAnciennete ?? 1} onChange={e => updateProfile('coemprunteurAnciennete', Number(e.target.value))}
                             className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
                         </div>
-                        <div className="col-span-2">
-                          <label className="text-[11px] text-zinc-500 mb-1 block">Revenus nets mensuels <span className="text-zinc-600">(salaires)</span></label>
-                          <div className="relative">
-                            <input type="number" min={0} value={profile.coemprunteurRevenus || ''} onChange={e => updateProfile('coemprunteurRevenus', Number(e.target.value))}
-                              placeholder="2 800" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
-                            <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
-                          </div>
-                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </section>
+                    </div>
 
-              {/* ── Revenus & charges ── */}
-              <section className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-                <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Revenus & charges du foyer</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Revenus nets mensuels du foyer * <span className="text-zinc-600">(salaires, pensions…)</span></label>
-                    <div className="relative">
-                      <input type="number" min={0} value={profile.revenusNetsProFoyer || ''} onChange={e => updateProfile('revenusNetsProFoyer', Number(e.target.value))}
-                        placeholder="3 500" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
-                      <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
+                    {/* Revenus co-emprunteur */}
+                    <div className="pt-4 border-t border-emerald-500/[0.08]">
+                      <div className="text-[9px] font-bold text-emerald-500/50 uppercase tracking-widest mb-3">Revenus mensuels</div>
+                      <div>
+                        <label className="text-[11px] text-zinc-500 mb-1 block">Revenus nets mensuels <span className="text-zinc-600">(salaires, pensions…)</span></label>
+                        <div className="relative">
+                          <input type="number" min={0} value={profile.coemprunteurRevenus || ''} onChange={e => updateProfile('coemprunteurRevenus', Number(e.target.value))}
+                            placeholder="2 800" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
+                        </div>
+                        {(profile.coemprunteurRevenus ?? 0) > 0 && profile.revenusNetsProFoyer > 0 && (
+                          <div className="mt-2 px-3 py-2 bg-emerald-500/[0.06] rounded-lg flex items-center justify-between">
+                            <span className="text-[10px] text-zinc-500">Total revenus foyer retenus</span>
+                            <span className="text-xs font-bold text-emerald-400">{fE(profile.revenusNetsProFoyer + (profile.coemprunteurRevenus || 0))}/mois</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Autres revenus locatifs (autres biens)</label>
-                    <div className="relative">
-                      <input type="number" min={0} value={profile.autresRevenusLocatifs || ''} onChange={e => updateProfile('autresRevenusLocatifs', Number(e.target.value))}
-                        placeholder="0" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
-                      <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Loyer / mensualité RP actuelle</label>
-                    <div className="relative">
-                      <input type="number" min={0} value={profile.loyerActuel || ''} onChange={e => updateProfile('loyerActuel', Number(e.target.value))}
-                        placeholder="900" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
-                      <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Autres crédits en cours (mensualités)</label>
-                    <div className="relative">
-                      <input type="number" min={0} value={profile.autresCreditsMensualites || ''} onChange={e => updateProfile('autresCreditsMensualites', Number(e.target.value))}
-                        placeholder="0" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
-                      <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
-                    </div>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-[11px] text-zinc-500 mb-1 block">Épargne totale disponible <span className="text-zinc-600">(hors investissement)</span></label>
-                    <div className="relative">
-                      <input type="number" min={0} value={profile.epargneTotale || ''} onChange={e => updateProfile('epargneTotale', Number(e.target.value))}
-                        placeholder="50 000" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 pr-8 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
-                      <span className="absolute right-3 top-2.5 text-xs text-zinc-500">€</span>
-                    </div>
-                  </div>
-                </div>
-              </section>
+                </section>
+              )}
 
               {/* ── Structure d'acquisition ── */}
               <section className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">

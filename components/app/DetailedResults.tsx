@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { InvestmentResult, FiscalRegime, InvestmentParams } from '@/lib/types'
 import { formatCurrency, formatPct } from '@/lib/utils'
-import { DpeRenovationPanel } from '@/components/app/DpeRenovationPanel'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend, ReferenceLine, Cell,
@@ -23,19 +22,13 @@ const tooltipStyle = {
 }
 
 export function DetailedResults({ result, fiscalResults, params, onApplyRenovationScenario }: DetailedResultsProps) {
-  const dpe         = params?.dpe ?? 'D'
-  const dpeUrgent   = ['F', 'G'].includes(dpe)
-  const dpeAttention = dpe === 'E'
-
-  // Onglet actif par défaut : Rénovation si DPE urgent, sinon Cashflow
-  const [tab, setTab] = useState(dpeUrgent ? 'renovation' : 'cashflow')
+  const [tab, setTab] = useState('cashflow')
 
   const hasFiscal  = fiscalResults && fiscalResults.filter(r => !r.disabled).length > 0
   const hasRevente = result.prixRevente != null && result.prixRevente > 0
 
   const tabs = [
     { id: 'cashflow',   label: 'Cashflow' },
-    { id: 'renovation', label: 'Rénovation DPE' },
     { id: 'fiscal',     label: 'Fiscalité' },
     { id: 'revente',    label: 'Revente & TRI' },
     { id: 'amort',      label: 'Amortissement' },
@@ -66,31 +59,12 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
             {t.id === 'revente' && hasRevente && (
               <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block align-middle" />
             )}
-            {t.id === 'renovation' && dpeUrgent && (
-              <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-red-500 inline-block align-middle animate-pulse" />
-            )}
-            {t.id === 'renovation' && dpeAttention && !dpeUrgent && (
-              <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-amber-400 inline-block align-middle" />
-            )}
           </button>
         ))}
       </div>
 
       <div className="p-6">
         {tab === 'cashflow'   && <CashflowTab result={result} />}
-        {tab === 'renovation' && (
-          params ? (
-            <DpeRenovationPanel
-              params={params}
-              result={result}
-              onApplyScenario={onApplyRenovationScenario}
-            />
-          ) : (
-            <div className="py-12 text-center">
-              <p className="text-sm text-zinc-500">Lancez un calcul pour accéder au simulateur rénovation.</p>
-            </div>
-          )
-        )}
         {tab === 'fiscal'     && <FiscalTab fiscalResults={fiscalResults} />}
         {tab === 'revente'    && <ReventeTab result={result} />}
         {tab === 'amort'      && <AmortTab result={result} />}

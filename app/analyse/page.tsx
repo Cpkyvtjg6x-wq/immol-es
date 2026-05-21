@@ -7,6 +7,7 @@ import { KpiGrid } from '@/components/app/KpiGrid'
 import { ScoreCard } from '@/components/app/ScoreCard'
 import { AIInsights } from '@/components/app/AIInsights'
 import { DetailedResults } from '@/components/app/DetailedResults'
+import { DpeRenovationPanel } from '@/components/app/DpeRenovationPanel'
 import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
@@ -496,6 +497,23 @@ export default function AnalysePage() {
                       netNetRegime={bestFiscal?.regime}
                     />
                   </div>
+
+                  {/* ── Rénovation DPE — toujours visible après calcul ─────── */}
+                  {lastParams && (
+                    <div>
+                      <SectionLabel>Rénovation DPE & aides de l'État</SectionLabel>
+                      <DpeRenovationPanel
+                        params={lastParams}
+                        result={result}
+                        onApplyScenario={(travaux, prixAchat) => {
+                          const updated = { ...lastParams!, travaux, prixAchat }
+                          setInitialParams(updated)
+                          setFormKey(k => k + 1)
+                          applyCalculation(updated, false)
+                        }}
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <SectionLabel>Analyse IA</SectionLabel>

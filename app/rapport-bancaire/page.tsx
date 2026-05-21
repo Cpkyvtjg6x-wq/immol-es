@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
@@ -28,8 +28,43 @@ function RatioBar({ value, max, danger }: { value: number; max: number; danger?:
   )
 }
 
-// ─── Générateur PDF (html2canvas + jsPDF) ────────────────────────────────────
+// ─── Générateur PDF (@react-pdf/renderer) ────────────────────────────────────
 async function generateBankPDF(
+  params: InvestmentParams,
+  result: InvestmentResult,
+  fiscal: FiscalResult,
+  score: ScoreResult,
+  profile: BankReportProfile,
+  ratios: BankRatios,
+) {
+  // Import dynamique pour éviter le SSR
+  const { pdf } = await import('@react-pdf/renderer')
+  const { default: BankReportPDF } = await import('@/components/pdf/BankReportPDF')
+
+  const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+  const hasCompany = profile.modeAcquisition !== 'nom-propre'
+  const totalPages = hasCompany ? 8 : 7
+
+  const element = React.createElement(BankReportPDF, {
+    params, result, fiscal, profile, ratios, today, totalPages,
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const blob = await pdf(element as any).toBlob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  const nom = (profile.nomPrenom || 'IMMORA').replace(/\s+/g, '_')
+  link.download = `Dossier_Bancaire_IMMORA_${nom}_${new Date().toISOString().slice(0, 10)}.pdf`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// ─── ANCIENNE FONCTION html2canvas — conservée pour rollback ─────────────────
+async function _generateBankPDF_legacy(
   params: InvestmentParams,
   result: InvestmentResult,
   fiscal: FiscalResult,
@@ -608,9 +643,10 @@ async function generateBankPDF(
   }
 
   document.body.removeChild(container)
-  const nom = (profile.nomPrenom || 'IMMORA').replace(/\s+/g, '_')
-  pdf.save(`Dossier_Bancaire_IMMORA_${nom}_${new Date().toISOString().slice(0, 10)}.pdf`)
+  const nomLegacy = (profile.nomPrenom || 'IMMORA').replace(/\s+/g, '_')
+  pdf.save(`Dossier_Bancaire_IMMORA_${nomLegacy}_${new Date().toISOString().slice(0, 10)}.pdf`)
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 // ─── Valeurs par défaut du profil ─────────────────────────────────────────────
 const DEFAULT_PROFILE: BankReportProfile = {

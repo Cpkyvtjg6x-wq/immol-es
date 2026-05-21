@@ -430,7 +430,10 @@ export default function ReventePage() {
   // Calcul durée depuis dateAchat
   useEffect(() => {
     if (params.modeSaisie === 'acquis' && params.dateAchat) {
+      // Valider le format YYYY-MM avant de parser
+      if (!/^\d{4}-\d{2}$/.test(params.dateAchat)) return
       const [y, m] = params.dateAchat.split('-').map(Number)
+      if (isNaN(y) || isNaN(m) || m < 1 || m > 12) return
       const now = new Date()
       const moisEcoules = (now.getFullYear() - y) * 12 + (now.getMonth() + 1 - m)
       const ans = Math.max(0, Math.floor(moisEcoules / 12))
@@ -535,8 +538,8 @@ export default function ReventePage() {
                 <h2 className="text-sm font-bold text-white">Type de bien</h2>
                 <div className="grid grid-cols-2 gap-3">
                   {([
-                    { id: 'locatif', label: 'Investissement locatif', icon: '🏠', desc: 'Flat tax 19% + PS 17.2%' },
-                    { id: 'residence_principale', label: 'Résidence principale', icon: '🏡', desc: 'Exonération totale' },
+                    { id: 'locatif', label: 'Investissement locatif', icon: '🏠', desc: 'Impôt sur le bénéfice de vente' },
+                    { id: 'residence_principale', label: 'Résidence principale', icon: '🏡', desc: 'Aucun impôt sur le bénéfice' },
                   ] as const).map(t => (
                     <button
                       key={t.id}
@@ -584,9 +587,12 @@ export default function ReventePage() {
 
                 {params.modeSaisie === 'acquis' && (
                   <div className="rounded-xl bg-emerald-500/[0.04] border border-emerald-500/20 p-4 space-y-4">
-                    <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Données du bien acquis</p>
                     <div>
-                      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Date d&apos;achat</label>
+                      <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-0.5">Votre bien actuel</p>
+                      <p className="text-[11px] text-zinc-500">Renseignez les infos de votre crédit pour calculer ce qu&apos;il vous restera en poche après la vente.</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Mois et année d&apos;achat</label>
                       <input
                         type="month"
                         value={params.dateAchat}
@@ -594,30 +600,48 @@ export default function ReventePage() {
                         max={new Date().toISOString().slice(0, 7)}
                         className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
                       />
-                      {params.dateAchat && (
+                      {params.dateAchat && /^\d{4}-\d{2}$/.test(params.dateAchat) ? (
                         <p className="text-[11px] text-emerald-400 mt-1">
-                          → {params.anneesDetention} an{params.anneesDetention !== 1 ? 's' : ''} de détention calculés automatiquement
+                          ✓ {params.anneesDetention} an{params.anneesDetention !== 1 ? 's' : ''} de détention — durée calculée automatiquement
                         </p>
-                      )}
+                      ) : params.dateAchat ? (
+                        <p className="text-[11px] text-amber-400 mt-1">Sélectionnez un mois et une année complets</p>
+                      ) : null}
                     </div>
                     <div className="grid grid-cols-3 gap-3">
-                      <NumInput label="Capital restant dû" value={params.capitalRestantDu} onChange={v => set('capitalRestantDu', v)} hint="Solde crédit" />
-                      <NumInput label="IRA" value={params.ira} onChange={v => set('ira', v)} hint="Auto : 3% CRD" />
-                      <NumInput label="Frais mainlevée" value={params.fraisMainlevee} onChange={v => set('fraisMainlevee', v)} hint="≈ 800 €" />
+                      <NumInput
+                        label="Solde du crédit"
+                        value={params.capitalRestantDu}
+                        onChange={v => set('capitalRestantDu', v)}
+                        hint="Ce qu'il reste à rembourser à la banque"
+                      />
+                      <NumInput
+                        label="Pénalité de remboursement"
+                        value={params.ira}
+                        onChange={v => set('ira', v)}
+                        hint="Calculée auto (3% du solde) — modifiable"
+                      />
+                      <NumInput
+                        label="Frais de clôture crédit"
+                        value={params.fraisMainlevee}
+                        onChange={v => set('fraisMainlevee', v)}
+                        hint="Levée d'hypothèque (~800 €)"
+                      />
                     </div>
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
-                  <NumInput label="Prix d'achat" value={params.prixAchat} onChange={v => set('prixAchat', v)} />
-                  <NumInput label="Frais d'acquisition" value={params.fraisAcquisition} onChange={v => set('fraisAcquisition', v)} hint="Notaire + agence achat" />
-                  <NumInput label="Travaux déductibles" value={params.travauxDeduits} onChange={v => set('travauxDeduits', v)} hint="Non déduits des revenus" />
+                  <NumInput label="Prix d'achat" value={params.prixAchat} onChange={v => set('prixAchat', v)} hint="Prix payé au vendeur" />
+                  <NumInput label="Frais de notaire et d'agence" value={params.fraisAcquisition} onChange={v => set('fraisAcquisition', v)} hint="Frais payés à l'achat (notaire ~8%, agence)" />
+                  <NumInput label="Travaux réalisés" value={params.travauxDeduits} onChange={v => set('travauxDeduits', v)} hint="Travaux non déduits de vos loyers — réduisent l'impôt" />
                   <div className="flex items-end">
                     <div className="w-full">
-                      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Prix de revient total</p>
+                      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Coût total de votre investissement</p>
                       <p className="text-lg font-black text-white tabular-nums" style={{ letterSpacing: '-0.03em' }}>
                         {formatCurrency(params.prixAchat + params.fraisAcquisition + params.travauxDeduits)}
                       </p>
+                      <p className="text-[11px] text-zinc-600 mt-0.5">Base de calcul de votre bénéfice</p>
                     </div>
                   </div>
                 </div>
@@ -625,24 +649,27 @@ export default function ReventePage() {
 
               {/* C. Prix de revente */}
               <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-4">
-                <h2 className="text-sm font-bold text-white">Prix de revente</h2>
+                <h2 className="text-sm font-bold text-white">Prix de vente envisagé</h2>
                 <div className="grid grid-cols-2 gap-4">
-                  <NumInput label="Prix de revente" value={params.prixRevente} onChange={v => set('prixRevente', v)} />
-                  <NumInput label="Frais de revente" value={params.fraisRevente} onChange={v => set('fraisRevente', v)} hint="Commission agence vendeur" />
+                  <NumInput label="Prix de vente" value={params.prixRevente} onChange={v => set('prixRevente', v)} hint="Prix auquel vous vendez le bien" />
+                  <NumInput label="Commission agence (vente)" value={params.fraisRevente} onChange={v => set('fraisRevente', v)} hint="Honoraires de l'agent immobilier vendeur" />
                 </div>
               </div>
 
               {/* D. Durée de détention */}
               <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold text-white">Durée de détention</h2>
+                  <div>
+                    <h2 className="text-sm font-bold text-white">Durée de possession</h2>
+                    <p className="text-[11px] text-zinc-500 mt-0.5">Plus vous gardez longtemps, moins vous payez d&apos;impôts</p>
+                  </div>
                   <span className={`text-2xl font-black tabular-nums ${params.anneesDetention >= 30 ? 'text-emerald-400' : params.anneesDetention >= 22 ? 'text-emerald-300' : 'text-white'}`}
                     style={{ letterSpacing: '-0.04em' }}>
-                    {params.anneesDetention} ans
+                    {isNaN(params.anneesDetention) ? '—' : `${params.anneesDetention} ans`}
                   </span>
                 </div>
-                {params.modeSaisie === 'acquis' && params.dateAchat ? (
-                  <p className="text-xs text-zinc-500">Calculée automatiquement depuis la date d&apos;achat.</p>
+                {params.modeSaisie === 'acquis' && params.dateAchat && /^\d{4}-\d{2}$/.test(params.dateAchat) ? (
+                  <p className="text-xs text-zinc-500">Calculée automatiquement depuis votre date d&apos;achat.</p>
                 ) : (
                   <>
                     <input
@@ -668,8 +695,8 @@ export default function ReventePage() {
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${params.showTRI ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
-                    <h2 className="text-sm font-bold text-white">Calcul du TRI</h2>
-                    <span className="text-[11px] text-zinc-500 font-medium">Taux de rentabilité interne</span>
+                    <h2 className="text-sm font-bold text-white">Rentabilité globale de l&apos;opération</h2>
+                    <span className="text-[11px] text-zinc-500 font-medium">Optionnel</span>
                   </div>
                   <svg className={`w-4 h-4 text-zinc-500 transition-transform ${params.showTRI ? 'rotate-180' : ''}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -680,20 +707,20 @@ export default function ReventePage() {
                 {params.showTRI && (
                   <div className="px-6 pb-6 space-y-4 border-t border-white/[0.05]">
                     <p className="text-xs text-zinc-500 pt-4">
-                      Le TRI mesure la rentabilité globale de l&apos;investissement en tenant compte de l&apos;apport, des cashflows et du produit de cession.
+                      Le TRI (Taux de Rentabilité Interne) mesure la performance annuelle de votre opération, en comparant ce que vous avez investi, ce que vous avez encaissé chaque mois, et ce que vous récupérez à la vente.
                     </p>
                     <div className="grid grid-cols-2 gap-4">
                       <NumInput
-                        label="Apport initial"
+                        label="Apport personnel versé"
                         value={params.apportInitial}
                         onChange={v => set('apportInitial', v)}
-                        hint="Capital investi à l'achat"
+                        hint="Somme que vous avez investie de votre poche à l'achat"
                       />
                       <NumInput
-                        label="Cashflow mensuel moyen"
+                        label="Loyer net mensuel moyen"
                         value={params.cashflowMensuelMoyen}
                         onChange={v => set('cashflowMensuelMoyen', v)}
-                        hint="Loyer net de charges"
+                        hint="Loyer perçu, après toutes charges (peut être négatif)"
                         min={-99999}
                       />
                     </div>
@@ -703,10 +730,10 @@ export default function ReventePage() {
                         : tri >= 4 ? 'border-amber-500/30 bg-amber-500/[0.04]'
                         : 'border-red-500/20 bg-red-500/[0.04]'
                       }`}>
-                        <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1">TRI sur {params.anneesDetention} ans</p>
+                        <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1">Rentabilité annuelle sur {params.anneesDetention} ans</p>
                         <p className={`text-3xl font-black tabular-nums ${tri >= 8 ? 'text-emerald-400' : tri >= 4 ? 'text-amber-400' : 'text-red-400'}`}
                           style={{ letterSpacing: '-0.04em' }}>
-                          {tri.toFixed(1)}%
+                          {tri.toFixed(1)}% / an
                         </p>
                         <p className="text-[11px] text-zinc-500 mt-1">
                           {tri >= 10 ? '🚀 Excellent' : tri >= 7 ? '✓ Très bon' : tri >= 4 ? '~ Correct' : '⚠ Faible'}
@@ -714,7 +741,7 @@ export default function ReventePage() {
                         </p>
                       </div>
                     ) : (
-                      <p className="text-xs text-zinc-600 text-center py-2">Renseignez l&apos;apport pour calculer le TRI</p>
+                      <p className="text-xs text-zinc-600 text-center py-2">Renseignez votre apport pour calculer la rentabilité</p>
                     )}
                   </div>
                 )}
@@ -737,7 +764,7 @@ export default function ReventePage() {
                   <p className="text-[11px] text-emerald-500 font-bold uppercase tracking-wider mb-2">🎉 Exonération totale</p>
                 )}
                 <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-                  {hasCredit ? 'Liquidités nettes après cession' : 'Plus-value nette après impôts'}
+                  {hasCredit ? 'Argent récupéré après la vente' : 'Bénéfice net après impôts'}
                 </p>
                 <p className={`text-4xl font-black tabular-nums ${
                   (hasCredit ? result.liquiditesNettes : result.plusValueNette) >= 0
@@ -757,20 +784,20 @@ export default function ReventePage() {
               {/* Frise abattements */}
               {params.typeBien === 'locatif' && result.plusValueBrute > 0 && (
                 <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-                  <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-4">Frise des abattements fiscaux</p>
+                  <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-4">Réduction d&apos;impôt selon la durée de possession</p>
                   <FriseAbattements ans={params.anneesDetention} />
                 </div>
               )}
 
               {/* Détail calcul */}
               <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-                <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">Détail du calcul</p>
+                <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">Comment on calcule</p>
 
-                <Row label="Prix de revente" value={formatCurrency(params.prixRevente)} />
-                <Row label="– Frais de revente" value={`– ${formatCurrency(params.fraisRevente)}`} color="red" />
-                <Row label="– Prix de revient" value={`– ${formatCurrency(params.prixAchat + params.fraisAcquisition + params.travauxDeduits)}`} color="red" />
+                <Row label="Prix de vente" value={formatCurrency(params.prixRevente)} />
+                <Row label="– Commission agence (vente)" value={`– ${formatCurrency(params.fraisRevente)}`} color="red" />
+                <Row label="– Ce que vous avez investi" value={`– ${formatCurrency(params.prixAchat + params.fraisAcquisition + params.travauxDeduits)}`} color="red" />
                 <Row
-                  label="= Plus-value brute"
+                  label="= Bénéfice brut de la vente"
                   value={`${result.plusValueBrute >= 0 ? '+' : ''}${formatCurrency(result.plusValueBrute)}`}
                   color={result.plusValueBrute >= 0 ? 'emerald' : 'red'}
                   bold sep
@@ -780,40 +807,40 @@ export default function ReventePage() {
                   <>
                     {!result.exonerationIR ? (
                       <>
-                        <Row label={`Abat. IR (${result.abattementIR}%)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementIR / 100))}`} color="emerald" />
-                        <Row label="Impôt IR (19%)" value={`– ${formatCurrency(result.impotIR)}`} color="red" />
+                        <Row label={`Réduction IR (${result.abattementIR}% selon durée)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementIR / 100))}`} color="emerald" />
+                        <Row label="Impôt sur le bénéfice (19%)" value={`– ${formatCurrency(result.impotIR)}`} color="red" />
                       </>
                     ) : (
-                      <Row label="Impôt IR" value="Exonéré ✓" color="emerald" />
+                      <Row label="Impôt sur le bénéfice" value="Exonéré ✓" color="emerald" />
                     )}
                     {!result.exonerationPS ? (
                       <>
-                        <Row label={`Abat. PS (${result.abattementPS}%)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementPS / 100))}`} color="emerald" />
-                        <Row label="Prélèv. sociaux (17.2%)" value={`– ${formatCurrency(result.prelevementsSociaux)}`} color="red" />
+                        <Row label={`Réduction cotisations (${result.abattementPS}%)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementPS / 100))}`} color="emerald" />
+                        <Row label="Cotisations sociales (17.2%)" value={`– ${formatCurrency(result.prelevementsSociaux)}`} color="red" />
                       </>
                     ) : (
-                      <Row label="Prélèv. sociaux" value="Exonérés ✓" color="emerald" />
+                      <Row label="Cotisations sociales" value="Exonérées ✓" color="emerald" />
                     )}
-                    <Row label="Total impôts" value={`– ${formatCurrency(result.impotTotal)}`} color={result.impotTotal > 0 ? 'red' : 'emerald'} bold sep />
+                    <Row label="Total impôts à payer" value={`– ${formatCurrency(result.impotTotal)}`} color={result.impotTotal > 0 ? 'red' : 'emerald'} bold sep />
                   </>
                 )}
 
                 {params.typeBien === 'residence_principale' && (
                   <div className="mt-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20 px-4 py-2.5">
-                    <p className="text-xs font-semibold text-emerald-400">✓ Résidence principale — Exonération totale</p>
+                    <p className="text-xs font-semibold text-emerald-400">✓ Résidence principale — Aucun impôt sur le bénéfice</p>
                   </div>
                 )}
 
                 <div className="mt-3 pt-3 border-t border-white/[0.08]">
-                  <Row label="Produit net de cession" value={formatCurrency(result.reventeNette + result.impotTotal)} bold />
+                  <Row label="Ce que vous encaissez à la vente" value={formatCurrency(result.reventeNette + result.impotTotal)} bold />
                   {hasCredit && (
                     <>
-                      <Row label="– Capital restant dû" value={`– ${formatCurrency(params.capitalRestantDu)}`} color="red" />
-                      <Row label="– IRA" value={`– ${formatCurrency(params.ira)}`} color="red" />
-                      <Row label="– Frais mainlevée" value={`– ${formatCurrency(params.fraisMainlevee)}`} color="red" />
+                      <Row label="– Remboursement du crédit" value={`– ${formatCurrency(params.capitalRestantDu)}`} color="red" />
+                      <Row label="– Pénalité de remboursement" value={`– ${formatCurrency(params.ira)}`} color="red" />
+                      <Row label="– Frais de clôture crédit" value={`– ${formatCurrency(params.fraisMainlevee)}`} color="red" />
                       <Row label="– Impôts" value={`– ${formatCurrency(result.impotTotal)}`} color="red" />
                       <Row
-                        label="= Liquidités nettes"
+                        label="= Argent disponible après vente"
                         value={`${result.liquiditesNettes >= 0 ? '+' : ''}${formatCurrency(result.liquiditesNettes)}`}
                         color={result.liquiditesNettes >= 0 ? 'emerald' : 'red'}
                         bold sep
@@ -826,7 +853,7 @@ export default function ReventePage() {
               {/* Tableau vendre vs garder */}
               {params.typeBien === 'locatif' && result.plusValueBrute > 0 && (
                 <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-                  <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">Vendre maintenant ou attendre ?</p>
+                  <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">Attendre réduit vos impôts — comparaison</p>
                   <TableauVendreGarder params={params} currentAns={params.anneesDetention} />
                 </div>
               )}

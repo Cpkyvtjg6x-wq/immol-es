@@ -1,9 +1,9 @@
-// ─── IMMORA — Analyse photos par IA (GPT-4o-mini vision) ─────────────────────
+// ─── IMMORA — Analyse photos par IA (Claude Haiku vision) ────────────────────
 // Reçoit des URLs de photos d'annonce, les analyse pour estimer les travaux
 // par poste avec des coûts basés sur le marché français 2025.
 
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -33,7 +33,7 @@ export interface PhotoAnalysisResult {
   fourchetteBasse: number
   fourchetteHaute: number
   travauxPourcentagePrix: number | null
-  confidence: number        // 0-100
+  confidence: number
   photosAnalysees: number
 }
 
@@ -77,7 +77,7 @@ IMPORTANT :
 - Si une pièce est en bon état, dis-le clairement et mets 0 €
 - Sois précis et réaliste, pas optimiste ni alarmiste
 - Base tes estimations sur ce qui est réellement visible
-- Si tu ne peux pas évaluer clairement une zone, l'indique dans le résumé
+- Si tu ne peux pas évaluer clairement une zone, indique-le dans le résumé
 
 Réponds UNIQUEMENT avec ce JSON valide (aucun texte avant ou après) :
 {
@@ -131,14 +131,14 @@ async function fetchImageAsBase64(url: string): Promise<{ data: string; mediaTyp
 
     const contentType = resp.headers.get('content-type') || 'image/jpeg'
     const mediaType = contentType.split(';')[0].trim()
-    // OpenAI accepte: image/jpeg, image/png, image/webp, image/gif
+    // Anthropic accepte : image/jpeg, image/png, image/webp, image/gif
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
     const safeType = allowed.includes(mediaType) ? mediaType : 'image/jpeg'
 
     const buffer = await resp.arrayBuffer()
 
-    // Limite de taille : 20MB (limite OpenAI)
-    if (buffer.byteLength > 20 * 1024 * 1024) return null
+    // Limite Anthropic : 5 MB par image
+    if (buffer.byteLength > 5 * 1024 * 1024) return null
 
     const base64 = Buffer.from(buffer).toString('base64')
     return { data: base64, mediaType: safeType }
@@ -147,16 +147,14 @@ async function fetchImageAsBase64(url: string): Promise<{ data: string; mediaTyp
   }
 }
 
-// ── Parse JSON défensif ────────────────────────────────────────────────────────
+// ── Parse JSON défensif ───────────────────────────────────────────────────────
 
 function parseAIResponse(text: string): PhotoAnalysisResult | null {
   try {
-    // Extraire le JSON même s'il y a du texte autour
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) return null
     const raw = JSON.parse(jsonMatch[0])
 
-    // Valider et normaliser
     const postes = Array.isArray(raw.postes) ? raw.postes.filter((p: { poste?: unknown; cout?: unknown }) =>
       p.poste && typeof p.cout === 'number' && p.cout >= 0
     ) : []
@@ -175,7 +173,7 @@ function parseAIResponse(text: string): PhotoAnalysisResult | null {
       travauxTotal:    Math.round(total),
       fourchetteBasse: Math.round(raw.fourchetteBasse ?? total * 0.8),
       fourchetteHaute: Math.round(raw.fourchetteHaute ?? total * 1.3),
-      travauxPourcentagePrix: null, // rempli dans le POST handler
+      travauxPourcentagePrix: null,
       confidence:      typeof raw.confidence === 'number' ? Math.min(100, Math.max(0, raw.confidence)) : 60,
       photosAnalysees: typeof raw.photosAnalysees === 'number' ? raw.photosAnalysees : postes.length,
     }
@@ -187,9 +185,9 @@ function parseAIResponse(text: string): PhotoAnalysisResult | null {
 // ── POST ──────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  if (!process.env.OPENAI_API_KEY) {
+  if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
-      { error: 'Service vision non configuré (OPENAI_API_KEY manquant)' },
+      { error: 'Service vision non configuré (ANTHROPIC_API_KEY manquant)' },
       { status: 503, headers: CORS }
     )
   }
@@ -208,7 +206,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'imageUrls requis' }, { status: 400, headers: CORS })
     }
 
-    // Limite à 5 photos, on priorise les premières (façade → salon → cuisine → sdb → chambre)
     const urlsToAnalyse = imageUrls.slice(0, 5)
 
     // ── Fetch images en parallèle ────────────────────────────────────────────
@@ -224,19 +221,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // ── Appel OpenAI vision ──────────────────────────────────────────────────
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    // ── Appel Claude Haiku vision ────────────────────────────────────────────
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-    const imageContent = validImages.map(img => ({
-      type: 'image_url' as const,
-      image_url: {
-        url:    `data:${img.mediaType};base64,${img.data}`,
-        detail: 'low' as const,  // "low" = rapide + moins cher, suffisant pour évaluer l'état
+    const imageContent: Anthropic.ImageBlockParam[] = validImages.map(img => ({
+      type: 'image' as const,
+      source: {
+        type:       'base64' as const,
+        media_type: img.mediaType as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
+        data:       img.data,
       },
     }))
 
-    const completion = await client.chat.completions.create({
-      model:      'gpt-4o-mini',
+    const message = await client.messages.create({
+      model:      'claude-haiku-4-5-20251001',
       max_tokens: 1500,
       messages: [
         {
@@ -244,29 +242,25 @@ export async function POST(req: NextRequest) {
           content: [
             ...imageContent,
             {
-              type: 'text',
+              type: 'text' as const,
               text: buildPrompt(surface, typeBien, ville),
             },
           ],
         },
       ],
-      response_format: { type: 'json_object' },
-      temperature: 0.2,  // Low temperature → résultats cohérents et précis
     })
 
-    const rawText = completion.choices[0]?.message?.content ?? ''
+    const rawText = message.content[0]?.type === 'text' ? message.content[0].text : ''
     const result  = parseAIResponse(rawText)
 
     if (!result) {
       return NextResponse.json({ error: 'Réponse IA invalide' }, { status: 500, headers: CORS })
     }
 
-    // Ajouter le % du prix d'achat
     if (prixAchat > 0) {
       result.travauxPourcentagePrix = Math.round((result.travauxTotal / prixAchat) * 100)
     }
 
-    // Mettre à jour photosAnalysees avec le vrai nombre
     result.photosAnalysees = validImages.length
 
     return NextResponse.json(result, { status: 200, headers: CORS })

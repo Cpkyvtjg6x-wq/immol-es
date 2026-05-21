@@ -291,7 +291,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
               onClick={handleFinish}
               className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black py-4 rounded-xl text-sm transition-all hover:scale-[1.01] active:scale-[0.99]"
             >
-              Analyser le bien exemple →
+              Sauvegarder et créer votre premier bien réel →
             </button>
             <button
               onClick={handleSkip}

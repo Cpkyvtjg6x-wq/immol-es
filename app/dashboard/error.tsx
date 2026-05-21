@@ -11,8 +11,12 @@ export default function DashboardError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log the error so we can see it in Vercel runtime logs
-    console.error('[Dashboard Error]', error.message, error.stack)
+    // Log complet pour diagnostiquer React error #310
+    console.error('[Dashboard Error] message:', error.message)
+    console.error('[Dashboard Error] stack:', error.stack)
+    if ((error as { cause?: unknown }).cause) {
+      console.error('[Dashboard Error] cause:', (error as { cause?: unknown }).cause)
+    }
   }, [error])
 
   return (

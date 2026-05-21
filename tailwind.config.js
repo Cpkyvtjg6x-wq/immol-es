@@ -56,8 +56,10 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-instrument-serif)', 'Georgia', 'serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        display: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         lg: '12px',

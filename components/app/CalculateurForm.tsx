@@ -170,6 +170,10 @@ function Row2({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-2 gap-3">{children}</div>
 }
 
+function Row3({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-3 gap-2.5">{children}</div>
+}
+
 function Divider() {
   return <div className="border-t border-white/[0.04] my-1" />
 }
@@ -292,8 +296,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 />
               </div>
 
-              {/* Prix + Surface */}
-              <Row2>
+              {/* Prix + Surface + Travaux */}
+              <Row3>
                 <div>
                   <Label>Prix d'achat</Label>
                   <NumInput value={p.prixAchat} onChange={(v) => set('prixAchat', v)} suffix="€" step={1000} />
@@ -302,7 +306,11 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <Label>Surface</Label>
                   <NumInput value={p.surface} onChange={(v) => set('surface', v)} suffix="m²" />
                 </div>
-              </Row2>
+                <div>
+                  <Label>Travaux</Label>
+                  <NumInput value={p.travaux} onChange={(v) => set('travaux', v)} suffix="€" step={500} />
+                </div>
+              </Row3>
 
               {/* Prix m² */}
               {p.surface > 0 && p.prixAchat > 0 && (
@@ -313,12 +321,6 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   </span>
                 </div>
               )}
-
-              {/* Travaux */}
-              <div>
-                <Label>Travaux estimés</Label>
-                <NumInput value={p.travaux} onChange={(v) => set('travaux', v)} suffix="€" step={500} />
-              </div>
 
               {/* Frais notaire */}
               <div>
@@ -425,14 +427,12 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 />
               </div>
 
-              {/* Apport */}
-              <div>
-                <Label>Apport personnel</Label>
-                <NumInput value={p.apport} onChange={(v) => set('apport', v)} suffix="€" step={1000} />
-              </div>
-
-              {/* Taux + Durée */}
-              <Row2>
+              {/* Apport + Taux + Durée */}
+              <Row3>
+                <div>
+                  <Label>Apport</Label>
+                  <NumInput value={p.apport} onChange={(v) => set('apport', v)} suffix="€" step={1000} />
+                </div>
                 <div>
                   <Label>Taux crédit</Label>
                   <NumInput value={p.taux} onChange={(v) => set('taux', v)} suffix="%" step={0.05} />
@@ -441,7 +441,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <Label>Durée</Label>
                   <NumInput value={p.duree} onChange={(v) => set('duree', v)} suffix="ans" min={5} />
                 </div>
-              </Row2>
+              </Row3>
 
               {/* Avancé toggle */}
               <button
@@ -645,7 +645,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           {openSections.charges && (
             <div className="px-5 pb-5 space-y-3">
 
-              <Row2>
+              {/* Charges fixes */}
+              <Row3>
                 <div>
                   <Label>Taxe foncière</Label>
                   <NumInput value={p.taxeFonciere} onChange={(v) => set('taxeFonciere', v)} suffix="€" />
@@ -654,29 +655,28 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <Label>Charges copro</Label>
                   <NumInput value={p.chargesCopro} onChange={(v) => set('chargesCopro', v)} suffix="€" />
                 </div>
-              </Row2>
-
-              <div>
-                <Label>Assurance PNO</Label>
-                <NumInput value={p.assurancePno} onChange={(v) => set('assurancePno', v)} suffix="€" />
-              </div>
-
-              <Row2>
                 <div>
-                  <Label>Frais de gestion</Label>
+                  <Label>Assurance PNO</Label>
+                  <NumInput value={p.assurancePno} onChange={(v) => set('assurancePno', v)} suffix="€" />
+                </div>
+              </Row3>
+
+              {/* Charges variables */}
+              <Row3>
+                <div>
+                  <Label>Gestion</Label>
                   <NumInput value={p.fraisGestionPct} onChange={(v) => set('fraisGestionPct', v)} suffix="%" step={0.5} />
                 </div>
                 <div>
-                  <Label>Provision travaux</Label>
+                  <Label>Provision</Label>
                   <NumInput value={p.provisionPct} onChange={(v) => set('provisionPct', v)} suffix="%" step={0.5} />
                 </div>
-              </Row2>
-
-              <div>
-                <Label>GLI — Garantie loyers impayés</Label>
-                <NumInput value={p.gliPct} onChange={(v) => set('gliPct', v)} suffix="% du loyer" step={0.1} />
-                <p className="text-[10px] text-zinc-700 mt-1">Optionnel — ~2.5% du loyer annuel</p>
-              </div>
+                <div>
+                  <Label>GLI</Label>
+                  <NumInput value={p.gliPct} onChange={(v) => set('gliPct', v)} suffix="%" step={0.1} />
+                </div>
+              </Row3>
+              <p className="text-[10px] text-zinc-600 -mt-1">GLI : garantie loyers impayés — optionnel, ~2.5% du loyer</p>
 
               {/* CFE & Comptable — uniquement meublé/coloc/saisonnier */}
               {!isNu && (
@@ -1063,7 +1063,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
       </div>
 
       {/* ─── Bouton calcul ─────────────────────────────────────────────────────── */}
-      <div className="shrink-0 p-4 border-t border-white/[0.05] bg-[#09090b]/80 backdrop-blur-xl">
+      <div className="shrink-0 p-4 border-t border-white/[0.05] bg-[#0c0c0e]/90 backdrop-blur-xl">
         <button
           type="submit"
           disabled={loading || p.prixAchat <= 0}

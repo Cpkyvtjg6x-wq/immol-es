@@ -1,17 +1,15 @@
 import type { Metadata } from 'next'
-import { Inter, Space_Grotesk } from 'next/font/google'
+import { GeistSans } from 'geist/font/sans'
+import { Instrument_Serif } from 'next/font/google'
 import { ToastProvider } from '@/components/ui/Toast'
+import { AuthProvider } from '@/lib/auth-context'
 import './globals.css'
 
-const inter = Inter({
+const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-space-grotesk',
+  weight: '400',
+  style: ['normal', 'italic'],
+  variable: '--font-instrument-serif',
   display: 'swap',
 })
 
@@ -76,13 +74,15 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${inter.variable} ${spaceGrotesk.variable} dark`}
+      className={`${GeistSans.variable} ${instrumentSerif.variable} dark`}
       suppressHydrationWarning
     >
       <body className="bg-zinc-950 text-zinc-50 antialiased min-h-screen">
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   )

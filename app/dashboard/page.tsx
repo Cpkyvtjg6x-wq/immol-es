@@ -17,6 +17,7 @@ import {
 import { AppShell } from '@/components/app/AppShell'
 import { OnboardingWizard } from '@/components/app/OnboardingWizard'
 import { ProfileCompletion } from '@/components/app/ProfileCompletion'
+import { PatrimoineCard } from '@/components/app/PatrimoineCard'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
@@ -224,6 +225,25 @@ export default function DashboardPage() {
     }
   }, [])
 
+  // ⚠️ useMemo DOIT être avant tout return anticipé (règles des hooks React)
+  const filteredSims = useMemo(() => {
+    let list = [...simulations]
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        s.ville.toLowerCase().includes(q)
+      )
+    }
+    if (filterTab === 'favoris') list = list.filter(s => s.is_favorite)
+    if (filterTab === 'top') list = list.filter(s => (s.score ?? 0) >= 70)
+    if (filterTab === 'positif') list = list.filter(s => s.cashflowMensuel >= 0)
+    if (sortBy === 'score') list.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+    else if (sortBy === 'rendement') list.sort((a, b) => b.rendementBrut - a.rendementBrut)
+    else if (sortBy === 'cashflow') list.sort((a, b) => b.cashflowMensuel - a.cashflowMensuel)
+    return list
+  }, [simulations, search, filterTab, sortBy])
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
@@ -269,28 +289,7 @@ export default function DashboardPage() {
     ? [...simulations].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0]
     : null
 
-  /* Filtered + sorted simulations */
-  const filteredSims = useMemo(() => {
-    let list = [...simulations]
-    // Search
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      list = list.filter(s =>
-        s.name.toLowerCase().includes(q) ||
-        s.ville.toLowerCase().includes(q)
-      )
-    }
-    // Filter tabs
-    if (filterTab === 'favoris') list = list.filter(s => s.is_favorite)
-    if (filterTab === 'top') list = list.filter(s => (s.score ?? 0) >= 70)
-    if (filterTab === 'positif') list = list.filter(s => s.cashflowMensuel >= 0)
-    // Sort
-    if (sortBy === 'score') list.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-    else if (sortBy === 'rendement') list.sort((a, b) => b.rendementBrut - a.rendementBrut)
-    else if (sortBy === 'cashflow') list.sort((a, b) => b.cashflowMensuel - a.cashflowMensuel)
-    // default: date (already ordered by Supabase)
-    return list
-  }, [simulations, search, filterTab, sortBy])
+  /* filteredSims est défini plus haut, avant le return anticipé */
 
   return (
     <AppShell>
@@ -340,6 +339,9 @@ export default function DashboardPage() {
         </div>
 
         <div className="px-4 md:px-8 py-6 md:py-8 space-y-6 md:space-y-8">
+
+          {/* ── Patrimoine & Santé ── */}
+          <PatrimoineCard simulations={simulations} isPro={!!isPro} />
 
           {/* ── KPI Cards ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

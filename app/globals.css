@@ -1,4 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Geist chargé via next/font (GeistSans.variable = --font-geist-sans)       */
+/* Instrument Serif chargé via next/font (variable = --font-instrument-serif) */
+/* JetBrains Mono conservé pour les éléments mono (code, labels techniques)  */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -14,46 +17,93 @@ html {
 body {
   background: #0a0a0b;
   color: #fafafa;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-feature-settings: 'cv11', 'ss01', 'ss03', 'cv02';
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.011em;
   font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 /* ─── Typography classes ─────────────────────────────────────── */
+
+/* Police principale : Geist (via CSS variable injectée par next/font) */
+.font-sans {
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Accent serif : Instrument Serif italic — le "redessinée." du hero  */
 .serif {
-  font-family: 'Instrument Serif', 'Times New Roman', serif;
+  font-family: var(--font-instrument-serif), 'Times New Roman', serif;
   font-weight: 400;
   letter-spacing: -0.005em;
 }
 .serif-italic {
-  font-family: 'Instrument Serif', 'Times New Roman', serif;
+  font-family: var(--font-instrument-serif), 'Times New Roman', serif;
   font-style: italic;
   font-weight: 400;
-  letter-spacing: 0;
+  letter-spacing: 0.01em;
 }
+
+/* Mono : JetBrains Mono — labels techniques, code, badges chiffrés */
 .mono {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
-.tabular { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
 
-/* ─── Display headings (Linear/Notion style) ─────────────────── */
-.display {
-  font-weight: 500;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
+
+/* ─── Hiérarchie d'affichage — système Geist/Linear ─────────── */
+
+/* Hero headline — 52-90px                                         */
+/* Geist 700, tracking très serré = impact max                     */
 .display-lg {
-  font-weight: 500;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-weight: 700;
   letter-spacing: -0.05em;
-  line-height: 0.95;
+  line-height: 0.97;
 }
+
+/* Section headline — 32-48px                                      */
+.display {
+  font-family: var(--font-geist-sans), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.0;
+}
+
+/* Sous-section heading — 20-28px                                  */
 .heading {
-  font-weight: 500;
+  font-family: var(--font-geist-sans), sans-serif;
+  font-weight: 600;
   letter-spacing: -0.035em;
-  line-height: 1.02;
+  line-height: 1.1;
+}
+
+/* Corps de texte — 15-18px                                        */
+/* Geist 400, tracking léger, line-height généreux                 */
+.body-lg {
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Label / Caption — 10-12px uppercase                             */
+/* Geist 500, tracking positif pour lisibilité en petit            */
+.label-sm {
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.25);
 }
 
 /* ─── Gradient text (very subtle) ────────────────────────────── */
@@ -158,12 +208,12 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-geist-sans), sans-serif;
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.35);
 }
 .section-label::before {
   content: '';

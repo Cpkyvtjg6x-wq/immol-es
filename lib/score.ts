@@ -7,17 +7,26 @@ import type {
 } from './types'
 
 /**
- * Calcule le score global d'un projet immobilier (0–95).
+ * Calcule le score global d'un projet immobilier (0–100).
  *
- * Système additif (100 pts théoriques, capé à 95) — calibré sur le marché FR :
- *   Rendement brut  0–30 pts  (5 % = bon, 7 %+ = très bon, 9 %+ = exceptionnel)
- *   Rendement net   0–20 pts
- *   Cash-flow       0–25 pts  (négatif ne détruit plus le score, juste peu de pts)
- *   Nette-nette     0–15 pts
- *   ROI apport      0–10 pts
+ * ── Philosophie de calibration ──────────────────────────────────────────────
+ * Les seuils sont calés sur la réalité du marché français 2024-2026.
+ * Le "100/100 théorique" correspond à un deal exceptionnel mais réellement
+ * trouvable en France (Roubaix, Mulhouse, Béziers, Saint-Étienne…) :
+ *   rendement brut ≥ 8 %  |  cash-flow > +200 €  |  nette-nette > 4 %
  *
- * 100/100 est structurellement impossible sur un bien réel.
- * FiscalResult et MarketData sont optionnels (pas de pénalité si absents).
+ * Un excellent deal classique (Metz, Clermont, Rouen, Le Mans) vise 80–90/100.
+ * Un bon deal en grande ville (Lyon, Nantes) vise 55–70/100.
+ * Un investissement parisien (3 % brut, CF négatif) score 15–25/100 : c'est
+ * factuel — Paris est un pari sur la valorisation, pas sur le rendement locatif.
+ *
+ * Composantes :
+ *   Rendement brut   0–30 pts  (seuil max = 8 %, atteignable en province)
+ *   Rendement net    0–20 pts  (seuil max = 5 %)
+ *   Cash-flow        0–25 pts  (quasi-neutre = déjà 16/25 — normal en bonne ville)
+ *   Nette-nette      0–15 pts  (seuil max = 4 %, réaliste avec LMNP/SCI)
+ *   ROI apport       0–10 pts  (seuil max = 12 %)
+ * ────────────────────────────────────────────────────────────────────────────
  */
 export function calculateScore(
   result: InvestmentResult,
@@ -27,63 +36,65 @@ export function calculateScore(
   let total = 0
   const details: ScoreDetail[] = []
 
-  // ── 1. Rendement brut (0–30 pts) ────────────────────────────────────────────
-  // Seuils calés sur la réalité FR : 4 % = marché tendu acceptable, 7 %+ = chercheur de renta
+  // ── 1. Rendement brut (0–30 pts) ─────────────────────────────────────────
+  // Calibré FR : 4.5 % = correct en grande ville, 6.5 % = très bon, 8 %+ = exceptionnel
   let bPts: number
-  if      (result.rendBrut >= 9)  { bPts = 30; details.push({ label: 'Rendement brut ≥ 9 %',   pts: 30, max: 30, good: true  }) }
-  else if (result.rendBrut >= 7)  { bPts = 26; details.push({ label: 'Rendement brut 7–9 %',   pts: 26, max: 30, good: true  }) }
-  else if (result.rendBrut >= 6)  { bPts = 22; details.push({ label: 'Rendement brut 6–7 %',   pts: 22, max: 30, good: true  }) }
-  else if (result.rendBrut >= 5)  { bPts = 18; details.push({ label: 'Rendement brut 5–6 %',   pts: 18, max: 30, good: true  }) }
-  else if (result.rendBrut >= 4)  { bPts = 12; details.push({ label: 'Rendement brut 4–5 %',   pts: 12, max: 30, good: false }) }
-  else if (result.rendBrut >= 3)  { bPts =  6; details.push({ label: 'Rendement brut 3–4 %',   pts:  6, max: 30, good: false }) }
-  else                            { bPts =  2; details.push({ label: 'Rendement brut < 3 %',    pts:  2, max: 30, good: false }) }
+  if      (result.rendBrut >= 8.0) { bPts = 30; details.push({ label: 'Rendement brut ≥ 8 %',     pts: 30, max: 30, good: true  }) }
+  else if (result.rendBrut >= 6.5) { bPts = 26; details.push({ label: 'Rendement brut 6.5–8 %',   pts: 26, max: 30, good: true  }) }
+  else if (result.rendBrut >= 5.5) { bPts = 21; details.push({ label: 'Rendement brut 5.5–6.5 %', pts: 21, max: 30, good: true  }) }
+  else if (result.rendBrut >= 4.5) { bPts = 15; details.push({ label: 'Rendement brut 4.5–5.5 %', pts: 15, max: 30, good: false }) }
+  else if (result.rendBrut >= 3.5) { bPts =  8; details.push({ label: 'Rendement brut 3.5–4.5 %', pts:  8, max: 30, good: false }) }
+  else                             { bPts =  3; details.push({ label: 'Rendement brut < 3.5 %',    pts:  3, max: 30, good: false }) }
   total += bPts
 
-  // ── 2. Rendement net (0–20 pts) ─────────────────────────────────────────────
+  // ── 2. Rendement net (0–20 pts) ──────────────────────────────────────────
+  // 5 % net = excellent (après toutes charges, avant impôt)
   let nPts: number
-  if      (result.rendNet >= 6)  { nPts = 20; details.push({ label: 'Rendement net ≥ 6 %',  pts: 20, max: 20, good: true  }) }
-  else if (result.rendNet >= 5)  { nPts = 17; details.push({ label: 'Rendement net 5–6 %',  pts: 17, max: 20, good: true  }) }
-  else if (result.rendNet >= 4)  { nPts = 13; details.push({ label: 'Rendement net 4–5 %',  pts: 13, max: 20, good: true  }) }
-  else if (result.rendNet >= 3)  { nPts =  9; details.push({ label: 'Rendement net 3–4 %',  pts:  9, max: 20, good: false }) }
-  else if (result.rendNet >= 2)  { nPts =  5; details.push({ label: 'Rendement net 2–3 %',  pts:  5, max: 20, good: false }) }
-  else                           { nPts =  1; details.push({ label: 'Rendement net < 2 %',  pts:  1, max: 20, good: false }) }
+  if      (result.rendNet >= 5.0) { nPts = 20; details.push({ label: 'Rendement net ≥ 5 %',    pts: 20, max: 20, good: true  }) }
+  else if (result.rendNet >= 4.0) { nPts = 17; details.push({ label: 'Rendement net 4–5 %',    pts: 17, max: 20, good: true  }) }
+  else if (result.rendNet >= 3.5) { nPts = 13; details.push({ label: 'Rendement net 3.5–4 %',  pts: 13, max: 20, good: true  }) }
+  else if (result.rendNet >= 2.5) { nPts =  8; details.push({ label: 'Rendement net 2.5–3.5 %',pts:  8, max: 20, good: false }) }
+  else if (result.rendNet >= 1.5) { nPts =  4; details.push({ label: 'Rendement net 1.5–2.5 %',pts:  4, max: 20, good: false }) }
+  else                            { nPts =  1; details.push({ label: 'Rendement net < 1.5 %',   pts:  1, max: 20, good: false }) }
   total += nPts
 
-  // ── 3. Cash-flow mensuel (0–25 pts) ─────────────────────────────────────────
-  // Plus de malus soustrait : un CF négatif donne juste peu de pts, pas un score négatif.
-  // Un CF légèrement négatif est normal dans les villes chères — on ne pénalise pas trop.
+  // ── 3. Cash-flow mensuel (0–25 pts) ──────────────────────────────────────
+  // Un CF quasi-neutre (-100 à 0 €) est normal et acceptable dans une bonne ville.
+  // On ne pénalise pas lourdement : investir à Paris à -400 €/mois reste une décision
+  // rationnelle pour certains profils (valorisation, résidence future…).
   let cPts: number
-  if      (result.cashflowMensuel >= 400)  { cPts = 25; details.push({ label: 'Cash-flow ≥ +400 €/mois',       pts: 25, max: 25, good: true  }) }
-  else if (result.cashflowMensuel >= 200)  { cPts = 21; details.push({ label: 'Cash-flow +200–400 €/mois',     pts: 21, max: 25, good: true  }) }
-  else if (result.cashflowMensuel >= 50)   { cPts = 17; details.push({ label: 'Cash-flow positif',             pts: 17, max: 25, good: true  }) }
-  else if (result.cashflowMensuel >= -100) { cPts = 12; details.push({ label: 'Cash-flow quasi neutre',        pts: 12, max: 25, good: false }) }
-  else if (result.cashflowMensuel >= -300) { cPts =  7; details.push({ label: 'Cash-flow légèrement négatif', pts:  7, max: 25, good: false }) }
-  else if (result.cashflowMensuel >= -500) { cPts =  3; details.push({ label: 'Cash-flow négatif',            pts:  3, max: 25, good: false }) }
+  if      (result.cashflowMensuel >= 200)  { cPts = 25; details.push({ label: 'Cash-flow ≥ +200 €/mois',      pts: 25, max: 25, good: true  }) }
+  else if (result.cashflowMensuel >= 30)   { cPts = 21; details.push({ label: 'Cash-flow positif',             pts: 21, max: 25, good: true  }) }
+  else if (result.cashflowMensuel >= -100) { cPts = 16; details.push({ label: 'Cash-flow quasi neutre',        pts: 16, max: 25, good: false }) }
+  else if (result.cashflowMensuel >= -300) { cPts =  9; details.push({ label: 'Cash-flow légèrement négatif', pts:  9, max: 25, good: false }) }
+  else if (result.cashflowMensuel >= -500) { cPts =  4; details.push({ label: 'Cash-flow négatif',            pts:  4, max: 25, good: false }) }
   else                                     { cPts =  1; details.push({ label: 'Cash-flow très négatif',        pts:  1, max: 25, good: false }) }
   total += cPts
 
-  // ── 4. Rentabilité nette-nette (meilleur régime fiscal) (0–15 pts) ───────────
+  // ── 4. Rentabilité nette-nette (meilleur régime fiscal) (0–15 pts) ───────
+  // 4 % nette-nette est excellent et atteignable avec LMNP/SCI bien optimisés
   const fiscNetNet = fiscal?.rendNetNet ?? 0
   let fPts: number
-  if      (fiscNetNet >= 5)  { fPts = 15; details.push({ label: 'Nette-nette ≥ 5 %',   pts: 15, max: 15, good: true  }) }
-  else if (fiscNetNet >= 4)  { fPts = 13; details.push({ label: 'Nette-nette 4–5 %',   pts: 13, max: 15, good: true  }) }
-  else if (fiscNetNet >= 3)  { fPts = 10; details.push({ label: 'Nette-nette 3–4 %',   pts: 10, max: 15, good: true  }) }
-  else if (fiscNetNet >= 2)  { fPts =  7; details.push({ label: 'Nette-nette 2–3 %',   pts:  7, max: 15, good: false }) }
-  else if (fiscNetNet >= 1)  { fPts =  4; details.push({ label: 'Nette-nette 1–2 %',   pts:  4, max: 15, good: false }) }
-  else                       { fPts =  2; details.push({ label: 'Nette-nette < 1 %',    pts:  2, max: 15, good: false }) }
+  if      (fiscNetNet >= 4.0) { fPts = 15; details.push({ label: 'Nette-nette ≥ 4 %',    pts: 15, max: 15, good: true  }) }
+  else if (fiscNetNet >= 3.0) { fPts = 13; details.push({ label: 'Nette-nette 3–4 %',    pts: 13, max: 15, good: true  }) }
+  else if (fiscNetNet >= 2.5) { fPts = 10; details.push({ label: 'Nette-nette 2.5–3 %',  pts: 10, max: 15, good: true  }) }
+  else if (fiscNetNet >= 2.0) { fPts =  7; details.push({ label: 'Nette-nette 2–2.5 %',  pts:  7, max: 15, good: false }) }
+  else if (fiscNetNet >= 1.0) { fPts =  4; details.push({ label: 'Nette-nette 1–2 %',    pts:  4, max: 15, good: false }) }
+  else                        { fPts =  2; details.push({ label: 'Nette-nette < 1 %',     pts:  2, max: 15, good: false }) }
   total += fPts
 
-  // ── 5. ROI sur apport (0–10 pts) ────────────────────────────────────────────
+  // ── 5. ROI sur apport (0–10 pts) ─────────────────────────────────────────
+  // 12 % ROI sur apport = excellent levier ; 8 % = bon ; 5 % = acceptable
   let rPts: number
-  if      (result.roiApport >= 15) { rPts = 10; details.push({ label: 'ROI apport ≥ 15 %',   pts: 10, max: 10, good: true  }) }
-  else if (result.roiApport >= 10) { rPts =  8; details.push({ label: 'ROI apport 10–15 %',  pts:  8, max: 10, good: true  }) }
-  else if (result.roiApport >= 7)  { rPts =  6; details.push({ label: 'ROI apport 7–10 %',   pts:  6, max: 10, good: true  }) }
-  else if (result.roiApport >= 4)  { rPts =  3; details.push({ label: 'ROI apport 4–7 %',    pts:  3, max: 10, good: false }) }
-  else if (result.roiApport >= 0)  { rPts =  1; details.push({ label: 'ROI apport positif',  pts:  1, max: 10, good: false }) }
+  if      (result.roiApport >= 12) { rPts = 10; details.push({ label: 'ROI apport ≥ 12 %',   pts: 10, max: 10, good: true  }) }
+  else if (result.roiApport >=  8) { rPts =  8; details.push({ label: 'ROI apport 8–12 %',   pts:  8, max: 10, good: true  }) }
+  else if (result.roiApport >=  5) { rPts =  6; details.push({ label: 'ROI apport 5–8 %',    pts:  6, max: 10, good: true  }) }
+  else if (result.roiApport >=  3) { rPts =  3; details.push({ label: 'ROI apport 3–5 %',    pts:  3, max: 10, good: false }) }
+  else if (result.roiApport >=  0) { rPts =  1; details.push({ label: 'ROI apport positif',  pts:  1, max: 10, good: false }) }
   else                             { rPts =  0; details.push({ label: 'ROI apport négatif',   pts:  0, max: 10, good: false }) }
   total += rPts
 
-  // ── 6. Données de marché (info seulement, pas de pts) ───────────────────────
+  // ── 6. Données de marché (info seulement, pas de pts) ───────────────────
   if (market) {
     if (market.tensionLoc >= 75) {
       details.push({ label: `Tension locative élevée (${market.tensionLoc}/100)`, pts: 0, max: 0, good: true })
@@ -93,55 +104,60 @@ export function calculateScore(
     }
   }
 
-  // ── Score global : cap à 95 — 100/100 n'existe pas ──────────────────────────
-  const global = Math.min(95, Math.max(0, total))
+  // ── Score global (0–100) ─────────────────────────────────────────────────
+  // Max théorique = 100 pts → deal exceptionnel réel en France
+  // On plafonne à 97 pour signifier qu'un "parfait" absolu n'existe pas
+  const global = Math.min(97, Math.max(0, total))
 
-  // ── Sous-scores (chacun 0–100 pour les jauges UI) ───────────────────────────
+  // ── Sous-scores (0–100 pour les jauges UI) ───────────────────────────────
   const subScores = {
-    rentabilite: Math.min(100, Math.max(0,
-      result.rendBrut < 3 ? Math.round(result.rendBrut * 8) :
-      result.rendBrut < 5 ? Math.round(20 + (result.rendBrut - 3) * 22) :
-      result.rendBrut < 8 ? Math.round(64 + (result.rendBrut - 5) * 10) :
+    // Atteint 95 à 8 % brut — courbe progressive
+    rentabilite: Math.min(95, Math.max(0,
+      result.rendBrut < 3.5  ? Math.round(result.rendBrut / 3.5 * 18) :
+      result.rendBrut < 5.5  ? Math.round(18 + (result.rendBrut - 3.5) / 2 * 34) :
+      result.rendBrut < 8    ? Math.round(52 + (result.rendBrut - 5.5) / 2.5 * 43) :
       95
     )),
+    // Atteint 95 à +200 €/mois
     cashflow:
-      result.cashflowMensuel >= 400 ? 95 :
-      result.cashflowMensuel >= 200 ? 80 :
-      result.cashflowMensuel >= 0   ? 62 :
-      result.cashflowMensuel >= -200 ? 44 :
-      result.cashflowMensuel >= -400 ? 25 :
-      10,
-    fiscalite: Math.min(95, Math.max(5, Math.round((fiscal?.rendNetNet ?? 0) * 16))),
+      result.cashflowMensuel >= 200  ? 95 :
+      result.cashflowMensuel >= 30   ? 78 :
+      result.cashflowMensuel >= -100 ? 60 :
+      result.cashflowMensuel >= -300 ? 38 :
+      result.cashflowMensuel >= -500 ? 18 :
+      8,
+    // Atteint 95 à ~4.75 % nette-nette
+    fiscalite: Math.min(95, Math.max(5, Math.round((fiscal?.rendNetNet ?? 0) * 20))),
     marche: market
       ? Math.min(95, Math.round((market.tensionLoc + market.dynEco + market.attractRevente) / 3))
       : 50,
   }
 
-  // ── Label & couleur ──────────────────────────────────────────────────────────
+  // ── Label & couleur ───────────────────────────────────────────────────────
   let label: string
   let color: 'emerald' | 'amber' | 'red'
   let summary: string
 
-  if (global >= 75) {
+  if (global >= 78) {
     label = 'Excellent projet'
     color = 'emerald'
-    summary = `Avec un rendement brut de ${result.rendBrut.toFixed(1)} % et un cashflow de ${Math.round(result.cashflowMensuel)} €/mois, ce projet présente d'excellentes performances. Validez les aspects locaux et le dossier bancaire.`
-  } else if (global >= 57) {
+    summary = `Avec un rendement brut de ${result.rendBrut.toFixed(1)} % et un cashflow de ${Math.round(result.cashflowMensuel)} €/mois, ce projet fait partie des meilleurs que l'on puisse trouver en France actuellement. Validez les aspects locaux et votre dossier bancaire.`
+  } else if (global >= 58) {
     label = 'Bon projet'
     color = 'emerald'
-    summary = `Projet solide avec un rendement brut de ${result.rendBrut.toFixed(1)} %. Quelques optimisations (fiscalité, loyer, charges) pourraient encore améliorer la performance.`
+    summary = `Projet solide avec un rendement brut de ${result.rendBrut.toFixed(1)} %. Quelques optimisations (fiscalité, loyer, charges) pourraient encore améliorer la performance. À creuser sérieusement.`
   } else if (global >= 40) {
     label = 'Projet correct'
     color = 'amber'
-    summary = `Rendement brut de ${result.rendBrut.toFixed(1)} % avec un cashflow de ${Math.round(result.cashflowMensuel)} €/mois. Acceptable — négociez le prix ou optimisez la fiscalité pour renforcer la rentabilité.`
-  } else if (global >= 25) {
-    label = 'À renégocier'
+    summary = `Rendement brut de ${result.rendBrut.toFixed(1)} % avec un cashflow de ${Math.round(result.cashflowMensuel)} €/mois. Acceptable pour un marché tendu — négociez le prix ou optimisez la fiscalité pour renforcer la rentabilité.`
+  } else if (global >= 22) {
+    label = 'Rentabilité limitée'
     color = 'amber'
-    summary = `Les performances restent en dessous du potentiel. Négociez le prix d'achat ou ajustez la structure de financement pour améliorer la rentabilité.`
+    summary = `Les performances locatives sont inférieures aux moyennes du marché. Ce bien peut se justifier par un fort potentiel de valorisation, mais l'effort d'épargne mensuel sera significatif.`
   } else {
-    label = 'Projet risqué'
+    label = 'Pari sur la valorisation'
     color = 'red'
-    summary = `Les indicateurs sont insuffisants pour un investissement rentable. Envisagez de renégocier fortement le prix ou d'explorer d'autres marchés.`
+    summary = `Les indicateurs de rendement locatif sont très faibles. Ce projet repose essentiellement sur la plus-value future. Vérifiez que votre capacité d'épargne mensuelle permet d'absorber l'effort sur la durée.`
   }
 
   return {
@@ -163,7 +179,7 @@ export function generateRecommendations(
 ): string[] {
   const recs: string[] = []
 
-  if (result.rendBrut < 4) {
+  if (result.rendBrut < 4.5) {
     recs.push("Négociez le prix d'achat à la baisse ou augmentez le loyer pour améliorer la rentabilité brute.")
   }
 
@@ -177,7 +193,7 @@ export function generateRecommendations(
     recs.push("Le ROI sur votre apport est faible. Envisagez un apport moindre pour optimiser l'effet de levier.")
   }
 
-  if (score.global >= 75) {
+  if (score.global >= 78) {
     recs.push("Excellent projet ! Assurez-vous de l'état du bien et de la solidité de votre dossier bancaire.")
   }
 

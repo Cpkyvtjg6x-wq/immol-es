@@ -40,6 +40,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       ),
     },
     {
+      href: '/portfolio',
+      label: 'Portfolio',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+      badge: simulations.length > 0 ? `${simulations.length}` : null as string | null,
+    },
+    {
       href: '/analyse',
       label: 'Analyser un bien',
       highlight: true,
@@ -200,7 +210,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   `}
                 >
                   <span className="shrink-0">{item.icon}</span>
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {'badge' in item && item.badge && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/[0.06] text-zinc-500 border border-white/[0.07] tabular-nums">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               )
             })}

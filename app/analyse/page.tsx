@@ -75,12 +75,22 @@ export default function AnalysePage() {
     const urlTmi     = sp.get('tmi')
     const urlSource  = sp.get('source')
 
+    const urlTravaux  = sp.get('travaux')
+    const urlCharges  = sp.get('charges')
+    const urlTaxe     = sp.get('taxe')
+    const urlPieces   = sp.get('pieces')
+
     if (urlSource === 'extension' && urlPrix) {
       const prix    = parseInt(urlPrix, 10)
       const surface = urlSurface ? parseInt(urlSurface, 10) : DEFAULT_PARAMS.surface
       const loyer   = urlLoyer   ? parseInt(urlLoyer, 10)   : Math.round(prix * 0.05 / 12)
       const apport  = urlApport  ? parseInt(urlApport, 10)  : Math.round(prix * 0.20)
       const locType = (urlLocType === 'nu' || urlLocType === 'meuble') ? urlLocType : 'meuble'
+      // Use API-estimated charges/taxe if available, otherwise fall back to rough estimates
+      const chargesCopro = urlCharges  ? parseInt(urlCharges, 10)  : Math.round(surface * 30)
+      const taxeFonciere = urlTaxe     ? parseInt(urlTaxe, 10)     : Math.round(prix * 0.005)
+      const travaux      = urlTravaux  ? parseInt(urlTravaux, 10)  : 0
+      const nbPieces     = urlPieces   ? parseInt(urlPieces, 10)   : DEFAULT_PARAMS.nbChambres
       return {
         ...DEFAULT_PARAMS,
         prixAchat: prix, surface,
@@ -92,8 +102,10 @@ export default function AnalysePage() {
         loyerMeuble:  locType === 'meuble' ? loyer : DEFAULT_PARAMS.loyerMeuble,
         loyerNu:      locType === 'nu'     ? loyer : DEFAULT_PARAMS.loyerNu,
         tmi:          urlTmi ? parseInt(urlTmi, 10) : DEFAULT_PARAMS.tmi,
-        chargesCopro: Math.round(surface * 30),
-        taxeFonciere: Math.round(prix * 0.005),
+        chargesCopro,
+        taxeFonciere,
+        travaux,
+        nbChambres:   nbPieces > 0 ? nbPieces : DEFAULT_PARAMS.nbChambres,
         assurancePno: Math.round(prix * 0.001),
         cfe:          locType === 'meuble' ? 500 : 0,
       }

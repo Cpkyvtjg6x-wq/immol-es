@@ -100,6 +100,8 @@ export async function POST(req: NextRequest) {
     const taxeFonciereFinal = taxeFonciere
       ?? estimerTaxeFonciere(prixAchat)
 
+    const travauxFinal: number = typeof body.travaux === 'number' && body.travaux > 0 ? body.travaux : 0
+
     const params: InvestmentParams = {
       ...DEFAULT_PARAMS,
       prixAchat,
@@ -111,6 +113,7 @@ export async function POST(req: NextRequest) {
       fraisNotaire,
       fraisNotaireAuto: false,
       apport,
+      travaux:      travauxFinal,
       loyerNu:      locType === 'nu'     ? loyerEstimeFinal : DEFAULT_PARAMS.loyerNu,
       loyerMeuble:  locType === 'meuble' ? loyerEstimeFinal : DEFAULT_PARAMS.loyerMeuble,
       chargesCopro: chargesCoproFinal,
@@ -125,7 +128,7 @@ export async function POST(req: NextRequest) {
     const fiscalResult = calculateFiscal({
       tmi,
       prixAchat,
-      travaux: 0,
+      travaux: travauxFinal,
       prixRevient: result.prixRevient,
       locType,
       structure: 'nom-propre',
@@ -139,12 +142,27 @@ export async function POST(req: NextRequest) {
       : null
 
     // ── 7. Prix max conseillé ─────────────────────────────────────────────────
-    // Base: valeur juste par le rendement cible
+    // Principe : on négocie TOUJOURS — même sur un bien attractif.
+    // La décote minimum varie selon le positionnement marché.
     const targetGrossYield = locType === 'meuble' ? 0.06 : 0.05
     const fairValue = Math.round((loyerEstimeFinal * 12) / targetGrossYield)
-    // Ajustement selon positionnement marché : plus précis si on a la ref
-    const prixMaxBas = Math.round(prixAchat * 0.90)
-    const prixMax = Math.max(prixMaxBas, Math.min(fairValue, prixAchat))
+
+    // Décote minimum garantie selon positionnement (% du prix demandé)
+    const minNegoByPos: Record<string, number> = {
+      'opportunite':    0.02,  // Déjà très bon marché → on grappille 2%
+      'attractif':      0.03,  // Bon prix → 3% toujours tentables
+      'correct':        0.05,  // Prix juste → 5% est une ouverture raisonnable
+      'surevalue':      0.08,  // Surévalué → 8% minimum à négocier
+      'tres-surevalue': 0.12,  // Très surévalué → 12% minimum
+    }
+    const pos = posMarche?.positionnement ?? 'correct'
+    const minNego = minNegoByPos[pos] ?? 0.05
+
+    // L'offre = min(fairValue, prix × (1 − minNego))
+    // mais jamais en dessous de −15% du prix demandé (plancher absolu)
+    const prixAvecMinNego = Math.round(prixAchat * (1 - minNego))
+    const prixMaxBas = Math.round(prixAchat * 0.85)              // plancher absolu −15%
+    const prixMax = Math.max(prixMaxBas, Math.min(fairValue, prixAvecMinNego))
     const economie = prixAchat - prixMax
     const negoPct = parseFloat((economie / prixAchat * 100).toFixed(1))
     const prixM2 = (surface && surface > 0) ? Math.round(prixAchat / surface) : null
@@ -206,7 +224,13 @@ export async function POST(req: NextRequest) {
       marcheContext,
 
       // URL pré-remplie
-      analyseUrl: buildAnalyseUrl(params, loyerEstimeFinal),
+      analyseUrl: buildAnalyseUrl(params, loyerEstimeFinal, {
+        travaux:      body.travaux,
+        chargesCopro: chargesCoproFinal,
+        taxeFonciere: taxeFonciereFinal,
+        nbPieces:     body.nbPieces,
+        codePostal:   body.codePostal,
+      }),
     }, { status: 200, headers: CORS })
 
   } catch (err) {
@@ -230,7 +254,13 @@ function estimerTaxeFonciere(prixAchat: number): number {
   return Math.round(prixAchat * 0.005)
 }
 
-function buildAnalyseUrl(params: InvestmentParams, loyerEstime: number): string {
+function buildAnalyseUrl(params: InvestmentParams, loyerEstime: number, extra?: {
+  travaux?: number
+  chargesCopro?: number
+  taxeFonciere?: number
+  nbPieces?: number
+  codePostal?: string
+}): string {
   const base  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://immora.app'
   const loyer = params.locType === 'meuble' ? params.loyerMeuble : params.loyerNu
   const p = new URLSearchParams({
@@ -244,5 +274,10 @@ function buildAnalyseUrl(params: InvestmentParams, loyerEstime: number): string 
     tmi:     String(params.tmi),
     source:  'extension',
   })
+  if (extra?.travaux)      p.set('travaux',      String(extra.travaux))
+  if (extra?.chargesCopro) p.set('charges',      String(extra.chargesCopro))
+  if (extra?.taxeFonciere) p.set('taxe',         String(extra.taxeFonciere))
+  if (extra?.nbPieces)     p.set('pieces',       String(extra.nbPieces))
+  if (extra?.codePostal)   p.set('cp',           extra.codePostal)
   return `${base}/analyse?${p.toString()}`
 }

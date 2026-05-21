@@ -403,19 +403,33 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               {/* DPE */}
               <div>
                 <Label>Classe DPE</Label>
-                <BtnGroup
-                  value={p.dpe}
-                  onChange={(v) => set('dpe', v)}
-                  options={[
-                    { value: 'A', label: 'A' }, { value: 'B', label: 'B' },
-                    { value: 'C', label: 'C' }, { value: 'D', label: 'D' },
-                    { value: 'E', label: 'E' }, { value: 'F', label: 'F' },
-                    { value: 'G', label: 'G' },
-                  ]}
-                />
-                {['F', 'G'].includes(p.dpe) && (
-                  <p className="text-[10px] text-amber-400 mt-1.5">
-                    ⚠ DPE F/G — passoire thermique. Travaux obligatoires à venir.
+                <div className="flex gap-1.5">
+                  {(['A','B','C','D','E','F','G'] as DpeClass[]).map((d) => {
+                    const col = DPE_COLORS[d]
+                    const selected = p.dpe === d
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => set('dpe', d)}
+                        className="flex-1 py-2 rounded-lg text-[11px] font-bold transition-all"
+                        style={{
+                          color: col.bg,
+                          backgroundColor: selected ? col.bg + '22' : 'transparent',
+                          border: selected
+                            ? `1.5px solid ${col.bg}55`
+                            : `1.5px solid ${col.bg}22`,
+                          opacity: selected ? 1 : 0.45,
+                        }}
+                      >
+                        {d}
+                      </button>
+                    )
+                  })}
+                </div>
+                {['E','F', 'G'].includes(p.dpe) && (
+                  <p className="text-[10px] text-amber-400/80 mt-1.5">
+                    {p.dpe === 'G' ? 'Interdit à la location depuis jan. 2025' : p.dpe === 'F' ? 'Interdit à la location en 2028' : 'Interdit à la location en 2034'}
                   </p>
                 )}
               </div>

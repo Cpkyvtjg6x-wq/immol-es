@@ -225,28 +225,50 @@ function FriseAbattements({ ans }: { ans: number }) {
   const irPct = (a: number) => getAbattement(ABATTEMENT_IR, a)
   const psPct = (a: number) => getAbattement(ABATTEMENT_PS, a)
 
-  const milestones = [
-    { a: 0, label: '0' },
-    { a: 6, label: '6' },
-    { a: 22, label: '22', note: 'Exo IR' },
-    { a: 30, label: '30', note: 'Exo PS' },
+  // Milestones fixes : { a, label, align: 'left'|'center'|'right', note? }
+  const milestones: { a: number; label: string; align: 'left' | 'center' | 'right'; noteColor?: string }[] = [
+    { a: 0,  label: '0 an',    align: 'left' },
+    { a: 6,  label: '6 ans',   align: 'center' },
+    { a: 22, label: '22 ans — exo IR', align: 'center', noteColor: 'text-emerald-400' },
+    { a: 30, label: '30 ans — exo PS', align: 'right',  noteColor: 'text-emerald-400' },
   ]
 
   const cursorX = Math.min(ans, MAX) / MAX * 100
 
+  // Transform selon alignement
+  const xShift = (align: string) =>
+    align === 'left' ? '0%' : align === 'right' ? '-100%' : '-50%'
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
+
+      {/* Label position courante — au-dessus des barres */}
+      <div className="relative h-5">
+        {ans >= 0 && ans <= MAX && (
+          <div
+            className="absolute flex flex-col items-center"
+            style={{
+              left: `${cursorX}%`,
+              transform: ans === 0 ? 'translateX(0%)' : ans >= MAX ? 'translateX(-100%)' : 'translateX(-50%)',
+              top: 0,
+            }}
+          >
+            <span className="text-[11px] text-white font-bold whitespace-nowrap bg-white/[0.1] px-2 py-0.5 rounded-full">
+              {ans} an{ans !== 1 ? 's' : ''}
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* IR bar */}
       <div>
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">IR · 19%</span>
           <span className="text-xs font-bold text-emerald-400">{irPct(ans)}% abattu</span>
         </div>
         <div className="relative h-5 rounded-full overflow-hidden bg-white/[0.06]">
           {steps.slice(0, -1).map(i => {
-            const pct = irPct(i)
-            const nextPct = irPct(i + 1)
-            const avgPct = (pct + nextPct) / 2
+            const avgPct = (irPct(i) + irPct(i + 1)) / 2
             return (
               <div
                 key={i}
@@ -259,25 +281,22 @@ function FriseAbattements({ ans }: { ans: number }) {
               />
             )
           })}
-          {/* cursor */}
           <div
-            className="absolute top-0 h-full w-0.5 bg-white shadow-[0_0_6px_white]"
-            style={{ left: `${cursorX}%` }}
+            className="absolute top-0 h-full w-0.5 bg-white"
+            style={{ left: `${cursorX}%`, boxShadow: '0 0 5px rgba(255,255,255,0.8)' }}
           />
         </div>
       </div>
 
       {/* PS bar */}
       <div>
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">PS · 17.2%</span>
           <span className="text-xs font-bold text-indigo-400">{psPct(ans)}% abattu</span>
         </div>
         <div className="relative h-5 rounded-full overflow-hidden bg-white/[0.06]">
           {steps.slice(0, -1).map(i => {
-            const pct = psPct(i)
-            const nextPct = psPct(i + 1)
-            const avgPct = (pct + nextPct) / 2
+            const avgPct = (psPct(i) + psPct(i + 1)) / 2
             return (
               <div
                 key={i}
@@ -291,34 +310,29 @@ function FriseAbattements({ ans }: { ans: number }) {
             )
           })}
           <div
-            className="absolute top-0 h-full w-0.5 bg-white shadow-[0_0_6px_white]"
-            style={{ left: `${cursorX}%` }}
+            className="absolute top-0 h-full w-0.5 bg-white"
+            style={{ left: `${cursorX}%`, boxShadow: '0 0 5px rgba(255,255,255,0.8)' }}
           />
         </div>
       </div>
 
-      {/* Milestones */}
-      <div className="relative h-5">
+      {/* Repères fixes */}
+      <div className="relative h-7 mt-1">
         {milestones.map(m => (
           <div
             key={m.a}
-            className="absolute top-0 flex flex-col items-center"
-            style={{ left: `${m.a / MAX * 100}%`, transform: 'translateX(-50%)' }}
+            className="absolute top-0 flex flex-col"
+            style={{
+              left: `${m.a / MAX * 100}%`,
+              transform: `translateX(${xShift(m.align)})`,
+            }}
           >
-            <div className="w-px h-2 bg-zinc-600" />
-            <span className="text-[10px] text-zinc-500 mt-0.5">{m.label}{m.note ? <> · <span className="text-emerald-500">{m.note}</span></> : null}</span>
+            <div className={`w-px h-2 mb-0.5 mx-auto ${m.noteColor ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
+            <span className={`text-[10px] whitespace-nowrap font-medium ${m.noteColor ?? 'text-zinc-500'}`}>
+              {m.label}
+            </span>
           </div>
         ))}
-        {/* current position label */}
-        {ans > 0 && ans <= MAX && (
-          <div
-            className="absolute top-0 flex flex-col items-center"
-            style={{ left: `${cursorX}%`, transform: 'translateX(-50%)' }}
-          >
-            <div className="w-px h-2 bg-white" />
-            <span className="text-[10px] text-white font-bold mt-0.5">{ans} ans</span>
-          </div>
-        )}
       </div>
     </div>
   )

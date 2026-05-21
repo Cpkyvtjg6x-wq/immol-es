@@ -5,6 +5,8 @@ import type { InvestmentParams, InvestmentResult } from '@/lib/types'
 import { DEFAULT_PARAMS, calculerFraisNotaire } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { VILLES } from '@/lib/market-data'
+import { calculateRenovation, DpeClass, ProfileRevenu, DPE_COLORS, DPE_LABELS, DPE_INTERDICTION } from '@/lib/renovation'
+import { formatCurrency } from '@/lib/utils'
 
 interface Props {
   onCalculate: (params: InvestmentParams) => Promise<void>
@@ -189,7 +191,14 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
     charges: true,
     fiscalite: true,
     revente: false,
+    renovation: false,
   })
+
+  // ─── État section rénovation DPE ───────────────────────────────────────────
+  const [renoDpeCible, setRenoDpeCible] = useState<DpeClass>('C')
+  const [renoProfile, setRenoProfile] = useState<ProfileRevenu>('intermediaire')
+  const [renoBudgetInput, setRenoBudgetInput] = useState('')
+  const [renoBudgetCustom, setRenoBudgetCustom] = useState<number | undefined>(undefined)
   const [showPtz, setShowPtz] = useState(false)
   const [showFinancementAvance, setShowFinancementAvance] = useState(false)
 
@@ -1061,6 +1070,223 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
         </div>
 
       </div>
+
+        {/* ──────────────────────────────────────────────────────────────────── */}
+        {/* SECTION 7 — RÉNOVATION DPE                                          */}
+        {/* ──────────────────────────────────────────────────────────────────── */}
+        <div className="border-b border-white/[0.05]">
+          <SectionHeader
+            num="7"
+            title="Rénovation DPE"
+            open={openSections.renovation}
+            onToggle={() => toggle('renovation')}
+            badge={['E','F','G'].includes(p.dpe) ? 'Urgent' : undefined}
+          />
+          {openSections.renovation && (() => {
+            const dpeActuel = p.dpe as DpeClass
+            const ordre: DpeClass[] = ['G','F','E','D','C','B','A']
+            const idxActuel = ordre.indexOf(dpeActuel)
+            const cibles = ordre.slice(idxActuel + 1)
+
+            // S'assurer que dpeCible est valide
+            const dpeCibleValide = cibles.includes(renoDpeCible) ? renoDpeCible : (cibles[0] ?? dpeActuel)
+
+            const loyerMensuel =
+              p.locType === 'meuble' || p.locType === 'saisonnier' ? p.loyerMeuble :
+              p.locType === 'coloc' ? p.loyerParChambre * p.nbChambres :
+              p.loyerNu
+
+            const reno = calculateRenovation(
+              dpeActuel,
+              dpeCibleValide,
+              p.surface,
+              p.prixAchat,
+              loyerMensuel,
+              result?.montantEmprunte ?? 0,
+              p.tmi,
+              renoProfile,
+              p.locType,
+              renoBudgetCustom,
+            )
+
+            const urgence = reno.urgence
+            const accentBorder =
+              urgence === 'critique' ? 'border-red-500/30' :
+              urgence === 'elevee'   ? 'border-orange-500/30' :
+              urgence === 'moderee'  ? 'border-amber-500/30' :
+              'border-blue-500/20'
+            const accentText =
+              urgence === 'critique' ? 'text-red-400' :
+              urgence === 'elevee'   ? 'text-orange-400' :
+              urgence === 'moderee'  ? 'text-amber-400' :
+              'text-blue-400'
+
+            return (
+              <div className="px-5 pb-5 space-y-4">
+
+                {/* Contexte DPE actuel */}
+                <div className={`rounded-xl border ${accentBorder} bg-white/[0.02] p-3 flex items-start gap-3`}>
+                  <div
+                    className="w-9 h-9 rounded-lg font-black text-base flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: DPE_COLORS[dpeActuel]?.bg ?? '#666', color: DPE_COLORS[dpeActuel]?.text ?? '#fff' }}
+                  >
+                    {dpeActuel}
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`text-[12px] font-bold ${accentText}`}>
+                      {DPE_LABELS[dpeActuel] ?? dpeActuel}
+                      {DPE_INTERDICTION[dpeActuel] && (
+                        <span className="ml-2 text-[10px] font-semibold opacity-80">— {DPE_INTERDICTION[dpeActuel]}</span>
+                      )}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed">{reno.recommandation}</p>
+                  </div>
+                </div>
+
+                {/* DPE cible */}
+                {cibles.length > 0 ? (
+                  <div>
+                    <Label>DPE cible visé</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {cibles.map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setRenoDpeCible(d)}
+                          className={`w-9 h-9 rounded-lg text-sm font-black transition-all ${
+                            dpeCibleValide === d ? 'ring-2 ring-white/50 scale-110' : 'opacity-50 hover:opacity-80'
+                          }`}
+                          style={{ backgroundColor: DPE_COLORS[d]?.bg, color: DPE_COLORS[d]?.text }}
+                        >
+                          {d}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-zinc-600 mt-1.5">
+                      Saut de {reno.sautClasses} classe{reno.sautClasses > 1 ? 's' : ''}
+                      {reno.sautClasses >= 2 ? ' — Éligible MaPrimeRénov\' et Eco-PTZ' : ''}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-zinc-500 italic">DPE déjà optimal — aucune amélioration possible.</p>
+                )}
+
+                {cibles.length > 0 && (
+                  <>
+                    {/* Profil revenus */}
+                    <div>
+                      <Label>Profil revenus (MaPrimeRénov')</Label>
+                      <select
+                        value={renoProfile}
+                        onChange={(e) => setRenoProfile(e.target.value as ProfileRevenu)}
+                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
+                      >
+                        <option value="tres-modeste">Très modeste — aide 30%</option>
+                        <option value="modeste">Modeste — aide 25%</option>
+                        <option value="intermediaire">Intermédiaire — aide 20%</option>
+                        <option value="superieur">Supérieur — aide 15%</option>
+                      </select>
+                    </div>
+
+                    {/* Budget custom */}
+                    <div>
+                      <Label>Budget travaux estimé (optionnel)</Label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          placeholder={`Estimation auto : ~${Math.round(reno.coutMoyen / 1000)}k€`}
+                          value={renoBudgetInput}
+                          onChange={(e) => {
+                            setRenoBudgetInput(e.target.value)
+                            const v = parseInt(e.target.value)
+                            setRenoBudgetCustom(v > 0 ? v : undefined)
+                          }}
+                          className="w-full bg-white/[0.05] border border-white/[0.08] text-white text-xs rounded-lg px-2.5 py-2 pr-7 focus:outline-none focus:ring-1 focus:ring-emerald-500/40 placeholder:text-zinc-600"
+                        />
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-zinc-600">€</span>
+                      </div>
+                    </div>
+
+                    {/* Résultats inline */}
+                    <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] divide-y divide-white/[0.05]">
+
+                      {/* Budget */}
+                      <div className="px-3 py-2.5 flex items-center justify-between">
+                        <span className="text-[11px] text-zinc-500">Coût estimé (moyen)</span>
+                        <span className="text-sm font-bold text-white tabular-nums">{formatCurrency(reno.coutMoyen)}</span>
+                      </div>
+
+                      {/* Aides */}
+                      {reno.maprimerenovEligible && (
+                        <div className="px-3 py-2.5 flex items-center justify-between">
+                          <span className="text-[11px] text-zinc-500">MaPrimeRénov'</span>
+                          <span className="text-sm font-bold text-emerald-400 tabular-nums">−{formatCurrency(reno.maprimerenovMontant)}</span>
+                        </div>
+                      )}
+                      <div className="px-3 py-2.5 flex items-center justify-between">
+                        <span className="text-[11px] text-zinc-500">CEE + TVA réduite</span>
+                        <span className="text-sm font-bold text-emerald-400 tabular-nums">−{formatCurrency(reno.ceeMontant + reno.tvaMontant)}</span>
+                      </div>
+                      {reno.ecoPtzEligible && (
+                        <div className="px-3 py-2.5 flex items-center justify-between">
+                          <span className="text-[11px] text-zinc-500">Eco-PTZ à 0% (prêt séparé)</span>
+                          <span className="text-sm font-bold text-indigo-400 tabular-nums">{formatCurrency(reno.ecoPtzMontant)}</span>
+                        </div>
+                      )}
+
+                      {/* Coût net */}
+                      <div className="px-3 py-3 flex items-center justify-between bg-white/[0.03]">
+                        <span className="text-[12px] font-semibold text-zinc-300">Coût net après aides</span>
+                        <span className="text-base font-black text-white tabular-nums">{formatCurrency(reno.coutNet)}</span>
+                      </div>
+
+                      {/* Décote */}
+                      {reno.decotePct > 0 && (
+                        <div className="px-3 py-2.5 flex items-center justify-between">
+                          <span className="text-[11px] text-zinc-500">Décote achat marché ({Math.round(reno.decotePct * 100)}%)</span>
+                          <span className="text-sm font-bold text-amber-400 tabular-nums">−{formatCurrency(reno.decoteMontant)}</span>
+                        </div>
+                      )}
+
+                      {/* Rendement avant/après */}
+                      <div className="px-3 py-2.5 flex items-center justify-between">
+                        <span className="text-[11px] text-zinc-500">Rdt brut : avant → après</span>
+                        <span className="text-[12px] font-bold text-white tabular-nums">
+                          {reno.rendBrutAvant.toFixed(1)}% → <span className="text-emerald-400">{reno.rendBrutApres.toFixed(1)}%</span>
+                        </span>
+                      </div>
+
+                      {/* LMNP */}
+                      {(p.locType === 'meuble' || p.locType === 'coloc' || p.locType === 'saisonnier') && reno.amortissementAnnuel > 0 && (
+                        <div className="px-3 py-2.5 flex items-center justify-between">
+                          <span className="text-[11px] text-zinc-500">Économie LMNP/an (amort.)</span>
+                          <span className="text-sm font-bold text-violet-400 tabular-nums">{formatCurrency(reno.economieImpotAnnuelle)}/an</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bouton appliquer */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const travaux = reno.coutNet
+                        const prixAchat = reno.prixAvecDecote > 0 ? reno.prixAvecDecote : p.prixAchat
+                        setP(prev => ({ ...prev, travaux, prixAchat }))
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 hover:bg-emerald-500/20 transition-all"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Appliquer : travaux {formatCurrency(reno.coutNet)}{reno.decotePct > 0 ? ` + prix ${formatCurrency(reno.prixAvecDecote)}` : ''}
+                    </button>
+                  </>
+                )}
+
+              </div>
+            )
+          })()}
+        </div>
 
       {/* ─── Bouton calcul ─────────────────────────────────────────────────────── */}
       <div className="shrink-0 p-4 border-t border-white/[0.05] bg-[#0c0c0e]/90 backdrop-blur-xl">

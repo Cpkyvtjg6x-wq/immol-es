@@ -186,7 +186,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
   const [p, setP] = useState<InvestmentParams>(initialParams ?? DEFAULT_PARAMS)
   const [openSections, setOpenSections] = useState({
     bien: true,
-    travaux: false,
+    travaux: true,
     financement: true,
     location: true,
     charges: true,
@@ -461,11 +461,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
             <div className="px-5 pb-5 space-y-4">
 
               {/* ── Travaux esthétiques ─────────────────────────────────────── */}
-              <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3.5 space-y-3">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm">🏠</span>
-                  <p className="text-[12px] font-semibold text-zinc-300">Travaux esthétiques & aménagement</p>
-                </div>
+              <div>
+                <Label>Travaux esthétiques & aménagement</Label>
                 <NumInput
                   value={travauxEsthetiques}
                   onChange={(v) => setTravauxEsthetiques(v)}
@@ -473,25 +470,22 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   step={500}
                   placeholder="0"
                 />
-                <p className="text-[10px] text-zinc-600 leading-snug">
+                <p className="text-[10px] text-zinc-600 mt-1.5 leading-snug">
                   Cuisine, salle de bain, peinture, parquet, aménagements divers…
                 </p>
               </div>
 
               {/* ── Toggle rénovation énergétique ───────────────────────────── */}
               <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3.5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-2">
-                    <span className="text-sm mt-0.5">⚡</span>
-                    <div>
-                      <p className="text-[12px] font-semibold text-zinc-300">Rénovation énergétique (DPE)</p>
-                      <p className="text-[10px] text-zinc-600 mt-0.5 leading-snug">Isolation, chauffage, VMC — éligible MaPrimeRénov&apos; et Eco-PTZ</p>
-                    </div>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[12px] font-semibold text-zinc-300">Rénovation énergétique (DPE)</p>
+                    <p className="text-[10px] text-zinc-600 mt-0.5 leading-snug">Isolation, chauffage, VMC — éligible MaPrimeRénov&apos; et Eco-PTZ</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setRenoDpeEnabled(!renoDpeEnabled)}
-                    className={`w-9 h-5 rounded-full transition-all shrink-0 relative mt-0.5 ${renoDpeEnabled ? 'bg-emerald-500' : 'bg-white/[0.1]'}`}
+                    className={`w-9 h-5 rounded-full transition-all shrink-0 relative ${renoDpeEnabled ? 'bg-emerald-500' : 'bg-white/[0.1]'}`}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${renoDpeEnabled ? 'left-4' : 'left-0.5'}`} />
                   </button>
@@ -512,23 +506,23 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   const accentBg    = urgence === 'critique' ? 'bg-red-500/[0.04]' : urgence === 'elevee' ? 'bg-orange-500/[0.04]' : urgence === 'moderee' ? 'bg-amber-500/[0.04]' : 'bg-emerald-500/[0.03]'
 
                   return (
-                    <div className="mt-4 space-y-3.5 border-t border-white/[0.06] pt-4">
+                    <div className="mt-3.5 space-y-3 border-t border-white/[0.06] pt-3.5">
 
                       {/* État DPE actuel */}
                       {reno && (
-                        <div className={`rounded-xl border ${accentBorder} ${accentBg} p-3 flex items-center gap-3`}>
+                        <div className={`rounded-lg border ${accentBorder} ${accentBg} px-3 py-2.5 flex items-center gap-2.5`}>
                           <div
-                            className="w-10 h-10 rounded-xl font-black text-lg flex items-center justify-center shrink-0 shadow-lg"
+                            className="w-7 h-7 rounded-lg text-[11px] font-bold flex items-center justify-center shrink-0"
                             style={{ backgroundColor: DPE_COLORS[dpeActuel]?.bg ?? '#666', color: DPE_COLORS[dpeActuel]?.text ?? '#fff' }}
                           >
                             {dpeActuel}
                           </div>
                           <div className="min-w-0">
-                            <p className={`text-[12px] font-bold ${accentText}`}>
+                            <p className={`text-[11px] font-semibold ${accentText}`}>
                               DPE {dpeActuel} — {DPE_LABELS[dpeActuel] ?? dpeActuel}
                             </p>
                             {DPE_INTERDICTION[dpeActuel] ? (
-                              <p className={`text-[10px] font-semibold mt-0.5 ${accentText} opacity-80`}>{DPE_INTERDICTION[dpeActuel]}</p>
+                              <p className={`text-[10px] mt-0.5 ${accentText} opacity-75`}>{DPE_INTERDICTION[dpeActuel]}</p>
                             ) : (
                               <p className="text-[10px] text-zinc-600 mt-0.5">Pas d&apos;interdiction de location prévue</p>
                             )}
@@ -546,10 +540,10 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                                 key={d}
                                 type="button"
                                 onClick={() => setRenoDpeCible(d)}
-                                className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${
+                                className={`w-8 h-8 rounded-lg text-[11px] font-bold transition-all ${
                                   dpeCibleValide === d
-                                    ? 'ring-2 ring-white/40 ring-offset-1 ring-offset-transparent scale-105 shadow-lg'
-                                    : 'opacity-40 hover:opacity-70'
+                                    ? 'ring-2 ring-white/30 ring-offset-1 ring-offset-transparent scale-105 shadow-md'
+                                    : 'opacity-35 hover:opacity-60'
                                 }`}
                                 style={{ backgroundColor: DPE_COLORS[d]?.bg, color: DPE_COLORS[d]?.text }}
                               >
@@ -708,26 +702,23 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               </div>
 
               {/* ── Total travaux ────────────────────────────────────────────── */}
-              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] px-4 py-3.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">Total travaux</p>
+              {p.travaux > 0 && (
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] px-4 py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-0.5">Total travaux injectés</p>
                     {renoDpeEnabled && renoCalc ? (
-                      <p className="text-[10px] text-zinc-600">
+                      <p className="text-[10px] text-zinc-600 truncate">
                         {formatCurrency(travauxEsthetiques)} esthétiques + {formatCurrency(renoCalc.coutNet)} DPE net
                       </p>
                     ) : (
-                      <p className="text-[10px] text-zinc-600">Injecté dans le calculateur (amortissement LMNP inclus)</p>
+                      <p className="text-[10px] text-zinc-600">Injecté dans le calcul (amortissement LMNP inclus)</p>
                     )}
                   </div>
-                  <div className="text-right">
-                    <p className="text-[22px] font-black text-emerald-400 tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
-                      {p.travaux.toLocaleString('fr-FR')}
-                    </p>
-                    <p className="text-[11px] text-emerald-500/60 font-semibold">€</p>
-                  </div>
+                  <p className="text-[15px] font-bold text-emerald-400 tabular-nums shrink-0" style={{ letterSpacing: '-0.02em' }}>
+                    {formatCurrency(p.travaux)}
+                  </p>
                 </div>
-              </div>
+              )}
 
             </div>
           )}

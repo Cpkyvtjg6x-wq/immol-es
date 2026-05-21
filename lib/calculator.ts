@@ -9,6 +9,23 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
   // ─── Prix de revient ────────────────────────────────────────────────────────
   const prixRevient = params.prixAchat + params.fraisNotaire + params.travaux
 
+  // ─── Pré-calcul venteProduits (immeuble) — doit précéder montantEmprunte ───
+  // On calcule ici pour pouvoir appliquer la réinjection sur le crédit
+  let venteProduitsPreCalc = 0
+  if (params.locType === 'immeuble') {
+    const vGroups = (params.lotGroups ?? []).filter(g => g.nb > 0 && g.regime === 'vendre')
+    venteProduitsPreCalc = vGroups.reduce((s, g) => s + g.prixVente * g.nb, 0)
+  }
+
+  // Montant réinjecté dans le crédit selon la stratégie choisie
+  const reinjectAmount = (() => {
+    if (params.locType !== 'immeuble' || venteProduitsPreCalc <= 0) return 0
+    const strat = params.venteStrategy ?? 'garder'
+    if (strat === 'reinject') return venteProduitsPreCalc
+    if (strat === 'partiel') return venteProduitsPreCalc * (params.venteReinjectPct ?? 50) / 100
+    return 0
+  })()
+
   // ─── PTZ mensualité ─────────────────────────────────────────────────────────
   let mensualitePtz = 0
   if (params.ptzEnabled && params.ptzMontant > 0) {
@@ -21,11 +38,12 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
     }
   }
 
-  // ─── Montant emprunté ───────────────────────────────────────────────────────
-  const montantEmprunte = Math.max(
+  // ─── Montant emprunté (avec réinjection éventuelle) ─────────────────────────
+  const montantEmprunted = Math.max(
     0,
     prixRevient - params.apport - (params.ptzEnabled ? params.ptzMontant : 0)
   )
+  const montantEmprunte = Math.max(0, montantEmprunted - reinjectAmount)
 
   const tauxMensuel = params.taux / 100 / 12
   const nbMensualites = params.duree * 12
@@ -162,21 +180,28 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
     ? (loyerBase * 12 * params.gliPct) / 100
     : 0
 
-  // CFE uniquement pour meublé, coloc et saisonnier
-  const cfe = ['meuble', 'coloc', 'saisonnier'].includes(params.locType) ? params.cfe : 0
+  // CFE : meublé, coloc, saisonnier, et immeuble si au moins un lot meublé
+  const hasMenubeLots = params.locType === 'immeuble'
+    ? (params.lotGroups ?? []).some(g => g.regime === 'meuble')
+    : false
+  const cfe = ['meuble', 'coloc', 'saisonnier'].includes(params.locType) || hasMenubeLots
+    ? params.cfe : 0
 
-  // Charges spécifiques immeuble
+  // Charges spécifiques immeuble (entretien + assurance bâtiment)
   const chargesImmeuble = params.locType === 'immeuble'
     ? (params.entretienPartiesCommunes ?? 0) + (params.assuranceImmeuble ?? 0)
     : 0
 
-  // Copro : pour immeuble, le propriétaire = syndicat, donc chargesCopro = 0 (remplacé par chargesImmeuble)
+  // Copro : immeuble = syndicat = soi-même → 0 (remplacé par chargesImmeuble)
   const chargesCopro = params.locType === 'immeuble' ? 0 : params.chargesCopro
+
+  // PNO : pour immeuble, l'assurance bâtiment est dans chargesImmeuble → on n'ajoute pas assurancePno
+  const assurancePnoEffective = params.locType === 'immeuble' ? 0 : params.assurancePno
 
   const totalCharges =
     params.taxeFonciere +
     chargesCopro +
-    params.assurancePno +
+    assurancePnoEffective +
     fraisGestionAnnuel +
     provisionAnnuelle +
     params.fraisComptable +
@@ -198,7 +223,10 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
   const chargesAnnuelles = totalCharges
   const cashflowAnnuel = cashflowMensuel * 12
   const effortEpargne = Math.max(0, -cashflowMensuel)
-  const vacanceAnnuelle = loyer * (params.vacance || 0)
+  // vacanceAnnuelle : pour immeuble, calculée lot par lot ; sinon formule standard
+  const vacanceAnnuelle = params.locType === 'immeuble'
+    ? (params.lotGroups ?? []).filter(g => g.regime !== 'vendre').reduce((s, g) => s + g.loyer * g.nb * g.vacance, 0)
+    : loyer * (params.vacance || 0)
 
   // ─── Revente & TRI ──────────────────────────────────────────────────────────
   const horizon = params.horizonRevente || 10
@@ -224,7 +252,9 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
   const patrimoineNetRevente = prixRevente - capitalRestantHorizon - impotPlusValue - fraisAgenceRevente
 
   // TRI (Taux de Rendement Interne)
-  const investissementInitial = params.apport + fraisBancairesTotal
+  // Si des fonds sont gardés (non réinjectés), ils réduisent le capital effectivement immobilisé
+  const venteGardes = venteProduitsPreCalc - reinjectAmount  // fonds conservés en trésorerie
+  const investissementInitial = Math.max(0, params.apport + fraisBancairesTotal - venteGardes)
   const tri = calculerTRI(investissementInitial, cashflowAnnuel, horizon, patrimoineNetRevente)
 
   // ─── Tableaux ────────────────────────────────────────────────────────────────
@@ -282,7 +312,7 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
     tableauAmortissement,
     projection,
     // Immeuble
-    ...(params.locType === 'immeuble' ? { venteProduits, nbLotsLoues, nbLotsVendre } : {}),
+    ...(params.locType === 'immeuble' ? { venteProduits, nbLotsLoues, nbLotsVendre, reinjectAmount, montantEmprunted } : {}),
   }
 }
 
@@ -518,6 +548,8 @@ export const DEFAULT_PARAMS: InvestmentParams = {
   entretienPartiesCommunes: 2000,
   assuranceImmeuble: 800,
   lotGroups: [],
+  venteStrategy: 'garder',
+  venteReinjectPct: 100,
 
   // Charges
   taxeFonciere: 800,

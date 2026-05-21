@@ -1222,6 +1222,127 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     )
                   })()}
 
+                  {/* ── Destination des fonds de cession ─────────────────── */}
+                  {(() => {
+                    const prodCession = (p.lotGroups ?? [])
+                      .filter(g => g.regime === 'vendre')
+                      .reduce((s, g) => s + g.prixVente * g.nb, 0)
+                    if (prodCession <= 0) return null
+
+                    // Calcul impact mensualité (simulation locale)
+                    const prixRevientLocal = p.prixAchat + p.fraisNotaire + p.travaux
+                    const emprunted = Math.max(0, prixRevientLocal - p.apport - (p.ptzEnabled ? p.ptzMontant : 0))
+                    const reinjectLocal = p.venteStrategy === 'reinject' ? prodCession
+                      : p.venteStrategy === 'partiel' ? prodCession * (p.venteReinjectPct ?? 100) / 100 : 0
+                    const emprunter = Math.max(0, emprunted - reinjectLocal)
+                    const r = p.taux / 100 / 12
+                    const n = p.duree * 12
+                    const calcMens = (montant: number) =>
+                      montant > 0 && p.taux > 0
+                        ? (montant * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
+                        : montant / n
+                    const mensAvant = calcMens(emprunted)
+                    const mensApres = calcMens(emprunter)
+                    const delta = mensAvant - mensApres
+
+                    return (
+                      <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.04] p-3 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                            💰 Destination des {Math.round(prodCession).toLocaleString('fr-FR')} € de cession
+                          </p>
+                        </div>
+
+                        {/* Choix stratégie */}
+                        <div className="space-y-1.5">
+                          {([
+                            {
+                              v: 'reinject' as const,
+                              label: 'Remboursement anticipé total',
+                              desc: 'Tous les fonds réduisent le capital du crédit → mensualités plus basses',
+                            },
+                            {
+                              v: 'partiel' as const,
+                              label: 'Réinjection partielle',
+                              desc: 'Une partie rembourse le crédit, le reste reste en trésorerie',
+                            },
+                            {
+                              v: 'garder' as const,
+                              label: 'Conserver en trésorerie',
+                              desc: 'Les fonds restent disponibles, le crédit n\'est pas modifié',
+                            },
+                          ]).map(opt => (
+                            <button
+                              key={opt.v}
+                              type="button"
+                              onClick={() => set('venteStrategy', opt.v)}
+                              className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${
+                                p.venteStrategy === opt.v
+                                  ? 'bg-amber-500/15 border-amber-500/40'
+                                  : 'bg-white/[0.02] border-white/[0.06] hover:border-white/15'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className={`w-3 h-3 rounded-full border-2 shrink-0 ${p.venteStrategy === opt.v ? 'bg-amber-400 border-amber-400' : 'border-zinc-600'}`} />
+                                <span className={`text-[11px] font-semibold ${p.venteStrategy === opt.v ? 'text-amber-300' : 'text-zinc-400'}`}>{opt.label}</span>
+                              </div>
+                              <p className="text-[10px] text-zinc-600 mt-0.5 ml-5">{opt.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Slider % si partiel */}
+                        {p.venteStrategy === 'partiel' && (
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <Label>Part réinjectée</Label>
+                              <span className="text-sm font-bold text-white">{p.venteReinjectPct ?? 100}%</span>
+                            </div>
+                            <input
+                              type="range" min={10} max={100} step={10}
+                              value={p.venteReinjectPct ?? 100}
+                              onChange={(e) => set('venteReinjectPct', parseInt(e.target.value))}
+                              className="w-full accent-amber-500 cursor-pointer h-1.5"
+                            />
+                            <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
+                              <span>{Math.round(prodCession * (p.venteReinjectPct ?? 100) / 100).toLocaleString('fr-FR')} € remboursés</span>
+                              <span>{Math.round(prodCession * (1 - (p.venteReinjectPct ?? 100) / 100)).toLocaleString('fr-FR')} € gardés</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Impact mensualité */}
+                        {reinjectLocal > 0 && delta > 1 && (
+                          <div className="rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20 px-3 py-2.5">
+                            <p className="text-[10px] text-zinc-500 mb-1.5">Impact sur le crédit</p>
+                            <div className="grid grid-cols-3 gap-2 text-center">
+                              <div>
+                                <div className="text-[9px] text-zinc-600 mb-0.5">Capital emprunté</div>
+                                <div className="text-[11px] font-bold text-zinc-400 tabular-nums line-through">{Math.round(emprunted).toLocaleString('fr-FR')} €</div>
+                                <div className="text-[12px] font-bold text-emerald-400 tabular-nums">{Math.round(emprunter).toLocaleString('fr-FR')} €</div>
+                              </div>
+                              <div>
+                                <div className="text-[9px] text-zinc-600 mb-0.5">Mensualité</div>
+                                <div className="text-[11px] font-bold text-zinc-400 tabular-nums line-through">{Math.round(mensAvant).toLocaleString('fr-FR')} €</div>
+                                <div className="text-[12px] font-bold text-emerald-400 tabular-nums">{Math.round(mensApres).toLocaleString('fr-FR')} €</div>
+                              </div>
+                              <div>
+                                <div className="text-[9px] text-zinc-600 mb-0.5">Gain / mois</div>
+                                <div className="text-[14px] font-black text-emerald-400 tabular-nums">−{Math.round(delta).toLocaleString('fr-FR')} €</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {p.venteStrategy === 'garder' && (
+                          <p className="text-[10px] text-zinc-600">
+                            Ces {Math.round(prodCession).toLocaleString('fr-FR')} € restent en trésorerie et réduisent votre capital effectivement immobilisé dans l&apos;opération.
+                          </p>
+                        )}
+                      </div>
+                    )
+                  })()}
+
                 </div>
               )}
 

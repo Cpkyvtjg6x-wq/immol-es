@@ -71,6 +71,10 @@ export interface InvestmentParams {
   assuranceImmeuble: number    // €/an (multirisque immeuble)
   lotGroups: LotGroup[]        // configuration détaillée par groupe de lots
 
+  // Stratégie d'utilisation des produits de cession (lots "à vendre")
+  venteStrategy: 'reinject' | 'garder' | 'partiel'
+  venteReinjectPct: number     // % réinjecté dans le crédit (si strategy = 'partiel')
+
   // Charges annuelles
   taxeFonciere: number
   chargesCopro: number
@@ -167,6 +171,8 @@ export interface InvestmentResult {
 
   // Immeuble — synthèse lots
   venteProduits?: number        // produit total des lots "à vendre" (€)
+  reinjectAmount?: number       // montant effectivement réinjecté dans le crédit
+  montantEmprunted?: number     // montant emprunté avant réinjection (pour affichage delta)
   nbLotsLoues?: number          // nombre de lots loués
   nbLotsVendre?: number         // nombre de lots à vendre
 

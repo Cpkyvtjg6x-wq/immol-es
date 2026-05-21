@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
@@ -626,6 +626,106 @@ const DEFAULT_PROFILE: BankReportProfile = {
   sourceEstimationLoyer: 'Étude de marché locale',
 }
 
+// ─── Montage optimisé ─────────────────────────────────────────────────────────
+interface MontageOptResult {
+  endettGlobal: number
+  endettDiff: number
+  endettOpt: number
+  dureeOpt: number
+  mensualiteOpt: number
+  apportComplementaire: number | null
+  methodeRecommandee: 'globale' | 'differentielle'
+  gainsMensuels: number
+  points: string[]
+}
+
+function calcMontageOpt(
+  params: InvestmentParams,
+  result: InvestmentResult,
+  profile: BankReportProfile,
+): MontageOptResult | null {
+  if (!profile.revenusNetsProFoyer || profile.revenusNetsProFoyer <= 0) return null
+
+  const revenus     = profile.revenusNetsProFoyer
+  const mensualite  = result.mensualiteTotale
+  const loyer       = result.loyer
+  const autresCredits  = profile.autresCreditsMensualites || 0
+  const loyerActuel    = profile.loyerActuel || 0
+  const autresLocatifs = profile.autresRevenusLocatifs || 0
+
+  // ── Méthode globale HCSF ──────────────────────────────────────────────────
+  const chargesGlobal  = mensualite + autresCredits + loyerActuel
+  const revenusGlobal  = revenus + 0.7 * loyer + 0.7 * autresLocatifs
+  const endettGlobal   = revenusGlobal > 0 ? (chargesGlobal / revenusGlobal) * 100 : 0
+
+  // ── Méthode différentielle ────────────────────────────────────────────────
+  const netInvest    = Math.max(0, mensualite - 0.7 * loyer)
+  const chargesDiff  = netInvest + autresCredits + loyerActuel
+  const endettDiff   = revenus > 0 ? (chargesDiff / revenus) * 100 : 0
+
+  // ── Optimisation durée (jusqu'à 25 ans) ───────────────────────────────────
+  const capital           = result.montantEmprunte
+  const r                 = params.taux / 100 / 12
+  const assuranceMens     = (params.assuranceTaux / 100) * capital / 12
+
+  let dureeOpt     = params.duree
+  let mensualiteOpt = mensualite
+
+  for (let d = params.duree; d <= 25; d++) {
+    const n         = d * 12
+    const mensCredit = r > 0 ? capital * r / (1 - Math.pow(1 + r, -n)) : capital / n
+    const mensTotal  = mensCredit + assuranceMens
+    const netTest    = Math.max(0, mensTotal - 0.7 * loyer)
+    const endDiff    = revenus > 0 ? ((netTest + autresCredits + loyerActuel) / revenus) * 100 : 0
+
+    dureeOpt      = d
+    mensualiteOpt = Math.round(mensTotal)
+    if (endDiff <= 35) break
+  }
+
+  const netOpt     = Math.max(0, mensualiteOpt - 0.7 * loyer)
+  const endettOpt  = revenus > 0 ? ((netOpt + autresCredits + loyerActuel) / revenus) * 100 : 0
+
+  // ── Apport complémentaire si toujours > 35 % ────────────────────────────
+  let apportComplementaire: number | null = null
+  if (endettOpt > 35) {
+    const n25         = 25 * 12
+    const targetCharg = Math.max(0, revenus * 0.35 - autresCredits - loyerActuel)
+    // targetCharg = max(0, mens25 - 0.7*loyer) → mens25 = targetCharg + 0.7*loyer
+    const targetMens  = targetCharg + 0.7 * loyer
+    const targetCredit = targetMens - assuranceMens
+    const factor      = r > 0 ? r / (1 - Math.pow(1 + r, -n25)) : 1 / n25
+    const targetCap   = factor > 0 ? targetCredit / factor : 0
+    apportComplementaire = Math.max(0, Math.round(capital - targetCap))
+  }
+
+  const methodeRecommandee: 'globale' | 'differentielle' =
+    endettDiff <= endettGlobal ? 'differentielle' : 'globale'
+
+  const gainsMensuels = Math.max(0, Math.round(mensualite - mensualiteOpt))
+
+  // ── Argumentaire ──────────────────────────────────────────────────────────
+  const points: string[] = []
+  if (endettDiff <= 35 && endettGlobal > 35)
+    points.push('Exiger la méthode différentielle — elle fait passer le taux sous 35 % (légalement applicable aux investisseurs locatifs)')
+  if (dureeOpt > params.duree)
+    points.push(`Allonger à ${dureeOpt} ans pour réduire la mensualité de ${fE(gainsMensuels)}/mois`)
+  if (loyer >= mensualite * 0.7)
+    points.push('Mettre en avant le quasi-autofinancement : le loyer couvre 70 %+ de la mensualité')
+  if (endettDiff <= 30)
+    points.push(`Taux différentiel de ${endettDiff.toFixed(1)} % — profil solide pour la banque`)
+  if ((profile.epargneTotale || 0) >= capital * 0.2)
+    points.push('Épargne résiduelle rassurante après apport — gestion patrimoniale solide')
+  if (apportComplementaire && apportComplementaire > 0)
+    points.push(`Plan B : apport complémentaire de ${fE(apportComplementaire)} pour passer sous le seuil HCSF`)
+
+  return {
+    endettGlobal, endettDiff, endettOpt,
+    dureeOpt, mensualiteOpt, apportComplementaire,
+    methodeRecommandee, gainsMensuels, points,
+  }
+}
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 export default function RapportBancairePage() {
   const router = useRouter()
@@ -639,6 +739,12 @@ export default function RapportBancairePage() {
   const [generating, setGenerating] = useState(false)
   const [hasData, setHasData] = useState(false)
   const [nbAssocies, setNbAssocies] = useState(1)
+  const [methode, setMethode] = useState<'globale' | 'differentielle'>('differentielle')
+
+  const montageOpt = useMemo<MontageOptResult | null>(() => {
+    if (!result) return null
+    return calcMontageOpt(params, result, profile)
+  }, [params, result, profile])
 
   // Charger les params depuis localStorage
   useEffect(() => {
@@ -993,6 +1099,177 @@ export default function RapportBancairePage() {
                       ))}
                     </div>
                   </div>
+                )}
+              </section>
+
+              {/* ── Montage optimisé ── */}
+              <section className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Montage optimisé</h2>
+                  <span className="text-[10px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-md font-semibold">Argumentaire banque</span>
+                </div>
+                <p className="text-[11px] text-zinc-500 mb-4">Présentation optimale de votre dossier — méthode de calcul et durée ajustées.</p>
+
+                {!montageOpt ? (
+                  <div className="flex flex-col items-center justify-center py-8 gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
+                      <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <p className="text-xs text-zinc-500 text-center">Renseignez vos revenus mensuels<br/>ci-dessus pour débloquer l'analyse</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* ── Toggle méthode ── */}
+                    <div className="flex gap-1 p-1 bg-black/20 rounded-xl mb-5">
+                      {(['differentielle', 'globale'] as const).map(m => (
+                        <button key={m} onClick={() => setMethode(m)}
+                          className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+                            methode === m
+                              ? m === 'differentielle'
+                                ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
+                                : 'bg-white/10 text-white border border-white/10'
+                              : 'text-zinc-500 hover:text-zinc-300'
+                          }`}>
+                          {m === 'differentielle' ? '✦ Méthode différentielle' : 'Méthode globale'}
+                          {m === montageOpt.methodeRecommandee && m === 'differentielle' && (
+                            <span className="ml-1.5 text-[9px] bg-violet-500/30 text-violet-300 px-1.5 py-0.5 rounded">Recommandée</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* ── Comparaison côte à côte ── */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      {/* Montage actuel */}
+                      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+                        <div className="text-[10px] text-zinc-500 uppercase tracking-widest mb-3">Situation actuelle</div>
+                        <div className="space-y-3">
+                          <div>
+                            <div className="text-[10px] text-zinc-600 mb-0.5">Taux d'endettement</div>
+                            {(() => {
+                              const val = methode === 'differentielle' ? montageOpt.endettDiff : montageOpt.endettGlobal
+                              const col = val <= 30 ? 'text-emerald-400' : val <= 35 ? 'text-amber-400' : 'text-red-400'
+                              return (
+                                <div className="flex items-baseline gap-1.5">
+                                  <span className={`text-2xl font-black ${col}`}>{val.toFixed(1)}<span className="text-sm font-bold"> %</span></span>
+                                  {val > 35 && <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">Hors HCSF</span>}
+                                  {val <= 35 && <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">✓ OK</span>}
+                                </div>
+                              )
+                            })()}
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-zinc-600 mb-0.5">Mensualité</div>
+                            <div className="text-sm font-bold text-white">{fE(result?.mensualiteTotale ?? 0)}<span className="text-zinc-500 font-normal">/mois</span></div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-zinc-600 mb-0.5">Durée</div>
+                            <div className="text-sm font-bold text-white">{params.duree} ans</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Montage optimisé */}
+                      <div className={`border rounded-xl p-4 ${
+                        montageOpt.endettOpt <= 30 ? 'bg-emerald-500/[0.07] border-emerald-500/25'
+                        : montageOpt.endettOpt <= 35 ? 'bg-amber-500/[0.07] border-amber-500/25'
+                        : 'bg-red-500/[0.06] border-red-500/20'
+                      }`}>
+                        <div className="text-[10px] text-zinc-500 uppercase tracking-widest mb-3">Montage optimisé</div>
+                        <div className="space-y-3">
+                          <div>
+                            <div className="text-[10px] text-zinc-600 mb-0.5">Taux d'endettement</div>
+                            {(() => {
+                              const val = montageOpt.endettOpt
+                              const col = val <= 30 ? 'text-emerald-400' : val <= 35 ? 'text-amber-400' : 'text-red-400'
+                              return (
+                                <div className="flex items-baseline gap-1.5">
+                                  <span className={`text-2xl font-black ${col}`}>{val.toFixed(1)}<span className="text-sm font-bold"> %</span></span>
+                                  {val <= 35 && <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">✓ HCSF</span>}
+                                  {val > 35 && <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">Hors HCSF</span>}
+                                </div>
+                              )
+                            })()}
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-zinc-600 mb-0.5">Mensualité</div>
+                            <div className="text-sm font-bold text-white">
+                              {fE(montageOpt.mensualiteOpt)}<span className="text-zinc-500 font-normal">/mois</span>
+                              {montageOpt.gainsMensuels > 0 && (
+                                <span className="ml-1.5 text-[10px] text-emerald-400">−{fE(montageOpt.gainsMensuels)}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-zinc-600 mb-0.5">Durée</div>
+                            <div className="text-sm font-bold text-white">
+                              {montageOpt.dureeOpt} ans
+                              {montageOpt.dureeOpt > params.duree && (
+                                <span className="ml-1.5 text-[10px] text-violet-400">+{montageOpt.dureeOpt - params.duree} ans</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ── Méthode différentielle recommandée ── */}
+                    {montageOpt.methodeRecommandee === 'differentielle' && montageOpt.endettDiff < montageOpt.endettGlobal && (
+                      <div className="flex items-start gap-3 bg-violet-500/[0.08] border border-violet-500/20 rounded-xl px-4 py-3 mb-3">
+                        <div className="w-6 h-6 rounded-lg bg-violet-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                          <svg className="w-3.5 h-3.5 text-violet-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold text-violet-300 mb-0.5">Méthode différentielle disponible</div>
+                          <div className="text-[11px] text-zinc-400">
+                            Légalement applicable à tout investisseur locatif — elle réduit votre taux de{' '}
+                            <span className="text-white font-semibold">{(montageOpt.endettGlobal - montageOpt.endettDiff).toFixed(1)} pts</span>
+                            {montageOpt.endettDiff <= 35 && montageOpt.endettGlobal > 35 && (
+                              <span className="text-violet-300"> et fait passer le dossier sous 35 %</span>
+                            )}.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Alerte apport complémentaire ── */}
+                    {montageOpt.apportComplementaire && montageOpt.apportComplementaire > 0 && (
+                      <div className="flex items-start gap-3 bg-amber-500/[0.08] border border-amber-500/20 rounded-xl px-4 py-3 mb-3">
+                        <div className="w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                          <svg className="w-3.5 h-3.5 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold text-amber-300 mb-0.5">Taux toujours au-dessus de 35 %</div>
+                          <div className="text-[11px] text-zinc-400">
+                            Un apport complémentaire de{' '}
+                            <span className="text-white font-semibold">{fE(montageOpt.apportComplementaire)}</span>
+                            {' '}suffirait à passer sous le seuil HCSF à 25 ans.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Argumentaire banque ── */}
+                    {montageOpt.points.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Arguments à présenter à la banque</div>
+                        <div className="space-y-1.5">
+                          {montageOpt.points.map((pt, i) => (
+                            <div key={i} className="flex items-start gap-2.5 bg-white/[0.02] border border-white/[0.04] rounded-lg px-3 py-2.5">
+                              <span className="text-emerald-400 text-[11px] mt-0.5 shrink-0">→</span>
+                              <span className="text-[11px] text-zinc-300 leading-relaxed">{pt}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </section>
 

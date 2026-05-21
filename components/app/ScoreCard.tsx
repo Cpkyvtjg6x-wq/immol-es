@@ -51,6 +51,8 @@ function ScoreRing({ value, color }: { value: number; color: 'emerald' | 'amber'
 }
 
 export function ScoreCard({ score }: ScoreCardProps) {
+  const globalRounded = Math.round(score.global)
+
   const textColor = {
     emerald: 'text-emerald-400',
     amber: 'text-amber-400',
@@ -63,61 +65,70 @@ export function ScoreCard({ score }: ScoreCardProps) {
     red: 'bg-red-500/10 text-red-400 border-red-500/20',
   }[score.color]
 
+  const summaryIcon = {
+    emerald: '✅',
+    amber: '⚠️',
+    red: '🚨',
+  }[score.color]
+
   return (
     <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
-      <div className="flex flex-col md:flex-row">
+      <div className="flex flex-col sm:flex-row">
         {/* Left: global score */}
-        <div className="md:w-56 shrink-0 flex flex-col items-center justify-center p-8 border-b md:border-b-0 md:border-r border-white/[0.06]">
-          <div className="relative">
-            <ScoreRing value={score.global} color={score.color} />
+        <div className="sm:w-52 shrink-0 flex flex-col items-center justify-center p-7 border-b sm:border-b-0 sm:border-r border-white/[0.06] bg-white/[0.015]">
+          <div className="relative w-[120px] h-[120px]">
+            <ScoreRing value={globalRounded} color={score.color} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-4xl font-black leading-none ${textColor}`} style={{ letterSpacing: '-0.04em' }}>
-                {score.global}
+              <span className={`text-[38px] font-black leading-none tabular-nums ${textColor}`} style={{ letterSpacing: '-0.04em' }}>
+                {globalRounded}
               </span>
-              <span className="text-[11px] text-zinc-600 mt-0.5">/100</span>
+              <span className="text-[11px] text-zinc-600 mt-0.5 font-medium">/100</span>
             </div>
           </div>
-          <div className="mt-4 text-center">
-            <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${badgeBg}`}>
+          <div className="mt-4 text-center space-y-1.5">
+            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full border ${badgeBg}`}>
               {score.label}
             </span>
-            <p className="text-[11px] text-zinc-600 mt-2">Score d'opportunité</p>
+            <p className="text-[10px] text-zinc-600 uppercase tracking-wider font-semibold">Score d&apos;opportunité</p>
           </div>
         </div>
 
         {/* Right: sub-scores + summary */}
-        <div className="flex-1 p-6 flex flex-col justify-between gap-5">
+        <div className="flex-1 p-5 flex flex-col justify-between gap-4 min-w-0">
           {/* Sub-scores */}
-          <div className="space-y-3.5">
+          <div className="space-y-3">
             {subScoreLabels.map(({ key, label }) => {
-              const val = score.subScores[key]
+              const val = Math.round(score.subScores[key])
               const c: 'emerald' | 'amber' | 'red' = val >= 60 ? 'emerald' : val >= 35 ? 'amber' : 'red'
               const barColor = { emerald: '#10b981', amber: '#f59e0b', red: '#ef4444' }[c]
               const numColor = { emerald: 'text-emerald-400', amber: 'text-amber-400', red: 'text-red-400' }[c]
 
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <span className="text-xs text-zinc-500 w-20 shrink-0">{label}</span>
-                  <div className="flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                  <span className="text-[11px] text-zinc-500 w-24 shrink-0 font-medium">{label}</span>
+                  <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-1000"
                       style={{
                         width: `${val}%`,
                         background: barColor,
-                        boxShadow: `0 0 8px ${barColor}40`,
+                        boxShadow: `0 0 6px ${barColor}50`,
                       }}
                     />
                   </div>
-                  <span className={`text-xs font-bold w-8 text-right tabular-nums ${numColor}`}>{val}</span>
+                  <span className={`text-[11px] font-bold w-7 text-right tabular-nums shrink-0 ${numColor}`}>{val}</span>
                 </div>
               )
             })}
           </div>
 
           {/* Summary */}
-          <p className="text-xs text-zinc-500 leading-relaxed border-t border-white/[0.05] pt-4">
-            {score.summary}
-          </p>
+          <div className="border-t border-white/[0.05] pt-3.5 flex items-start gap-2">
+            <span className="text-sm shrink-0 mt-0.5">{summaryIcon}</span>
+            <p className="text-[12px] text-zinc-400 leading-relaxed font-medium">
+              {score.summary}
+            </p>
+          </div>
         </div>
       </div>
     </div>

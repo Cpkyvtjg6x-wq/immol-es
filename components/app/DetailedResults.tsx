@@ -36,23 +36,23 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
   ]
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
+    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
       {/* Tab nav */}
-      <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none">
+      <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none bg-white/[0.01]">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-5 py-3.5 text-[13px] font-medium whitespace-nowrap transition-colors relative ${
+            className={`px-4 py-3.5 text-[12px] font-semibold whitespace-nowrap transition-colors relative ${
               tab === t.id ? 'text-white' : 'text-zinc-600 hover:text-zinc-300'
             }`}
           >
             {t.label}
             {tab === t.id && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
+              <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-emerald-500 rounded-t-full" />
             )}
             {t.id === 'fiscal' && hasFiscal && (
-              <span className="ml-1.5 text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">
                 {fiscalResults!.filter(r => !r.disabled).length}
               </span>
             )}
@@ -63,7 +63,7 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
         ))}
       </div>
 
-      <div className="p-6">
+      <div className="p-5">
         {tab === 'cashflow'   && <CashflowTab result={result} />}
         {tab === 'fiscal'     && <FiscalTab fiscalResults={fiscalResults} />}
         {tab === 'revente'    && <ReventeTab result={result} />}
@@ -88,9 +88,16 @@ function CashflowTab({ result }: { result: InvestmentResult }) {
     { label: 'Cashflow net annuel', value: result.cashflowAnnuel, type: 'result' },
   ]
 
+  // Cashflow color
+  const cfColor = result.cashflowAnnuel >= 0 ? 'text-emerald-400' : 'text-red-400'
+  const cfBg = result.cashflowAnnuel >= 0
+    ? 'bg-emerald-500/[0.05] border-emerald-500/20'
+    : 'bg-red-500/[0.05] border-red-500/20'
+
   return (
-    <div className="space-y-5">
-      <div className="space-y-0.5">
+    <div className="space-y-4">
+      {/* Cascade rows */}
+      <div className="space-y-0.5 rounded-xl overflow-hidden border border-white/[0.06]">
         {rows.map((row, i) => {
           const isResult = row.type === 'result'
           const isSubtotal = row.type === 'subtotal'
@@ -98,20 +105,23 @@ function CashflowTab({ result }: { result: InvestmentResult }) {
           const color = isResult
             ? row.value >= 0 ? 'text-emerald-400' : 'text-red-400'
             : row.type === 'income' ? 'text-emerald-400'
-            : isNeutral ? 'text-zinc-500'
+            : isNeutral ? 'text-zinc-600'
             : 'text-red-400'
           return (
             <div
               key={i}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-lg ${
-                isResult ? 'bg-white/[0.06] border border-white/[0.08]' :
-                isSubtotal ? 'bg-white/[0.03]' : ''
+              className={`flex items-center justify-between px-3.5 py-2.5 ${
+                isResult
+                  ? `border-t border-white/[0.06] mt-0.5 ${cfBg}`
+                  : isSubtotal
+                  ? 'bg-white/[0.03]'
+                  : 'hover:bg-white/[0.015]'
               }`}
             >
-              <span className={`text-xs ${isResult || isSubtotal ? 'font-semibold text-white' : 'text-zinc-500'}`}>
+              <span className={`text-[12px] truncate mr-3 ${isResult ? `font-bold ${cfColor}` : isSubtotal ? 'font-semibold text-zinc-300' : 'text-zinc-500'}`}>
                 {row.label}
               </span>
-              <span className={`text-xs font-semibold tabular-nums ${color}`}>
+              <span className={`text-[12px] font-bold tabular-nums shrink-0 ${color}`}>
                 {row.value >= 0 ? '+' : ''}{formatCurrency(row.value)}
               </span>
             </div>
@@ -119,15 +129,31 @@ function CashflowTab({ result }: { result: InvestmentResult }) {
         })}
       </div>
 
-      <div className="grid grid-cols-3 gap-3 pt-2 border-t border-white/[0.05]">
+      {/* KPI summary */}
+      <div className="grid grid-cols-3 gap-2.5 pt-1">
         {[
-          { label: 'Cashflow / mois', value: `${result.cashflowMensuel >= 0 ? '+' : ''}${Math.round(result.cashflowMensuel)} €`, color: result.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400' },
-          { label: 'Mensualité crédit', value: `${Math.round(result.mensualiteCredit)} €`, color: 'text-white' },
-          { label: 'Point mort loyer', value: `${result.pointMort} €/mois`, color: 'text-amber-400' },
+          {
+            label: 'Cashflow / mois',
+            value: `${result.cashflowMensuel >= 0 ? '+' : ''}${Math.round(result.cashflowMensuel)} €`,
+            color: result.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400',
+            bg: result.cashflowMensuel >= 0 ? 'border-emerald-500/20' : 'border-red-500/20',
+          },
+          {
+            label: 'Mensualité crédit',
+            value: `${Math.round(result.mensualiteCredit)} €/mois`,
+            color: 'text-white',
+            bg: 'border-white/[0.07]',
+          },
+          {
+            label: 'Point mort locatif',
+            value: `${result.pointMort} €/mois`,
+            color: 'text-amber-400',
+            bg: 'border-amber-500/20',
+          },
         ].map((m) => (
-          <div key={m.label} className="text-center rounded-xl bg-white/[0.03] py-3 px-2">
-            <p className="text-[10px] text-zinc-600 mb-1">{m.label}</p>
-            <p className={`text-base font-bold tabular-nums ${m.color}`}>{m.value}</p>
+          <div key={m.label} className={`text-center rounded-xl bg-white/[0.02] border py-3 px-2 ${m.bg}`}>
+            <p className="text-[10px] text-zinc-600 mb-1.5 leading-tight">{m.label}</p>
+            <p className={`text-[15px] font-black tabular-nums leading-none ${m.color}`} style={{ letterSpacing: '-0.02em' }}>{m.value}</p>
           </div>
         ))}
       </div>
@@ -560,32 +586,45 @@ function ReventeTab({ result }: { result: InvestmentResult }) {
       {/* Plus-value timeline */}
       <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] p-4">
         <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3">Abattements plus-value selon durée de détention</p>
-        <div className="space-y-2">
+        {/* En-tête */}
+        <div className="grid grid-cols-[1fr_70px_80px] gap-2 pb-2 mb-1 border-b border-white/[0.05]">
+          <span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Durée</span>
+          <span className="text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider text-right">IR 19%</span>
+          <span className="text-[10px] font-semibold text-amber-400/70 uppercase tracking-wider text-right">PS 17.2%</span>
+        </div>
+        <div className="space-y-1.5">
           {[
-            { label: 'Avant 5 ans', ir: '0%', ps: '0%', note: 'Aucun abattement' },
-            { label: '6–10 ans', ir: '6%/an', ps: '1.65%/an', note: '' },
-            { label: '11–15 ans', ir: '6%/an', ps: '1.65%/an', note: '' },
-            { label: '16–21 ans', ir: '6%/an', ps: '1.60%/an', note: '' },
-            { label: '22 ans', ir: '100% exo', ps: 'en cours', note: 'Exonération IR totale' },
-            { label: '30 ans+', ir: '100% exo', ps: '100% exo', note: 'Exonération totale' },
+            { label: 'Moins de 6 ans', ir: '0%', ps: '0%', special: '' },
+            { label: '6 à 11 ans', ir: '6%/an', ps: '1.65%/an', special: '' },
+            { label: '12 à 15 ans', ir: '6%/an', ps: '1.65%/an', special: '' },
+            { label: '16 à 21 ans', ir: '6%/an', ps: '1.60%/an', special: '' },
+            { label: '22 ans révolus', ir: '100%', ps: '1.60%/an', special: 'Exonération IR' },
+            { label: '23 à 29 ans', ir: '100%', ps: '9%/an', special: '' },
+            { label: '30 ans et +', ir: '100%', ps: '100%', special: 'Exonération totale' },
           ].map((row) => (
-            <div key={row.label} className="grid grid-cols-[80px_60px_80px_1fr] gap-2 items-center text-[11px]">
-              <span className="text-zinc-500">{row.label}</span>
-              <span className="text-emerald-400 font-medium">{row.ir}</span>
-              <span className="text-amber-400 font-medium">{row.ps}</span>
-              <span className="text-zinc-600 italic">{row.note}</span>
+            <div key={row.label} className="grid grid-cols-[1fr_70px_80px] gap-2 items-center py-1 rounded-md hover:bg-white/[0.02] px-1 -mx-1 transition-colors">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[11px] text-zinc-400 truncate">{row.label}</span>
+                {row.special && (
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">{row.special}</span>
+                )}
+              </div>
+              <span className="text-[11px] text-emerald-400 font-semibold text-right tabular-nums">{row.ir}</span>
+              <span className="text-[11px] text-amber-400 font-semibold text-right tabular-nums">{row.ps}</span>
             </div>
           ))}
         </div>
-        <div className="flex gap-4 mt-3 pt-3 border-t border-white/[0.05] text-[10px]">
-          <span className="text-emerald-400 font-semibold">● IR (19%)</span>
-          <span className="text-amber-400 font-semibold">● PS (17.2%)</span>
-        </div>
       </div>
 
-      <p className="text-[10px] text-zinc-600 leading-relaxed">
-        * Calcul indicatif selon les règles fiscales en vigueur. Consultez un conseiller fiscal pour votre situation personnelle.
-      </p>
+      {/* Footnote */}
+      <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+        <svg className="w-3.5 h-3.5 text-zinc-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p className="text-[10px] text-zinc-600 leading-relaxed">
+          Calcul indicatif selon les règles fiscales en vigueur. Les abattements s&apos;appliquent par année de détention complète. Consultez un conseiller fiscal pour votre situation personnelle.
+        </p>
+      </div>
     </div>
   )
 }

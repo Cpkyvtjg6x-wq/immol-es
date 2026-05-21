@@ -1,153 +1,144 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { formatCurrency } from '@/lib/utils'
 
-// ─── Barèmes fiscaux 2025 (locatif) ───────────────────────────────────────────
-// Abattement IR progressif sur la plus-value immobilière locative
+// ─── Barèmes fiscaux 2025 ──────────────────────────────────────────────────────
 const ABATTEMENT_IR: { ans: number; pct: number }[] = [
-  { ans: 5, pct: 0 },
-  { ans: 6, pct: 6 },
-  { ans: 7, pct: 12 },
-  { ans: 8, pct: 18 },
-  { ans: 9, pct: 24 },
-  { ans: 10, pct: 30 },
-  { ans: 11, pct: 36 },
-  { ans: 12, pct: 42 },
-  { ans: 13, pct: 48 },
-  { ans: 14, pct: 54 },
-  { ans: 15, pct: 60 },
-  { ans: 16, pct: 66 },
-  { ans: 17, pct: 72 },
-  { ans: 18, pct: 78 },
-  { ans: 19, pct: 84 },
-  { ans: 20, pct: 90 },
-  { ans: 21, pct: 96 },
-  { ans: 22, pct: 100 }, // exonéré IR après 22 ans
+  { ans: 5, pct: 0 }, { ans: 6, pct: 6 }, { ans: 7, pct: 12 }, { ans: 8, pct: 18 },
+  { ans: 9, pct: 24 }, { ans: 10, pct: 30 }, { ans: 11, pct: 36 }, { ans: 12, pct: 42 },
+  { ans: 13, pct: 48 }, { ans: 14, pct: 54 }, { ans: 15, pct: 60 }, { ans: 16, pct: 66 },
+  { ans: 17, pct: 72 }, { ans: 18, pct: 78 }, { ans: 19, pct: 84 }, { ans: 20, pct: 90 },
+  { ans: 21, pct: 96 }, { ans: 22, pct: 100 },
 ]
-
-// Abattement prélèvements sociaux (17.2%)
 const ABATTEMENT_PS: { ans: number; pct: number }[] = [
-  { ans: 5, pct: 0 },
-  { ans: 6, pct: 1.65 },
-  { ans: 7, pct: 3.30 },
-  { ans: 8, pct: 4.95 },
-  { ans: 9, pct: 6.60 },
-  { ans: 10, pct: 8.25 },
-  { ans: 11, pct: 9.90 },
-  { ans: 12, pct: 11.55 },
-  { ans: 13, pct: 13.20 },
-  { ans: 14, pct: 14.85 },
-  { ans: 15, pct: 16.50 },
-  { ans: 16, pct: 18.15 },
-  { ans: 17, pct: 19.80 },
-  { ans: 18, pct: 21.45 },
-  { ans: 19, pct: 23.10 },
-  { ans: 20, pct: 24.75 },
-  { ans: 21, pct: 26.40 },
-  { ans: 22, pct: 28.00 },
-  { ans: 23, pct: 37.00 },
-  { ans: 24, pct: 46.00 },
-  { ans: 25, pct: 55.00 },
-  { ans: 26, pct: 64.00 },
-  { ans: 27, pct: 73.00 },
-  { ans: 28, pct: 82.00 },
-  { ans: 29, pct: 91.00 },
-  { ans: 30, pct: 100 }, // exonéré PS après 30 ans
+  { ans: 5, pct: 0 }, { ans: 6, pct: 1.65 }, { ans: 7, pct: 3.30 }, { ans: 8, pct: 4.95 },
+  { ans: 9, pct: 6.60 }, { ans: 10, pct: 8.25 }, { ans: 11, pct: 9.90 }, { ans: 12, pct: 11.55 },
+  { ans: 13, pct: 13.20 }, { ans: 14, pct: 14.85 }, { ans: 15, pct: 16.50 }, { ans: 16, pct: 18.15 },
+  { ans: 17, pct: 19.80 }, { ans: 18, pct: 21.45 }, { ans: 19, pct: 23.10 }, { ans: 20, pct: 24.75 },
+  { ans: 21, pct: 26.40 }, { ans: 22, pct: 28.00 }, { ans: 23, pct: 37.00 }, { ans: 24, pct: 46.00 },
+  { ans: 25, pct: 55.00 }, { ans: 26, pct: 64.00 }, { ans: 27, pct: 73.00 }, { ans: 28, pct: 82.00 },
+  { ans: 29, pct: 91.00 }, { ans: 30, pct: 100 },
 ]
 
 function getAbattement(table: typeof ABATTEMENT_IR, ans: number): number {
-  // Trouver la tranche applicable
   const tranche = [...table].reverse().find(t => ans >= t.ans)
   return tranche ? Math.min(tranche.pct, 100) : 0
 }
 
+// ─── TRI bisection ─────────────────────────────────────────────────────────────
+function calcTRI(apport: number, cashflowAnnuel: number, produitNet: number, duree: number): number | null {
+  if (apport <= 0 || duree <= 0) return null
+  // flux[0] = -apport, flux[1..n-1] = cashflowAnnuel, flux[n] = cashflowAnnuel + produitNet
+  const flux: number[] = [-apport]
+  for (let i = 1; i < duree; i++) flux.push(cashflowAnnuel)
+  flux.push(cashflowAnnuel + produitNet)
+
+  const npv = (r: number) => flux.reduce((s, f, t) => s + f / Math.pow(1 + r, t), 0)
+  let lo = -0.99, hi = 10.0
+  if (npv(lo) * npv(hi) > 0) return null // pas de solution
+  for (let i = 0; i < 200; i++) {
+    const mid = (lo + hi) / 2
+    const v = npv(mid)
+    if (Math.abs(v) < 0.5) return mid * 100
+    if (npv(lo) * v < 0) hi = mid; else lo = mid
+  }
+  return ((lo + hi) / 2) * 100
+}
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
 interface ReventeParams {
   typeBien: 'locatif' | 'residence_principale'
+  modeSaisie: 'manuel' | 'acquis'
+  // Bien acquis
+  dateAchat: string        // 'YYYY-MM'
+  // Prix
   prixAchat: number
-  fraisAcquisition: number // frais notaire + agence achat
-  travauxDeduits: number   // travaux déductibles
+  fraisAcquisition: number
+  travauxDeduits: number
   prixRevente: number
-  fraisRevente: number     // agence vente
+  fraisRevente: number
+  // Détention (mode manuel)
   anneesDetention: number
-  tmi: number             // tranche marginale IR (pour locatif)
+  // Crédit (mode acquis)
+  capitalRestantDu: number
+  ira: number              // indemnités remboursement anticipé
+  fraisMainlevee: number
+  // TRI
+  showTRI: boolean
+  apportInitial: number
+  cashflowMensuelMoyen: number
+  tmi: number
 }
 
 interface ReventeResult {
   plusValueBrute: number
-  plusValueImposable: number // après abattements
   abattementIR: number
   abattementPS: number
   baseImposableIR: number
   baseImposablePS: number
   impotIR: number
   prelevementsSociaux: number
+  surtaxe: number
   impotTotal: number
   plusValueNette: number
-  reventeNette: number   // prix revente - agence - impôts
+  reventeNette: number
+  liquiditesNettes: number
   exonerationIR: boolean
   exonerationPS: boolean
+  anneesDetention: number
 }
 
+// ─── Calcul ────────────────────────────────────────────────────────────────────
 function calculerRevente(p: ReventeParams): ReventeResult {
-  // Base de calcul
+  const ans = Math.max(0, p.anneesDetention)
   const prixRevientTotal = p.prixAchat + p.fraisAcquisition + p.travauxDeduits
   const plusValueBrute = p.prixRevente - p.fraisRevente - prixRevientTotal
 
+  const reventeNette = Math.round(p.prixRevente - p.fraisRevente)
+  const liquiditesBrutes = reventeNette - p.capitalRestantDu - p.ira - p.fraisMainlevee
+
   if (p.typeBien === 'residence_principale') {
-    // Exonération totale résidence principale
     return {
-      plusValueBrute,
-      plusValueImposable: 0,
-      abattementIR: 100,
-      abattementPS: 100,
-      baseImposableIR: 0,
-      baseImposablePS: 0,
-      impotIR: 0,
-      prelevementsSociaux: 0,
-      impotTotal: 0,
-      plusValueNette: plusValueBrute,
-      reventeNette: p.prixRevente - p.fraisRevente,
-      exonerationIR: true,
-      exonerationPS: true,
+      plusValueBrute: Math.round(plusValueBrute),
+      abattementIR: 100, abattementPS: 100,
+      baseImposableIR: 0, baseImposablePS: 0,
+      impotIR: 0, prelevementsSociaux: 0, surtaxe: 0, impotTotal: 0,
+      plusValueNette: Math.round(plusValueBrute),
+      reventeNette,
+      liquiditesNettes: Math.round(liquiditesBrutes),
+      exonerationIR: true, exonerationPS: true,
+      anneesDetention: ans,
     }
   }
 
   if (plusValueBrute <= 0) {
     return {
-      plusValueBrute,
-      plusValueImposable: 0,
-      abattementIR: 0,
-      abattementPS: 0,
-      baseImposableIR: 0,
-      baseImposablePS: 0,
-      impotIR: 0,
-      prelevementsSociaux: 0,
-      impotTotal: 0,
-      plusValueNette: plusValueBrute,
-      reventeNette: p.prixRevente - p.fraisRevente,
-      exonerationIR: false,
-      exonerationPS: false,
+      plusValueBrute: Math.round(plusValueBrute),
+      abattementIR: 0, abattementPS: 0,
+      baseImposableIR: 0, baseImposablePS: 0,
+      impotIR: 0, prelevementsSociaux: 0, surtaxe: 0, impotTotal: 0,
+      plusValueNette: Math.round(plusValueBrute),
+      reventeNette,
+      liquiditesNettes: Math.round(liquiditesBrutes),
+      exonerationIR: false, exonerationPS: false,
+      anneesDetention: ans,
     }
   }
 
-  const ans = Math.max(0, p.anneesDetention)
   const abIR = getAbattement(ABATTEMENT_IR, ans)
   const abPS = getAbattement(ABATTEMENT_PS, ans)
-
   const baseIR = plusValueBrute * (1 - abIR / 100)
   const basePS = plusValueBrute * (1 - abPS / 100)
 
-  const taux_ir = p.tmi / 100 // 19% taux forfaitaire flat tax sur PV immo
-  const TAUX_PV_IMMO = 0.19 // taux fixe 19% pour les non-résidents, sinon TMI plafonné
-  const impotIR = baseIR > 0 ? baseIR * TAUX_PV_IMMO : 0
+  const TAUX_PV = 0.19
+  const impotIR = baseIR > 0 ? baseIR * TAUX_PV : 0
   const ps = basePS > 0 ? basePS * 0.172 : 0
 
-  // Taxe sur les hautes plus-values (>50k€)
   let surtaxe = 0
   if (plusValueBrute > 260000) surtaxe = baseIR * 0.06
   else if (plusValueBrute > 210000) surtaxe = baseIR * 0.05
@@ -158,32 +149,36 @@ function calculerRevente(p: ReventeParams): ReventeResult {
 
   const impotTotal = Math.round(impotIR + ps + surtaxe)
   const plusValueNette = Math.round(plusValueBrute - impotTotal)
-  const reventeNette = p.prixRevente - p.fraisRevente - impotTotal
+  const liquiditesNettes = Math.round(liquiditesBrutes - impotTotal)
 
   return {
     plusValueBrute: Math.round(plusValueBrute),
-    plusValueImposable: Math.round(baseIR),
-    abattementIR: abIR,
-    abattementPS: abPS,
+    abattementIR: abIR, abattementPS: abPS,
     baseImposableIR: Math.round(baseIR),
     baseImposablePS: Math.round(basePS),
     impotIR: Math.round(impotIR + surtaxe),
     prelevementsSociaux: Math.round(ps),
+    surtaxe: Math.round(surtaxe),
     impotTotal,
     plusValueNette,
-    reventeNette: Math.round(reventeNette),
+    reventeNette: Math.round(reventeNette - impotTotal),
+    liquiditesNettes,
     exonerationIR: abIR >= 100,
     exonerationPS: abPS >= 100,
+    anneesDetention: ans,
   }
 }
 
-// ─── UI Components ────────────────────────────────────────────────────────────
+function calcResultForAns(p: ReventeParams, ans: number): ReventeResult {
+  return calculerRevente({ ...p, anneesDetention: ans })
+}
 
-function NumberInput({
-  label, value, onChange, min = 0, suffix = '€', hint,
+// ─── UI Components ─────────────────────────────────────────────────────────────
+function NumInput({
+  label, value, onChange, min = 0, suffix = '€', hint, disabled,
 }: {
   label: string; value: number; onChange: (v: number) => void
-  min?: number; suffix?: string; hint?: string
+  min?: number; suffix?: string; hint?: string; disabled?: boolean
 }) {
   return (
     <div>
@@ -194,7 +189,12 @@ function NumberInput({
           value={value || ''}
           onChange={e => onChange(parseFloat(e.target.value) || 0)}
           min={min}
-          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 pr-12 text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+          disabled={disabled}
+          className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-colors ${
+            disabled
+              ? 'bg-white/[0.02] border-white/[0.04] text-zinc-600 cursor-not-allowed'
+              : 'bg-white/[0.04] border-white/[0.08] hover:border-white/[0.15]'
+          }`}
         />
         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-zinc-500">{suffix}</span>
       </div>
@@ -203,37 +203,209 @@ function NumberInput({
   )
 }
 
-function ResultRow({ label, value, color = 'white', bold = false }: {
-  label: string; value: string; color?: string; bold?: boolean
+function Row({ label, value, color = 'white', bold = false, sep = false }: {
+  label: string; value: string; color?: string; bold?: boolean; sep?: boolean
 }) {
-  const textColor = color === 'emerald' ? 'text-emerald-400'
+  const col = color === 'emerald' ? 'text-emerald-400'
     : color === 'red' ? 'text-red-400'
     : color === 'amber' ? 'text-amber-400'
     : 'text-white'
   return (
-    <div className={`flex items-center justify-between py-2.5 ${bold ? 'border-t border-white/[0.06] mt-1' : 'border-b border-white/[0.04]'}`}>
+    <div className={`flex items-center justify-between py-2 ${sep ? 'border-t border-white/[0.08] mt-1 pt-3' : 'border-b border-white/[0.04]'}`}>
       <span className={`text-sm ${bold ? 'font-bold text-white' : 'text-zinc-400'}`}>{label}</span>
-      <span className={`text-sm font-bold tabular-nums ${textColor}`}>{value}</span>
+      <span className={`text-sm font-bold tabular-nums ${col}`}>{value}</span>
     </div>
   )
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Frise abattements ─────────────────────────────────────────────────────────
+function FriseAbattements({ ans }: { ans: number }) {
+  const MAX = 32
+  const steps = Array.from({ length: MAX + 1 }, (_, i) => i)
+  const irPct = (a: number) => getAbattement(ABATTEMENT_IR, a)
+  const psPct = (a: number) => getAbattement(ABATTEMENT_PS, a)
 
-const TAUX_IMR = [0, 11, 30, 41, 45]
+  const milestones = [
+    { a: 0, label: '0' },
+    { a: 6, label: '6' },
+    { a: 22, label: '22', note: 'Exo IR' },
+    { a: 30, label: '30', note: 'Exo PS' },
+  ]
 
+  const cursorX = Math.min(ans, MAX) / MAX * 100
+
+  return (
+    <div className="space-y-3">
+      {/* IR bar */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">IR · 19%</span>
+          <span className="text-xs font-bold text-emerald-400">{irPct(ans)}% abattu</span>
+        </div>
+        <div className="relative h-5 rounded-full overflow-hidden bg-white/[0.06]">
+          {steps.slice(0, -1).map(i => {
+            const pct = irPct(i)
+            const nextPct = irPct(i + 1)
+            const avgPct = (pct + nextPct) / 2
+            return (
+              <div
+                key={i}
+                className="absolute top-0 h-full"
+                style={{
+                  left: `${i / MAX * 100}%`,
+                  width: `${1 / MAX * 100}%`,
+                  backgroundColor: `rgba(16, 185, 129, ${avgPct / 100 * 0.85 + 0.05})`,
+                }}
+              />
+            )
+          })}
+          {/* cursor */}
+          <div
+            className="absolute top-0 h-full w-0.5 bg-white shadow-[0_0_6px_white]"
+            style={{ left: `${cursorX}%` }}
+          />
+        </div>
+      </div>
+
+      {/* PS bar */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">PS · 17.2%</span>
+          <span className="text-xs font-bold text-indigo-400">{psPct(ans)}% abattu</span>
+        </div>
+        <div className="relative h-5 rounded-full overflow-hidden bg-white/[0.06]">
+          {steps.slice(0, -1).map(i => {
+            const pct = psPct(i)
+            const nextPct = psPct(i + 1)
+            const avgPct = (pct + nextPct) / 2
+            return (
+              <div
+                key={i}
+                className="absolute top-0 h-full"
+                style={{
+                  left: `${i / MAX * 100}%`,
+                  width: `${1 / MAX * 100}%`,
+                  backgroundColor: `rgba(99, 102, 241, ${avgPct / 100 * 0.85 + 0.05})`,
+                }}
+              />
+            )
+          })}
+          <div
+            className="absolute top-0 h-full w-0.5 bg-white shadow-[0_0_6px_white]"
+            style={{ left: `${cursorX}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Milestones */}
+      <div className="relative h-5">
+        {milestones.map(m => (
+          <div
+            key={m.a}
+            className="absolute top-0 flex flex-col items-center"
+            style={{ left: `${m.a / MAX * 100}%`, transform: 'translateX(-50%)' }}
+          >
+            <div className="w-px h-2 bg-zinc-600" />
+            <span className="text-[10px] text-zinc-500 mt-0.5">{m.label}{m.note ? <> · <span className="text-emerald-500">{m.note}</span></> : null}</span>
+          </div>
+        ))}
+        {/* current position label */}
+        {ans > 0 && ans <= MAX && (
+          <div
+            className="absolute top-0 flex flex-col items-center"
+            style={{ left: `${cursorX}%`, transform: 'translateX(-50%)' }}
+          >
+            <div className="w-px h-2 bg-white" />
+            <span className="text-[10px] text-white font-bold mt-0.5">{ans} ans</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Tableau vendre vs garder ──────────────────────────────────────────────────
+function TableauVendreGarder({ params, currentAns }: { params: ReventeParams; currentAns: number }) {
+  const rows = [
+    { label: 'Maintenant', ans: currentAns },
+    { label: `+1 an (${currentAns + 1} ans)`, ans: currentAns + 1 },
+    { label: `+2 ans (${currentAns + 2} ans)`, ans: currentAns + 2 },
+    { label: `+5 ans (${currentAns + 5} ans)`, ans: currentAns + 5 },
+    { label: '22 ans', ans: 22 },
+    { label: '30 ans', ans: 30 },
+  ].filter((r, i, arr) => {
+    // déduplique les lignes dont les ans seraient identiques
+    return arr.findIndex(x => x.ans === r.ans) === i && r.ans >= 0
+  })
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="border-b border-white/[0.08]">
+            <th className="text-left py-2 pr-3 text-zinc-500 font-semibold">Durée</th>
+            <th className="text-right py-2 px-2 text-emerald-400 font-semibold">Abat. IR</th>
+            <th className="text-right py-2 px-2 text-indigo-400 font-semibold">Abat. PS</th>
+            <th className="text-right py-2 px-2 text-red-400 font-semibold">Impôts</th>
+            <th className="text-right py-2 pl-2 text-white font-semibold">PV nette</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => {
+            const res = calcResultForAns(params, r.ans)
+            const isCurrent = r.ans === currentAns
+            return (
+              <tr
+                key={r.ans}
+                className={`border-b border-white/[0.04] ${isCurrent ? 'bg-emerald-500/[0.06]' : ''}`}
+              >
+                <td className={`py-2 pr-3 font-semibold ${isCurrent ? 'text-emerald-400' : 'text-zinc-300'}`}>
+                  {r.label}
+                  {isCurrent && <span className="ml-1.5 text-[9px] text-emerald-500 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded-full">Actuel</span>}
+                </td>
+                <td className={`text-right py-2 px-2 tabular-nums ${res.exonerationIR ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                  {res.exonerationIR ? '✓ 100%' : `${res.abattementIR}%`}
+                </td>
+                <td className={`text-right py-2 px-2 tabular-nums ${res.exonerationPS ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                  {res.exonerationPS ? '✓ 100%' : `${res.abattementPS}%`}
+                </td>
+                <td className={`text-right py-2 px-2 tabular-nums ${res.impotTotal > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                  {res.impotTotal > 0 ? `– ${formatCurrency(res.impotTotal)}` : '0 €'}
+                </td>
+                <td className={`text-right py-2 pl-2 tabular-nums font-bold ${res.plusValueNette >= 0 ? 'text-white' : 'text-red-400'}`}>
+                  {res.plusValueNette >= 0 ? '+' : ''}{formatCurrency(res.plusValueNette)}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
 export default function ReventePage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
+  const importDoneRef = useRef(false)
 
   const [params, setParams] = useState<ReventeParams>({
     typeBien: 'locatif',
+    modeSaisie: 'manuel',
+    dateAchat: '',
     prixAchat: 200000,
     fraisAcquisition: 16000,
     travauxDeduits: 0,
     prixRevente: 260000,
     fraisRevente: 13000,
     anneesDetention: 10,
+    capitalRestantDu: 0,
+    ira: 0,
+    fraisMainlevee: 800,
+    showTRI: false,
+    apportInitial: 30000,
+    cashflowMensuelMoyen: 0,
     tmi: 30,
   })
 
@@ -241,12 +413,62 @@ export default function ReventePage() {
     if (!authLoading && !user) router.push('/auth/login')
   }, [authLoading, user, router])
 
+  // Calcul durée depuis dateAchat
+  useEffect(() => {
+    if (params.modeSaisie === 'acquis' && params.dateAchat) {
+      const [y, m] = params.dateAchat.split('-').map(Number)
+      const now = new Date()
+      const moisEcoules = (now.getFullYear() - y) * 12 + (now.getMonth() + 1 - m)
+      const ans = Math.max(0, Math.floor(moisEcoules / 12))
+      setParams(p => ({ ...p, anneesDetention: ans }))
+    }
+  }, [params.modeSaisie, params.dateAchat])
+
+  // IRA auto (3% CRD) quand CRD change
+  useEffect(() => {
+    if (params.modeSaisie === 'acquis' && params.capitalRestantDu > 0) {
+      setParams(p => ({ ...p, ira: Math.round(p.capitalRestantDu * 0.03) }))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.capitalRestantDu])
+
   const set = <K extends keyof ReventeParams>(k: K, v: ReventeParams[K]) =>
     setParams(p => ({ ...p, [k]: v }))
 
+  function importFromSimulateur() {
+    try {
+      const raw = localStorage.getItem('immolyse_last_params')
+      if (!raw) { alert('Aucune simulation trouvée. Lancez d\'abord une analyse.'); return }
+      const d = JSON.parse(raw)
+      setParams(p => ({
+        ...p,
+        prixAchat: d.prixAchat ?? p.prixAchat,
+        fraisAcquisition: d.fraisNotaire ?? p.fraisAcquisition,
+        travauxDeduits: d.travaux ?? p.travauxDeduits,
+        apportInitial: d.apport ?? p.apportInitial,
+        tmi: d.tmi ?? p.tmi,
+      }))
+      importDoneRef.current = true
+      alert('✓ Données importées depuis votre dernière simulation.')
+    } catch {
+      alert('Impossible de lire les données de simulation.')
+    }
+  }
+
   const result = useMemo(() => calculerRevente(params), [params])
 
-  const cfColor = (v: number) => v >= 0 ? 'emerald' : 'red'
+  const tri = useMemo(() => {
+    if (!params.showTRI || params.apportInitial <= 0) return null
+    return calcTRI(
+      params.apportInitial,
+      params.cashflowMensuelMoyen * 12,
+      result.liquiditesNettes,
+      params.anneesDetention || 1,
+    )
+  }, [params.showTRI, params.apportInitial, params.cashflowMensuelMoyen, result.liquiditesNettes, params.anneesDetention])
+
+  const exoTotal = result.exonerationIR && result.exonerationPS
+  const hasCredit = params.capitalRestantDu > 0
 
   if (authLoading) return (
     <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
@@ -256,8 +478,6 @@ export default function ReventePage() {
       </div>
     </div>
   )
-
-  const exoTotal = result.exonerationIR && result.exonerationPS
 
   return (
     <AppShell>
@@ -271,21 +491,32 @@ export default function ReventePage() {
               Simulateur de revente
             </h1>
           </div>
-          <Link href="/dashboard" className="text-xs font-semibold text-zinc-500 hover:text-white transition-colors flex items-center gap-1.5">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            Dashboard
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={importFromSimulateur}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/[0.06] hover:bg-emerald-500/[0.12] text-emerald-400 text-xs font-semibold transition-all"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Importer depuis l&apos;analyse
+            </button>
+            <Link href="/dashboard" className="text-xs font-semibold text-zinc-500 hover:text-white transition-colors flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              Dashboard
+            </Link>
+          </div>
         </div>
 
         <div className="px-8 py-8 max-w-6xl">
           <div className="grid lg:grid-cols-[1fr_420px] gap-8 items-start">
 
             {/* ── Formulaire ── */}
-            <div className="space-y-6">
+            <div className="space-y-5">
 
-              {/* Type de bien */}
+              {/* A. Type de bien */}
               <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-4">
                 <h2 className="text-sm font-bold text-white">Type de bien</h2>
                 <div className="grid grid-cols-2 gap-3">
@@ -312,66 +543,172 @@ export default function ReventePage() {
                 </div>
               </div>
 
-              {/* Prix */}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-4">
-                <h2 className="text-sm font-bold text-white">Prix &amp; coûts</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <NumberInput label="Prix d'achat" value={params.prixAchat} onChange={v => set('prixAchat', v)} />
-                  <NumberInput label="Frais d'acquisition" value={params.fraisAcquisition} onChange={v => set('fraisAcquisition', v)} hint="Notaire + agence achat" />
-                  <NumberInput label="Travaux déductibles" value={params.travauxDeduits} onChange={v => set('travauxDeduits', v)} hint="Travaux non déduits des revenus fonciers" />
-                  <NumberInput label="Prix de revente" value={params.prixRevente} onChange={v => set('prixRevente', v)} />
-                  <NumberInput label="Frais de revente" value={params.fraisRevente} onChange={v => set('fraisRevente', v)} hint="Commission agence vendeur" />
-                </div>
-                <div className="pt-2">
-                  <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Prix de revient total</p>
-                  <p className="text-xl font-black text-white tabular-nums" style={{ letterSpacing: '-0.03em' }}>
-                    {formatCurrency(params.prixAchat + params.fraisAcquisition + params.travauxDeduits)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Détention */}
+              {/* B. Informations du bien */}
               <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-5">
-                <h2 className="text-sm font-bold text-white">Durée de détention</h2>
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-zinc-500">Durée de détention</span>
-                    <span className="text-lg font-black text-white">{params.anneesDetention} ans</span>
-                  </div>
-                  <input
-                    type="range" min={0} max={35} value={params.anneesDetention}
-                    onChange={e => set('anneesDetention', parseInt(e.target.value))}
-                    className="w-full accent-emerald-500"
-                  />
-                  <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
-                    <span>0 an</span>
-                    <span className="text-emerald-500 font-bold">22 ans → exo IR</span>
-                    <span className="text-emerald-500 font-bold">30 ans → exo totale</span>
-                    <span>35 ans</span>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-bold text-white">Informations du bien</h2>
+                  {/* Mode toggle */}
+                  <div className="flex rounded-lg border border-white/[0.08] overflow-hidden">
+                    {([
+                      { id: 'manuel', label: 'Simulation' },
+                      { id: 'acquis', label: 'Bien acquis' },
+                    ] as const).map(m => (
+                      <button
+                        key={m.id}
+                        onClick={() => set('modeSaisie', m.id)}
+                        className={`px-3.5 py-1.5 text-xs font-semibold transition-all ${
+                          params.modeSaisie === m.id
+                            ? 'bg-emerald-500 text-zinc-950'
+                            : 'text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Abattements visuels */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className={`rounded-xl p-4 text-center border ${result.exonerationIR ? 'border-emerald-500/30 bg-emerald-500/[0.06]' : 'border-white/[0.07] bg-white/[0.02]'}`}>
-                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Abattement IR</p>
-                    <p className={`text-2xl font-black ${result.exonerationIR ? 'text-emerald-400' : 'text-white'}`}>
-                      {result.abattementIR}%
-                    </p>
-                    {result.exonerationIR && <p className="text-[11px] text-emerald-500 mt-1">✓ Exonéré</p>}
+                {params.modeSaisie === 'acquis' && (
+                  <div className="rounded-xl bg-emerald-500/[0.04] border border-emerald-500/20 p-4 space-y-4">
+                    <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Données du bien acquis</p>
+                    <div>
+                      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Date d&apos;achat</label>
+                      <input
+                        type="month"
+                        value={params.dateAchat}
+                        onChange={e => set('dateAchat', e.target.value)}
+                        max={new Date().toISOString().slice(0, 7)}
+                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                      />
+                      {params.dateAchat && (
+                        <p className="text-[11px] text-emerald-400 mt-1">
+                          → {params.anneesDetention} an{params.anneesDetention !== 1 ? 's' : ''} de détention calculés automatiquement
+                        </p>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <NumInput label="Capital restant dû" value={params.capitalRestantDu} onChange={v => set('capitalRestantDu', v)} hint="Solde crédit" />
+                      <NumInput label="IRA" value={params.ira} onChange={v => set('ira', v)} hint="Auto : 3% CRD" />
+                      <NumInput label="Frais mainlevée" value={params.fraisMainlevee} onChange={v => set('fraisMainlevee', v)} hint="≈ 800 €" />
+                    </div>
                   </div>
-                  <div className={`rounded-xl p-4 text-center border ${result.exonerationPS ? 'border-emerald-500/30 bg-emerald-500/[0.06]' : 'border-white/[0.07] bg-white/[0.02]'}`}>
-                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Abattement PS</p>
-                    <p className={`text-2xl font-black ${result.exonerationPS ? 'text-emerald-400' : 'text-white'}`}>
-                      {result.abattementPS}%
-                    </p>
-                    {result.exonerationPS && <p className="text-[11px] text-emerald-500 mt-1">✓ Exonéré</p>}
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <NumInput label="Prix d'achat" value={params.prixAchat} onChange={v => set('prixAchat', v)} />
+                  <NumInput label="Frais d'acquisition" value={params.fraisAcquisition} onChange={v => set('fraisAcquisition', v)} hint="Notaire + agence achat" />
+                  <NumInput label="Travaux déductibles" value={params.travauxDeduits} onChange={v => set('travauxDeduits', v)} hint="Non déduits des revenus" />
+                  <div className="flex items-end">
+                    <div className="w-full">
+                      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Prix de revient total</p>
+                      <p className="text-lg font-black text-white tabular-nums" style={{ letterSpacing: '-0.03em' }}>
+                        {formatCurrency(params.prixAchat + params.fraisAcquisition + params.travauxDeduits)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* ── Résultats ── */}
+              {/* C. Prix de revente */}
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-4">
+                <h2 className="text-sm font-bold text-white">Prix de revente</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <NumInput label="Prix de revente" value={params.prixRevente} onChange={v => set('prixRevente', v)} />
+                  <NumInput label="Frais de revente" value={params.fraisRevente} onChange={v => set('fraisRevente', v)} hint="Commission agence vendeur" />
+                </div>
+              </div>
+
+              {/* D. Durée de détention */}
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-bold text-white">Durée de détention</h2>
+                  <span className={`text-2xl font-black tabular-nums ${params.anneesDetention >= 30 ? 'text-emerald-400' : params.anneesDetention >= 22 ? 'text-emerald-300' : 'text-white'}`}
+                    style={{ letterSpacing: '-0.04em' }}>
+                    {params.anneesDetention} ans
+                  </span>
+                </div>
+                {params.modeSaisie === 'acquis' && params.dateAchat ? (
+                  <p className="text-xs text-zinc-500">Calculée automatiquement depuis la date d&apos;achat.</p>
+                ) : (
+                  <>
+                    <input
+                      type="range" min={0} max={35} value={params.anneesDetention}
+                      onChange={e => set('anneesDetention', parseInt(e.target.value))}
+                      className="w-full accent-emerald-500"
+                    />
+                    <div className="flex justify-between text-[10px] text-zinc-600">
+                      <span>0</span>
+                      <span className="text-emerald-500 font-semibold">22 ans → exo IR</span>
+                      <span className="text-emerald-500 font-semibold">30 ans → exo totale</span>
+                      <span>35</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* E. TRI (collapsible) */}
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+                <button
+                  onClick={() => set('showTRI', !params.showTRI)}
+                  className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${params.showTRI ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                    <h2 className="text-sm font-bold text-white">Calcul du TRI</h2>
+                    <span className="text-[11px] text-zinc-500 font-medium">Taux de rentabilité interne</span>
+                  </div>
+                  <svg className={`w-4 h-4 text-zinc-500 transition-transform ${params.showTRI ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {params.showTRI && (
+                  <div className="px-6 pb-6 space-y-4 border-t border-white/[0.05]">
+                    <p className="text-xs text-zinc-500 pt-4">
+                      Le TRI mesure la rentabilité globale de l&apos;investissement en tenant compte de l&apos;apport, des cashflows et du produit de cession.
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumInput
+                        label="Apport initial"
+                        value={params.apportInitial}
+                        onChange={v => set('apportInitial', v)}
+                        hint="Capital investi à l'achat"
+                      />
+                      <NumInput
+                        label="Cashflow mensuel moyen"
+                        value={params.cashflowMensuelMoyen}
+                        onChange={v => set('cashflowMensuelMoyen', v)}
+                        hint="Loyer net de charges"
+                        min={-99999}
+                      />
+                    </div>
+                    {tri !== null ? (
+                      <div className={`rounded-xl p-4 border text-center ${
+                        tri >= 8 ? 'border-emerald-500/30 bg-emerald-500/[0.06]'
+                        : tri >= 4 ? 'border-amber-500/30 bg-amber-500/[0.04]'
+                        : 'border-red-500/20 bg-red-500/[0.04]'
+                      }`}>
+                        <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1">TRI sur {params.anneesDetention} ans</p>
+                        <p className={`text-3xl font-black tabular-nums ${tri >= 8 ? 'text-emerald-400' : tri >= 4 ? 'text-amber-400' : 'text-red-400'}`}
+                          style={{ letterSpacing: '-0.04em' }}>
+                          {tri.toFixed(1)}%
+                        </p>
+                        <p className="text-[11px] text-zinc-500 mt-1">
+                          {tri >= 10 ? '🚀 Excellent' : tri >= 7 ? '✓ Très bon' : tri >= 4 ? '~ Correct' : '⚠ Faible'}
+                          {' '}· Livret A ≈ 2.5% · SCPI ≈ 5%
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-zinc-600 text-center py-2">Renseignez l&apos;apport pour calculer le TRI</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+            </div>{/* fin formulaire */}
+
+            {/* ── Résultats (sticky) ── */}
             <div className="sticky top-6 space-y-5">
 
               {/* KPI principal */}
@@ -382,94 +719,112 @@ export default function ReventePage() {
                   ? 'border-red-500/20 bg-red-500/[0.04]'
                   : 'border-white/[0.07] bg-white/[0.03]'
               }`}>
+                {exoTotal && (
+                  <p className="text-[11px] text-emerald-500 font-bold uppercase tracking-wider mb-2">🎉 Exonération totale</p>
+                )}
                 <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-                  {exoTotal ? '🎉 Plus-value nette (exonérée)' : 'Plus-value nette après impôts'}
+                  {hasCredit ? 'Liquidités nettes après cession' : 'Plus-value nette après impôts'}
                 </p>
                 <p className={`text-4xl font-black tabular-nums ${
-                  result.plusValueNette >= 0 ? 'text-emerald-400' : 'text-red-400'
+                  (hasCredit ? result.liquiditesNettes : result.plusValueNette) >= 0
+                    ? 'text-emerald-400' : 'text-red-400'
                 }`} style={{ letterSpacing: '-0.04em' }}>
-                  {result.plusValueNette >= 0 ? '+' : ''}{formatCurrency(result.plusValueNette)}
+                  {(hasCredit ? result.liquiditesNettes : result.plusValueNette) >= 0 ? '+' : ''}
+                  {formatCurrency(hasCredit ? result.liquiditesNettes : result.plusValueNette)}
                 </p>
                 {!exoTotal && result.plusValueBrute > 0 && (
                   <p className="text-xs text-zinc-500 mt-2">
-                    Impôts : {formatCurrency(result.impotTotal)} · Brute : {formatCurrency(result.plusValueBrute)}
+                    Impôts : {formatCurrency(result.impotTotal)}
+                    {hasCredit && ` · CRD : ${formatCurrency(params.capitalRestantDu)}`}
                   </p>
                 )}
               </div>
 
-              {/* Détail calcul */}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6">
-                <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-4">Détail du calcul</p>
-                <div className="space-y-0">
-                  <ResultRow label="Prix de revente" value={formatCurrency(params.prixRevente)} />
-                  <ResultRow label="– Frais de revente" value={`– ${formatCurrency(params.fraisRevente)}`} color="red" />
-                  <ResultRow label="– Prix de revient" value={`– ${formatCurrency(params.prixAchat + params.fraisAcquisition + params.travauxDeduits)}`} color="red" />
-                  <ResultRow
-                    label="= Plus-value brute"
-                    value={`${result.plusValueBrute >= 0 ? '+' : ''}${formatCurrency(result.plusValueBrute)}`}
-                    color={result.plusValueBrute >= 0 ? 'emerald' : 'red'}
-                    bold
-                  />
+              {/* Frise abattements */}
+              {params.typeBien === 'locatif' && result.plusValueBrute > 0 && (
+                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+                  <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-4">Frise des abattements fiscaux</p>
+                  <FriseAbattements ans={params.anneesDetention} />
                 </div>
+              )}
+
+              {/* Détail calcul */}
+              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+                <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">Détail du calcul</p>
+
+                <Row label="Prix de revente" value={formatCurrency(params.prixRevente)} />
+                <Row label="– Frais de revente" value={`– ${formatCurrency(params.fraisRevente)}`} color="red" />
+                <Row label="– Prix de revient" value={`– ${formatCurrency(params.prixAchat + params.fraisAcquisition + params.travauxDeduits)}`} color="red" />
+                <Row
+                  label="= Plus-value brute"
+                  value={`${result.plusValueBrute >= 0 ? '+' : ''}${formatCurrency(result.plusValueBrute)}`}
+                  color={result.plusValueBrute >= 0 ? 'emerald' : 'red'}
+                  bold sep
+                />
 
                 {params.typeBien === 'locatif' && result.plusValueBrute > 0 && (
                   <>
-                    <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mt-5 mb-3">Fiscalité</p>
-                    <div className="space-y-0">
-                      {!result.exonerationIR ? (
-                        <>
-                          <ResultRow label={`Abattement IR (${result.abattementIR}%)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementIR / 100))}`} color="emerald" />
-                          <ResultRow label="Base imposable IR (19%)" value={formatCurrency(result.baseImposableIR)} />
-                          <ResultRow label="Impôt sur la PV (19%)" value={`– ${formatCurrency(result.impotIR)}`} color="red" />
-                        </>
-                      ) : (
-                        <ResultRow label="Impôt IR (exonéré)" value="0 €" color="emerald" />
-                      )}
-                      {!result.exonerationPS ? (
-                        <>
-                          <ResultRow label={`Abattement PS (${result.abattementPS}%)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementPS / 100))}`} color="emerald" />
-                          <ResultRow label="Prélèvements sociaux (17.2%)" value={`– ${formatCurrency(result.prelevementsSociaux)}`} color="red" />
-                        </>
-                      ) : (
-                        <ResultRow label="Prélèvements sociaux (exonérés)" value="0 €" color="emerald" />
-                      )}
-                      <ResultRow
-                        label="Total impôts"
-                        value={`– ${formatCurrency(result.impotTotal)}`}
-                        color={result.impotTotal > 0 ? 'red' : 'emerald'}
-                        bold
-                      />
-                    </div>
+                    {!result.exonerationIR ? (
+                      <>
+                        <Row label={`Abat. IR (${result.abattementIR}%)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementIR / 100))}`} color="emerald" />
+                        <Row label="Impôt IR (19%)" value={`– ${formatCurrency(result.impotIR)}`} color="red" />
+                      </>
+                    ) : (
+                      <Row label="Impôt IR" value="Exonéré ✓" color="emerald" />
+                    )}
+                    {!result.exonerationPS ? (
+                      <>
+                        <Row label={`Abat. PS (${result.abattementPS}%)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementPS / 100))}`} color="emerald" />
+                        <Row label="Prélèv. sociaux (17.2%)" value={`– ${formatCurrency(result.prelevementsSociaux)}`} color="red" />
+                      </>
+                    ) : (
+                      <Row label="Prélèv. sociaux" value="Exonérés ✓" color="emerald" />
+                    )}
+                    <Row label="Total impôts" value={`– ${formatCurrency(result.impotTotal)}`} color={result.impotTotal > 0 ? 'red' : 'emerald'} bold sep />
                   </>
                 )}
 
                 {params.typeBien === 'residence_principale' && (
-                  <div className="mt-4 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20 px-4 py-3">
-                    <p className="text-sm font-semibold text-emerald-400">✓ Résidence principale — Exonération totale d&apos;impôt sur la plus-value</p>
+                  <div className="mt-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20 px-4 py-2.5">
+                    <p className="text-xs font-semibold text-emerald-400">✓ Résidence principale — Exonération totale</p>
                   </div>
                 )}
 
-                <div className="mt-5 pt-4 border-t border-white/[0.08] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-white">Produit net de cession</span>
-                    <span className="text-lg font-black text-emerald-400 tabular-nums">{formatCurrency(result.reventeNette)}</span>
-                  </div>
-                  <p className="text-[11px] text-zinc-600">Prix revente − frais − impôts</p>
+                <div className="mt-3 pt-3 border-t border-white/[0.08]">
+                  <Row label="Produit net de cession" value={formatCurrency(result.reventeNette + result.impotTotal)} bold />
+                  {hasCredit && (
+                    <>
+                      <Row label="– Capital restant dû" value={`– ${formatCurrency(params.capitalRestantDu)}`} color="red" />
+                      <Row label="– IRA" value={`– ${formatCurrency(params.ira)}`} color="red" />
+                      <Row label="– Frais mainlevée" value={`– ${formatCurrency(params.fraisMainlevee)}`} color="red" />
+                      <Row label="– Impôts" value={`– ${formatCurrency(result.impotTotal)}`} color="red" />
+                      <Row
+                        label="= Liquidités nettes"
+                        value={`${result.liquiditesNettes >= 0 ? '+' : ''}${formatCurrency(result.liquiditesNettes)}`}
+                        color={result.liquiditesNettes >= 0 ? 'emerald' : 'red'}
+                        bold sep
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
-              {/* Conseil selon durée */}
+              {/* Tableau vendre vs garder */}
+              {params.typeBien === 'locatif' && result.plusValueBrute > 0 && (
+                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+                  <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">Vendre maintenant ou attendre ?</p>
+                  <TableauVendreGarder params={params} currentAns={params.anneesDetention} />
+                </div>
+              )}
+
+              {/* Conseil optimisation */}
               {params.typeBien === 'locatif' && !exoTotal && result.plusValueBrute > 0 && (
                 <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4">
-                  <p className="text-xs font-bold text-amber-400 mb-1">💡 Optimisation fiscale</p>
+                  <p className="text-xs font-bold text-amber-400 mb-1.5">💡 Optimisation fiscale</p>
                   <p className="text-xs text-zinc-400 leading-relaxed">
-                    {params.anneesDetention < 22
-                      ? `Attendre ${22 - params.anneesDetention} an${22 - params.anneesDetention > 1 ? 's' : ''} de plus vous exonère totalement d'IR sur la plus-value.`
-                      : `Attendre ${30 - params.anneesDetention} an${30 - params.anneesDetention > 1 ? 's' : ''} de plus vous exonère aussi des prélèvements sociaux.`}
-                    {' '}Économie estimée : {
-                      params.anneesDetention < 22
-                        ? formatCurrency(result.impotIR)
-                        : formatCurrency(result.prelevementsSociaux)
+                    {!result.exonerationIR
+                      ? <>Attendre <strong className="text-white">{22 - params.anneesDetention} an{22 - params.anneesDetention > 1 ? 's' : ''}</strong> vous exonère d&apos;IR. Économie estimée : <strong className="text-emerald-400">{formatCurrency(result.impotIR)}</strong>.</>
+                      : <>Attendre <strong className="text-white">{30 - params.anneesDetention} an{30 - params.anneesDetention > 1 ? 's' : ''}</strong> vous exonère aussi des prélèvements sociaux. Économie estimée : <strong className="text-emerald-400">{formatCurrency(result.prelevementsSociaux)}</strong>.</>
                     }
                   </p>
                 </div>
@@ -481,7 +836,8 @@ export default function ReventePage() {
               >
                 Analyser un nouveau bien →
               </Link>
-            </div>
+
+            </div>{/* fin résultats */}
           </div>
         </div>
       </div>

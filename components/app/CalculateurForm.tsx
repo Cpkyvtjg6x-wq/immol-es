@@ -22,7 +22,7 @@ interface Props {
 type SectionStatus = 'idle' | 'in_progress' | 'complete'
 
 function SectionBubble({
-  num, title, open, onToggle, pct, status, summary, badge, children, domRef,
+  num, title, open, onToggle, pct, status, summary, badge, children, domRef, onNext,
 }: {
   num: string
   title: string
@@ -34,6 +34,7 @@ function SectionBubble({
   badge?: string
   children?: React.ReactNode
   domRef?: (el: HTMLDivElement | null) => void
+  onNext?: () => void
 }) {
   const ringColor =
     status === 'complete' ? '#10b981' :
@@ -62,16 +63,16 @@ function SectionBubble({
   return (
     <div
       ref={domRef}
-      className={`rounded-2xl border transition-all duration-300 ${cardBorder}`}
+      className={`rounded-2xl border transition-colors duration-250 ${cardBorder}`}
     >
-      {/* ── Header (toujours visible, cliquable partout) ── */}
+      {/* ── Header — cliquable sur toute la largeur ── */}
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center gap-3.5 px-5 py-4 text-left cursor-pointer"
+        className="w-full flex items-center gap-3.5 px-4 py-[14px] text-left cursor-pointer select-none"
       >
         {/* Badge numéro / check */}
-        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 border transition-all ${numStyle}`}>
+        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 border transition-all duration-250 ${numStyle}`}>
           {status === 'complete' && !open ? (
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -80,37 +81,35 @@ function SectionBubble({
         </div>
 
         {/* Titre + résumé */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`text-[13px] font-semibold leading-tight transition-colors ${titleColor}`}>
+        <div className="flex-1 min-w-0 overflow-hidden">
+          {/* Ligne titre + badge sur la même ligne, ne wrap pas */}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className={`text-[13px] font-semibold leading-tight transition-colors duration-250 shrink-0 ${titleColor}`}>
               {title}
             </span>
             {badge && (
-              <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+              <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0">
                 {badge}
               </span>
             )}
           </div>
-          {/* Résumé : visible seulement replié */}
-          {!open && (
-            <p className={`text-[11px] mt-0.5 truncate leading-tight ${
-              status === 'idle' ? 'text-zinc-600 italic' : 'text-zinc-500'
-            }`}>
-              {status === 'idle' ? 'Non renseigné' : summary}
-            </p>
-          )}
+          {/* Résumé : une seule ligne, visible seulement quand replié */}
+          <p className={`text-[11px] mt-[3px] leading-tight truncate transition-all duration-250 ${
+            open ? 'opacity-0 h-0 mt-0 overflow-hidden' : 'opacity-100 h-auto'
+          } ${status === 'idle' ? 'text-zinc-600 italic' : 'text-zinc-500'}`}>
+            {status === 'idle' ? 'Non renseigné' : summary}
+          </p>
         </div>
 
         {/* Anneau de progression + chevron */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          {/* Anneau conic-gradient */}
+        <div className="flex items-center gap-2 shrink-0">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-700"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500"
             style={{
               background: `conic-gradient(${ringColor} ${Math.round(pct * 3.6)}deg, rgba(255,255,255,0.06) 0deg)`,
             }}
           >
-            <div className="w-5 h-5 rounded-full bg-[#09090b] flex items-center justify-center">
+            <div className="w-[19px] h-[19px] rounded-full bg-[#09090b] flex items-center justify-center">
               {status === 'complete' ? (
                 <svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -120,7 +119,6 @@ function SectionBubble({
               ) : null}
             </div>
           </div>
-          {/* Chevron */}
           <svg
             className={`w-4 h-4 text-zinc-600 transition-transform duration-300 shrink-0 ${open ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
@@ -130,14 +128,33 @@ function SectionBubble({
         </div>
       </button>
 
-      {/* ── Contenu déployé — animation height ── */}
+      {/* ── Contenu — animation grid-template-rows (fluide) ── */}
       <div
-        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-          open ? 'max-h-[4000px] opacity-100' : 'max-h-0 opacity-0'
-        }`}
+        style={{
+          display: 'grid',
+          gridTemplateRows: open ? '1fr' : '0fr',
+          transition: 'grid-template-rows 300ms cubic-bezier(0.4,0,0.2,1)',
+        }}
       >
-        <div className="border-t border-white/[0.06]">
-          {children}
+        <div className="overflow-hidden">
+          <div className="border-t border-white/[0.06] pt-1">
+            {children}
+            {/* Bouton Continuer */}
+            {onNext && (
+              <div className="px-4 pb-4 pt-2">
+                <button
+                  type="button"
+                  onClick={onNext}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[12px] font-semibold text-zinc-400 hover:text-white hover:bg-white/[0.07] hover:border-white/[0.14] active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                >
+                  Continuer
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -278,9 +295,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
   const [p, setP] = useState<InvestmentParams>(initialParams ?? DEFAULT_PARAMS)
   const [activeSection, setActiveSection] = useState<string | null>('bien')
   const [visitedSections, setVisitedSections] = useState<Set<string>>(new Set(['bien']))
-  const [firstPassDone, setFirstPassDone] = useState(false)
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
-  const pctInitialized = useRef(false)
 
   // ─── État section Travaux ──────────────────────────────────────────────────
   const [travauxEsthetiques, setTravauxEsthetiques] = useState(0)
@@ -344,20 +359,16 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
   }, [])
 
   const openSection = (id: string) => {
-    const isClosing = activeSection === id
-    if (isClosing && !firstPassDone) {
-      // Fermeture manuelle pendant le premier passage → avancer quand même
-      const idx = SECTION_IDS.indexOf(id as SectionId)
-      if (idx >= 0 && idx < SECTION_IDS.length - 1) {
-        const nextId = SECTION_IDS[idx + 1]
-        setActiveSection(nextId)
-        setVisitedSections(prev => new Set(Array.from(prev).concat(nextId)))
-      } else {
-        setActiveSection(null) // dernière section fermée → fin du premier passage
-      }
-    } else {
-      setActiveSection(prev => prev === id ? null : id)
-      setVisitedSections(prev => new Set(Array.from(prev).concat(id)))
+    setActiveSection(prev => prev === id ? null : id)
+    setVisitedSections(prev => new Set(Array.from(prev).concat(id)))
+  }
+
+  const goToNext = (currentId: string) => {
+    const idx = SECTION_IDS.indexOf(currentId as SectionId)
+    if (idx >= 0 && idx < SECTION_IDS.length - 1) {
+      const nextId = SECTION_IDS[idx + 1]
+      setActiveSection(nextId)
+      setVisitedSections(prev => new Set(Array.from(prev).concat(nextId)))
     }
   }
 
@@ -438,51 +449,15 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
     return { bien, travaux, financement, location, charges, fiscalite, revente }
   }, [p, visitedSections, travauxEsthetiques, renoDpeEnabled, renoDpeCible])
 
-  // ─── Marquer firstPassDone quand toutes les sections ont été visitées ─────────
-  useEffect(() => {
-    if (!firstPassDone && SECTION_IDS.every(id => visitedSections.has(id))) {
-      setFirstPassDone(true)
-    }
-  }, [visitedSections, firstPassDone])
-
   // ─── Auto-scroll vers la section active ───────────────────────────────────────
   useEffect(() => {
     if (!activeSection) return
     const el = sectionRefs.current[activeSection]
     if (el) {
-      const timer = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80)
+      const timer = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120)
       return () => clearTimeout(timer)
     }
   }, [activeSection])
-
-  // ─── Auto-avance dès qu'une section atteint 100% ─────────────────────────────
-  const prevPct = useRef<Record<string, number>>({})
-  useEffect(() => {
-    // Initialisation au premier rendu : mémoriser les pct actuels pour éviter les faux déclenchements
-    if (!pctInitialized.current) {
-      pctInitialized.current = true
-      SECTION_IDS.forEach(id => {
-        prevPct.current[id] = sectionInfos[id as SectionId].pct
-      })
-      return
-    }
-    // Pas d'auto-avance si premier passage terminé ou pas de section active
-    if (firstPassDone || !activeSection) return
-    const idx = SECTION_IDS.indexOf(activeSection as SectionId)
-    if (idx < 0 || idx >= SECTION_IDS.length - 1) return
-    const info = sectionInfos[activeSection as SectionId]
-    const prev = prevPct.current[activeSection] ?? 0
-    prevPct.current[activeSection] = info.pct
-    if (info.pct >= 100 && prev < 100) {
-      const nextId = SECTION_IDS[idx + 1]
-      const timer = setTimeout(() => {
-        setActiveSection(nextId)
-        setVisitedSections(s => new Set(Array.from(s).concat(nextId)))
-      }, 550)
-      return () => clearTimeout(timer)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectionInfos, activeSection, firstPassDone])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -562,10 +537,11 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="1" title="Le bien"
           open={activeSection === 'bien'}
           onToggle={() => openSection('bien')}
+          onNext={() => goToNext('bien')}
           domRef={el => { sectionRefs.current['bien'] = el }}
           {...sectionInfos.bien}
         >
-            <div className="px-5 pb-5 space-y-4">
+            <div className="px-4 pt-4 pb-4 space-y-4">
 
               {/* Type */}
               <div>
@@ -748,11 +724,12 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="2" title="Travaux"
           open={activeSection === 'travaux'}
           onToggle={() => openSection('travaux')}
+          onNext={() => goToNext('travaux')}
           badge={['E','F','G'].includes(p.dpe) ? 'DPE urgent' : undefined}
           domRef={el => { sectionRefs.current['travaux'] = el }}
           {...sectionInfos.travaux}
         >
-            <div className="px-5 pb-5 space-y-4">
+            <div className="px-4 pt-4 pb-4 space-y-4">
 
               {/* ── Travaux esthétiques ─────────────────────────────────────── */}
               <div>
@@ -1024,10 +1001,11 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="3" title="Financement"
           open={activeSection === 'financement'}
           onToggle={() => openSection('financement')}
+          onNext={() => goToNext('financement')}
           domRef={el => { sectionRefs.current['financement'] = el }}
           {...sectionInfos.financement}
         >
-            <div className="px-5 pb-5 space-y-4">
+            <div className="px-4 pt-4 pb-4 space-y-4">
 
               {/* Type prêt */}
               <div>
@@ -1136,10 +1114,11 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="4" title="Location"
           open={activeSection === 'location'}
           onToggle={() => openSection('location')}
+          onNext={() => goToNext('location')}
           domRef={el => { sectionRefs.current['location'] = el }}
           {...sectionInfos.location}
         >
-            <div className="px-5 pb-5 space-y-4">
+            <div className="px-4 pt-4 pb-4 space-y-4">
 
               {/* Type location — masqué pour immeuble (piloté par Section 1) */}
               {!isImmeuble && (
@@ -1638,10 +1617,11 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="5" title="Charges annuelles"
           open={activeSection === 'charges'}
           onToggle={() => openSection('charges')}
+          onNext={() => goToNext('charges')}
           domRef={el => { sectionRefs.current['charges'] = el }}
           {...sectionInfos.charges}
         >
-            <div className="px-5 pb-5 space-y-3">
+            <div className="px-4 pt-4 pb-4 space-y-3">
 
               {/* Charges fixes */}
               <Row3>
@@ -1822,11 +1802,12 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="6" title="Fiscalité"
           open={activeSection === 'fiscalite'}
           onToggle={() => openSection('fiscalite')}
+          onNext={() => goToNext('fiscalite')}
           badge="Précision max"
           domRef={el => { sectionRefs.current['fiscalite'] = el }}
           {...sectionInfos.fiscalite}
         >
-            <div className="px-5 pb-5 space-y-4">
+            <div className="px-4 pt-4 pb-4 space-y-4">
 
               {/* TMI */}
               <div>
@@ -2120,7 +2101,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           domRef={el => { sectionRefs.current['revente'] = el }}
           {...sectionInfos.revente}
         >
-            <div className="px-5 pb-5 space-y-4">
+            <div className="px-4 pt-4 pb-4 space-y-4">
 
               <SliderRow
                 label="Horizon de revente"

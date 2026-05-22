@@ -423,83 +423,137 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
           </button>
 
           {showEquilibre && (
-            <div className="px-5 pb-5 space-y-4">
+            <div className="px-5 pb-5 space-y-5">
 
-              {/* Verdict principal */}
-              <div className={`rounded-xl p-4 border ${
+              {/* ── Verdict principal ── */}
+              <div className={`rounded-xl px-4 py-3.5 border flex items-start gap-3 ${
                 ecart >= 0
-                  ? 'border-emerald-500/15 bg-emerald-500/[0.04]'
-                  : 'border-red-500/15 bg-red-500/[0.04]'
+                  ? 'border-emerald-500/20 bg-emerald-500/[0.05]'
+                  : 'border-red-500/20 bg-red-500/[0.04]'
               }`}>
-                <p className="text-[13px] font-semibold text-zinc-200 leading-relaxed">
+                <span className="text-lg shrink-0 mt-0.5">{ecart >= 0 ? '✅' : '⚠️'}</span>
+                <p className="text-[13px] text-zinc-200 leading-relaxed">
                   {ecart >= 0 ? (
-                    <>Votre loyer de <span className="text-emerald-400 font-bold">{loyerActuel} €/mois</span> couvre les charges. Cashflow positif de <span className="text-emerald-400 font-bold">+{Math.round(ecart)} €/mois</span> après toutes déductions.</>
+                    <>Votre loyer de <span className="text-emerald-400 font-bold">{loyerActuel} €/mois</span> couvre toutes les charges.
+                    Marge de <span className="text-emerald-400 font-bold">+{Math.round(ecart)} €/mois</span> après mensualité, copro, taxe foncière et provisions.</>
                   ) : (
-                    <>Pour atteindre l'équilibre, il faut <span className="text-red-400 font-bold">{loyerSuggeré} €/mois</span>. Votre loyer actuel manque de <span className="text-red-400 font-bold">{Math.abs(Math.round(ecart))} €/mois</span>.</>
+                    <>Le loyer actuel ne suffit pas. Il faudrait atteindre{' '}
+                    <span className="text-red-400 font-bold">{loyerSuggeré} €/mois</span> pour couvrir toutes les charges.
+                    Écart : <span className="text-red-400 font-bold">{Math.abs(Math.round(ecart))} €/mois</span>.</>
                   )}
                 </p>
               </div>
 
-              {/* Décomposition */}
-              <div>
-                <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">
-                  Décomposition du point mort ({scenarioResult.pointMort} €/mois)
+              {/* ── Décomposition du point mort ── */}
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
+                <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">
+                  Décomposition — {scenarioResult.pointMort} €/mois
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {[
-                    { label: 'Mensualité crédit + assurance', value: compMensualite, pct: compMensualite / pointMort, color: '#6366f1' },
-                    { label: 'Charges de copropriété', value: compCopro, pct: compCopro / pointMort, color: '#f59e0b' },
+                    { label: 'Crédit + assurance', value: compMensualite, pct: compMensualite / pointMort, color: '#6366f1' },
+                    { label: 'Charges copro', value: compCopro, pct: compCopro / pointMort, color: '#f59e0b' },
                     { label: 'Taxe foncière', value: compTaxe, pct: compTaxe / pointMort, color: '#f59e0b' },
                     { label: 'Assurance PNO', value: compPno, pct: compPno / pointMort, color: '#8b5cf6' },
-                    { label: 'CFE (si meublé)', value: compCfe, pct: compCfe / pointMort, color: '#8b5cf6' },
+                    { label: 'CFE', value: compCfe, pct: compCfe / pointMort, color: '#8b5cf6' },
                     { label: 'Gestion · vacance · provision', value: Math.max(0, compGestionVacance), pct: Math.max(0, compGestionVacance) / pointMort, color: '#10b981' },
                   ].filter(r => r.value > 0).map(row => (
-                    <div key={row.label} className="flex items-center gap-3">
-                      <span className="text-[11px] text-zinc-500 w-48 shrink-0">{row.label}</span>
-                      <div className="flex-1 h-1 bg-white/[0.05] rounded-full overflow-hidden">
+                    <div key={row.label} className="grid items-center gap-2" style={{ gridTemplateColumns: '130px 1fr 60px' }}>
+                      <span className="text-[11px] text-zinc-500 truncate">{row.label}</span>
+                      <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full"
+                          className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${Math.min(100, row.pct * 100).toFixed(1)}%`, background: row.color }}
                         />
                       </div>
-                      <span className="text-[11px] font-bold text-zinc-400 tabular-nums w-16 text-right shrink-0">
-                        {row.value} €/mois
+                      <span className="text-[11px] font-bold text-zinc-400 tabular-nums text-right">
+                        {row.value} €
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Conseil actionnable */}
+              {/* ── Leviers pour rééquilibrer (si déficit) ── */}
               {ecart < 0 && (
-                <div className="flex items-start gap-2.5 p-3.5 rounded-xl border border-white/[0.06] bg-white/[0.02]">
-                  <svg className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                  <div className="space-y-1.5">
-                    <p className="text-[11px] font-semibold text-zinc-300">Pour rééquilibrer ce bien :</p>
-                    <ul className="space-y-1">
-                      {Math.abs(ecart) <= loyerActuel * 0.15 && (
-                        <li className="text-[11px] text-zinc-500">
-                          → Négocier le prix d'achat à <span className="text-zinc-300 font-semibold">{formatCurrency(Math.round(s.prixAchat * (1 - Math.abs(ecart) / loyerActuel / 8)))}</span> (−{Math.round(Math.abs(ecart) / loyerActuel / 8 * 100)}%)
-                        </li>
-                      )}
-                      <li className="text-[11px] text-zinc-500">
-                        → Augmenter le loyer à <span className="text-zinc-300 font-semibold">{loyerSuggeré} €/mois</span> (marché local à vérifier)
-                      </li>
-                      <li className="text-[11px] text-zinc-500">
-                        → Allonger la durée à <span className="text-zinc-300 font-semibold">{Math.min(25, s.duree + 2)} ans</span> pour réduire la mensualité
-                      </li>
-                    </ul>
+                <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.05] p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    <p className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">Leviers pour rééquilibrer</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    {/* Levier loyer */}
+                    <div className="flex items-start gap-3 p-2.5 rounded-lg bg-amber-500/[0.06] border border-amber-500/10">
+                      <div className="w-5 h-5 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="text-[10px] font-black text-amber-400">1</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-semibold text-amber-300">Augmenter le loyer</p>
+                        <p className="text-[11px] text-amber-400/70 mt-0.5">
+                          Cible : <span className="font-bold text-amber-300">{loyerSuggeré} €/mois</span>
+                          {' '}(+{Math.abs(Math.round(ecart))} € vs loyer actuel — à vérifier avec le marché local)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Levier durée */}
+                    {s.duree < 25 && (() => {
+                      const durCible = Math.min(25, s.duree + 2)
+                      const pTest = buildScenarioParams(baseParams, { ...s, duree: durCible })
+                      const rTest = calculateInvestment(pTest)
+                      const gain = Math.round(scenarioResult.mensualiteTotale - rTest.mensualiteTotale)
+                      return gain > 0 ? (
+                        <div className="flex items-start gap-3 p-2.5 rounded-lg bg-amber-500/[0.06] border border-amber-500/10">
+                          <div className="w-5 h-5 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="text-[10px] font-black text-amber-400">2</span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[12px] font-semibold text-amber-300">Allonger la durée à {durCible} ans</p>
+                            <p className="text-[11px] text-amber-400/70 mt-0.5">
+                              Réduit la mensualité de <span className="font-bold text-amber-300">−{gain} €/mois</span>
+                              {gain >= Math.abs(ecart) ? ' — suffit à rééquilibrer ✓' : ` — comble ${Math.round(gain / Math.abs(ecart) * 100)}% de l'écart`}
+                            </p>
+                          </div>
+                        </div>
+                      ) : null
+                    })()}
+
+                    {/* Levier prix si écart raisonnable */}
+                    {Math.abs(ecart) <= loyerActuel * 0.20 && (() => {
+                      const remisePct = Math.ceil(Math.abs(ecart) / loyerActuel / 7 * 100)
+                      const prixCible = Math.round(s.prixAchat * (1 - remisePct / 100))
+                      return (
+                        <div className="flex items-start gap-3 p-2.5 rounded-lg bg-amber-500/[0.06] border border-amber-500/10">
+                          <div className="w-5 h-5 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="text-[10px] font-black text-amber-400">3</span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[12px] font-semibold text-amber-300">Négocier le prix d'achat</p>
+                            <p className="text-[11px] text-amber-400/70 mt-0.5">
+                              Viser <span className="font-bold text-amber-300">{formatCurrency(prixCible)}</span>
+                              {' '}(−{remisePct}% sur le prix affiché)
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                 </div>
               )}
 
-              {ecart >= 0 && ecart < loyerActuel * 0.05 && (
-                <p className="text-[11px] text-zinc-600 leading-relaxed">
-                  Marge faible. Tout mois de vacance locative ou hausse des charges vous met en déficit. Prévoyez une réserve de trésorerie.
-                </p>
+              {/* ── Avertissement marge faible (si positif mais juste) ── */}
+              {ecart >= 0 && ecart < loyerActuel * 0.06 && (
+                <div className="flex items-start gap-2.5 p-3 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
+                  <span className="text-base shrink-0">⚡</span>
+                  <p className="text-[11px] text-amber-400/80 leading-relaxed">
+                    Marge de sécurité faible ({Math.round(ecart)} €/mois). Un mois de vacance locative ou une hausse des charges suffit à passer en déficit. Prévoyez une réserve de trésorerie.
+                  </p>
+                </div>
               )}
+
             </div>
           )}
         </div>

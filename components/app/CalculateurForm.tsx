@@ -7,6 +7,7 @@ import { calculateFiscal } from '@/lib/fiscal'
 import { VILLES } from '@/lib/market-data'
 import { calculateRenovation, DpeClass, ProfileRevenu, DPE_COLORS, DPE_LABELS, DPE_INTERDICTION } from '@/lib/renovation'
 import { formatCurrency } from '@/lib/utils'
+import { IconBuildingOffice, IconBuildingLibrary, IconScale, IconBriefcase, IconHome, IconLightBulb } from '@/components/ui/icons'
 
 interface Props {
   onCalculate: (params: InvestmentParams) => Promise<void>
@@ -368,7 +369,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     { value: 'Appartement', label: 'Appart.' },
                     { value: 'Maison', label: 'Maison' },
                     { value: 'Studio', label: 'Studio' },
-                    { value: 'Immeuble', label: '🏢 Immeuble' },
+                    { value: 'Immeuble', label: 'Immeuble' },
                     { value: 'Parking', label: 'Parking' },
                     { value: 'Commercial', label: 'Local' },
                   ]}
@@ -378,7 +379,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               {/* Badge immeuble */}
               {isImmeuble && (
                 <div className="flex items-center gap-2 py-2 px-3 rounded-lg bg-sky-500/[0.06] border border-sky-500/20">
-                  <span className="text-sky-400 text-sm">🏢</span>
+                  <IconBuildingOffice className="w-4 h-4 text-sky-400 shrink-0" />
                   <span className="text-[11px] text-sky-300 font-medium">Mode Immeuble de rapport activé — configurez vos lots dans la section Location</span>
                 </div>
               )}
@@ -390,8 +391,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   value={p.etat}
                   onChange={(v) => set('etat', v as 'ancien' | 'neuf')}
                   options={[
-                    { value: 'ancien', label: '🏚 Ancien (~8% notaire)' },
-                    { value: 'neuf', label: '🏗 Neuf (~3% notaire)' },
+                    { value: 'ancien', label: 'Ancien (~8% notaire)' },
+                    { value: 'neuf', label: 'Neuf (~3% notaire)' },
                   ]}
                 />
               </div>
@@ -431,7 +432,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         : 'bg-white/[0.05] text-zinc-500 border border-white/[0.08]'
                     }`}
                   >
-                    {p.fraisNotaireAuto ? '⚡ Auto' : '✏ Manuel'}
+                    {p.fraisNotaireAuto ? 'Auto' : 'Manuel'}
                   </button>
                 </div>
                 <NumInput
@@ -521,7 +522,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
             title="Travaux"
             open={openSections.travaux}
             onToggle={() => toggle('travaux')}
-            badge={['E','F','G'].includes(p.dpe) ? '⚡ DPE urgent' : undefined}
+            badge={['E','F','G'].includes(p.dpe) ? 'DPE urgent' : undefined}
           />
           {openSections.travaux && (
             <div className="px-5 pb-5 space-y-4">
@@ -627,7 +628,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                               </div>
                               <span className="text-[10px] text-zinc-500 shrink-0">
                                 {reno.sautClasses} classe{reno.sautClasses > 1 ? 's' : ''}
-                                {reno.sautClasses >= 2 && <span className="text-emerald-500 font-semibold"> ✓ Éligible MPR</span>}
+                                {reno.sautClasses >= 2 && <span className="text-emerald-500 font-semibold"> · Éligible MPR</span>}
                               </span>
                             </div>
                           )}
@@ -916,10 +917,10 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     value={p.locType}
                     onChange={(v) => set('locType', v as InvestmentParams['locType'])}
                     options={[
-                      { value: 'nu', label: '🏠 Nu' },
-                      { value: 'meuble', label: '🛋 Meublé' },
-                      { value: 'coloc', label: '👥 Coloc' },
-                      { value: 'saisonnier', label: '🌴 Saisonnier' },
+                      { value: 'nu', label: 'Nu' },
+                      { value: 'meuble', label: 'Meublé' },
+                      { value: 'coloc', label: 'Coloc' },
+                      { value: 'saisonnier', label: 'Saisonnier' },
                     ]}
                   />
                 </div>
@@ -1067,7 +1068,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <p className="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">
-                      🏢 Composition de l&apos;immeuble
+                      <IconBuildingOffice className="w-3 h-3 inline mr-1" />Composition de l&apos;immeuble
                     </p>
                     <span className="text-[10px] text-zinc-600">
                       {(p.lotGroups ?? []).reduce((s, g) => s + g.nb, 0)} lots au total
@@ -1109,9 +1110,9 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         <div className="px-3 py-2 border-b border-white/[0.04]">
                           <div className="grid grid-cols-3 gap-1">
                             {([
-                              { v: 'meuble', label: '🛋 Meublé' },
-                              { v: 'nu', label: '🏠 Nu' },
-                              { v: 'vendre', label: '🏷 À vendre' },
+                              { v: 'meuble', label: 'Meublé' },
+                              { v: 'nu', label: 'Nu' },
+                              { v: 'vendre', label: 'À vendre' },
                             ] as { v: LotGroup['regime']; label: string }[]).map(opt => (
                               <button key={opt.v} type="button"
                                 onClick={() => updateLotGroup(g.id, { regime: opt.v })}
@@ -1249,7 +1250,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.04] p-3 space-y-3">
                         <div className="flex items-center justify-between">
                           <p className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
-                            💰 Destination des {Math.round(prodCession).toLocaleString('fr-FR')} € de cession
+                            Destination des {Math.round(prodCession).toLocaleString('fr-FR')} € de cession
                           </p>
                         </div>
 
@@ -1632,11 +1633,11 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
 
               <div className="grid grid-cols-2 gap-2">
                 {([
-                  { id: 'nom-propre', icon: '👤', label: 'Nom propre', desc: 'Location directe — foncier ou BIC' },
-                  { id: 'sci-ir', icon: '🏛️', label: 'SCI à l\'IR', desc: 'Transparence fiscale — succession' },
-                  { id: 'sci-is', icon: '⚖️', label: 'SCI à l\'IS', desc: 'IS 15%/25% — capitalisation' },
-                  { id: 'sarl-famille', icon: '👨‍👩‍👧', label: 'SARL famille', desc: 'Meublé IR — avantages LMP' },
-                ] as const).map(({ id, icon, label, desc }) => {
+                  { id: 'nom-propre', Icon: IconHome, label: 'Nom propre', desc: 'Location directe — foncier ou BIC' },
+                  { id: 'sci-ir', Icon: IconBuildingLibrary, label: 'SCI à l\'IR', desc: 'Transparence fiscale — succession' },
+                  { id: 'sci-is', Icon: IconScale, label: 'SCI à l\'IS', desc: 'IS 15%/25% — capitalisation' },
+                  { id: 'sarl-famille', Icon: IconBriefcase, label: 'SARL famille', desc: 'Meublé IR — avantages LMP' },
+                ] as { id: 'nom-propre' | 'sci-ir' | 'sci-is' | 'sarl-famille'; Icon: React.FC<{ className?: string }>; label: string; desc: string }[]).map(({ id, Icon, label, desc }) => {
                   const active = p.structure === id
                   const disabled = id === 'sarl-famille' && isNu
                   const preview = structurePreviews[id]
@@ -1682,7 +1683,9 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       {active && (
                         <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
                       )}
-                      <span className="text-base leading-none">{icon}</span>
+                      <div className="w-6 h-6 rounded-md bg-white/[0.05] flex items-center justify-center">
+                        <Icon className="w-3.5 h-3.5 text-zinc-400" />
+                      </div>
                       <p className={`text-[12px] font-bold leading-tight mt-1 ${active ? 'text-white' : 'text-zinc-300'}`}>{label}</p>
                       <p className="text-[10px] text-zinc-500 leading-snug">{desc}</p>
 
@@ -1860,7 +1863,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
 
               <div className="py-2.5 px-3 rounded-lg bg-blue-500/[0.06] border border-blue-500/15">
                 <p className="text-[11px] text-blue-400 font-medium">
-                  💡 Le calculateur compare tous les régimes fiscaux disponibles pour votre structure et identifie le plus avantageux.
+                  <span className="inline-flex items-center gap-1.5 align-middle"><IconLightBulb className="w-3.5 h-3.5 text-blue-400 shrink-0" /></span>{' '}Le calculateur compare tous les régimes fiscaux disponibles pour votre structure et identifie le plus avantageux.
                 </p>
               </div>
 

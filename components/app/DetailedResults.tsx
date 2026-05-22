@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { InvestmentResult, FiscalRegime, InvestmentParams } from '@/lib/types'
 import { formatCurrency, formatPct } from '@/lib/utils'
+import { IconLightBulb, IconCheckCircle, IconExclamationTriangle } from '@/components/ui/icons'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend, ReferenceLine, Cell,
@@ -285,7 +286,7 @@ function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) 
       {/* ── Économie possible ────────────────────────────────────────────────── */}
       {economie > 500 && (
         <div className="rounded-lg bg-blue-500/[0.06] border border-blue-500/15 px-3 py-2.5 flex items-center gap-2">
-          <span className="text-blue-400 text-sm">💡</span>
+          <IconLightBulb className="w-4 h-4 text-blue-400 shrink-0" />
           <p className="text-[11px] text-blue-400">
             Choisir le meilleur régime vous fait économiser{' '}
             <strong>{formatCurrency(economie)}/an</strong> vs le moins avantageux
@@ -426,7 +427,10 @@ function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) 
                   {pc && (
                     <div className="grid grid-cols-2 gap-2">
                       <div className="rounded-lg bg-emerald-500/[0.05] border border-emerald-500/15 p-2.5">
-                        <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-wide mb-1.5">✅ Avantages</p>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <IconCheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                          <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-wide">Avantages</p>
+                        </div>
                         <div className="space-y-1">
                           {pc.pros.map((pro, i) => (
                             <p key={i} className="text-[10px] text-zinc-400 flex gap-1.5 leading-snug">
@@ -437,7 +441,10 @@ function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) 
                         </div>
                       </div>
                       <div className="rounded-lg bg-red-500/[0.05] border border-red-500/15 p-2.5">
-                        <p className="text-[9px] font-bold text-red-400 uppercase tracking-wide mb-1.5">⚠️ Points de vigilance</p>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <IconExclamationTriangle className="w-3.5 h-3.5 text-red-400" />
+                          <p className="text-[9px] font-bold text-red-400 uppercase tracking-wide">Points de vigilance</p>
+                        </div>
                         <div className="space-y-1">
                           {pc.cons.map((con, i) => (
                             <p key={i} className="text-[10px] text-zinc-400 flex gap-1.5 leading-snug">

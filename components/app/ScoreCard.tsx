@@ -2,16 +2,17 @@
 
 import { useState } from 'react'
 import { ScoreResult } from '@/lib/types'
+import { IconTrendingUp, IconBanknotes, IconScale, IconMapPin, IconCheckCircle, IconExclamationTriangle, IconExclamationCircle } from '@/components/ui/icons'
 
 interface ScoreCardProps {
   score: ScoreResult
 }
 
-const subScoreLabels: Array<{ key: keyof ScoreResult['subScores']; label: string; icon: string }> = [
-  { key: 'rentabilite', label: 'Rentabilité', icon: '📈' },
-  { key: 'cashflow', label: 'Cashflow', icon: '💸' },
-  { key: 'fiscalite', label: 'Fiscalité', icon: '🏛️' },
-  { key: 'marche', label: 'Marché', icon: '🗺️' },
+const subScoreLabels: Array<{ key: keyof ScoreResult['subScores']; label: string; Icon: React.FC<{ className?: string }> }> = [
+  { key: 'rentabilite', label: 'Rentabilité', Icon: IconTrendingUp },
+  { key: 'cashflow',    label: 'Cashflow',    Icon: IconBanknotes },
+  { key: 'fiscalite',   label: 'Fiscalité',   Icon: IconScale },
+  { key: 'marche',      label: 'Marché',      Icon: IconMapPin },
 ]
 
 // SVG arc ring for score
@@ -68,11 +69,8 @@ export function ScoreCard({ score }: ScoreCardProps) {
     red: 'bg-red-500/10 text-red-400 border-red-500/20',
   }[score.color]
 
-  const summaryIcon = {
-    emerald: '✅',
-    amber: '⚠️',
-    red: '🚨',
-  }[score.color]
+  const SummaryIcon = score.color === 'emerald' ? IconCheckCircle : score.color === 'amber' ? IconExclamationTriangle : IconExclamationCircle
+  const summaryIconColor = { emerald: 'text-emerald-400', amber: 'text-amber-400', red: 'text-red-400' }[score.color]
 
   return (
     <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
@@ -100,7 +98,7 @@ export function ScoreCard({ score }: ScoreCardProps) {
         {/* Résumé verdict */}
         <div className="flex-1 flex flex-col justify-center p-6 gap-4 min-w-0">
           <div className="flex items-start gap-3">
-            <span className="text-xl shrink-0 mt-0.5">{summaryIcon}</span>
+            <SummaryIcon className={`w-5 h-5 shrink-0 mt-0.5 ${summaryIconColor}`} />
             <p className="text-[14px] text-zinc-300 leading-relaxed font-medium">
               {score.summary}
             </p>
@@ -108,13 +106,14 @@ export function ScoreCard({ score }: ScoreCardProps) {
 
           {/* Mini aperçu des 4 dimensions (non-interactif, compact) */}
           <div className="grid grid-cols-4 gap-2 pt-2 border-t border-white/[0.05]">
-            {subScoreLabels.map(({ key, label, icon }) => {
+            {subScoreLabels.map(({ key, label, Icon }) => {
               const val = Math.round(score.subScores[key])
               const c: 'emerald' | 'amber' | 'red' = val >= 60 ? 'emerald' : val >= 35 ? 'amber' : 'red'
               const numColor = { emerald: 'text-emerald-400', amber: 'text-amber-400', red: 'text-red-400' }[c]
+              const iconColor = { emerald: 'text-emerald-500/60', amber: 'text-amber-500/60', red: 'text-red-500/60' }[c]
               return (
                 <div key={key} className="flex flex-col items-center gap-0.5">
-                  <span className="text-base">{icon}</span>
+                  <Icon className={`w-4 h-4 ${iconColor}`} />
                   <span className={`text-[13px] font-bold tabular-nums ${numColor}`}>{val}</span>
                   <span className="text-[9px] text-zinc-600 font-medium">{label}</span>
                 </div>
@@ -141,15 +140,16 @@ export function ScoreCard({ score }: ScoreCardProps) {
 
         {expanded && (
           <div className="px-5 pb-5 space-y-4">
-            {subScoreLabels.map(({ key, label, icon }) => {
+            {subScoreLabels.map(({ key, label, Icon }) => {
               const val = Math.round(score.subScores[key])
               const c: 'emerald' | 'amber' | 'red' = val >= 60 ? 'emerald' : val >= 35 ? 'amber' : 'red'
               const barColor = { emerald: '#10b981', amber: '#f59e0b', red: '#ef4444' }[c]
               const numColor = { emerald: 'text-emerald-400', amber: 'text-amber-400', red: 'text-red-400' }[c]
+              const iconColor = { emerald: 'text-emerald-500/50', amber: 'text-amber-500/50', red: 'text-red-500/50' }[c]
 
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <span className="text-base shrink-0">{icon}</span>
+                  <Icon className={`w-4 h-4 shrink-0 ${iconColor}`} />
                   <span className="text-[12px] text-zinc-400 w-24 shrink-0 font-medium">{label}</span>
                   <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                     <div

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { IconLeaf, IconTrendingUp, IconBuildingOffice, IconHome, IconRocket, IconChartBar, IconBuildingLibrary, IconBriefcase, IconArrowTrendingUp } from '@/components/ui/icons'
 
 interface OnboardingWizardProps {
   userId: string
@@ -11,24 +12,24 @@ interface OnboardingWizardProps {
 
 type Profile = 'debutant' | 'experimente' | 'professionnel'
 
-const PROFILES: { id: Profile; title: string; desc: string; icon: string }[] = [
+const PROFILES: { id: Profile; title: string; desc: string; Icon: React.FC<{ className?: string }> }[] = [
   {
     id: 'debutant',
     title: 'Investisseur débutant',
     desc: "Je commence à m'intéresser à l'investissement locatif",
-    icon: '🌱',
+    Icon: IconLeaf,
   },
   {
     id: 'experimente',
     title: 'Investisseur expérimenté',
     desc: "J'ai déjà un ou plusieurs biens et je veux optimiser",
-    icon: '📈',
+    Icon: IconTrendingUp,
   },
   {
     id: 'professionnel',
     title: 'Professionnel',
     desc: 'Agent immobilier, CGP ou conseiller patrimonial',
-    icon: '🏢',
+    Icon: IconBuildingOffice,
   },
 ]
 
@@ -158,7 +159,9 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
                       : 'border-white/[0.07] bg-white/[0.02] hover:border-white/[0.15] hover:bg-white/[0.04]'
                   }`}
                 >
-                  <span className="text-2xl shrink-0">{p.icon}</span>
+                  <div className="w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0">
+                    <p.Icon className="w-5 h-5 text-zinc-400" />
+                  </div>
                   <div>
                     <p className="text-sm font-bold text-white">{p.title}</p>
                     <p className="text-xs text-zinc-500 mt-0.5">{p.desc}</p>
@@ -199,8 +202,8 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
             {/* Bien démo */}
             <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-5 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-lg">
-                  🏠
+                <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                  <IconHome className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white">{DEMO_BIEN.name}</p>
@@ -262,8 +265,8 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
           <div className="px-8 py-7 space-y-6 text-center">
             <div>
               <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-2">Étape 3 sur 3</p>
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4 text-3xl">
-                🚀
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                <IconArrowTrendingUp className="w-8 h-8 text-emerald-400" />
               </div>
               <h2 className="text-xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
                 Vous êtes prêt !
@@ -275,13 +278,15 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
 
             <div className="space-y-3 text-left">
               {[
-                { icon: '📊', text: 'Calculs instantanés : rendement, cashflow, TRI' },
-                { icon: '🏦', text: 'Dossier bancaire HCSF prêt pour votre banquier (Pro)' },
-                { icon: '💾', text: 'Simulations sauvegardées et comparables' },
-                { icon: '📄', text: 'Export PDF professionnel en 1 clic (Pro)' },
-              ].map(({ icon, text }) => (
+                { Icon: IconChartBar, text: 'Calculs instantanés : rendement, cashflow, TRI' },
+                { Icon: IconBuildingLibrary, text: 'Dossier bancaire HCSF prêt pour votre banquier (Pro)' },
+                { Icon: IconBriefcase, text: 'Simulations sauvegardées et comparables' },
+                { Icon: IconArrowTrendingUp, text: 'Export PDF professionnel en 1 clic (Pro)' },
+              ].map(({ Icon, text }) => (
                 <div key={text} className="flex items-center gap-3">
-                  <span className="text-base shrink-0">{icon}</span>
+                  <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0">
+                    <Icon className="w-4 h-4 text-zinc-500" />
+                  </div>
                   <p className="text-sm text-zinc-300">{text}</p>
                 </div>
               ))}

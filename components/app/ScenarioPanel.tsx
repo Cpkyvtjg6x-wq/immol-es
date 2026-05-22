@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { InvestmentParams, InvestmentResult } from '@/lib/types'
 import { calculateInvestment } from '@/lib/calculator'
 import { formatCurrency } from '@/lib/utils'
+import { IconCheckCircle, IconExclamationTriangle, IconBolt, IconLightBulb } from '@/components/ui/icons'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -431,7 +432,10 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
                   ? 'border-emerald-500/20 bg-emerald-500/[0.05]'
                   : 'border-red-500/20 bg-red-500/[0.04]'
               }`}>
-                <span className="text-lg shrink-0 mt-0.5">{ecart >= 0 ? '✅' : '⚠️'}</span>
+                {ecart >= 0
+                  ? <IconCheckCircle className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+                  : <IconExclamationTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-400" />
+                }
                 <p className="text-[13px] text-zinc-200 leading-relaxed">
                   {ecart >= 0 ? (
                     <>Votre loyer de <span className="text-emerald-400 font-bold">{loyerActuel} €/mois</span> couvre toutes les charges.
@@ -547,7 +551,7 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
               {/* ── Avertissement marge faible (si positif mais juste) ── */}
               {ecart >= 0 && ecart < loyerActuel * 0.06 && (
                 <div className="flex items-start gap-2.5 p-3 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
-                  <span className="text-base shrink-0">⚡</span>
+                  <IconBolt className="w-4 h-4 shrink-0 text-amber-400" />
                   <p className="text-[11px] text-amber-400/80 leading-relaxed">
                     Marge de sécurité faible ({Math.round(ecart)} €/mois). Un mois de vacance locative ou une hausse des charges suffit à passer en déficit. Prévoyez une réserve de trésorerie.
                   </p>

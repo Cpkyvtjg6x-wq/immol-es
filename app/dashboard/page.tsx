@@ -15,6 +15,7 @@ import {
   Cell,
 } from 'recharts'
 import { AppShell } from '@/components/app/AppShell'
+import { IconStar, IconTrendingUp, IconCheckCircle } from '@/components/ui/icons'
 import { OnboardingWizard } from '@/components/app/OnboardingWizard'
 import { ProfileCompletion } from '@/components/app/ProfileCompletion'
 import { PatrimoineCard } from '@/components/app/PatrimoineCard'
@@ -184,7 +185,7 @@ export default function DashboardPage() {
 
   async function handleToggleFavorite(id: string, isFav: boolean) {
     await toggleFavorite(id, isFav)
-    toast.success(isFav ? 'Retiré des favoris' : 'Ajouté aux favoris ⭐')
+    toast.success(isFav ? 'Retiré des favoris' : 'Ajouté aux favoris')
   }
 
   useEffect(() => {
@@ -306,9 +307,11 @@ export default function DashboardPage() {
         {/* ── Banner checkout success ── */}
         {checkoutBanner && (
           <div className="mx-8 mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-5 py-4 flex items-center gap-4">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">✓</div>
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
+              <IconCheckCircle className="w-5 h-5 text-emerald-400" />
+            </div>
             <div>
-              <p className="text-sm font-bold text-white">Abonnement activé ! 🎉</p>
+              <p className="text-sm font-bold text-white">Abonnement activé</p>
               <p className="text-xs text-zinc-400">Bienvenue dans IMMORA Pro. Toutes les fonctionnalités sont maintenant débloquées.</p>
             </div>
             <button onClick={() => setCheckoutBanner(false)} className="ml-auto text-zinc-600 hover:text-zinc-300">
@@ -552,10 +555,10 @@ export default function DashboardPage() {
                   {/* Filter tabs */}
                   <div className="flex items-center gap-1 bg-white/[0.03] border border-white/[0.07] rounded-lg p-1">
                     {([
-                      { id: 'tous', label: 'Tous' },
-                      { id: 'favoris', label: '⭐ Favoris' },
-                      { id: 'top', label: '🏆 Score ≥ 70' },
-                      { id: 'positif', label: '✅ CF positif' },
+                      { id: 'tous',    label: 'Tous' },
+                      { id: 'favoris', label: 'Favoris' },
+                      { id: 'top',     label: 'Score ≥ 70' },
+                      { id: 'positif', label: 'CF positif' },
                     ] as const).map(f => (
                       <button
                         key={f.id}

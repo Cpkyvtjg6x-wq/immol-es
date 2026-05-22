@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { IconHome, IconSearch, IconStar, IconBriefcase, IconTarget } from '@/components/ui/icons'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ interface ProfileCompletionProps {
 
 function Badge({ label, icon, unlocked, description }: {
   label: string
-  icon: string
+  icon: React.ReactNode
   unlocked: boolean
   description: string
 }) {
@@ -126,11 +127,11 @@ export function ProfileCompletion({ hasName, hasEmail, simulationCount, isPro }:
   }, [pct])
 
   const badges = [
-    { id: 'first_sim', label: '1ère analyse', icon: '🏠', unlocked: simulationCount >= 1, description: 'Lancez votre première simulation immobilière.' },
-    { id: 'five_sims', label: 'Explorateur', icon: '🔍', unlocked: simulationCount >= 5, description: 'Analysez 5 biens différents.' },
-    { id: 'pro_user', label: 'Pro', icon: '⭐', unlocked: isPro, description: 'Passez au plan Pro pour débloquer toutes les fonctionnalités.' },
-    { id: 'portfolio', label: 'Portefeuille', icon: '💼', unlocked: simulationCount >= 3, description: 'Constituez un portefeuille de 3 biens ou plus.' },
-    { id: 'optimizer', label: 'Optimiseur', icon: '🎯', unlocked: simulationCount >= 10, description: 'Analysez 10 biens — vous êtes un investisseur sérieux.' },
+    { id: 'first_sim', label: '1ère analyse', icon: <IconHome className="w-4 h-4" />, unlocked: simulationCount >= 1, description: 'Lancez votre première simulation immobilière.' },
+    { id: 'five_sims', label: 'Explorateur', icon: <IconSearch className="w-4 h-4" />, unlocked: simulationCount >= 5, description: 'Analysez 5 biens différents.' },
+    { id: 'pro_user', label: 'Pro', icon: <IconStar className="w-4 h-4" />, unlocked: isPro, description: 'Passez au plan Pro pour débloquer toutes les fonctionnalités.' },
+    { id: 'portfolio', label: 'Portefeuille', icon: <IconBriefcase className="w-4 h-4" />, unlocked: simulationCount >= 3, description: 'Constituez un portefeuille de 3 biens ou plus.' },
+    { id: 'optimizer', label: 'Optimiseur', icon: <IconTarget className="w-4 h-4" />, unlocked: simulationCount >= 10, description: 'Analysez 10 biens — vous êtes un investisseur sérieux.' },
   ]
 
   if (isComplete) return null // Ne plus afficher une fois terminé

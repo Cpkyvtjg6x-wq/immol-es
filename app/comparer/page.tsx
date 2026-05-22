@@ -7,6 +7,7 @@ import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { formatCurrency, formatPct } from '@/lib/utils'
+import { IconStar, IconLightBulb } from '@/components/ui/icons'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -267,7 +268,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
               <ScoreBadge score={s.score ?? 0} />
               {s.score === bestScore && active.length > 1 && (
                 <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                  ⭐ Recommandé
+                  <IconStar className="w-3 h-3 inline mr-0.5" /> Recommandé
                 </span>
               )}
             </div>
@@ -350,7 +351,7 @@ export default function ComparerPage() {
           {/* Intro */}
           <div className="rounded-xl border border-blue-500/15 bg-blue-500/[0.04] px-5 py-4">
             <p className="text-sm text-blue-300">
-              💡 Sélectionnez jusqu&apos;à 3 simulations sauvegardées pour les comparer côte à côte. Les meilleures valeurs sont mises en vert, les moins bonnes en rouge.
+              <span className="inline-flex items-center gap-1.5 align-middle"><IconLightBulb className="w-4 h-4 text-blue-300 shrink-0" /></span>{' '}Sélectionnez jusqu&apos;à 3 simulations sauvegardées pour les comparer côte à côte. Les meilleures valeurs sont mises en vert, les moins bonnes en rouge.
             </p>
           </div>
 

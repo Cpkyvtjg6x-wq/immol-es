@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Navbar } from '@/components/landing/Navbar'
+import { IconBriefcase, IconSparkles, IconBolt, IconRocket, IconCheckCircle } from '@/components/ui/icons'
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', company: '', message: '', plan: 'agency' })
@@ -40,15 +41,15 @@ export default function ContactPage() {
             </div>
 
             <div className="space-y-4">
-              {[
-                { title: 'Jusqu\'à 5 utilisateurs', desc: 'Partagez l\'accès avec toute votre équipe', icon: '👥' },
-                { title: 'Rapports à votre image', desc: 'Logo, couleurs et nom de votre société sur chaque PDF', icon: '🎨' },
-                { title: 'API access', desc: 'Intégrez IMMORA à vos outils existants', icon: '🔌' },
-                { title: 'Onboarding dédié', desc: 'Un expert vous accompagne lors du démarrage', icon: '🚀' },
-              ].map(f => (
+              {([
+                { title: 'Jusqu\'à 5 utilisateurs', desc: 'Partagez l\'accès avec toute votre équipe', Icon: IconBriefcase },
+                { title: 'Rapports à votre image', desc: 'Logo, couleurs et nom de votre société sur chaque PDF', Icon: IconSparkles },
+                { title: 'API access', desc: 'Intégrez IMMORA à vos outils existants', Icon: IconBolt },
+                { title: 'Onboarding dédié', desc: 'Un expert vous accompagne lors du démarrage', Icon: IconRocket },
+              ] as { title: string; desc: string; Icon: React.FC<{ className?: string }> }[]).map(f => (
                 <div key={f.title} className="flex gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-lg shrink-0">
-                    {f.icon}
+                  <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
+                    <f.Icon className="w-4 h-4 text-zinc-400" />
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-white">{f.title}</div>
@@ -72,8 +73,8 @@ export default function ContactPage() {
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-8">
             {sent ? (
               <div className="text-center space-y-4 py-8">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-3xl">
-                  ✓
+                <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
+                  <IconCheckCircle className="w-8 h-8 text-emerald-400" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Message envoyé !</h3>
                 <p className="text-zinc-400 text-sm">

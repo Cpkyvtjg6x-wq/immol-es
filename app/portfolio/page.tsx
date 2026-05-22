@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { AppShell } from '@/components/app/AppShell'
+import { IconLightBulb, IconCheckCircle } from '@/components/ui/icons'
 
 // ─── Formatters ────────────────────────────────────────────────────────────────
 
@@ -310,7 +311,7 @@ function ConsolidationFiscale({ simulations }: { simulations: SavedSimulation[] 
       </div>
       <div className="px-5 py-3 bg-blue-500/[0.04] border-t border-blue-500/10">
         <p className="text-[11px] text-blue-400 leading-snug">
-          💡 Pour optimiser la fiscalité globale de votre portefeuille, simulez chaque bien avec le régime le plus adapté (LMNP réel, SCI IS, etc.).
+          <span className="inline-flex items-center gap-1 align-middle"><IconLightBulb className="w-3.5 h-3.5 text-blue-400 shrink-0" /></span>{' '}Pour optimiser la fiscalité globale de votre portefeuille, simulez chaque bien avec le régime le plus adapté (LMNP réel, SCI IS, etc.).
         </p>
       </div>
     </div>
@@ -558,7 +559,7 @@ export default function PortfolioPage() {
                   />
                   <KpiCard
                     label={stats.effortEpargne > 0 ? "Effort d'épargne" : "Autofinancé"}
-                    value={stats.effortEpargne > 0 ? `${Math.round(stats.effortEpargne)} €/mois` : '✓'}
+                    value={stats.effortEpargne > 0 ? `${Math.round(stats.effortEpargne)} €/mois` : 'OK'}
                     sub={stats.effortEpargne > 0 ? 'mensuel (biens négatifs)' : 'Cashflow global positif'}
                     color={stats.effortEpargne > 0 ? '#f97316' : '#10b981'}
                   />
@@ -580,8 +581,8 @@ export default function PortfolioPage() {
                 {stats.bestBien && (
                   <div className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-3.5 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xs">
-                        🏆
+                      <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                        <IconCheckCircle className="w-4 h-4 text-emerald-400" />
                       </div>
                       <div>
                         <p className="text-[11px] text-zinc-600 mb-0.5">Meilleure performance</p>

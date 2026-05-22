@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { formatCurrency } from '@/lib/utils'
+import { IconHome, IconBuildingOffice, IconLightBulb, IconCheckCircle, IconExclamationTriangle } from '@/components/ui/icons'
 
 // ─── Barèmes fiscaux 2025 ──────────────────────────────────────────────────────
 const ABATTEMENT_IR: { ans: number; pct: number }[] = [
@@ -378,10 +379,10 @@ function TableauVendreGarder({ params, currentAns }: { params: ReventeParams; cu
                   {isCurrent && <span className="ml-1.5 text-[9px] text-emerald-500 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded-full">Actuel</span>}
                 </td>
                 <td className={`text-right py-2 px-2 tabular-nums ${res.exonerationIR ? 'text-emerald-400' : 'text-zinc-400'}`}>
-                  {res.exonerationIR ? '✓ 100%' : `${res.abattementIR}%`}
+                  {res.exonerationIR ? '100%' : `${res.abattementIR}%`}
                 </td>
                 <td className={`text-right py-2 px-2 tabular-nums ${res.exonerationPS ? 'text-emerald-400' : 'text-zinc-400'}`}>
-                  {res.exonerationPS ? '✓ 100%' : `${res.abattementPS}%`}
+                  {res.exonerationPS ? '100%' : `${res.abattementPS}%`}
                 </td>
                 <td className={`text-right py-2 px-2 tabular-nums ${res.impotTotal > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                   {res.impotTotal > 0 ? `– ${formatCurrency(res.impotTotal)}` : '0 €'}
@@ -538,8 +539,8 @@ export default function ReventePage() {
                 <h2 className="text-sm font-bold text-white">Type de bien</h2>
                 <div className="grid grid-cols-2 gap-3">
                   {([
-                    { id: 'locatif', label: 'Investissement locatif', icon: '🏠', desc: 'Impôt sur le bénéfice de vente' },
-                    { id: 'residence_principale', label: 'Résidence principale', icon: '🏡', desc: 'Aucun impôt sur le bénéfice' },
+                    { id: 'locatif', label: 'Investissement locatif', Icon: IconBuildingOffice, desc: 'Impôt sur le bénéfice de vente' },
+                    { id: 'residence_principale', label: 'Résidence principale', Icon: IconHome, desc: 'Aucun impôt sur le bénéfice' },
                   ] as const).map(t => (
                     <button
                       key={t.id}
@@ -550,7 +551,9 @@ export default function ReventePage() {
                           : 'border-white/[0.07] bg-white/[0.02] hover:border-white/[0.15]'
                       }`}
                     >
-                      <span className="text-xl">{t.icon}</span>
+                      <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0">
+                        <t.Icon className="w-4 h-4 text-zinc-400" />
+                      </div>
                       <div>
                         <p className="text-xs font-bold text-white">{t.label}</p>
                         <p className="text-[11px] text-zinc-500 mt-0.5">{t.desc}</p>
@@ -602,7 +605,7 @@ export default function ReventePage() {
                       />
                       {params.dateAchat && /^\d{4}-\d{2}$/.test(params.dateAchat) ? (
                         <p className="text-[11px] text-emerald-400 mt-1">
-                          ✓ {params.anneesDetention} an{params.anneesDetention !== 1 ? 's' : ''} de détention — durée calculée automatiquement
+                          {params.anneesDetention} an{params.anneesDetention !== 1 ? 's' : ''} de détention — durée calculée automatiquement
                         </p>
                       ) : params.dateAchat ? (
                         <p className="text-[11px] text-amber-400 mt-1">Sélectionnez un mois et une année complets</p>
@@ -736,7 +739,7 @@ export default function ReventePage() {
                           {tri.toFixed(1)}% / an
                         </p>
                         <p className="text-[11px] text-zinc-500 mt-1">
-                          {tri >= 10 ? '🚀 Excellent' : tri >= 7 ? '✓ Très bon' : tri >= 4 ? '~ Correct' : '⚠ Faible'}
+                          {tri >= 10 ? 'Excellent' : tri >= 7 ? 'Très bon' : tri >= 4 ? 'Correct' : 'Faible'}
                           {' '}· Livret A ≈ 2.5% · SCPI ≈ 5%
                         </p>
                       </div>
@@ -761,7 +764,10 @@ export default function ReventePage() {
                   : 'border-white/[0.07] bg-white/[0.03]'
               }`}>
                 {exoTotal && (
-                  <p className="text-[11px] text-emerald-500 font-bold uppercase tracking-wider mb-2">🎉 Exonération totale</p>
+                  <div className="flex items-center gap-1.5 justify-center mb-2">
+                    <IconCheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                    <p className="text-[11px] text-emerald-500 font-bold uppercase tracking-wider">Exonération totale</p>
+                  </div>
                 )}
                 <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
                   {hasCredit ? 'Argent récupéré après la vente' : 'Bénéfice net après impôts'}
@@ -811,7 +817,7 @@ export default function ReventePage() {
                         <Row label="Impôt sur le bénéfice (19%)" value={`– ${formatCurrency(result.impotIR)}`} color="red" />
                       </>
                     ) : (
-                      <Row label="Impôt sur le bénéfice" value="Exonéré ✓" color="emerald" />
+                      <Row label="Impôt sur le bénéfice" value="Exonéré" color="emerald" />
                     )}
                     {!result.exonerationPS ? (
                       <>
@@ -819,7 +825,7 @@ export default function ReventePage() {
                         <Row label="Cotisations sociales (17.2%)" value={`– ${formatCurrency(result.prelevementsSociaux)}`} color="red" />
                       </>
                     ) : (
-                      <Row label="Cotisations sociales" value="Exonérées ✓" color="emerald" />
+                      <Row label="Cotisations sociales" value="Exonérées" color="emerald" />
                     )}
                     <Row label="Total impôts à payer" value={`– ${formatCurrency(result.impotTotal)}`} color={result.impotTotal > 0 ? 'red' : 'emerald'} bold sep />
                   </>
@@ -827,7 +833,10 @@ export default function ReventePage() {
 
                 {params.typeBien === 'residence_principale' && (
                   <div className="mt-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20 px-4 py-2.5">
-                    <p className="text-xs font-semibold text-emerald-400">✓ Résidence principale — Aucun impôt sur le bénéfice</p>
+                    <div className="flex items-center gap-1.5">
+                      <IconCheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <p className="text-xs font-semibold text-emerald-400">Résidence principale — Aucun impôt sur le bénéfice</p>
+                    </div>
                   </div>
                 )}
 
@@ -861,7 +870,10 @@ export default function ReventePage() {
               {/* Conseil optimisation */}
               {params.typeBien === 'locatif' && !exoTotal && result.plusValueBrute > 0 && (
                 <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4">
-                  <p className="text-xs font-bold text-amber-400 mb-1.5">💡 Optimisation fiscale</p>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <IconLightBulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <p className="text-xs font-bold text-amber-400">Optimisation fiscale</p>
+                  </div>
                   <p className="text-xs text-zinc-400 leading-relaxed">
                     {!result.exonerationIR
                       ? <>Attendre <strong className="text-white">{22 - params.anneesDetention} an{22 - params.anneesDetention > 1 ? 's' : ''}</strong> vous exonère d&apos;IR. Économie estimée : <strong className="text-emerald-400">{formatCurrency(result.impotIR)}</strong>.</>

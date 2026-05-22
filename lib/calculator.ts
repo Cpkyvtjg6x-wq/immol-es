@@ -493,9 +493,9 @@ export function calculerFraisNotaire(prixAchat: number, etat: 'ancien' | 'neuf')
 
 export const DEFAULT_PARAMS: InvestmentParams = {
   // Bien
-  prixAchat: 150000,
+  prixAchat: 0,
   surface: 40,
-  ville: 'Lyon',
+  ville: '',
   quartier: '',
   typeBien: 'Appartement',
   etat: 'ancien',
@@ -507,9 +507,9 @@ export const DEFAULT_PARAMS: InvestmentParams = {
   duree: 20,
   assuranceTaux: 0.1,
   loanType: 'amortissable',
-  fraisNotaire: 12000,    // 8% de 150k
+  fraisNotaire: 0,
   fraisNotaireAuto: true,
-  travaux: 5000,
+  travaux: 0,
   fraisGarantiePct: 1.5,
   fraisDossier: 500,
 
@@ -521,16 +521,16 @@ export const DEFAULT_PARAMS: InvestmentParams = {
 
   // Location
   locType: 'meuble',
-  loyerNu: 700,
-  loyerMeuble: 850,
+  loyerNu: 0,
+  loyerMeuble: 0,
   chargesRecuperables: 0,
   nbChambres: 3,
-  loyerParChambre: 350,
+  loyerParChambre: 0,
   vacance: 0.5,
   irl: 1.5,
 
   // Saisonnier
-  prixNuit: 80,
+  prixNuit: 0,
   tauxOccupation: 65,
   dureeSejourMoyen: 3,
   commissionPlateforme: 15,

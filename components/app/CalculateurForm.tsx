@@ -22,7 +22,7 @@ interface Props {
 type SectionStatus = 'idle' | 'in_progress' | 'complete'
 
 function SectionBubble({
-  num, title, open, onToggle, pct, status, summary, badge, children,
+  num, title, open, onToggle, pct, status, summary, badge, children, domRef,
 }: {
   num: string
   title: string
@@ -33,6 +33,7 @@ function SectionBubble({
   summary: string
   badge?: string
   children?: React.ReactNode
+  domRef?: (el: HTMLDivElement | null) => void
 }) {
   const ringColor =
     status === 'complete' ? '#10b981' :
@@ -40,10 +41,10 @@ function SectionBubble({
     'rgba(255,255,255,0.08)'
 
   const cardBorder =
-    open ? 'border-white/[0.14] bg-white/[0.025]' :
-    status === 'complete' ? 'border-emerald-500/20 bg-emerald-500/[0.015]' :
-    status === 'in_progress' ? 'border-amber-500/15 bg-amber-500/[0.015]' :
-    'border-white/[0.06] bg-white/[0.01]'
+    open ? 'border-white/[0.16] bg-white/[0.025]' :
+    status === 'complete' ? 'border-emerald-500/25 bg-emerald-500/[0.02]' :
+    status === 'in_progress' ? 'border-amber-500/20 bg-amber-500/[0.015]' :
+    'border-white/[0.07] bg-white/[0.01]'
 
   const titleColor =
     open ? 'text-white' :
@@ -59,15 +60,18 @@ function SectionBubble({
       : 'bg-white/[0.06] border-white/[0.08] text-zinc-500'
 
   return (
-    <div className={`rounded-xl border transition-all duration-300 overflow-hidden ${cardBorder}`}>
-      {/* ── Header (toujours visible) ── */}
+    <div
+      ref={domRef}
+      className={`rounded-2xl border transition-all duration-300 ${cardBorder}`}
+    >
+      {/* ── Header (toujours visible, cliquable partout) ── */}
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
+        className="w-full flex items-center gap-3.5 px-5 py-4 text-left cursor-pointer"
       >
         {/* Badge numéro / check */}
-        <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 border transition-all ${numStyle}`}>
+        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 border transition-all ${numStyle}`}>
           {status === 'complete' && !open ? (
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -101,12 +105,12 @@ function SectionBubble({
         <div className="flex items-center gap-2.5 shrink-0">
           {/* Anneau conic-gradient */}
           <div
-            className="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-700"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-700"
             style={{
               background: `conic-gradient(${ringColor} ${Math.round(pct * 3.6)}deg, rgba(255,255,255,0.06) 0deg)`,
             }}
           >
-            <div className="w-[18px] h-[18px] rounded-full bg-[#09090b] flex items-center justify-center">
+            <div className="w-5 h-5 rounded-full bg-[#09090b] flex items-center justify-center">
               {status === 'complete' ? (
                 <svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -118,7 +122,7 @@ function SectionBubble({
           </div>
           {/* Chevron */}
           <svg
-            className={`w-3.5 h-3.5 text-zinc-600 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-zinc-600 transition-transform duration-300 shrink-0 ${open ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -126,12 +130,16 @@ function SectionBubble({
         </div>
       </button>
 
-      {/* ── Contenu déployé ── */}
-      {open && children && (
+      {/* ── Contenu déployé — animation height ── */}
+      <div
+        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
+          open ? 'max-h-[4000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
         <div className="border-t border-white/[0.06]">
           {children}
         </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -260,12 +268,19 @@ function Divider() {
   return <div className="border-t border-white/[0.04] my-1" />
 }
 
+// ─── Section IDs (module-level pour stabilité des refs) ────────────────────────
+const SECTION_IDS = ['bien', 'travaux', 'financement', 'location', 'charges', 'fiscalite', 'revente'] as const
+type SectionId = typeof SECTION_IDS[number]
+
 // ─── Main form ─────────────────────────────────────────────────────────────────
 
 export function CalculateurForm({ onCalculate, onChange, loading, initialParams, result }: Props) {
   const [p, setP] = useState<InvestmentParams>(initialParams ?? DEFAULT_PARAMS)
   const [activeSection, setActiveSection] = useState<string | null>('bien')
   const [visitedSections, setVisitedSections] = useState<Set<string>>(new Set(['bien']))
+  const [firstPassDone, setFirstPassDone] = useState(false)
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const pctInitialized = useRef(false)
 
   // ─── État section Travaux ──────────────────────────────────────────────────
   const [travauxEsthetiques, setTravauxEsthetiques] = useState(0)
@@ -328,11 +343,22 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
     setP((prev) => ({ ...prev, [key]: val }))
   }, [])
 
-  const SECTION_IDS = ['bien', 'travaux', 'financement', 'location', 'charges', 'fiscalite', 'revente'] as const
-
   const openSection = (id: string) => {
-    setActiveSection(prev => prev === id ? null : id)
-    setVisitedSections(prev => new Set(Array.from(prev).concat(id)))
+    const isClosing = activeSection === id
+    if (isClosing && !firstPassDone) {
+      // Fermeture manuelle pendant le premier passage → avancer quand même
+      const idx = SECTION_IDS.indexOf(id as SectionId)
+      if (idx >= 0 && idx < SECTION_IDS.length - 1) {
+        const nextId = SECTION_IDS[idx + 1]
+        setActiveSection(nextId)
+        setVisitedSections(prev => new Set(Array.from(prev).concat(nextId)))
+      } else {
+        setActiveSection(null) // dernière section fermée → fin du premier passage
+      }
+    } else {
+      setActiveSection(prev => prev === id ? null : id)
+      setVisitedSections(prev => new Set(Array.from(prev).concat(id)))
+    }
   }
 
   // ─── Infos de progression par section ────────────────────────────────────────
@@ -353,7 +379,10 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
       if (p.prixAchat > 0) pts += 50
       if (p.ville && p.ville.trim() !== '') pts += 50
       const pct = pts
-      const status: SectionStatus = pct === 100 ? 'complete' : pct > 0 || vis.has('bien') ? 'in_progress' : 'idle'
+      const status: SectionStatus =
+        pct === 100 && vis.has('bien') ? 'complete' :
+        vis.has('bien') && pct > 0 ? 'in_progress' :
+        'idle'
       const priceStr = p.prixAchat > 0 ? `${Math.round(p.prixAchat / 1000)}k €` : '—'
       return { pct, status, summary: `${p.typeBien ?? 'Bien'} · ${priceStr} · ${p.ville || '—'}` }
     })()
@@ -372,7 +401,10 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
       if (p.taux > 0) pts += 50
       if (p.duree > 0) pts += 50
       const pct = pts
-      const status: SectionStatus = pct === 100 ? 'complete' : pct > 0 || vis.has('financement') ? 'in_progress' : 'idle'
+      const status: SectionStatus =
+        pct === 100 && vis.has('financement') ? 'complete' :
+        vis.has('financement') && pct > 0 ? 'in_progress' :
+        'idle'
       const apportStr = p.apport > 0 ? `${Math.round(p.apport / 1000)}k € apport · ` : ''
       return { pct, status, summary: `${apportStr}${p.taux}% · ${p.duree} ans` }
     })()
@@ -406,18 +438,43 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
     return { bien, travaux, financement, location, charges, fiscalite, revente }
   }, [p, visitedSections, travauxEsthetiques, renoDpeEnabled, renoDpeCible])
 
+  // ─── Marquer firstPassDone quand toutes les sections ont été visitées ─────────
+  useEffect(() => {
+    if (!firstPassDone && SECTION_IDS.every(id => visitedSections.has(id))) {
+      setFirstPassDone(true)
+    }
+  }, [visitedSections, firstPassDone])
+
+  // ─── Auto-scroll vers la section active ───────────────────────────────────────
+  useEffect(() => {
+    if (!activeSection) return
+    const el = sectionRefs.current[activeSection]
+    if (el) {
+      const timer = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80)
+      return () => clearTimeout(timer)
+    }
+  }, [activeSection])
+
   // ─── Auto-avance dès qu'une section atteint 100% ─────────────────────────────
   const prevPct = useRef<Record<string, number>>({})
   useEffect(() => {
-    if (!activeSection) return
-    const ids = [...SECTION_IDS]
-    const idx = ids.indexOf(activeSection as typeof SECTION_IDS[number])
-    if (idx < 0 || idx >= ids.length - 1) return
-    const info = sectionInfos[activeSection as keyof typeof sectionInfos]
+    // Initialisation au premier rendu : mémoriser les pct actuels pour éviter les faux déclenchements
+    if (!pctInitialized.current) {
+      pctInitialized.current = true
+      SECTION_IDS.forEach(id => {
+        prevPct.current[id] = sectionInfos[id as SectionId].pct
+      })
+      return
+    }
+    // Pas d'auto-avance si premier passage terminé ou pas de section active
+    if (firstPassDone || !activeSection) return
+    const idx = SECTION_IDS.indexOf(activeSection as SectionId)
+    if (idx < 0 || idx >= SECTION_IDS.length - 1) return
+    const info = sectionInfos[activeSection as SectionId]
     const prev = prevPct.current[activeSection] ?? 0
     prevPct.current[activeSection] = info.pct
     if (info.pct >= 100 && prev < 100) {
-      const nextId = ids[idx + 1]
+      const nextId = SECTION_IDS[idx + 1]
       const timer = setTimeout(() => {
         setActiveSection(nextId)
         setVisitedSections(s => new Set(Array.from(s).concat(nextId)))
@@ -425,7 +482,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
       return () => clearTimeout(timer)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectionInfos, activeSection])
+  }, [sectionInfos, activeSection, firstPassDone])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -505,6 +562,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="1" title="Le bien"
           open={activeSection === 'bien'}
           onToggle={() => openSection('bien')}
+          domRef={el => { sectionRefs.current['bien'] = el }}
           {...sectionInfos.bien}
         >
             <div className="px-5 pb-5 space-y-4">
@@ -691,6 +749,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           open={activeSection === 'travaux'}
           onToggle={() => openSection('travaux')}
           badge={['E','F','G'].includes(p.dpe) ? 'DPE urgent' : undefined}
+          domRef={el => { sectionRefs.current['travaux'] = el }}
           {...sectionInfos.travaux}
         >
             <div className="px-5 pb-5 space-y-4">
@@ -965,6 +1024,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="3" title="Financement"
           open={activeSection === 'financement'}
           onToggle={() => openSection('financement')}
+          domRef={el => { sectionRefs.current['financement'] = el }}
           {...sectionInfos.financement}
         >
             <div className="px-5 pb-5 space-y-4">
@@ -1076,6 +1136,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="4" title="Location"
           open={activeSection === 'location'}
           onToggle={() => openSection('location')}
+          domRef={el => { sectionRefs.current['location'] = el }}
           {...sectionInfos.location}
         >
             <div className="px-5 pb-5 space-y-4">
@@ -1577,6 +1638,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="5" title="Charges annuelles"
           open={activeSection === 'charges'}
           onToggle={() => openSection('charges')}
+          domRef={el => { sectionRefs.current['charges'] = el }}
           {...sectionInfos.charges}
         >
             <div className="px-5 pb-5 space-y-3">
@@ -1761,6 +1823,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           open={activeSection === 'fiscalite'}
           onToggle={() => openSection('fiscalite')}
           badge="Précision max"
+          domRef={el => { sectionRefs.current['fiscalite'] = el }}
           {...sectionInfos.fiscalite}
         >
             <div className="px-5 pb-5 space-y-4">
@@ -2054,6 +2117,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           num="7" title="Revente & TRI"
           open={activeSection === 'revente'}
           onToggle={() => openSection('revente')}
+          domRef={el => { sectionRefs.current['revente'] = el }}
           {...sectionInfos.revente}
         >
             <div className="px-5 pb-5 space-y-4">

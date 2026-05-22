@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { InvestmentParams, InvestmentResult, LotGroup } from '@/lib/types'
 import { DEFAULT_PARAMS, calculerFraisNotaire } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
@@ -19,41 +19,120 @@ interface Props {
 
 // ─── UI primitives ─────────────────────────────────────────────────────────────
 
-function SectionHeader({
-  num,
-  title,
-  open,
-  onToggle,
-  badge,
+type SectionStatus = 'idle' | 'in_progress' | 'complete'
+
+function SectionBubble({
+  num, title, open, onToggle, pct, status, summary, badge, children,
 }: {
   num: string
   title: string
   open: boolean
   onToggle: () => void
+  pct: number
+  status: SectionStatus
+  summary: string
   badge?: string
+  children?: React.ReactNode
 }) {
+  const ringColor =
+    status === 'complete' ? '#10b981' :
+    status === 'in_progress' ? '#f59e0b' :
+    'rgba(255,255,255,0.08)'
+
+  const cardBorder =
+    open ? 'border-white/[0.14] bg-white/[0.025]' :
+    status === 'complete' ? 'border-emerald-500/20 bg-emerald-500/[0.015]' :
+    status === 'in_progress' ? 'border-amber-500/15 bg-amber-500/[0.015]' :
+    'border-white/[0.06] bg-white/[0.01]'
+
+  const titleColor =
+    open ? 'text-white' :
+    status === 'complete' ? 'text-emerald-300/90' :
+    status === 'in_progress' ? 'text-white' :
+    'text-zinc-500'
+
+  const numStyle =
+    status === 'complete' && !open
+      ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
+      : status === 'in_progress' && !open
+      ? 'bg-amber-500/15 border-amber-500/25 text-amber-400'
+      : 'bg-white/[0.06] border-white/[0.08] text-zinc-500'
+
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="w-full flex items-center gap-3 py-3.5 px-5 text-left hover:bg-white/[0.02] transition-colors"
-    >
-      <span className="w-5 h-5 rounded-md bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-[10px] font-bold text-zinc-500 shrink-0">
-        {num}
-      </span>
-      <span className="flex-1 text-[13px] font-semibold text-white">{title}</span>
-      {badge && (
-        <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-          {badge}
-        </span>
-      )}
-      <svg
-        className={`w-3.5 h-3.5 text-zinc-600 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`}
-        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+    <div className={`rounded-xl border transition-all duration-300 overflow-hidden ${cardBorder}`}>
+      {/* ── Header (toujours visible) ── */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
       >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-      </svg>
-    </button>
+        {/* Badge numéro / check */}
+        <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 border transition-all ${numStyle}`}>
+          {status === 'complete' && !open ? (
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          ) : num}
+        </div>
+
+        {/* Titre + résumé */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-[13px] font-semibold leading-tight transition-colors ${titleColor}`}>
+              {title}
+            </span>
+            {badge && (
+              <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                {badge}
+              </span>
+            )}
+          </div>
+          {/* Résumé : visible seulement replié */}
+          {!open && (
+            <p className={`text-[11px] mt-0.5 truncate leading-tight ${
+              status === 'idle' ? 'text-zinc-600 italic' : 'text-zinc-500'
+            }`}>
+              {status === 'idle' ? 'Non renseigné' : summary}
+            </p>
+          )}
+        </div>
+
+        {/* Anneau de progression + chevron */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          {/* Anneau conic-gradient */}
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-700"
+            style={{
+              background: `conic-gradient(${ringColor} ${Math.round(pct * 3.6)}deg, rgba(255,255,255,0.06) 0deg)`,
+            }}
+          >
+            <div className="w-[18px] h-[18px] rounded-full bg-[#09090b] flex items-center justify-center">
+              {status === 'complete' ? (
+                <svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : pct > 0 ? (
+                <span className="text-[8px] font-black text-zinc-500 tabular-nums leading-none">{pct}</span>
+              ) : null}
+            </div>
+          </div>
+          {/* Chevron */}
+          <svg
+            className={`w-3.5 h-3.5 text-zinc-600 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+
+      {/* ── Contenu déployé ── */}
+      {open && children && (
+        <div className="border-t border-white/[0.06]">
+          {children}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -185,15 +264,8 @@ function Divider() {
 
 export function CalculateurForm({ onCalculate, onChange, loading, initialParams, result }: Props) {
   const [p, setP] = useState<InvestmentParams>(initialParams ?? DEFAULT_PARAMS)
-  const [openSections, setOpenSections] = useState({
-    bien: true,
-    travaux: true,
-    financement: true,
-    location: true,
-    charges: true,
-    fiscalite: true,
-    revente: false,
-  })
+  const [activeSection, setActiveSection] = useState<string | null>('bien')
+  const [visitedSections, setVisitedSections] = useState<Set<string>>(new Set(['bien']))
 
   // ─── État section Travaux ──────────────────────────────────────────────────
   const [travauxEsthetiques, setTravauxEsthetiques] = useState(0)
@@ -256,8 +328,104 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
     setP((prev) => ({ ...prev, [key]: val }))
   }, [])
 
-  const toggle = (section: keyof typeof openSections) =>
-    setOpenSections((s) => ({ ...s, [section]: !s[section] }))
+  const SECTION_IDS = ['bien', 'travaux', 'financement', 'location', 'charges', 'fiscalite', 'revente'] as const
+
+  const openSection = (id: string) => {
+    setActiveSection(prev => prev === id ? null : id)
+    setVisitedSections(prev => new Set(Array.from(prev).concat(id)))
+  }
+
+  // ─── Infos de progression par section ────────────────────────────────────────
+  const sectionInfos = useMemo(() => {
+    const vis = visitedSections
+
+    const getLoyerForSection = () => {
+      if (p.locType === 'nu') return p.loyerNu
+      if (p.locType === 'meuble') return p.loyerMeuble
+      if (p.locType === 'coloc') return p.loyerParChambre * p.nbChambres
+      if (p.locType === 'saisonnier') return p.prixNuit ?? 0
+      if (p.locType === 'immeuble') return (p.lotGroups ?? []).reduce((s, g) => s + g.loyer * g.nb, 0)
+      return 0
+    }
+
+    const bien = (() => {
+      let pts = 0
+      if (p.prixAchat > 0) pts += 50
+      if (p.ville && p.ville.trim() !== '') pts += 50
+      const pct = pts
+      const status: SectionStatus = pct === 100 ? 'complete' : pct > 0 || vis.has('bien') ? 'in_progress' : 'idle'
+      const priceStr = p.prixAchat > 0 ? `${Math.round(p.prixAchat / 1000)}k €` : '—'
+      return { pct, status, summary: `${p.typeBien ?? 'Bien'} · ${priceStr} · ${p.ville || '—'}` }
+    })()
+
+    const travaux = (() => {
+      if (!vis.has('travaux')) return { pct: 0, status: 'idle' as SectionStatus, summary: 'Non renseigné' }
+      const hasTravaux = p.travaux > 0
+      const summary = hasTravaux
+        ? `${p.travaux.toLocaleString('fr-FR')} € de travaux${renoDpeEnabled ? ` · DPE → ${renoDpeCible}` : ''}`
+        : 'Aucun travaux'
+      return { pct: 100, status: 'complete' as SectionStatus, summary }
+    })()
+
+    const financement = (() => {
+      let pts = 0
+      if (p.taux > 0) pts += 50
+      if (p.duree > 0) pts += 50
+      const pct = pts
+      const status: SectionStatus = pct === 100 ? 'complete' : pct > 0 || vis.has('financement') ? 'in_progress' : 'idle'
+      const apportStr = p.apport > 0 ? `${Math.round(p.apport / 1000)}k € apport · ` : ''
+      return { pct, status, summary: `${apportStr}${p.taux}% · ${p.duree} ans` }
+    })()
+
+    const location = (() => {
+      const loyer = getLoyerForSection()
+      const pct = loyer > 0 ? 100 : vis.has('location') ? 50 : 0
+      const status: SectionStatus = loyer > 0 ? 'complete' : vis.has('location') ? 'in_progress' : 'idle'
+      const locLabels: Record<string, string> = { nu: 'Nu', meuble: 'Meublé', coloc: 'Coloc', saisonnier: 'Saisonnier', immeuble: 'Immeuble' }
+      const loyerStr = loyer > 0 ? `${Math.round(loyer).toLocaleString('fr-FR')} €/mois` : '—'
+      return { pct, status, summary: `${locLabels[p.locType] ?? p.locType} · ${loyerStr}` }
+    })()
+
+    const charges = (() => {
+      if (!vis.has('charges')) return { pct: 0, status: 'idle' as SectionStatus, summary: 'Valeurs par défaut' }
+      const summary = p.taxeFonciere > 0 ? `Taxe fonc. ${p.taxeFonciere.toLocaleString('fr-FR')} € · Copro ${p.chargesCopro.toLocaleString('fr-FR')} €` : 'Charges configurées'
+      return { pct: 100, status: 'complete' as SectionStatus, summary }
+    })()
+
+    const fiscalite = (() => {
+      if (!vis.has('fiscalite')) return { pct: 0, status: 'idle' as SectionStatus, summary: 'TMI 30% par défaut' }
+      const structLabels: Record<string, string> = { 'nom-propre': 'Nom propre', 'sci-ir': 'SCI IR', 'sci-is': 'SCI IS', 'sarl-famille': 'SARL famille' }
+      return { pct: 100, status: 'complete' as SectionStatus, summary: `TMI ${p.tmi}% · ${structLabels[p.structure] ?? p.structure}` }
+    })()
+
+    const revente = (() => {
+      if (!vis.has('revente')) return { pct: 0, status: 'idle' as SectionStatus, summary: 'Non configuré' }
+      return { pct: 100, status: 'complete' as SectionStatus, summary: `Horizon ${p.horizonRevente} ans · +${p.valorisationAnnuelle}%/an` }
+    })()
+
+    return { bien, travaux, financement, location, charges, fiscalite, revente }
+  }, [p, visitedSections, travauxEsthetiques, renoDpeEnabled, renoDpeCible])
+
+  // ─── Auto-avance dès qu'une section atteint 100% ─────────────────────────────
+  const prevPct = useRef<Record<string, number>>({})
+  useEffect(() => {
+    if (!activeSection) return
+    const ids = [...SECTION_IDS]
+    const idx = ids.indexOf(activeSection as typeof SECTION_IDS[number])
+    if (idx < 0 || idx >= ids.length - 1) return
+    const info = sectionInfos[activeSection as keyof typeof sectionInfos]
+    const prev = prevPct.current[activeSection] ?? 0
+    prevPct.current[activeSection] = info.pct
+    if (info.pct >= 100 && prev < 100) {
+      const nextId = ids[idx + 1]
+      const timer = setTimeout(() => {
+        setActiveSection(nextId)
+        setVisitedSections(s => new Set(Array.from(s).concat(nextId)))
+      }, 550)
+      return () => clearTimeout(timer)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionInfos, activeSection])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -328,14 +496,17 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto py-2 px-3 space-y-2">
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 1 — LE BIEN                                                 */}
         {/* ──────────────────────────────────────────────────────────────────── */}
-        <div className="border-b border-white/[0.05]">
-          <SectionHeader num="1" title="Le bien" open={openSections.bien} onToggle={() => toggle('bien')} />
-          {openSections.bien && (
+        <SectionBubble
+          num="1" title="Le bien"
+          open={activeSection === 'bien'}
+          onToggle={() => openSection('bien')}
+          {...sectionInfos.bien}
+        >
             <div className="px-5 pb-5 space-y-4">
 
               {/* Type */}
@@ -510,21 +681,18 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               </div>
 
             </div>
-          )}
-        </div>
+        </SectionBubble>
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 2 — TRAVAUX                                                 */}
         {/* ──────────────────────────────────────────────────────────────────── */}
-        <div className="border-b border-white/[0.05]">
-          <SectionHeader
-            num="2"
-            title="Travaux"
-            open={openSections.travaux}
-            onToggle={() => toggle('travaux')}
-            badge={['E','F','G'].includes(p.dpe) ? 'DPE urgent' : undefined}
-          />
-          {openSections.travaux && (
+        <SectionBubble
+          num="2" title="Travaux"
+          open={activeSection === 'travaux'}
+          onToggle={() => openSection('travaux')}
+          badge={['E','F','G'].includes(p.dpe) ? 'DPE urgent' : undefined}
+          {...sectionInfos.travaux}
+        >
             <div className="px-5 pb-5 space-y-4">
 
               {/* ── Travaux esthétiques ─────────────────────────────────────── */}
@@ -788,15 +956,17 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               )}
 
             </div>
-          )}
-        </div>
+        </SectionBubble>
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 3 — FINANCEMENT                                             */}
         {/* ──────────────────────────────────────────────────────────────────── */}
-        <div className="border-b border-white/[0.05]">
-          <SectionHeader num="3" title="Financement" open={openSections.financement} onToggle={() => toggle('financement')} />
-          {openSections.financement && (
+        <SectionBubble
+          num="3" title="Financement"
+          open={activeSection === 'financement'}
+          onToggle={() => openSection('financement')}
+          {...sectionInfos.financement}
+        >
             <div className="px-5 pb-5 space-y-4">
 
               {/* Type prêt */}
@@ -806,8 +976,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   value={p.loanType}
                   onChange={(v) => set('loanType', v as 'amortissable' | 'in-fine')}
                   options={[
-                    { value: 'amortissable', label: '📉 Amortissable' },
-                    { value: 'in-fine', label: '💎 In-fine' },
+                    { value: 'amortissable', label: 'Amortissable' },
+                    { value: 'in-fine', label: 'In-fine' },
                   ]}
                 />
               </div>
@@ -897,15 +1067,17 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               </div>
 
             </div>
-          )}
-        </div>
+        </SectionBubble>
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 4 — LOCATION                                                */}
         {/* ──────────────────────────────────────────────────────────────────── */}
-        <div className="border-b border-white/[0.05]">
-          <SectionHeader num="4" title="Location" open={openSections.location} onToggle={() => toggle('location')} />
-          {openSections.location && (
+        <SectionBubble
+          num="4" title="Location"
+          open={activeSection === 'location'}
+          onToggle={() => openSection('location')}
+          {...sectionInfos.location}
+        >
             <div className="px-5 pb-5 space-y-4">
 
               {/* Type location — masqué pour immeuble (piloté par Section 1) */}
@@ -1396,15 +1568,17 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               })()}
 
             </div>
-          )}
-        </div>
+        </SectionBubble>
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 5 — CHARGES                                                 */}
         {/* ──────────────────────────────────────────────────────────────────── */}
-        <div className="border-b border-white/[0.05]">
-          <SectionHeader num="5" title="Charges annuelles" open={openSections.charges} onToggle={() => toggle('charges')} />
-          {openSections.charges && (
+        <SectionBubble
+          num="5" title="Charges annuelles"
+          open={activeSection === 'charges'}
+          onToggle={() => openSection('charges')}
+          {...sectionInfos.charges}
+        >
             <div className="px-5 pb-5 space-y-3">
 
               {/* Charges fixes */}
@@ -1577,15 +1751,18 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               })()}
 
             </div>
-          )}
-        </div>
+        </SectionBubble>
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 6 — FISCALITÉ                                               */}
         {/* ──────────────────────────────────────────────────────────────────── */}
-        <div className="border-b border-white/[0.05]">
-          <SectionHeader num="6" title="Fiscalité" open={openSections.fiscalite} onToggle={() => toggle('fiscalite')} badge="Précision max" />
-          {openSections.fiscalite && (
+        <SectionBubble
+          num="6" title="Fiscalité"
+          open={activeSection === 'fiscalite'}
+          onToggle={() => openSection('fiscalite')}
+          badge="Précision max"
+          {...sectionInfos.fiscalite}
+        >
             <div className="px-5 pb-5 space-y-4">
 
               {/* TMI */}
@@ -1751,8 +1928,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 <Label>Profil fiscal</Label>
                 <div className="grid grid-cols-2 gap-1">
                   {([
-                    { value: 'nouveau', label: '🟢 Investisseur débutant' },
-                    { value: 'confirme', label: '🔵 Profil confirmé' },
+                    { value: 'nouveau', label: 'Investisseur débutant' },
+                    { value: 'confirme', label: 'Profil confirmé' },
                   ] as const).map((o) => (
                     <button
                       key={o.value}
@@ -1868,15 +2045,17 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               </div>
 
             </div>
-          )}
-        </div>
+        </SectionBubble>
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 7 — REVENTE & TRI                                           */}
         {/* ──────────────────────────────────────────────────────────────────── */}
-        <div className="border-b border-white/[0.05]">
-          <SectionHeader num="7" title="Revente & TRI" open={openSections.revente} onToggle={() => toggle('revente')} />
-          {openSections.revente && (
+        <SectionBubble
+          num="7" title="Revente & TRI"
+          open={activeSection === 'revente'}
+          onToggle={() => openSection('revente')}
+          {...sectionInfos.revente}
+        >
             <div className="px-5 pb-5 space-y-4">
 
               <SliderRow
@@ -1918,8 +2097,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               </div>
 
             </div>
-          )}
-        </div>
+        </SectionBubble>
 
       </div>
 

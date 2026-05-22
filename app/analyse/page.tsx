@@ -510,6 +510,16 @@ export default function AnalysePage() {
                     />
                   </div>
 
+                  <div>
+                    <SectionLabel>Analyse IA</SectionLabel>
+                    <AIInsights
+                      insights={insights}
+                      loading={aiLoading}
+                      onGenerate={handleGenerateAI}
+                      isPro={false}
+                    />
+                  </div>
+
                   {lastParams && (
                     <div>
                       <SectionLabel>Scénarios & équilibre</SectionLabel>
@@ -524,16 +534,6 @@ export default function AnalysePage() {
                       />
                     </div>
                   )}
-
-                  <div>
-                    <SectionLabel>Analyse IA</SectionLabel>
-                    <AIInsights
-                      insights={insights}
-                      loading={aiLoading}
-                      onGenerate={handleGenerateAI}
-                      isPro={false}
-                    />
-                  </div>
 
                   <div>
                     <SectionLabel>Détails, fiscalité & projections</SectionLabel>

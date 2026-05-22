@@ -135,7 +135,7 @@ function MetricDelta({ label, value, delta, deltaFmt, color }: MetricDeltaProps)
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: ScenarioPanelProps) {
-  const [expanded, setExpanded] = useState(false)
+  const [showSliders, setShowSliders] = useState(false)
   const [showEquilibre, setShowEquilibre] = useState(false)
 
   // Loyer de base selon locType
@@ -263,11 +263,15 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
       <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
 
         {/* ── Header ────────────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.05] bg-white/[0.015]">
+        <button
+          type="button"
+          onClick={() => setShowSliders(v => !v)}
+          className="w-full flex items-center justify-between px-5 py-3.5 border-b border-white/[0.05] bg-white/[0.015] hover:bg-white/[0.025] transition-colors cursor-pointer"
+        >
           <div className="flex items-center gap-2.5">
             <div className={`w-2 h-2 rounded-full transition-colors ${hasChanged ? 'bg-amber-400' : 'bg-emerald-500/50'}`} />
-            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
-              Et si… — scénarios
+            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+              Et si… — simulateur de scénarios
             </p>
             {hasChanged && (
               <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full">
@@ -275,8 +279,18 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
               </span>
             )}
           </div>
-          <span className="text-[10px] text-zinc-700 font-medium">Calculé instantanément</span>
-        </div>
+          <div className="flex items-center gap-2">
+            {!showSliders && (
+              <span className="text-[10px] text-zinc-600 hidden sm:block">Modifier les paramètres</span>
+            )}
+            <svg
+              className={`w-4 h-4 text-zinc-600 transition-transform duration-250 shrink-0 ${showSliders ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </button>
 
         {/* ── Résultats temps réel ───────────────────────────────────────── */}
         <div className="grid grid-cols-3 gap-0 border-b border-white/[0.05]">
@@ -309,8 +323,16 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
           </div>
         </div>
 
-        {/* ── Sliders ───────────────────────────────────────────────────────── */}
-        <div className="px-5 py-5 space-y-5">
+        {/* ── Sliders (pliables) ────────────────────────────────────────────── */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateRows: showSliders ? '1fr' : '0fr',
+            transition: 'grid-template-rows 300ms cubic-bezier(0.4,0,0.2,1)',
+          }}
+        >
+        <div className="overflow-hidden">
+        <div className="px-5 py-5 space-y-5 border-b border-white/[0.05]">
           <SliderRow
             label="Prix d'achat"
             value={s.prixAchat}
@@ -391,7 +413,9 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
               </p>
             </div>
           )}
-        </div>
+        </div>{/* end sliders inner */}
+        </div>{/* end overflow-hidden */}
+        </div>{/* end grid collapsible */}
 
         {/* ── "Faire fonctionner ce bien" ────────────────────────────────── */}
         <div className="border-t border-white/[0.05]">
@@ -562,8 +586,8 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
           )}
         </div>
 
-        {/* ── Actions ────────────────────────────────────────────────────── */}
-        <div className="border-t border-white/[0.05] px-5 py-3 flex items-center justify-between gap-3 bg-white/[0.01]">
+        {/* ── Actions — visibles uniquement quand sliders ouverts ─────────── */}
+        {showSliders && <div className="border-t border-white/[0.05] px-5 py-3 flex items-center justify-between gap-3 bg-white/[0.01]">
           <button
             onClick={handleReset}
             disabled={!hasChanged}
@@ -590,7 +614,7 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
               Appliquer ce scénario
             </button>
           </div>
-        </div>
+        </div>}
       </div>
     </>
   )

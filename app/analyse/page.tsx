@@ -18,6 +18,8 @@ import { SaveModal } from '@/components/app/SaveModal'
 import { AppShell } from '@/components/app/AppShell'
 import { ExportButtons } from '@/components/app/ExportButtons'
 import { ScenarioPanel } from '@/components/app/ScenarioPanel'
+import { MarketContextBlock } from '@/components/app/MarketContextBlock'
+import type { LocalMarketData } from '@/lib/types'
 
 const LS_KEY = 'immolyse_last_params'
 
@@ -126,6 +128,8 @@ export default function AnalysePage() {
   const [liveUpdating, setLiveUpdating]   = useState(false)
   const [aiLoading, setAiLoading]         = useState(false)
   const [lastParams, setLastParams]       = useState<InvestmentParams | null>(null)
+  const [marketData, setMarketData]       = useState<LocalMarketData | null>(null)
+  const [marketLoading, setMarketLoading] = useState(false)
   const [showResults, setShowResults]     = useState(false)
   const [resultsVisible, setResultsVisible] = useState(false)
   const [saveModalOpen, setSaveModalOpen] = useState(false)
@@ -152,6 +156,32 @@ export default function AnalysePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const fetchMarketData = useCallback(async (params: InvestmentParams) => {
+    const hasLoc = !!(params.ville?.trim() || params.adresse?.trim())
+    if (!hasLoc) return
+    setMarketLoading(true)
+    try {
+      const sp = new URLSearchParams({
+        ville:     params.ville ?? '',
+        cp:        params.codeInsee ?? '',
+        surface:   String(params.surface || 50),
+        typeBien:  params.typeBien ?? 'Appartement',
+        locType:   params.locType ?? 'meuble',
+        prixAchat: String(params.prixAchat || 0),
+      })
+      if (params.lat)     sp.set('lat', String(params.lat))
+      if (params.lng)     sp.set('lng', String(params.lng))
+      if (params.adresse) sp.set('adresse', params.adresse)
+      if (params.quartier) sp.set('quartier', params.quartier)
+      const res = await fetch(`/api/market-analysis?${sp.toString()}`)
+      if (res.ok) {
+        const data: LocalMarketData = await res.json()
+        setMarketData(data)
+      }
+    } catch { /* silently ignore */ }
+    finally { setMarketLoading(false) }
+  }, [])
+
   const applyCalculation = useCallback((params: InvestmentParams, isLive = false) => {
     if (params.prixAchat <= 0) return
     try { localStorage.setItem(LS_KEY, JSON.stringify(params)) } catch {}
@@ -165,7 +195,11 @@ export default function AnalysePage() {
     setShowResults(true)
     if (!isLive) setResultsVisible(true)
     setLiveUpdating(false)
-  }, [])
+    // Fetch market data (debounced — only when localisation changes)
+    if (!isLive || params.ville !== lastParams?.ville || params.lat !== lastParams?.lat) {
+      fetchMarketData(params)
+    }
+  }, [fetchMarketData, lastParams?.ville, lastParams?.lat])
 
   const handleChange = useCallback((params: InvestmentParams) => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -509,6 +543,26 @@ export default function AnalysePage() {
                       netNetRegime={bestFiscal?.regime}
                     />
                   </div>
+
+                  {(marketData || marketLoading) && (
+                    <div>
+                      <SectionLabel>Marché local</SectionLabel>
+                      {marketLoading && !marketData ? (
+                        <MarketContextBlock
+                          data={{} as LocalMarketData}
+                          surface={lastParams?.surface ?? 50}
+                          prixAchat={lastParams?.prixAchat ?? 0}
+                          loading
+                        />
+                      ) : marketData ? (
+                        <MarketContextBlock
+                          data={marketData}
+                          surface={lastParams?.surface ?? 50}
+                          prixAchat={lastParams?.prixAchat ?? 0}
+                        />
+                      ) : null}
+                    </div>
+                  )}
 
                   <div>
                     <SectionLabel>Analyse IA</SectionLabel>

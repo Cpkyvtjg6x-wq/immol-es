@@ -16,7 +16,11 @@ export interface InvestmentParams {
   prixAchat: number
   surface: number
   ville: string
-  quartier?: string
+  adresse?: string       // adresse complète saisie (ex: "12 rue de la Paix, Paris")
+  quartier?: string      // quartier ou zone (ex: "Batignolles", "Part-Dieu")
+  lat?: number           // latitude GPS (BAN)
+  lng?: number           // longitude GPS (BAN)
+  codeInsee?: string     // code INSEE commune (BAN)
   typeBien: string
   etat: 'ancien' | 'neuf'
   dpe: string
@@ -250,6 +254,49 @@ export interface ScoreResult {
     fiscalite: number     // 0–100
     marche: number        // 0–100
   }
+}
+
+// ─── Local Market Analysis (DVF + BAN) ────────────────────────────────────────
+
+export interface LocalMarketData {
+  // Source & périmètre
+  source: 'dvf' | 'reference' | 'mixed'
+  adresse?: string
+  quartier?: string
+  ville: string
+  lat?: number
+  lng?: number
+  radiusM: number          // rayon utilisé pour DVF (m)
+  nbTransactions: number   // nb de mutations dans le rayon
+
+  // Prix d'achat (transactions réelles DVF)
+  prixM2Median: number     // €/m² médian — périmètre proche
+  prixM2Min: number
+  prixM2Max: number
+  prixM2Ville: number      // €/m² médian — ville entière (comparatif)
+  evolution12m?: number    // % d'évolution sur 12 mois (si données suffisantes)
+  evolution24m?: number
+
+  // Loyer estimé (basé sur le rendement brut typique de la zone)
+  loyerEstimeM2: number    // €/m²/mois
+  loyerEstimeTotal: number // €/mois pour la surface du bien
+  loyerFourchetteBas: number
+  loyerFourchettHaut: number
+
+  // Positionnement du bien
+  positionPrix: 'sous-marche' | 'dans-marche' | 'sur-marche' | 'inconnu'
+  ecartPrixMarche: number  // % d'écart vs médian local (+ = trop cher, - = bonne affaire)
+
+  // Tension locative & liquidité
+  tensionLocative: 'faible' | 'normale' | 'forte' | 'tres-forte'
+  tensionScore: number     // 0-100
+  liquidite: 'faible' | 'normale' | 'forte'  // basé sur nb transactions
+
+  // Rendement brut moyen du marché
+  rendBrutMarche: number   // % rendement brut médian local (loyer/prix)
+
+  // Prix max recommandé pour atteindre un rendement cible (5% net)
+  prixMaxRecommande: number
 }
 
 // ─── Market Types ─────────────────────────────────────────────────────────────

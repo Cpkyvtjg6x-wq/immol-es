@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { InvestmentParams, InvestmentResult, LotGroup } from '@/lib/types'
 import { DEFAULT_PARAMS, calculerFraisNotaire } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
-import { VILLES } from '@/lib/market-data'
+import { AddressInput } from '@/components/app/AddressInput'
+import type { AddressResult } from '@/components/app/AddressInput'
 import { calculateRenovation, DpeClass, ProfileRevenu, DPE_COLORS, DPE_LABELS, DPE_INTERDICTION } from '@/lib/renovation'
 import { formatCurrency } from '@/lib/utils'
 import { IconBuildingOffice, IconBuildingLibrary, IconScale, IconBriefcase, IconHome, IconLightBulb } from '@/components/ui/icons'
@@ -436,14 +437,16 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
     const bien = (() => {
       let pts = 0
       if (p.prixAchat > 0) pts += 50
-      if (p.ville && p.ville.trim() !== '') pts += 50
+      const hasLoc = !!(p.ville?.trim() || p.adresse?.trim())
+      if (hasLoc) pts += 50
       const pct = pts
       const status: SectionStatus =
         pct === 100 && vis.has('bien') ? 'complete' :
         vis.has('bien') && pct > 0 ? 'in_progress' :
         'idle'
       const priceStr = p.prixAchat > 0 ? `${Math.round(p.prixAchat / 1000)}k €` : '—'
-      return { pct, status, summary: `${p.typeBien ?? 'Bien'} · ${priceStr} · ${p.ville || '—'}` }
+      const locStr = p.quartier ? `${p.quartier}, ${p.ville}` : p.ville || '—'
+      return { pct, status, summary: `${p.typeBien ?? 'Bien'} · ${priceStr} · ${locStr}` }
     })()
 
     const travaux = (() => {
@@ -572,7 +575,10 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
   const isColoc = p.locType === 'coloc'
   const isNu = p.locType === 'nu'
 
-  const cityList = Object.keys(VILLES || {})
+  // adresse saisie affichée dans l'input
+  const [adresseDisplay, setAdresseDisplay] = useState(
+    p.adresse ?? (p.ville ? `${p.quartier ? p.quartier + ', ' : ''}${p.ville}` : '')
+  )
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
@@ -743,26 +749,37 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 )}
               </div>
 
-              {/* Ville */}
+              {/* Adresse / localisation */}
               <div>
-                <Label>Ville</Label>
-                {cityList.length > 0 ? (
-                  <select
-                    value={p.ville}
-                    onChange={(e) => set('ville', e.target.value)}
-                    className="w-full bg-white/[0.04] border border-white/[0.07] rounded-lg text-sm text-white px-3 py-2 focus:outline-none focus:border-emerald-500/40 transition-all"
-                  >
-                    {cityList.map((c) => <option key={c} value={c} className="bg-zinc-900">{c}</option>)}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    value={p.ville}
-                    onChange={(e) => set('ville', e.target.value)}
-                    placeholder="Paris, Lyon, Bordeaux…"
-                    className="w-full bg-white/[0.04] border border-white/[0.07] rounded-lg text-sm text-white px-3 py-2 placeholder:text-zinc-700 focus:outline-none focus:border-emerald-500/40"
-                  />
-                )}
+                <div className="flex items-center justify-between mb-1.5">
+                  <Label>Adresse ou quartier</Label>
+                  {p.lat && p.lng && (
+                    <span className="flex items-center gap-1 text-[10px] text-emerald-500/80">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      GPS localisé
+                    </span>
+                  )}
+                </div>
+                <AddressInput
+                  value={adresseDisplay}
+                  onChangeText={(t) => setAdresseDisplay(t)}
+                  onSelect={(result: AddressResult) => {
+                    setAdresseDisplay(result.label)
+                    setP(prev => ({
+                      ...prev,
+                      adresse:   result.label,
+                      ville:     result.ville,
+                      quartier:  result.quartier ?? prev.quartier,
+                      lat:       result.lat,
+                      lng:       result.lng,
+                      codeInsee: result.codeInsee,
+                    }))
+                  }}
+                  placeholder='Ex: "12 rue Nationale, Lyon" ou "Croix-Rousse"'
+                />
+                <p className="text-[10px] text-zinc-700 mt-1.5">
+                  Tapez une adresse, un quartier ou une ville — les suggestions s&apos;affichent automatiquement
+                </p>
               </div>
 
             </div>

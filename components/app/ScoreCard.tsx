@@ -1,28 +1,30 @@
 'use client'
 
+import { useState } from 'react'
 import { ScoreResult } from '@/lib/types'
 
 interface ScoreCardProps {
   score: ScoreResult
 }
 
-const subScoreLabels: Array<{ key: keyof ScoreResult['subScores']; label: string }> = [
-  { key: 'rentabilite', label: 'Rentabilité' },
-  { key: 'cashflow', label: 'Cashflow' },
-  { key: 'fiscalite', label: 'Fiscalité' },
-  { key: 'marche', label: 'Marché' },
+const subScoreLabels: Array<{ key: keyof ScoreResult['subScores']; label: string; icon: string }> = [
+  { key: 'rentabilite', label: 'Rentabilité', icon: '📈' },
+  { key: 'cashflow', label: 'Cashflow', icon: '💸' },
+  { key: 'fiscalite', label: 'Fiscalité', icon: '🏛️' },
+  { key: 'marche', label: 'Marché', icon: '🗺️' },
 ]
 
 // SVG arc ring for score
 function ScoreRing({ value, color }: { value: number; color: 'emerald' | 'amber' | 'red' }) {
-  const size = 120
-  const strokeW = 6
+  const size = 140
+  const strokeW = 7
   const r = (size - strokeW) / 2
   const circumference = 2 * Math.PI * r
+
   const dash = (value / 100) * circumference
 
   const stroke = { emerald: '#10b981', amber: '#f59e0b', red: '#ef4444' }[color]
-  const glow = { emerald: 'rgba(16,185,129,0.25)', amber: 'rgba(245,158,11,0.2)', red: 'rgba(239,68,68,0.2)' }[color]
+  const glow = { emerald: 'rgba(16,185,129,0.3)', amber: 'rgba(245,158,11,0.25)', red: 'rgba(239,68,68,0.25)' }[color]
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
@@ -42,8 +44,8 @@ function ScoreRing({ value, color }: { value: number; color: 'emerald' | 'amber'
         strokeLinecap="round"
         strokeDasharray={`${dash} ${circumference}`}
         style={{
-          filter: `drop-shadow(0 0 6px ${glow})`,
-          transition: 'stroke-dasharray 1s cubic-bezier(0.16,1,0.3,1)',
+          filter: `drop-shadow(0 0 8px ${glow})`,
+          transition: 'stroke-dasharray 1.2s cubic-bezier(0.16,1,0.3,1)',
         }}
       />
     </svg>
@@ -51,6 +53,7 @@ function ScoreRing({ value, color }: { value: number; color: 'emerald' | 'amber'
 }
 
 export function ScoreCard({ score }: ScoreCardProps) {
+  const [expanded, setExpanded] = useState(false)
   const globalRounded = Math.round(score.global)
 
   const textColor = {
@@ -73,31 +76,72 @@ export function ScoreCard({ score }: ScoreCardProps) {
 
   return (
     <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
-      <div className="flex flex-col sm:flex-row">
-        {/* Left: global score */}
-        <div className="sm:w-52 shrink-0 flex flex-col items-center justify-center p-7 border-b sm:border-b-0 sm:border-r border-white/[0.06] bg-white/[0.015]">
-          <div className="relative w-[120px] h-[120px]">
+      {/* Hero — score global uniquement */}
+      <div className="flex flex-col sm:flex-row items-center sm:items-stretch gap-0">
+        {/* Ring + chiffre */}
+        <div className="sm:w-56 shrink-0 flex flex-col items-center justify-center p-8 border-b sm:border-b-0 sm:border-r border-white/[0.06] bg-white/[0.015]">
+          <div className="relative w-[140px] h-[140px]">
             <ScoreRing value={globalRounded} color={score.color} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-[38px] font-black leading-none tabular-nums ${textColor}`} style={{ letterSpacing: '-0.04em' }}>
+              <span className={`text-[44px] font-black leading-none tabular-nums ${textColor}`} style={{ letterSpacing: '-0.04em' }}>
                 {globalRounded}
               </span>
-              <span className="text-[11px] text-zinc-600 mt-0.5 font-medium">/100</span>
+              <span className="text-[11px] text-zinc-600 mt-1 font-medium">/100</span>
             </div>
           </div>
           <div className="mt-4 text-center space-y-1.5">
             <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full border ${badgeBg}`}>
               {score.label}
             </span>
-            <p className="text-[10px] text-zinc-600 uppercase tracking-wider font-semibold">Score d&apos;opportunité</p>
+            <p className="text-[10px] text-zinc-600 uppercase tracking-wider font-semibold">Score IMMORA</p>
           </div>
         </div>
 
-        {/* Right: sub-scores + summary */}
-        <div className="flex-1 p-5 flex flex-col justify-between gap-4 min-w-0">
-          {/* Sub-scores */}
-          <div className="space-y-3">
-            {subScoreLabels.map(({ key, label }) => {
+        {/* Résumé verdict */}
+        <div className="flex-1 flex flex-col justify-center p-6 gap-4 min-w-0">
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0 mt-0.5">{summaryIcon}</span>
+            <p className="text-[14px] text-zinc-300 leading-relaxed font-medium">
+              {score.summary}
+            </p>
+          </div>
+
+          {/* Mini aperçu des 4 dimensions (non-interactif, compact) */}
+          <div className="grid grid-cols-4 gap-2 pt-2 border-t border-white/[0.05]">
+            {subScoreLabels.map(({ key, label, icon }) => {
+              const val = Math.round(score.subScores[key])
+              const c: 'emerald' | 'amber' | 'red' = val >= 60 ? 'emerald' : val >= 35 ? 'amber' : 'red'
+              const numColor = { emerald: 'text-emerald-400', amber: 'text-amber-400', red: 'text-red-400' }[c]
+              return (
+                <div key={key} className="flex flex-col items-center gap-0.5">
+                  <span className="text-base">{icon}</span>
+                  <span className={`text-[13px] font-bold tabular-nums ${numColor}`}>{val}</span>
+                  <span className="text-[9px] text-zinc-600 font-medium">{label}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Section déployable — détail barres de progression */}
+      <div className="border-t border-white/[0.05]">
+        <button
+          onClick={() => setExpanded(v => !v)}
+          className="w-full flex items-center justify-between px-5 py-3 text-[11px] text-zinc-500 hover:text-zinc-400 transition-colors font-semibold uppercase tracking-wider"
+        >
+          <span>Détail par dimension</span>
+          <svg
+            className={`w-4 h-4 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {expanded && (
+          <div className="px-5 pb-5 space-y-4">
+            {subScoreLabels.map(({ key, label, icon }) => {
               const val = Math.round(score.subScores[key])
               const c: 'emerald' | 'amber' | 'red' = val >= 60 ? 'emerald' : val >= 35 ? 'amber' : 'red'
               const barColor = { emerald: '#10b981', amber: '#f59e0b', red: '#ef4444' }[c]
@@ -105,31 +149,25 @@ export function ScoreCard({ score }: ScoreCardProps) {
 
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <span className="text-[11px] text-zinc-500 w-24 shrink-0 font-medium">{label}</span>
+                  <span className="text-base shrink-0">{icon}</span>
+                  <span className="text-[12px] text-zinc-400 w-24 shrink-0 font-medium">{label}</span>
                   <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-1000"
+                      className="h-full rounded-full"
                       style={{
                         width: `${val}%`,
                         background: barColor,
                         boxShadow: `0 0 6px ${barColor}50`,
+                        transition: 'width 0.8s cubic-bezier(0.16,1,0.3,1)',
                       }}
                     />
                   </div>
-                  <span className={`text-[11px] font-bold w-7 text-right tabular-nums shrink-0 ${numColor}`}>{val}</span>
+                  <span className={`text-[12px] font-bold w-7 text-right tabular-nums shrink-0 ${numColor}`}>{val}</span>
                 </div>
               )
             })}
           </div>
-
-          {/* Summary */}
-          <div className="border-t border-white/[0.05] pt-3.5 flex items-start gap-2">
-            <span className="text-sm shrink-0 mt-0.5">{summaryIcon}</span>
-            <p className="text-[12px] text-zinc-400 leading-relaxed font-medium">
-              {score.summary}
-            </p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

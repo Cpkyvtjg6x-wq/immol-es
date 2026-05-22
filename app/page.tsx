@@ -709,7 +709,7 @@ function BentoFeatures() {
           <BentoCell className="md:col-span-2 md:row-span-2 min-h-[440px]">
             <div className="flex flex-col h-full justify-between">
               <div>
-                <Eyebrow>Score IA · GPT-4</Eyebrow>
+                <Eyebrow>Score IMMORA</Eyebrow>
                 <h3 className="display text-[clamp(1.5rem,2.4vw,2.2rem)] gt-white mt-4 max-w-md">
                   Un score d'opportunité de 0 à 100, <span className="serif-italic text-zinc-400">expliqué en une phrase.</span>
                 </h3>
@@ -1813,7 +1813,7 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
   const [annual, setAnnual] = useState(true)
   const plans = [
     { name: 'Découverte', price: { monthly: 0, annual: 0 }, desc: 'Pour tester l\'outil', features: ['Analyse express', '3 simulations sauvegardées', 'Export PDF (filigrane)', 'Données marché basiques'], cta: 'Commencer gratuitement', featured: false },
-    { name: 'Pro', price: { monthly: 29, annual: 19 }, desc: 'L\'essentiel pour investir sérieusement', features: ['Simulations illimitées', '10 régimes fiscaux', 'Analyse IA (GPT-4)', 'Export PDF & Excel pro', 'Comparaison multi-biens', 'Support prioritaire'], cta: 'Essai 14 jours', featured: true },
+    { name: 'Pro', price: { monthly: 29, annual: 19 }, desc: 'L\'essentiel pour investir sérieusement', features: ['Simulations illimitées', '10 régimes fiscaux', 'Analyse IA avancée', 'Export PDF & Excel pro', 'Comparaison multi-biens', 'Support prioritaire'], cta: 'Essai 14 jours', featured: true },
     { name: 'Agence', price: { monthly: 79, annual: 59 }, desc: 'Pour les pros de l\'immobilier', features: ['Tout le plan Pro', 'Jusqu\'à 5 sièges', 'Rapports white-label', 'Accès API', 'Onboarding dédié'], cta: 'Contacter l\'équipe', featured: false },
   ]
 

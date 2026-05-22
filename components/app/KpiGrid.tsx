@@ -84,19 +84,22 @@ export function KpiGrid({ result, netNetYield, netNetRegime }: KpiGridProps) {
 
   return (
     <div className="space-y-3">
-      {/* Row 1 — Rendements */}
+      {/* Row 1 (hero) — 3 métriques clés : rendement NET, cashflow, nette-nette */}
       <div className="grid grid-cols-3 gap-3">
-        <KpiCard
-          label="Rendement brut"
-          value={formatPct(result.rendementBrut)}
-          sub={`${formatCurrency(result.loyerAnnuelBrut)} / an brut`}
-          trend={brutTrend}
-        />
         <KpiCard
           label="Rendement net"
           value={formatPct(result.rendementNet)}
           sub="Charges déduites, avant impôts"
           trend={netTrend}
+          accent={result.rendementNet >= 5}
+        />
+        <KpiCard
+          label="Cashflow mensuel"
+          value={`${result.cashflowMensuel >= 0 ? '+' : ''}${Math.round(result.cashflowMensuel)} €`}
+          sub={result.cashflowMensuel < 0
+            ? `Effort épargne : ${formatCurrency(result.effortEpargne)}/mois`
+            : `Gain net locatif : ${formatCurrency(result.cashflowAnnuel)}/an`}
+          trend={cfTrend}
         />
         {netNetYield !== undefined ? (
           <KpiCard
@@ -115,16 +118,8 @@ export function KpiGrid({ result, netNetYield, netNetRegime }: KpiGridProps) {
         )}
       </div>
 
-      {/* Row 2 — Cashflow & performance */}
+      {/* Row 2 — Performance financière */}
       <div className="grid grid-cols-3 gap-3">
-        <KpiCard
-          label="Cashflow mensuel"
-          value={`${result.cashflowMensuel >= 0 ? '+' : ''}${Math.round(result.cashflowMensuel)} €`}
-          sub={result.cashflowMensuel < 0
-            ? `Effort épargne : ${formatCurrency(result.effortEpargne)}/mois`
-            : `Gain net locatif : ${formatCurrency(result.cashflowAnnuel)}/an`}
-          trend={cfTrend}
-        />
         <KpiCard
           label="TRI (sur horizon)"
           value={tri > 0 ? `${tri.toFixed(1)}%` : '—'}
@@ -139,9 +134,15 @@ export function KpiGrid({ result, netNetYield, netNetRegime }: KpiGridProps) {
           trend={roi > 0 ? roiTrend : undefined}
           warn={roi > 0 && roi < 5}
         />
+        <KpiCard
+          label="Rendement brut"
+          value={formatPct(result.rendementBrut)}
+          sub={`${formatCurrency(result.loyerAnnuelBrut)} / an brut`}
+          trend={brutTrend}
+        />
       </div>
 
-      {/* Row 3 — Seuils */}
+      {/* Row 3 — Seuils & crédit */}
       <div className="grid grid-cols-3 gap-3">
         <KpiCard
           label="Point mort locatif"

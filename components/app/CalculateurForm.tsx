@@ -106,18 +106,18 @@ function SectionBubble({
         {/* Anneau de progression + chevron */}
         <div className="flex items-center gap-2 shrink-0">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500"
+            className="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-500"
             style={{
-              background: `conic-gradient(${ringColor} ${Math.round(pct * 3.6)}deg, rgba(255,255,255,0.06) 0deg)`,
+              background: `conic-gradient(${ringColor} ${Math.round(pct * 3.6)}deg, rgba(255,255,255,0.05) 0deg)`,
             }}
           >
-            <div className="w-[19px] h-[19px] rounded-full bg-[#09090b] flex items-center justify-center">
+            <div className="w-[22px] h-[22px] rounded-full bg-[#0c0c0e] flex items-center justify-center">
               {status === 'complete' ? (
                 <svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               ) : pct > 0 ? (
-                <span className="text-[8px] font-black text-zinc-500 tabular-nums leading-none">{pct}</span>
+                <span className="text-[8px] font-bold text-zinc-500 tabular-nums leading-none">{pct}</span>
               ) : null}
             </div>
           </div>

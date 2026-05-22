@@ -17,6 +17,7 @@ import { useSimulations } from '@/lib/hooks/useSimulations'
 import { SaveModal } from '@/components/app/SaveModal'
 import { AppShell } from '@/components/app/AppShell'
 import { ExportButtons } from '@/components/app/ExportButtons'
+import { ScenarioPanel } from '@/components/app/ScenarioPanel'
 
 const LS_KEY = 'immolyse_last_params'
 
@@ -508,6 +509,21 @@ export default function AnalysePage() {
                       netNetRegime={bestFiscal?.regime}
                     />
                   </div>
+
+                  {lastParams && (
+                    <div>
+                      <SectionLabel>Scénarios & équilibre</SectionLabel>
+                      <ScenarioPanel
+                        baseParams={lastParams}
+                        baseResult={result}
+                        onApplyScenario={(params) => {
+                          setInitialParams(params)
+                          setFormKey(k => k + 1)
+                          applyCalculation(params, false)
+                        }}
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <SectionLabel>Analyse IA</SectionLabel>

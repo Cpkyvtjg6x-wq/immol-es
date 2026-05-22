@@ -285,6 +285,54 @@ function Divider() {
   return <div className="border-t border-white/[0.04] my-1" />
 }
 
+// ─── Indicateur de progression global ──────────────────────────────────────────
+
+function FormProgress({ sectionInfos }: { sectionInfos: Record<string, { status: SectionStatus }> }) {
+  const sections = Object.values(sectionInfos)
+  const completed = sections.filter(s => s.status === 'complete').length
+  const inProgress = sections.filter(s => s.status === 'in_progress').length
+  const total = sections.length
+  const globalPct = Math.round(((completed + inProgress * 0.5) / total) * 100)
+
+  const qualityLabel =
+    completed === 0 && inProgress === 0 ? 'Démarrez la saisie' :
+    completed + inProgress <= 2 ? 'En cours de saisie…' :
+    completed <= 3 ? 'Données partielles' :
+    completed <= 5 ? 'Quasi complet' :
+    completed === 6 ? 'Complétez la dernière section' :
+    'Analyse complète'
+
+  const qualityColor =
+    completed === 0 && inProgress === 0 ? 'text-zinc-600' :
+    completed + inProgress <= 2 ? 'text-amber-500/80' :
+    completed <= 4 ? 'text-blue-400/80' :
+    'text-emerald-400/90'
+
+  const barColor =
+    completed + inProgress <= 2 ? 'bg-amber-500' :
+    completed <= 4 ? 'bg-blue-500' :
+    'bg-emerald-500'
+
+  return (
+    <div className="px-3 pt-2 pb-1">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className={`text-[10px] font-semibold uppercase tracking-wider transition-colors duration-300 ${qualityColor}`}>
+          {qualityLabel}
+        </span>
+        <span className="text-[10px] text-zinc-700 tabular-nums">
+          {completed}<span className="text-zinc-800">/{total}</span>
+        </span>
+      </div>
+      <div className="h-[3px] bg-white/[0.04] rounded-full overflow-hidden">
+        <div
+          className={`h-full ${barColor} rounded-full transition-all duration-500`}
+          style={{ width: `${globalPct}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 // ─── Section IDs (module-level pour stabilité des refs) ────────────────────────
 const SECTION_IDS = ['bien', 'travaux', 'financement', 'location', 'charges', 'fiscalite', 'revente'] as const
 type SectionId = typeof SECTION_IDS[number]
@@ -529,6 +577,9 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto py-2 px-3 space-y-2">
+
+        {/* ─── Progression globale ─────────────────────────────────────────── */}
+        <FormProgress sectionInfos={sectionInfos} />
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 1 — LE BIEN                                                 */}
@@ -2146,28 +2197,53 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
 
       </div>
 
-      {/* ─── Bouton calcul ─────────────────────────────────────────────────────── */}
-      <div className="shrink-0 p-4 border-t border-white/[0.05] bg-[#0c0c0e]/90 backdrop-blur-xl">
-        <button
-          type="submit"
-          disabled={loading || p.prixAchat <= 0}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-500 text-zinc-950 text-[13px] font-black rounded-xl hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.01] active:scale-[0.99]"
-          style={{ letterSpacing: '-0.01em' }}
-        >
-          {loading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
-              Calcul en cours…
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Calculer la rentabilité
-            </>
-          )}
-        </button>
+      {/* ─── Footer contextuel ─────────────────────────────────────────────────── */}
+      <div className="shrink-0 px-4 py-3 border-t border-white/[0.05] bg-[#0c0c0e]/90 backdrop-blur-xl">
+        {result ? (
+          /* Résultats existants — mise à jour live, action secondaire */
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 shrink-0" />
+              <span className="text-[11px] text-zinc-600 truncate">Mise à jour automatique</span>
+            </div>
+            <button
+              type="submit"
+              disabled={loading || p.prixAchat <= 0}
+              className="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 hover:text-white bg-white/[0.04] border border-white/[0.07] hover:border-white/[0.14] px-3 py-1.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] cursor-pointer"
+            >
+              {loading ? (
+                <div className="w-3 h-3 border-[1.5px] border-zinc-600/40 border-t-zinc-400 rounded-full animate-spin" />
+              ) : (
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              )}
+              Recalculer
+            </button>
+          </div>
+        ) : (
+          /* Aucun résultat — CTA primaire */
+          <button
+            type="submit"
+            disabled={loading || p.prixAchat <= 0}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-500 text-zinc-950 text-[13px] font-black rounded-xl hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+            style={{ letterSpacing: '-0.01em' }}
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+                Calcul en cours…
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Lancer l'analyse
+              </>
+            )}
+          </button>
+        )}
       </div>
     </form>
   )

@@ -339,7 +339,7 @@ function HeroSection() {
               Rentabilité nette, cashflow mensuel, optimisation fiscale automatique — tout ce qu&apos;il faut pour investir avec précision.
             </p>
             <p className="text-[14px] text-zinc-600 leading-[1.65]">
-              Conçu pour les investisseurs qui veulent des chiffres réels, pas des estimations. 18 villes, 10 régimes fiscaux, résultats en 30 secondes.
+              N&apos;importe quel bien, partout en France. Rentabilité nette, cashflow mensuel et fiscalité optimisée — calculés en 30 secondes.
             </p>
             <div className="flex items-center gap-4 pt-1">
               <a href="/analyse" className="inline-flex items-center gap-1.5 text-[13.5px] text-zinc-300 hover:text-white transition-colors group">

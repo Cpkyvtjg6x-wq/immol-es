@@ -9,6 +9,7 @@ import type { AddressResult } from '@/components/app/AddressInput'
 import { calculateRenovation, DpeClass, ProfileRevenu, DPE_COLORS, DPE_LABELS, DPE_INTERDICTION } from '@/lib/renovation'
 import { formatCurrency } from '@/lib/utils'
 import { IconBuildingOffice, IconBuildingLibrary, IconScale, IconBriefcase, IconHome, IconLightBulb } from '@/components/ui/icons'
+import { TravauxEstimateur } from '@/components/app/TravauxEstimateur'
 
 interface Props {
   onCalculate: (params: InvestmentParams) => Promise<void>
@@ -819,24 +820,20 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               {/* ── Travaux esthétiques ─────────────────────────────────────── */}
               <div>
                 <Label>Travaux esthétiques & aménagement</Label>
-                <NumInput
+                <TravauxEstimateur
+                  surface={p.surface || 50}
+                  ville={p.ville || undefined}
                   value={travauxEsthetiques}
-                  onChange={(v) => setTravauxEsthetiques(v)}
-                  suffix="€"
-                  step={500}
-                  placeholder="0"
+                  onChange={setTravauxEsthetiques}
                 />
-                <p className="text-[10px] text-zinc-600 mt-1.5 leading-snug">
-                  Cuisine, salle de bain, peinture, parquet, aménagements divers…
-                </p>
               </div>
 
               {/* ── Toggle rénovation énergétique ───────────────────────────── */}
               <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3.5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[12px] font-semibold text-zinc-300">Rénovation énergétique (DPE)</p>
-                    <p className="text-[10px] text-zinc-600 mt-0.5 leading-snug">Isolation, chauffage, VMC — éligible MaPrimeRénov&apos; et Eco-PTZ</p>
+                    <p className="text-[12px] font-semibold text-zinc-300">Rénovation énergétique</p>
+                    <p className="text-[10px] text-zinc-600 mt-0.5 leading-snug">Isolation, chauffage, VMC — aides MaPrimeRénov&apos;, Eco-PTZ, CEE (distinct des travaux esthétiques)</p>
                   </div>
                   <button
                     type="button"

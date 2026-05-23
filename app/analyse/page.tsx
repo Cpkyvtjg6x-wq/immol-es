@@ -3,10 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { CalculateurForm } from '@/components/app/CalculateurForm'
-import { KpiGrid } from '@/components/app/KpiGrid'
-import { ScoreCard } from '@/components/app/ScoreCard'
-import { AIInsights } from '@/components/app/AIInsights'
-import { DetailedResults } from '@/components/app/DetailedResults'
+import { ResultTabs } from '@/components/app/ResultTabs'
 import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
@@ -17,8 +14,6 @@ import { useSimulations } from '@/lib/hooks/useSimulations'
 import { SaveModal } from '@/components/app/SaveModal'
 import { AppShell } from '@/components/app/AppShell'
 import { ExportButtons } from '@/components/app/ExportButtons'
-import { ScenarioPanel } from '@/components/app/ScenarioPanel'
-import { MarketContextBlock } from '@/components/app/MarketContextBlock'
 import type { LocalMarketData } from '@/lib/types'
 
 const LS_KEY = 'immolyse_last_params'
@@ -42,12 +37,6 @@ function runCalculation(params: InvestmentParams) {
   const best = [...enabledRegimes].sort((a, b) => b.rendNetNet - a.rendNetNet)[0]
   const sc = calculateScore(res, fiscalResult, null)
   return { res, fiscalResult, best, sc }
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-4">{children}</p>
-  )
 }
 
 // ─── Chip paramètre compact (barre résumé) ────────────────────────────────────
@@ -504,7 +493,7 @@ export default function AnalysePage() {
             )}
 
             {/* ── Résultats ── */}
-            {showResults && result && score && !loading && (
+            {showResults && result && score && lastParams && !loading && (
               <div
                 className="transition-all duration-500"
                 style={{
@@ -512,98 +501,30 @@ export default function AnalysePage() {
                   transform: resultsVisible ? 'translateY(0)' : 'translateY(10px)',
                 }}
               >
-                {/* Header résultats */}
-                <div className="border-b border-white/[0.05] px-7 py-4 flex items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h2 className="text-[15px] font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
-                        Analyse complète
-                      </h2>
-                      {fiscalResults && (
-                        <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                          Fiscal inclus
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[12px] text-zinc-500">
-                      {result.ville} · {formatCurrency(result.prixRevient)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Contenu */}
-                <div className="px-7 py-7 space-y-8 max-w-4xl">
-                  <ScoreCard score={score} />
-
-                  <div>
-                    <SectionLabel>Indicateurs clés</SectionLabel>
-                    <KpiGrid
-                      result={result}
-                      netNetYield={bestFiscal?.yield}
-                      netNetRegime={bestFiscal?.regime}
-                    />
-                  </div>
-
-                  {(marketData || marketLoading) && (
-                    <div>
-                      <SectionLabel>Marché local</SectionLabel>
-                      {marketLoading && !marketData ? (
-                        <MarketContextBlock
-                          data={{} as LocalMarketData}
-                          surface={lastParams?.surface ?? 50}
-                          prixAchat={lastParams?.prixAchat ?? 0}
-                          loading
-                        />
-                      ) : marketData ? (
-                        <MarketContextBlock
-                          data={marketData}
-                          surface={lastParams?.surface ?? 50}
-                          prixAchat={lastParams?.prixAchat ?? 0}
-                        />
-                      ) : null}
-                    </div>
-                  )}
-
-                  <div>
-                    <SectionLabel>Analyse IA</SectionLabel>
-                    <AIInsights
-                      insights={insights}
-                      loading={aiLoading}
-                      onGenerate={handleGenerateAI}
-                      isPro={false}
-                    />
-                  </div>
-
-                  {lastParams && (
-                    <div>
-                      <SectionLabel>Scénarios & équilibre</SectionLabel>
-                      <ScenarioPanel
-                        baseParams={lastParams}
-                        baseResult={result}
-                        onApplyScenario={(params) => {
-                          setInitialParams(params)
-                          setFormKey(k => k + 1)
-                          applyCalculation(params, false)
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <SectionLabel>Détails, fiscalité & projections</SectionLabel>
-                    <DetailedResults
-                      result={result}
-                      fiscalResults={fiscalResults}
-                      params={lastParams}
-                      onApplyRenovationScenario={(travaux, prixAchat) => {
-                        const updated = { ...lastParams!, travaux, prixAchat }
-                        setInitialParams(updated)
-                        setFormKey(k => k + 1)
-                        applyCalculation(updated, false)
-                      }}
-                    />
-                  </div>
-                </div>
+                <ResultTabs
+                  result={result}
+                  fiscalResults={fiscalResults}
+                  params={lastParams}
+                  score={score}
+                  bestFiscal={bestFiscal}
+                  marketData={marketData}
+                  marketLoading={marketLoading}
+                  insights={insights}
+                  aiLoading={aiLoading}
+                  isPro={false}
+                  onGenerateAI={handleGenerateAI}
+                  onApplyScenario={(params) => {
+                    setInitialParams(params)
+                    setFormKey(k => k + 1)
+                    applyCalculation(params, false)
+                  }}
+                  onApplyRenovationScenario={(travaux, prixAchat) => {
+                    const updated = { ...lastParams!, travaux, prixAchat }
+                    setInitialParams(updated)
+                    setFormKey(k => k + 1)
+                    applyCalculation(updated, false)
+                  }}
+                />
               </div>
             )}
           </main>

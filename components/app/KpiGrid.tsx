@@ -1,80 +1,101 @@
 'use client'
 
-import { InvestmentResult } from '@/lib/types'
+import { InvestmentResult, InvestmentParams } from '@/lib/types'
 import { formatCurrency, formatPct } from '@/lib/utils'
+import { getMarcheRef } from '@/lib/marche-reference'
 
 interface KpiGridProps {
   result: InvestmentResult
   netNetYield?: number
   netNetRegime?: string
+  params?: InvestmentParams
 }
 
-interface KpiCardProps {
+// ─── Hero card — grande métrique clé ──────────────────────────────────────────
+
+function HeroCard({
+  label, value, sub, delta, trend, accent,
+}: {
+  label: string
+  value: string
+  sub?: string
+  delta?: { text: string; positive: boolean | null } // null = neutral
+  trend?: 'up' | 'down' | 'neutral'
+  accent?: boolean
+}) {
+  const valueColor =
+    accent ? 'text-emerald-400' :
+    trend === 'up' ? 'text-emerald-400' :
+    trend === 'down' ? 'text-red-400' :
+    trend === 'neutral' ? 'text-amber-400' :
+    'text-white'
+
+  const borderBg = accent
+    ? 'border-emerald-500/20 bg-emerald-500/[0.04]'
+    : 'border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.05]'
+
+  const deltaColor = delta?.positive === true ? 'text-emerald-400' : delta?.positive === false ? 'text-red-400' : 'text-zinc-500'
+
+  return (
+    <div className={`rounded-2xl border ${borderBg} transition-colors px-5 py-4 flex flex-col gap-2`}>
+      <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">{label}</p>
+      <p
+        className={`font-black tabular-nums leading-none ${valueColor}`}
+        style={{ fontSize: '26px', letterSpacing: '-0.04em' }}
+      >
+        {value}
+      </p>
+      {sub && <p className="text-[11px] text-zinc-600 leading-snug">{sub}</p>}
+      {delta && (
+        <p className={`text-[10px] font-semibold ${deltaColor} flex items-center gap-1`}>
+          <span className="opacity-60">vs marché ·</span>
+          <span>{delta.text}</span>
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ─── Mini card — métrique secondaire ──────────────────────────────────────────
+
+function MiniCard({
+  label, value, sub, trend, accent, warn,
+}: {
   label: string
   value: string
   sub?: string
   trend?: 'up' | 'down' | 'neutral'
   accent?: boolean
   warn?: boolean
-}
-
-function TrendIcon({ trend }: { trend: 'up' | 'down' | 'neutral' }) {
-  if (trend === 'up') return (
-    <svg className="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
-    </svg>
-  )
-  if (trend === 'down') return (
-    <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-    </svg>
-  )
-  return (
-    <svg className="w-3 h-3 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
-    </svg>
-  )
-}
-
-function KpiCard({ label, value, sub, trend, accent, warn }: KpiCardProps) {
-  const valueColor = accent
-    ? 'text-emerald-400'
-    : warn
-    ? 'text-amber-400'
-    : trend === 'up'
-    ? 'text-emerald-400'
-    : trend === 'down'
-    ? 'text-red-400'
-    : trend === 'neutral'
-    ? 'text-amber-400'
-    : 'text-white'
+}) {
+  const valueColor =
+    accent ? 'text-emerald-400' :
+    warn ? 'text-amber-400' :
+    trend === 'up' ? 'text-emerald-400' :
+    trend === 'down' ? 'text-red-400' :
+    trend === 'neutral' ? 'text-amber-400' :
+    'text-zinc-200'
 
   return (
-    <div className={`rounded-xl border p-4 space-y-2.5 transition-colors ${
-      accent
-        ? 'border-emerald-500/20 bg-emerald-500/[0.04]'
-        : warn
-        ? 'border-amber-500/20 bg-amber-500/[0.03]'
-        : 'border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.05]'
-    }`}>
-      <div className="flex items-center justify-between">
-        <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider leading-tight">{label}</p>
-        {trend && <TrendIcon trend={trend} />}
-      </div>
-      <p className={`text-xl font-bold tabular-nums leading-none ${valueColor}`} style={{ letterSpacing: '-0.03em' }}>
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-colors px-3.5 py-3 flex flex-col gap-1.5">
+      <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider leading-tight">{label}</p>
+      <p
+        className={`font-bold tabular-nums leading-none ${valueColor}`}
+        style={{ fontSize: '17px', letterSpacing: '-0.03em' }}
+      >
         {value}
       </p>
-      {sub && (
-        <p className="text-[10px] text-zinc-600 leading-relaxed">{sub}</p>
-      )}
+      {sub && <p className="text-[10px] text-zinc-700 leading-snug">{sub}</p>}
     </div>
   )
 }
 
-export function KpiGrid({ result, netNetYield, netNetRegime }: KpiGridProps) {
+// ─── KpiGrid ──────────────────────────────────────────────────────────────────
+
+export function KpiGrid({ result, netNetYield, netNetRegime, params }: KpiGridProps) {
   const cfTrend: 'up' | 'down' | 'neutral' = result.cashflowMensuel >= 0 ? 'up' : 'down'
-  const brutTrend: 'up' | 'down' | 'neutral' = result.rendementBrut >= 7 ? 'up' : result.rendementBrut >= 4 ? 'neutral' : 'down'
-  const netTrend: 'up' | 'down' | 'neutral' = result.rendementNet >= 5 ? 'up' : result.rendementNet >= 3 ? 'neutral' : 'down'
+  const netTrend: 'up' | 'down' | 'neutral' =
+    result.rendementNet >= 5 ? 'up' : result.rendementNet >= 3 ? 'neutral' : 'down'
 
   const tri = result.tri ?? 0
   const triTrend: 'up' | 'down' | 'neutral' = tri >= 8 ? 'up' : tri >= 4 ? 'neutral' : 'down'
@@ -82,85 +103,108 @@ export function KpiGrid({ result, netNetYield, netNetRegime }: KpiGridProps) {
   const roi = result.roiApport ?? 0
   const roiTrend: 'up' | 'down' | 'neutral' = roi >= 15 ? 'up' : roi >= 5 ? 'neutral' : 'down'
 
+  const brutTrend: 'up' | 'down' | 'neutral' =
+    result.rendementBrut >= 7 ? 'up' : result.rendementBrut >= 4 ? 'neutral' : 'down'
+
+  // ── Comparaison marché local ──────────────────────────────────────────────
+  const cpMatch = params?.adresse?.match(/\b(\d{5})\b/)
+  const codePostal = cpMatch ? cpMatch[1] : null
+  const marche = params?.ville ? getMarcheRef(params.ville, codePostal) : null
+  const marcheLabel = marche ? (marche.label ?? marche.villeNorm.charAt(0).toUpperCase() + marche.villeNorm.slice(1)) : null
+
+  // Rendement brut médian du marché = (loyerNu * 12) / prixM2 * 100
+  const rendBrutMarche = marche ? (marche.loyerNu * 12) / marche.prixM2 * 100 : null
+  const deltaBrut = rendBrutMarche !== null ? +(result.rendementBrut - rendBrutMarche).toFixed(1) : null
+
+  // Prix m² du bien vs marché
+  const prixM2Bien = params ? Math.round(params.prixAchat / params.surface) : null
+  const deltaM2 = (prixM2Bien !== null && marche) ? Math.round(((prixM2Bien - marche.prixM2) / marche.prixM2) * 100) : null
+
   return (
-    <div className="space-y-3">
-      {/* Row 1 (hero) — 3 métriques clés : rendement NET, cashflow, nette-nette */}
-      <div className="grid grid-cols-3 gap-3">
-        <KpiCard
+    <div className="space-y-2.5">
+
+      {/* ── Hero row — 3 métriques principales ────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-2.5">
+        <HeroCard
           label="Rendement net"
           value={formatPct(result.rendementNet)}
           sub="Charges déduites, avant impôts"
+          delta={deltaBrut !== null && marcheLabel ? {
+            text: `${deltaBrut >= 0 ? '+' : ''}${deltaBrut} pts vs ${marcheLabel}`,
+            positive: deltaBrut > 0 ? true : deltaBrut < 0 ? false : null,
+          } : undefined}
           trend={netTrend}
           accent={result.rendementNet >= 5}
         />
-        <KpiCard
+        <HeroCard
           label="Cashflow mensuel"
           value={`${result.cashflowMensuel >= 0 ? '+' : ''}${Math.round(result.cashflowMensuel)} €`}
           sub={result.cashflowMensuel < 0
             ? `Effort épargne : ${formatCurrency(result.effortEpargne)}/mois`
-            : `Gain net locatif : ${formatCurrency(result.cashflowAnnuel)}/an`}
+            : `Gain net : ${formatCurrency(result.cashflowAnnuel)}/an`}
           trend={cfTrend}
         />
         {netNetYield !== undefined ? (
-          <KpiCard
+          <HeroCard
             label="Nette-nette"
             value={formatPct(netNetYield)}
-            sub={netNetRegime || 'Après impôts — meilleur régime'}
+            sub={netNetRegime ?? 'Après impôts — meilleur régime'}
             trend={netNetYield >= 4 ? 'up' : netNetYield >= 2 ? 'neutral' : 'down'}
             accent
           />
         ) : (
-          <KpiCard
+          <HeroCard
             label="Prix de revient"
             value={formatCurrency(result.prixRevient)}
             sub="Notaire + travaux inclus"
+            delta={deltaM2 !== null && marcheLabel ? {
+              text: `${deltaM2 >= 0 ? '+' : ''}${deltaM2}% vs médian ${marcheLabel}`,
+              positive: deltaM2 < 0 ? true : deltaM2 > 15 ? false : null,
+            } : undefined}
           />
         )}
       </div>
 
-      {/* Row 2 — Performance financière */}
-      <div className="grid grid-cols-3 gap-3">
-        <KpiCard
-          label="TRI (sur horizon)"
-          value={tri > 0 ? `${tri.toFixed(1)}%` : '—'}
-          sub="Taux de Rendement Interne — flux + revente"
+      {/* ── Secondary row — 6 métriques compactes ─────────────────────────── */}
+      <div className="grid grid-cols-3 gap-2">
+        <MiniCard
+          label="TRI (20 ans)"
+          value={tri > 0 ? `${tri.toFixed(1)} %` : '—'}
+          sub="Flux + revente"
           trend={tri > 0 ? triTrend : undefined}
           accent={tri >= 8}
         />
-        <KpiCard
-          label="ROI sur apport"
-          value={roi > 0 ? `${roi.toFixed(1)}%` : '—'}
-          sub="Retour annuel sur capital investi"
+        <MiniCard
+          label="ROI apport"
+          value={roi > 0 ? `${roi.toFixed(1)} %` : '—'}
+          sub="Retour annuel capital"
           trend={roi > 0 ? roiTrend : undefined}
           warn={roi > 0 && roi < 5}
         />
-        <KpiCard
+        <MiniCard
           label="Rendement brut"
           value={formatPct(result.rendementBrut)}
-          sub={`${formatCurrency(result.loyerAnnuelBrut)} / an brut`}
+          sub={`${formatCurrency(result.loyerAnnuelBrut)} / an`}
           trend={brutTrend}
         />
-      </div>
-
-      {/* Row 3 — Seuils & crédit */}
-      <div className="grid grid-cols-3 gap-3">
-        <KpiCard
-          label="Point mort locatif"
-          value={`${result.pointMort} €/mois`}
-          sub="Loyer minimum pour couvrir les charges"
+        <MiniCard
+          label="Point mort"
+          value={`${result.pointMort} €/m`}
+          sub="Loyer min équilibre"
         />
-        <KpiCard
+        <MiniCard
           label="Mensualité crédit"
-          value={`${Math.round(result.mensualiteTotale)} €/mois`}
-          sub={`Dont assurance : ${Math.round(result.mensualiteTotale - result.mensualiteCredit)} €/mois`}
+          value={`${Math.round(result.mensualiteTotale)} €/m`}
+          sub={`Assurance ${Math.round(result.mensualiteTotale - result.mensualiteCredit)} €`}
         />
-        <KpiCard
+        <MiniCard
           label="Coût total crédit"
           value={formatCurrency(result.coutCredit)}
-          sub={`Sur ${result.coutCredit > 0 ? 'durée du prêt' : '—'}`}
+          sub="Sur durée du prêt"
           trend="down"
         />
       </div>
+
     </div>
   )
 }

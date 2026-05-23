@@ -76,7 +76,7 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
 }
 
 /* ─── Cashflow tab ─────────────────────────────────────────────────────────── */
-function CashflowTab({ result }: { result: InvestmentResult }) {
+export function CashflowTab({ result }: { result: InvestmentResult }) {
   const rows = [
     { label: 'Loyers bruts annuels', value: result.loyerAnnuelBrut, type: 'income' },
     { label: `Vacance locative (${result.moisLoues}/12 mois loués)`, value: -result.vacanceAnnuelle, type: 'charge' },
@@ -204,7 +204,7 @@ function getProsCons(regimeId: string) {
 }
 
 /* ─── Fiscal tab ───────────────────────────────────────────────────────────── */
-function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) {
+export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) {
   const [showAll, setShowAll] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
@@ -491,7 +491,7 @@ function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | null }) 
 }
 
 /* ─── Revente & TRI tab ────────────────────────────────────────────────────── */
-function ReventeTab({ result }: { result: InvestmentResult }) {
+export function ReventeTab({ result }: { result: InvestmentResult }) {
   const prixRevente = result.prixRevente ?? 0
   const plusValue = result.plusValueBrute ?? 0
   const impotPV = result.impotPlusValue ?? 0
@@ -637,7 +637,7 @@ function ReventeTab({ result }: { result: InvestmentResult }) {
 }
 
 /* ─── Amortissement tab ────────────────────────────────────────────────────── */
-function AmortTab({ result }: { result: InvestmentResult }) {
+export function AmortTab({ result }: { result: InvestmentResult }) {
   const [view, setView] = useState<'chart' | 'table'>('chart')
 
   if (!result.tableauAmortissement || result.tableauAmortissement.length === 0) {
@@ -718,7 +718,7 @@ function AmortTab({ result }: { result: InvestmentResult }) {
 }
 
 /* ─── Projection tab ───────────────────────────────────────────────────────── */
-function ProjectionTab({ result }: { result: InvestmentResult }) {
+export function ProjectionTab({ result }: { result: InvestmentResult }) {
   if (!result.projection || result.projection.length === 0) {
     return <p className="text-sm text-zinc-500 py-8 text-center">Données de projection non disponibles.</p>
   }

@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { InvestmentParams, InvestmentResult } from '@/lib/types'
 import { calculateInvestment } from '@/lib/calculator'
 import { formatCurrency } from '@/lib/utils'
-import { IconCheckCircle, IconExclamationTriangle, IconBolt, IconLightBulb } from '@/components/ui/icons'
+import { IconCheckCircle, IconExclamationTriangle, IconBolt } from '@/components/ui/icons'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -21,6 +21,35 @@ interface ScenarioState {
   apportPct: number    // % du prix d'achat
   duree: number        // années
   travaux: number      // €
+}
+
+// ─── URL state helpers ────────────────────────────────────────────────────────
+
+const URL_KEYS = ['sp', 'sl', 'st', 'sa', 'sd', 'sw'] as const
+
+function encodeScenario(s: ScenarioState): string {
+  const p = new URLSearchParams()
+  p.set('sp', String(s.prixAchat))
+  p.set('sl', String(s.loyer))
+  p.set('st', String(s.taux))
+  p.set('sa', String(s.apportPct))
+  p.set('sd', String(s.duree))
+  p.set('sw', String(s.travaux))
+  return p.toString()
+}
+
+function readScenarioFromUrl(): Partial<ScenarioState> | null {
+  if (typeof window === 'undefined') return null
+  const p = new URLSearchParams(window.location.search)
+  if (!URL_KEYS.some(k => p.has(k))) return null
+  const out: Partial<ScenarioState> = {}
+  if (p.has('sp')) out.prixAchat = Number(p.get('sp'))
+  if (p.has('sl')) out.loyer    = Number(p.get('sl'))
+  if (p.has('st')) out.taux     = Number(p.get('st'))
+  if (p.has('sa')) out.apportPct = Number(p.get('sa'))
+  if (p.has('sd')) out.duree    = Number(p.get('sd'))
+  if (p.has('sw')) out.travaux  = Number(p.get('sw'))
+  return out
 }
 
 // ─── Utils ───────────────────────────────────────────────────────────────────
@@ -137,6 +166,7 @@ function MetricDelta({ label, value, delta, deltaFmt, color }: MetricDeltaProps)
 export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: ScenarioPanelProps) {
   const [showSliders, setShowSliders] = useState(false)
   const [showEquilibre, setShowEquilibre] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   // Loyer de base selon locType
   const loyerBase = getLoyerBase(baseParams)
@@ -152,37 +182,61 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
     ? Math.round((baseParams.apport / baseParams.prixAchat) * 100)
     : 20
 
-  // État des sliders — initialisé depuis les params de base
-  const [s, setS] = useState<ScenarioState>({
+  const defaultState: ScenarioState = {
     prixAchat: baseParams.prixAchat,
     loyer: loyerBase,
     taux: baseParams.taux,
     apportPct: apportBase,
     duree: baseParams.duree,
     travaux: baseParams.travaux,
+  }
+
+  // État des sliders — initialisé depuis l'URL si présente, sinon depuis les params de base
+  const [s, setS] = useState<ScenarioState>(() => {
+    const fromUrl = readScenarioFromUrl()
+    return fromUrl ? { ...defaultState, ...fromUrl } : defaultState
   })
 
   // Recalcul synchrone à chaque changement slider
   const scenarioParams = buildScenarioParams(baseParams, s)
   const scenarioResult = calculateInvestment(scenarioParams)
 
+  // Horizon de revente pour l'affichage
+  const horizon = baseParams.horizonRevente ?? 10
+
   // Deltas vs base
-  const dRendNet = Math.round((scenarioResult.rendementNet - baseResult.rendementNet) * 10) / 10
-  const dCashflow = Math.round(scenarioResult.cashflowMensuel - baseResult.cashflowMensuel)
-  const dPointMort = Math.round(scenarioResult.pointMort - baseResult.pointMort)
+  const dRendNet    = Math.round((scenarioResult.rendementNet - baseResult.rendementNet) * 10) / 10
+  const dCashflow   = Math.round(scenarioResult.cashflowMensuel - baseResult.cashflowMensuel)
+  const dPatrimoine = Math.round(scenarioResult.patrimoineNetRevente - baseResult.patrimoineNetRevente)
 
-  // Couleurs dynamiques selon valeurs scénario
-  const rendColor = scenarioResult.rendementNet >= 5 ? 'text-emerald-400' : scenarioResult.rendementNet >= 3 ? 'text-amber-400' : 'text-red-400'
-  const cfColor = scenarioResult.cashflowMensuel >= 0 ? 'text-emerald-400' : scenarioResult.cashflowMensuel >= -100 ? 'text-amber-400' : 'text-red-400'
-
-  // Détection changement par rapport au base
-  const hasChanged =
+  // Détection changement par rapport à la base (calculé tôt pour le useEffect)
+  const isModified =
     s.prixAchat !== baseParams.prixAchat ||
     s.loyer !== loyerBase ||
     s.taux !== baseParams.taux ||
     s.apportPct !== apportBase ||
     s.duree !== baseParams.duree ||
     s.travaux !== baseParams.travaux
+
+  // Mise à jour URL quand le scénario change (replaceState — sans historique)
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (!isModified) {
+      URL_KEYS.forEach(k => url.searchParams.delete(k))
+    } else {
+      new URLSearchParams(encodeScenario(s)).forEach((v, k) => url.searchParams.set(k, v))
+    }
+    window.history.replaceState(null, '', url.toString())
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s])
+
+  // Couleurs dynamiques selon valeurs scénario
+  const rendColor = scenarioResult.rendementNet >= 5 ? 'text-emerald-400' : scenarioResult.rendementNet >= 3 ? 'text-amber-400' : 'text-red-400'
+  const cfColor = scenarioResult.cashflowMensuel >= 0 ? 'text-emerald-400' : scenarioResult.cashflowMensuel >= -100 ? 'text-amber-400' : 'text-red-400'
+  const patriColor = scenarioResult.patrimoineNetRevente > 0 ? 'text-emerald-400' : 'text-red-400'
+
+  // Alias pour la lisibilité (déjà calculé plus haut)
+  const hasChanged = isModified
 
   // "Faire fonctionner ce bien" — décomposition du point mort
   const pointMort = scenarioResult.pointMort
@@ -204,16 +258,10 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
     ? Math.round(scenarioResult.mensualiteTotale - baseResult.mensualiteTotale)
     : 0
 
-  const handleReset = () => {
-    setS({
-      prixAchat: baseParams.prixAchat,
-      loyer: loyerBase,
-      taux: baseParams.taux,
-      apportPct: apportBase,
-      duree: baseParams.duree,
-      travaux: baseParams.travaux,
-    })
-  }
+  const handleReset = useCallback(() => {
+    setS(defaultState)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleApply = () => {
     onApplyScenario(scenarioParams)
@@ -314,11 +362,11 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
           </div>
           <div className="px-5 py-4">
             <MetricDelta
-              label="Point mort"
-              value={`${scenarioResult.pointMort} €/mois`}
-              delta={dPointMort}
-              deltaFmt={n => `${Math.abs(n)} €`}
-              color="text-zinc-300"
+              label={`Patrimoine à ${horizon} ans`}
+              value={scenarioResult.patrimoineNetRevente > 0 ? formatCurrency(scenarioResult.patrimoineNetRevente) : '—'}
+              delta={dPatrimoine}
+              deltaFmt={n => formatCurrency(Math.abs(n))}
+              color={patriColor}
             />
           </div>
         </div>
@@ -588,16 +636,51 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
 
         {/* ── Actions — visibles uniquement quand sliders ouverts ─────────── */}
         {showSliders && <div className="border-t border-white/[0.05] px-5 py-3 flex items-center justify-between gap-3 bg-white/[0.01]">
-          <button
-            onClick={handleReset}
-            disabled={!hasChanged}
-            className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Réinitialiser
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleReset}
+              disabled={!hasChanged}
+              className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Réinitialiser
+            </button>
+
+            {/* Copier le lien — visible seulement si scénario modifié */}
+            {hasChanged && (
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href).then(() => {
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  })
+                }}
+                className={`flex items-center gap-1.5 text-[11px] font-semibold transition-all px-2.5 py-1.5 rounded-lg border ${
+                  copied
+                    ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
+                    : 'text-zinc-500 border-white/[0.06] hover:text-zinc-300 hover:border-white/[0.10]'
+                }`}
+              >
+                {copied ? (
+                  <>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Lien copié !
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    Copier le lien
+                  </>
+                )}
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <p className="text-[10px] text-zinc-700 hidden sm:block">

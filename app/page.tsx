@@ -321,11 +321,16 @@ function HeroSection() {
               className="display-lg text-white"
               style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)', letterSpacing: '-0.05em', lineHeight: '1.06' }}
             >
-              <span className="word-reveal" style={{ animationDelay: '0ms',   marginRight: '0.22em' }}>Le</span>
-              <span className="word-reveal" style={{ animationDelay: '80ms',  marginRight: '0.22em' }}>simulateur</span>
-              <span className="word-reveal" style={{ animationDelay: '160ms', marginRight: '0.22em' }}>d&apos;investissement</span>
+              <span className="word-reveal" style={{ animationDelay: '0ms',   marginRight: '0.22em' }}>Analysez</span>
+              <span className="word-reveal" style={{ animationDelay: '80ms',  marginRight: '0.22em' }}>n&apos;importe</span>
+              <span className="word-reveal" style={{ animationDelay: '160ms', marginRight: '0.22em' }}>quel</span>
+              <span className="word-reveal" style={{ animationDelay: '240ms' }}>bien.</span>
               <br />
-              <span className="word-reveal" style={{ animationDelay: '280ms' }}>immobilier.</span>
+              <span className="word-reveal" style={{ animationDelay: '340ms', marginRight: '0.22em' }}>Avec</span>
+              <span className="word-reveal" style={{ animationDelay: '400ms', marginRight: '0.22em' }}>la</span>
+              <span className="word-reveal" style={{ animationDelay: '460ms', marginRight: '0.22em' }}>précision</span>
+              <span className="word-reveal" style={{ animationDelay: '520ms', marginRight: '0.22em' }}>d&apos;un</span>
+              <span className="word-reveal" style={{ animationDelay: '580ms' }}>expert.</span>
             </h1>
           </div>
 

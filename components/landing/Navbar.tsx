@@ -5,21 +5,25 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 /*
-  Logo — cercle + axes X/Y (traits blancs collés aux parois) + courbe verte
+  Logo — cercle + axes X/Y blancs meme epaisseur + courbe exponentielle verte
+  Cercle r=10 centre (12,12). Axes calcules pour toucher exactement les parois.
+  Axe X a y=18 : x de 4 a 20 (intersection cercle)
+  Axe Y a x=5.5 : y de 4.4 a 19.6 (intersection cercle)
+  Courbe verte strictement a l'interieur — ne depasse pas.
 */
 function Logo() {
   return (
     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden>
       {/* Cercle */}
       <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.15" opacity="0.85"/>
-      {/* Axe X — trait horizontal collé aux parois du cercle, positionné en bas */}
-      <line x1="4" y1="18" x2="20" y2="18" stroke="white" strokeWidth="0.85" opacity="0.4" strokeLinecap="round"/>
-      {/* Axe Y — trait vertical collé aux parois du cercle, positionné a gauche */}
-      <line x1="5.5" y1="4.4" x2="5.5" y2="19.6" stroke="white" strokeWidth="0.85" opacity="0.4" strokeLinecap="round"/>
-      {/* Courbe exponentielle verte partant de l'origine des axes */}
+      {/* Axe X — meme stroke que le cercle, touche les parois */}
+      <line x1="4" y1="18" x2="20" y2="18" stroke="white" strokeWidth="1.15" opacity="0.85" strokeLinecap="butt"/>
+      {/* Axe Y — meme stroke que le cercle, touche les parois */}
+      <line x1="5.5" y1="4.4" x2="5.5" y2="19.6" stroke="white" strokeWidth="1.15" opacity="0.85" strokeLinecap="butt"/>
+      {/* Courbe exponentielle verte — bien a l'interieur du cercle */}
       <path
-        d="M 5.5 18 C 8 18 11 14 19.5 5.5"
-        stroke="#4ade80" strokeWidth="1.6" strokeLinecap="round" fill="none"
+        d="M 6.5 17 C 8.5 17 13.5 10 17.5 7.5"
+        stroke="#4ade80" strokeWidth="1.55" strokeLinecap="round" fill="none"
       />
     </svg>
   )
@@ -70,7 +74,7 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* NAV LINKS — alignes a gauche, apres le logo */}
+        {/* NAV LINKS — alignes a gauche apres le logo */}
         <div className="hidden md:flex items-center gap-0.5 flex-1">
           {NAV_LINKS.map((l) => (
             <a

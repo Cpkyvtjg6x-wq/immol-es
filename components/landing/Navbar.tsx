@@ -5,18 +5,26 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 /*
-  Logo — cercle + courbe exponentielle
-  Deux paths, aucun fill, stroke pur.
-  La courbe part plate (bas-gauche) et monte fortement (haut-droite)
-  comme une courbe de rendement exponentielle.
+  Logo — cercle + axes X/Y + courbe exponentielle verte
+  Axes en blanc subtil, courbe en vert emeraude #4ade80
 */
 function Logo() {
   return (
-    <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden>
-      <circle cx="10" cy="10" r="8.5" stroke="white" strokeWidth="1.35"/>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
+      {/* Cercle */}
+      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.2" opacity="0.9"/>
+      {/* Axe X */}
+      <line x1="4" y1="17" x2="20" y2="17" stroke="white" strokeWidth="0.9" opacity="0.35" strokeLinecap="round"/>
+      {/* Axe Y */}
+      <line x1="5" y1="4" x2="5" y2="19" stroke="white" strokeWidth="0.9" opacity="0.35" strokeLinecap="round"/>
+      {/* Fleche axe X */}
+      <path d="M18.5 15.8 L20 17 L18.5 18.2" stroke="white" strokeWidth="0.8" opacity="0.35" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      {/* Fleche axe Y */}
+      <path d="M3.8 5.5 L5 4 L6.2 5.5" stroke="white" strokeWidth="0.8" opacity="0.35" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      {/* Courbe exponentielle verte */}
       <path
-        d="M 3.8 15 C 9.5 15 15 8.5 15 4"
-        stroke="white" strokeWidth="1.35" strokeLinecap="round" fill="none"
+        d="M 5.5 17 C 9 17 13 13 19 5.5"
+        stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" fill="none"
       />
     </svg>
   )
@@ -49,26 +57,26 @@ export function Navbar() {
       }`}
     >
       <div
-        className={`relative max-w-7xl mx-auto px-6 lg:px-10 flex items-center transition-all duration-500 ${
-          scrolled ? 'h-[60px]' : 'h-[80px]'
+        className={`max-w-7xl mx-auto px-6 lg:px-10 flex items-center transition-all duration-500 ${
+          scrolled ? 'h-[60px]' : 'h-[76px]'
         }`}
       >
 
-        {/* LEFT — logo */}
-        <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0 z-10">
-          <div className="transition-opacity duration-200 group-hover:opacity-60">
+        {/* LEFT — logo + wordmark */}
+        <Link href="/" className="flex items-center gap-3 group flex-shrink-0 mr-6">
+          <div className="transition-opacity duration-200 group-hover:opacity-70">
             <Logo />
           </div>
           <span
             className="select-none text-white"
-            style={{ fontSize: '15px', fontWeight: 500, letterSpacing: '-0.025em' }}
+            style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.03em' }}
           >
             Immora
           </span>
         </Link>
 
-        {/* CENTER — nav links (position absolue pour vrai centrage) */}
-        <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-0.5">
+        {/* NAV LINKS — alignes a gauche, apres le logo */}
+        <div className="hidden md:flex items-center gap-0.5 flex-1">
           {NAV_LINKS.map((l) => (
             <a
               key={l.label}
@@ -80,9 +88,9 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* RIGHT — separator + actions */}
-        <div className="flex items-center gap-2 ml-auto z-10">
-          {/* Separateur vertical — style Linear */}
+        {/* RIGHT — separateur + actions */}
+        <div className="flex items-center gap-2 ml-auto">
+          {/* Separateur vertical */}
           <div className="hidden md:block w-px h-4 bg-white/[0.12] mx-1" />
 
           <button

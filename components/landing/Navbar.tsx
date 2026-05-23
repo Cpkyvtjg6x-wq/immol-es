@@ -5,26 +5,34 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 /*
-  Logo — cercle + axes X/Y blancs meme epaisseur + courbe exponentielle verte
-  Cercle r=10 centre (12,12). Axes calcules pour toucher exactement les parois.
-  Axe X a y=18 : x de 4 a 20 (intersection cercle)
-  Axe Y a x=5.5 : y de 4.4 a 19.6 (intersection cercle)
-  Courbe verte strictement a l'interieur — ne depasse pas.
+  Logo — cercle + axe X + courbe exponentielle verte
+  Les deux extremites de la courbe sont sur la paroi du cercle :
+    depart : (4, 18)  = intersection cercle + axe X  -> cache par axe X ET cercle
+    arrivee: (19, 5)  = point sur le cercle (sqrt((19-12)^2+(5-12)^2) ~ 9.9) -> cache par cercle
+  La courbe part plate (masquee sous le trait) puis monte fort — vrai profil exponentiel.
+  clipPath r=9.3 = bord interieur du trait du cercle (r10, sw1.4) -> jonction invisible.
 */
 function Logo() {
   return (
     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden>
-      {/* Cercle */}
-      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.15" opacity="0.85"/>
-      {/* Axe X — meme stroke que le cercle, touche les parois */}
-      <line x1="4" y1="18" x2="20" y2="18" stroke="white" strokeWidth="1.15" opacity="0.85" strokeLinecap="butt"/>
-      {/* Axe Y — meme stroke que le cercle, touche les parois */}
-      <line x1="5.5" y1="4.4" x2="5.5" y2="19.6" stroke="white" strokeWidth="1.15" opacity="0.85" strokeLinecap="butt"/>
-      {/* Courbe exponentielle verte — bien a l'interieur du cercle */}
-      <path
-        d="M 6.5 17 C 8.5 17 13.5 10 17.5 7.5"
-        stroke="#4ade80" strokeWidth="1.55" strokeLinecap="round" fill="none"
-      />
+      <defs>
+        <clipPath id="lc">
+          <circle cx="12" cy="12" r="9.1"/>
+        </clipPath>
+      </defs>
+
+      <g clipPath="url(#lc)">
+        {/* Courbe expo : part de (4,18) sur le cercle, flat puis abrupte, finit sur (19,5) */}
+        <path
+          d="M 4 18 C 11 18 15 8 19 5"
+          stroke="#4ade80" strokeWidth="1.55" strokeLinecap="butt" fill="none"
+        />
+        {/* Axe X par dessus — cache le depart de la courbe */}
+        <line x1="2" y1="18" x2="22" y2="18" stroke="white" strokeWidth="1.8" strokeLinecap="butt"/>
+      </g>
+
+      {/* Cercle en dernier — cache les deux extremites */}
+      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.8" opacity="0.9"/>
     </svg>
   )
 }

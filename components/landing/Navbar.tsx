@@ -5,26 +5,21 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 /*
-  Logo — cercle + axes X/Y + courbe exponentielle verte
-  Axes en blanc subtil, courbe en vert emeraude #4ade80
+  Logo — cercle + axes X/Y (traits blancs collés aux parois) + courbe verte
 */
 function Logo() {
   return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden>
       {/* Cercle */}
-      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.2" opacity="0.9"/>
-      {/* Axe X */}
-      <line x1="4" y1="17" x2="20" y2="17" stroke="white" strokeWidth="0.9" opacity="0.35" strokeLinecap="round"/>
-      {/* Axe Y */}
-      <line x1="5" y1="4" x2="5" y2="19" stroke="white" strokeWidth="0.9" opacity="0.35" strokeLinecap="round"/>
-      {/* Fleche axe X */}
-      <path d="M18.5 15.8 L20 17 L18.5 18.2" stroke="white" strokeWidth="0.8" opacity="0.35" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      {/* Fleche axe Y */}
-      <path d="M3.8 5.5 L5 4 L6.2 5.5" stroke="white" strokeWidth="0.8" opacity="0.35" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      {/* Courbe exponentielle verte */}
+      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.15" opacity="0.85"/>
+      {/* Axe X — trait horizontal collé aux parois du cercle, positionné en bas */}
+      <line x1="4" y1="18" x2="20" y2="18" stroke="white" strokeWidth="0.85" opacity="0.4" strokeLinecap="round"/>
+      {/* Axe Y — trait vertical collé aux parois du cercle, positionné a gauche */}
+      <line x1="5.5" y1="4.4" x2="5.5" y2="19.6" stroke="white" strokeWidth="0.85" opacity="0.4" strokeLinecap="round"/>
+      {/* Courbe exponentielle verte partant de l'origine des axes */}
       <path
-        d="M 5.5 17 C 9 17 13 13 19 5.5"
-        stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" fill="none"
+        d="M 5.5 18 C 8 18 11 14 19.5 5.5"
+        stroke="#4ade80" strokeWidth="1.6" strokeLinecap="round" fill="none"
       />
     </svg>
   )
@@ -63,13 +58,13 @@ export function Navbar() {
       >
 
         {/* LEFT — logo + wordmark */}
-        <Link href="/" className="flex items-center gap-3 group flex-shrink-0 mr-6">
+        <Link href="/" className="flex items-center gap-3 group flex-shrink-0 mr-8">
           <div className="transition-opacity duration-200 group-hover:opacity-70">
             <Logo />
           </div>
           <span
             className="select-none text-white"
-            style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.03em' }}
+            style={{ fontSize: '20px', fontWeight: 600, letterSpacing: '-0.035em' }}
           >
             Immora
           </span>
@@ -90,7 +85,6 @@ export function Navbar() {
 
         {/* RIGHT — separateur + actions */}
         <div className="flex items-center gap-2 ml-auto">
-          {/* Separateur vertical */}
           <div className="hidden md:block w-px h-4 bg-white/[0.12] mx-1" />
 
           <button

@@ -158,6 +158,93 @@ function ProductFrame({
   )
 }
 
+/* ──────────────────────────────────────────────────────────────────────────────
+   STATS BAR — chiffres clés épurés sous le hero
+   ────────────────────────────────────────────────────────────────────────── */
+function StatsBar() {
+  const stats = [
+    { value: '4 200+', label: 'analyses réalisées' },
+    { value: '18',     label: 'villes couvertes' },
+    { value: '10',     label: 'régimes fiscaux' },
+    { value: '14 040 €', label: 'économisés en moyenne / an' },
+  ]
+  return (
+    <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10 reveal">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.05] rounded-2xl overflow-hidden border border-white/[0.05]">
+        {stats.map((s, i) => (
+          <div key={i} className="bg-[#09090b] px-6 py-5 flex flex-col gap-1">
+            <span className="tabular text-[22px] font-bold text-white tracking-tight" style={{ letterSpacing: '-0.04em' }}>{s.value}</span>
+            <span className="mono text-[10.5px] text-zinc-600 uppercase tracking-[0.12em]">{s.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ──────────────────────────────────────────────────────────────────────────────
+   WORKFLOW — 3 étapes
+   ────────────────────────────────────────────────────────────────────────── */
+function WorkflowSection() {
+  const steps = [
+    {
+      num: '01',
+      title: 'Renseignez le bien',
+      desc: 'Adresse, prix d\'achat, loyer estimé, surface. Trois champs suffisent pour une première analyse. Zéro tableur.',
+      detail: 'Ville · Surface · Régime souhaité',
+    },
+    {
+      num: '02',
+      title: 'L\'IA analyse tout',
+      desc: 'Rendement brut, net, cashflow mensuel, 10 régimes fiscaux comparés, score d\'opportunité 0–100. En quelques secondes.',
+      detail: 'Calcul · Optimisation · Recommandation',
+    },
+    {
+      num: '03',
+      title: 'Décidez et exportez',
+      desc: 'Rapport PDF 12 pages banker-ready, tableau Excel d\'amortissement 240 lignes. Dossier clé en main pour la banque.',
+      detail: 'PDF · Excel · White-label',
+    },
+  ]
+  return (
+    <section className="py-24 lg:py-32">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        {/* Header */}
+        <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-16 reveal">
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3vw, 2.6rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
+            De l&apos;adresse au dossier bancaire.
+            <br />En 30 secondes.
+          </h2>
+          <p className="text-[15px] text-zinc-500 leading-[1.7]">
+            IMMORA remplace des heures de calcul sur Excel par un flux en trois étapes. Pas de courbe d&apos;apprentissage, pas de formation requise.
+          </p>
+        </div>
+
+        {/* Steps */}
+        <div className="grid md:grid-cols-3 gap-px bg-white/[0.05] rounded-2xl overflow-hidden border border-white/[0.05] reveal reveal-d1">
+          {steps.map((step, i) => (
+            <div key={i} className="bg-[#09090b] p-8 flex flex-col gap-5 group hover:bg-white/[0.015] transition-colors duration-300">
+              <div className="flex items-center justify-between">
+                <span className="mono text-[11px] text-zinc-700 uppercase tracking-[0.18em]">{step.num}</span>
+                <div className="w-px h-4 bg-white/[0.06]" />
+                <span className="mono text-[10px] text-zinc-700">{step.detail}</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[17px] font-semibold text-white mb-3" style={{ letterSpacing: '-0.03em' }}>{step.title}</h3>
+                <p className="text-[13.5px] text-zinc-500 leading-[1.7]">{step.desc}</p>
+              </div>
+              {/* Connector arrow — sauf dernier */}
+              {i < 2 && (
+                <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 translate-x-full z-10 pointer-events-none" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════
    PAGE ROOT
    ══════════════════════════════════════════════════════════════════════════ */
@@ -171,13 +258,16 @@ export default function LandingPage() {
     <div className="bg-[#09090b] text-white overflow-x-hidden selection:bg-emerald-500/30">
       <ScrollProgressBar />
       <Navbar />
-      <HeroSection onCta={go} onLogin={login} />
+      <HeroSection />
+      <StatsBar />
       <Hr />
       <Section1Analyse />
       <Hr />
       <Section2Fiscalite />
       <Hr />
       <Section3Export />
+      <Hr />
+      <WorkflowSection />
       <Hr />
       <TestimonialsSection />
       <Hr />
@@ -193,7 +283,7 @@ export default function LandingPage() {
 /* ══════════════════════════════════════════════════════════════════════════════
    HERO — Layout Linear : titre gauche · description droite · screenshot fade
    ══════════════════════════════════════════════════════════════════════════ */
-function HeroSection({ onCta, onLogin }: { onCta: () => void; onLogin: () => void }) {
+function HeroSection() {
   const scrollY = useScrollY()
 
   return (
@@ -205,52 +295,56 @@ function HeroSection({ onCta, onLogin }: { onCta: () => void; onLogin: () => voi
 
       {/* ── 2-col header ── */}
       <div className="max-w-7xl mx-auto px-6 lg:px-12 reveal">
-        <div className="grid lg:grid-cols-[1fr_480px] gap-12 lg:gap-20 items-end pb-14 lg:pb-20">
+        <div className="grid lg:grid-cols-[1fr_460px] gap-12 lg:gap-20 items-end pb-14 lg:pb-20">
 
           {/* Gauche — titre */}
           <div>
             {/* Announcement pill */}
             <a href="/analyse"
-              className="inline-flex items-center gap-2 mb-8 text-[12.5px] text-zinc-400 hover:text-zinc-200 transition-colors group"
+              className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] text-[12px] text-zinc-400 hover:text-zinc-200 hover:border-white/[0.14] transition-all group"
             >
               <span className="relative flex w-1.5 h-1.5">
                 <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-60 animate-ping" />
                 <span className="relative w-1.5 h-1.5 rounded-full bg-emerald-400" />
               </span>
               <span>Nouveau · Analyse IA</span>
-              <span className="text-zinc-600">·</span>
-              <span className="text-zinc-500 group-hover:text-zinc-300 transition-colors">immora.app →</span>
+              <span className="text-zinc-600 mx-1">·</span>
+              <span className="text-zinc-500 group-hover:text-zinc-300 transition-colors">immora.app</span>
+              <svg className="w-3 h-3 text-zinc-600 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
             </a>
 
             <h1
               className="display-lg text-white"
-              style={{ fontSize: 'clamp(2.8rem, 6vw, 5.4rem)', letterSpacing: '-0.05em', lineHeight: '1.0' }}
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)', letterSpacing: '-0.05em', lineHeight: '1.06' }}
             >
-              Le simulateur d&apos;investissement
-              <br />immobilier.
+              {['Le', 'simulateur', "d’investissement"].map((w, i) => (
+                <span key={w} className="word-reveal" style={{ animationDelay: `${i * 80}ms` }}>{w}{' '}</span>
+              ))}
+              <br />
+              <span className="word-reveal" style={{ animationDelay: '280ms' }}>immobilier.</span>
             </h1>
           </div>
 
-          {/* Droite — description + CTA */}
-          <div className="flex flex-col justify-end gap-8 lg:pb-1">
-            <p className="text-[17px] lg:text-[18px] text-zinc-400 leading-[1.65]">
+          {/* Droite — description */}
+          <div className="flex flex-col justify-end gap-6 lg:pb-1">
+            <p className="text-[16px] lg:text-[17px] text-zinc-400 leading-[1.7]">
               Rentabilité nette, cashflow mensuel, optimisation fiscale automatique — tout ce qu&apos;il faut pour investir avec précision.
             </p>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onCta}
-                className="group inline-flex items-center gap-2 bg-white text-[#09090b] text-[14px] font-semibold px-5 py-2.5 rounded-lg hover:-translate-y-px hover:shadow-[0_0_40px_-4px_rgba(255,255,255,0.3)] transition-all duration-300"
-              >
-                Commencer gratuitement
-                <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+            <p className="text-[14px] text-zinc-600 leading-[1.65]">
+              Conçu pour les investisseurs qui veulent des chiffres réels, pas des estimations. 18 villes, 10 régimes fiscaux, résultats en 30 secondes.
+            </p>
+            <div className="flex items-center gap-4 pt-1">
+              <a href="/analyse" className="inline-flex items-center gap-1.5 text-[13.5px] text-zinc-300 hover:text-white transition-colors group">
+                Lancer l&apos;analyse
+                <svg className="w-3.5 h-3.5 text-zinc-500 group-hover:translate-x-0.5 group-hover:text-white transition-all" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
-              </button>
-              <button onClick={onLogin} className="text-[14px] text-zinc-500 hover:text-zinc-200 transition-colors px-4 py-2.5">
-                Se connecter
-              </button>
+              </a>
+              <span className="w-px h-4 bg-white/[0.08]" />
+              <span className="mono text-[11px] text-zinc-700 tracking-wider">Gratuit · Sans carte</span>
             </div>
-            <p className="mono text-[11px] text-zinc-700 tracking-wider">Gratuit · Sans carte · Résultats en 30 secondes</p>
           </div>
         </div>
       </div>
@@ -436,13 +530,16 @@ function Section1Analyse() {
       {/* Header 2-col */}
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-6 reveal">
-          <h2 className="text-white" style={{ fontSize: 'clamp(2.2rem,5vw,4.2rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.02' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
             Analysez n&apos;importe quel bien.
             <br />En 30 secondes.
           </h2>
           <div className="flex flex-col gap-5 lg:pb-1">
-            <p className="text-[16px] text-zinc-400 leading-[1.65]">
+            <p className="text-[15.5px] text-zinc-400 leading-[1.7]">
               Prix, surface, loyer estimé, ville. IMMORA calcule instantanément rendement brut, net, cashflow mensuel et score d&apos;opportunité — avec les données du marché local.
+            </p>
+            <p className="text-[13.5px] text-zinc-600 leading-[1.65]">
+              Les données DVF, MeilleursAgents et INSEE de 18 villes françaises sont intégrées nativement. Aucune recherche manuelle, aucun export préalable.
             </p>
             <SectionLink num="1.0" label="Analyse" href="/analyse" />
           </div>
@@ -458,8 +555,18 @@ function Section1Analyse() {
         </div>
       </div>
 
+      {/* Caption sous screenshot */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 reveal reveal-d2">
+        <div className="flex items-center justify-between border-t border-white/[0.04] pt-5">
+          <p className="text-[12.5px] text-zinc-600 leading-relaxed max-w-lg">
+            Chaque variable mise à jour en temps réel — le score IA et le cashflow recalculent à chaque frappe, sans rechargement.
+          </p>
+          <span className="hidden md:block mono text-[10.5px] text-zinc-800 uppercase tracking-[0.14em]">Score · Cashflow · Fiscalité</span>
+        </div>
+      </div>
+
       {/* Sub-links */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-12 pb-28 lg:pb-36 reveal reveal-d2">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 pb-28 lg:pb-36 reveal reveal-d2">
         <SubLinks items={[
           { num: '1.1', label: 'Données de marché' },
           { num: '1.2', label: 'Score IA 0–100' },
@@ -586,13 +693,16 @@ function Section2Fiscalite() {
     <section className="relative">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-6 reveal">
-          <h2 className="text-white" style={{ fontSize: 'clamp(2.2rem,5vw,4.2rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.02' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
             Optimisez votre fiscalité,
             <br />automatiquement.
           </h2>
           <div className="flex flex-col gap-5 lg:pb-1">
-            <p className="text-[16px] text-zinc-400 leading-[1.65]">
+            <p className="text-[15.5px] text-zinc-400 leading-[1.7]">
               L&apos;outil compare 10 régimes fiscaux en temps réel — LMNP, LMP, SCI IS/IR, micro-foncier, réel, SARL famille — et recommande celui qui maximise votre cashflow net après impôt.
+            </p>
+            <p className="text-[13.5px] text-zinc-600 leading-[1.65]">
+              Ce calcul — qu&apos;un comptable facture 600 à 800 € la consultation — IMMORA le fait instantanément, avec le détail ligne par ligne.
             </p>
             <SectionLink num="2.0" label="Fiscalité" href="/analyse" />
           </div>
@@ -607,7 +717,17 @@ function Section2Fiscalite() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-12 pb-28 lg:pb-36 reveal reveal-d2">
+      {/* Caption */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 reveal reveal-d2">
+        <div className="flex items-center justify-between border-t border-white/[0.04] pt-5">
+          <p className="text-[12.5px] text-zinc-600 leading-relaxed max-w-lg">
+            10 régimes comparés côte à côte. La recommandation optimale s&apos;affiche en quelques millisecondes, avec l&apos;économie annuelle calculée au centime près.
+          </p>
+          <span className="hidden md:block mono text-[10.5px] text-zinc-800 uppercase tracking-[0.14em]">LMNP · LMP · SCI · Micro</span>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 pb-28 lg:pb-36 reveal reveal-d2">
         <SubLinks items={[
           { num: '2.1', label: 'LMNP / LMP réel' },
           { num: '2.2', label: 'SCI IS / IR' },
@@ -725,13 +845,16 @@ function Section3Export() {
     <section className="relative">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-6 reveal">
-          <h2 className="text-white" style={{ fontSize: 'clamp(2.2rem,5vw,4.2rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.02' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
             Exportez le dossier
             <br />que votre banquier attend.
           </h2>
           <div className="flex flex-col gap-5 lg:pb-1">
-            <p className="text-[16px] text-zinc-400 leading-[1.65]">
+            <p className="text-[15.5px] text-zinc-400 leading-[1.7]">
               Rapport PDF 12 pages, tableau d&apos;amortissement Excel 240 lignes. Format banker-ready, personnalisable avec votre logo. En un clic depuis l&apos;interface.
+            </p>
+            <p className="text-[13.5px] text-zinc-600 leading-[1.65]">
+              Structuré dans le format attendu par 95 % des établissements bancaires français. Ratio d&apos;endettement, apport, verdict crédit — tout est là, signé IMMORA.
             </p>
             <SectionLink num="3.0" label="Export" href="/analyse" />
           </div>
@@ -746,7 +869,17 @@ function Section3Export() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-12 pb-28 lg:pb-36 reveal reveal-d2">
+      {/* Caption */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 reveal reveal-d2">
+        <div className="flex items-center justify-between border-t border-white/[0.04] pt-5">
+          <p className="text-[12.5px] text-zinc-600 leading-relaxed max-w-lg">
+            PDF · Excel · Analyse fiscale — trois fichiers générés simultanément. Prêts à déposer à la banque, à envoyer au notaire ou à partager avec un CGP.
+          </p>
+          <span className="hidden md:block mono text-[10.5px] text-zinc-800 uppercase tracking-[0.14em]">PDF · Excel · White-label</span>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 pb-28 lg:pb-36 reveal reveal-d2">
         <SubLinks items={[
           { num: '3.1', label: 'Rapport PDF bancaire' },
           { num: '3.2', label: 'Excel amortissement' },
@@ -936,9 +1069,14 @@ function TestimonialsSection() {
           {all.map((t, i) => (
             <div
               key={i}
-              className="w-[380px] flex-shrink-0 rounded-xl p-6 bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.11] transition-colors duration-300"
+              className="spotlight w-[380px] flex-shrink-0 rounded-xl p-6 bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.11] transition-colors duration-300"
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect()
+                e.currentTarget.style.setProperty('--mx', `${e.clientX - rect.left}px`)
+                e.currentTarget.style.setProperty('--my', `${e.clientY - rect.top}px`)
+              }}
             >
-              <p className="text-[15.5px] text-zinc-200 leading-[1.55] mb-5 min-h-[88px]">&ldquo;{t.quote}&rdquo;</p>
+              <p className="text-[15px] text-zinc-300 leading-[1.6] mb-5 min-h-[88px]">&ldquo;{t.quote}&rdquo;</p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0"
@@ -1000,7 +1138,7 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
             const price = annual ? plan.price.a : plan.price.m
             return (
               <div key={plan.name}
-                className={`relative rounded-xl p-8 border transition-all duration-300 ${plan.featured ? 'bg-white/[0.03] border-white/[0.16]' : 'bg-white/[0.015] border-white/[0.06] hover:border-white/[0.12]'}`}>
+                className={`relative rounded-xl p-8 border transition-all duration-300 ${plan.featured ? 'bg-white/[0.03] border-white/[0.16] featured-glow' : 'bg-white/[0.015] border-white/[0.06] hover:border-white/[0.12]'}`}>
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex px-3 py-1 rounded-full bg-white text-[#09090b] mono text-[10px] font-bold uppercase tracking-wider">
                     Le plus choisi

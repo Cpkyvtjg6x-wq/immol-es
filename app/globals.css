@@ -329,12 +329,21 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.18); }
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.04), transparent 40%);
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.055), transparent 40%);
   opacity: 0;
-  transition: opacity 0.5s;
+  transition: opacity 0.4s ease;
   pointer-events: none;
+  z-index: 0;
 }
 .spotlight:hover::before { opacity: 1; }
+.spotlight > * { position: relative; z-index: 1; }
+
+/* ─── Featured pricing glow ──────────────────────────────────── */
+@keyframes featured-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.16), 0 0 32px -8px rgba(16,185,129,0.12); }
+  50%       { box-shadow: 0 0 0 1px rgba(255,255,255,0.22), 0 0 52px -8px rgba(16,185,129,0.24); }
+}
+.featured-glow { animation: featured-pulse 4s ease-in-out infinite; }
 
 /* ─── Compare slider ─────────────────────────────────────────── */
 .compare-handle {

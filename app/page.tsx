@@ -321,9 +321,9 @@ function HeroSection() {
               className="display-lg text-white"
               style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)', letterSpacing: '-0.05em', lineHeight: '1.06' }}
             >
-              {['Le', 'simulateur', "d’investissement"].map((w, i) => (
-                <span key={w} className="word-reveal" style={{ animationDelay: `${i * 80}ms` }}>{w}{' '}</span>
-              ))}
+              <span className="word-reveal" style={{ animationDelay: '0ms',   marginRight: '0.22em' }}>Le</span>
+              <span className="word-reveal" style={{ animationDelay: '80ms',  marginRight: '0.22em' }}>simulateur</span>
+              <span className="word-reveal" style={{ animationDelay: '160ms', marginRight: '0.22em' }}>d&apos;investissement</span>
               <br />
               <span className="word-reveal" style={{ animationDelay: '280ms' }}>immobilier.</span>
             </h1>

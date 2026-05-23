@@ -211,7 +211,7 @@ function WorkflowSection() {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-16 reveal">
-          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3vw, 2.6rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3vw, 2.6rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.08' }}>
             De l&apos;adresse au dossier bancaire.
             <br />En 30 secondes.
           </h2>
@@ -319,7 +319,7 @@ function HeroSection() {
 
             <h1
               className="display-lg text-white"
-              style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)', letterSpacing: '-0.05em', lineHeight: '1.06' }}
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.08' }}
             >
               <span className="word-reveal" style={{ animationDelay: '0ms',   marginRight: '0.22em' }}>Analysez</span>
               <span className="word-reveal" style={{ animationDelay: '80ms',  marginRight: '0.22em' }}>n&apos;importe</span>
@@ -537,7 +537,7 @@ function Section1Analyse() {
       {/* Header 2-col */}
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-6 reveal">
-          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.08' }}>
             Analysez n&apos;importe quel bien.
             <br />En 30 secondes.
           </h2>
@@ -700,7 +700,7 @@ function Section2Fiscalite() {
     <section className="relative">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-6 reveal">
-          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.08' }}>
             Optimisez votre fiscalité,
             <br />automatiquement.
           </h2>
@@ -852,7 +852,7 @@ function Section3Export() {
     <section className="relative">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-6 reveal">
-          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.08' }}>
             Exportez le dossier
             <br />que votre banquier attend.
           </h2>
@@ -1066,7 +1066,7 @@ function DashboardSection() {
     <section className="relative">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
         <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-6 reveal">
-          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.08' }}>
             Gérez votre portefeuille.
             <br />Pas votre tableur.
           </h2>
@@ -1321,7 +1321,7 @@ function TestimonialsSection() {
     <section className="py-24 lg:py-32 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-16 reveal">
         <div className="grid lg:grid-cols-2 gap-8 items-end">
-          <h2 className="text-white" style={{ fontSize: 'clamp(2rem,4vw,3.5rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.02' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(2rem,4vw,3.5rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.05' }}>
             Des décisions, pas des promesses.
           </h2>
           <p className="text-[16px] text-zinc-400 leading-[1.65]">
@@ -1381,7 +1381,7 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="mb-16 reveal">
           <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-end mb-10">
-            <h2 className="text-white" style={{ fontSize: 'clamp(2rem,4vw,3.5rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.02' }}>
+            <h2 className="text-white" style={{ fontSize: 'clamp(2rem,4vw,3.5rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.05' }}>
               Simple. Honnête. Sans surprise.
             </h2>
             {/* Toggle */}
@@ -1467,7 +1467,7 @@ function FaqSection() {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="grid lg:grid-cols-[340px_1fr] gap-16 lg:gap-24">
           <div className="reveal">
-            <h2 className="text-white mb-4" style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.05' }}>
+            <h2 className="text-white mb-4" style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.08' }}>
               Questions fréquentes.
             </h2>
             <p className="text-[15px] text-zinc-500 leading-[1.65]">
@@ -1512,7 +1512,7 @@ function CtaFinalSection({ onPrimary }: { onPrimary: () => void }) {
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-12 reveal">
         <div className="grid lg:grid-cols-2 gap-12 items-end">
-          <h2 className="text-white" style={{ fontSize: 'clamp(2.5rem,6vw,5rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.0' }}>
+          <h2 className="text-white" style={{ fontSize: 'clamp(2.5rem,6vw,5rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.04' }}>
             Votre prochain investissement commence ici.
           </h2>
           <div className="flex flex-col gap-8 lg:pb-2">

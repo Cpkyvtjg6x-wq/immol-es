@@ -267,6 +267,8 @@ export default function LandingPage() {
       <Hr />
       <Section3Export />
       <Hr />
+      <DashboardSection />
+      <Hr />
       <WorkflowSection />
       <Hr />
       <TestimonialsSection />
@@ -1033,6 +1035,265 @@ function ExportScreenshot() {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SECTION 4 — DASHBOARD PORTFOLIO
+   ══════════════════════════════════════════════════════════════════════════ */
+function DashboardSection() {
+  const frameRef = useRef<HTMLDivElement>(null)
+
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = frameRef.current; if (!el) return
+    const r = el.getBoundingClientRect()
+    el.style.setProperty('--rx', `${((e.clientY - r.top  - r.height / 2) / r.height) * -5}deg`)
+    el.style.setProperty('--ry', `${((e.clientX - r.left - r.width  / 2) / r.width ) *  7}deg`)
+  }
+  const onLeave = () => {
+    const el = frameRef.current; if (!el) return
+    el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg')
+  }
+
+  return (
+    <section className="relative">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
+        <div className="grid lg:grid-cols-[1fr_420px] gap-12 lg:gap-24 items-end mb-6 reveal">
+          <h2 className="text-white" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.8rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: '1.06' }}>
+            Gérez votre portefeuille.
+            <br />Pas votre tableur.
+          </h2>
+          <div className="flex flex-col gap-5 lg:pb-1">
+            <p className="text-[15.5px] text-zinc-400 leading-[1.7]">
+              Tous vos biens, toutes leurs métriques, en un seul endroit. Cashflow agrégé, rendement moyen, économie fiscale globale — le tableau de bord que vous auriez dû avoir dès le début.
+            </p>
+            <p className="text-[13.5px] text-zinc-600 leading-[1.65]">
+              Comparez vos biens entre eux, identifiez ceux qui sous-performent et arbitrez sur la base de chiffres réels, pas d&apos;intuitions.
+            </p>
+            <SectionLink num="4.0" label="Portfolio" href="/analyse" />
+          </div>
+        </div>
+      </div>
+
+      {/* Screenshot — tilt 3D au survol */}
+      <div className="px-4 lg:px-10 screenshot-fade-soft reveal reveal-d1" onMouseMove={onMove} onMouseLeave={onLeave}>
+        <div ref={frameRef} className="max-w-[1320px] mx-auto tilt-3d">
+          <ProductFrame url="immora.app/dashboard · 3 biens · Portefeuille 825 k€">
+            <DashboardScreenshot />
+          </ProductFrame>
+        </div>
+      </div>
+
+      {/* Légende */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 reveal reveal-d2">
+        <div className="flex flex-wrap items-center justify-between border-t border-white/[0.04] pt-5 gap-4">
+          <div className="flex items-center gap-6">
+            {[
+              { dot: 'bg-emerald-400', label: 'Cashflow positif' },
+              { dot: 'bg-red-400',     label: 'Cashflow négatif' },
+              { dot: 'bg-orange-400',  label: 'Régime à optimiser' },
+            ].map((l) => (
+              <div key={l.label} className="flex items-center gap-2">
+                <div className={`w-1.5 h-1.5 rounded-full ${l.dot}`} />
+                <span className="mono text-[10.5px] text-zinc-600">{l.label}</span>
+              </div>
+            ))}
+          </div>
+          <span className="hidden md:block mono text-[10.5px] text-zinc-800 uppercase tracking-[0.14em]">Dashboard · Vue portefeuille</span>
+        </div>
+      </div>
+
+      {/* Sub-links */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 pb-28 lg:pb-36 reveal reveal-d2">
+        <SubLinks items={[
+          { num: '4.1', label: 'Vue portefeuille' },
+          { num: '4.2', label: 'Arbitrage biens' },
+          { num: '4.3', label: 'Alertes perf.' },
+          { num: '4.4', label: 'Historique' },
+        ]} />
+      </div>
+    </section>
+  )
+}
+
+function DashboardScreenshot() {
+  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.05 })
+  const portfolio = useCountUp(825000, 2200, inView)
+  const cashflow  = useCountUp(423,    1800, inView)
+  const economie  = useCountUp(28600,  2400, inView)
+
+  const props = [
+    { name: 'Lyon 2e · T3 · 68 m²',           score: 87, cf:  128, rend: 5.78, regime: 'LMNP réel', status: 'good', delay: 0   },
+    { name: 'Bordeaux Chartrons · T4 · 95 m²', score: 91, cf:  340, rend: 7.10, regime: 'LMNP réel', status: 'best', delay: 90  },
+    { name: 'Paris 11e · T2 · 42 m²',          score: 72, cf:  -45, rend: 4.20, regime: 'Micro-BIC', status: 'warn', delay: 180 },
+  ]
+
+  return (
+    <div ref={ref} className="flex min-h-[500px] lg:min-h-[560px]">
+
+      {/* ── Sidebar ── */}
+      <div className="hidden md:flex w-52 flex-shrink-0 flex-col border-r border-white/[0.05] bg-white/[0.005]">
+        {/* Logo */}
+        <div className="flex items-center gap-2 px-4 h-11 border-b border-white/[0.04]">
+          <div className="w-5 h-5 rounded-[5px] bg-emerald-500 flex items-center justify-center">
+            <svg className="w-2.5 h-2.5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h14V10" />
+            </svg>
+          </div>
+          <span className="text-[13px] font-bold tracking-[-0.04em]">IMMO<span className="text-emerald-400">RA</span></span>
+        </div>
+
+        {/* Nav */}
+        <nav className="p-2 space-y-0.5 flex-1">
+          {[
+            { label: 'Dashboard',   icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10', active: true },
+            { label: 'Mes biens',   icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16', active: false },
+            { label: 'Fiscalité',   icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M12 7h.01', active: false },
+            { label: 'Comparaison', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', active: false },
+            { label: 'Export PDF',  icon: 'M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', active: false },
+          ].map((item) => (
+            <div key={item.label}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] transition-colors cursor-default ${item.active ? 'bg-white/[0.07] text-white' : 'text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.03]'}`}>
+              <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+              </svg>
+              {item.label}
+            </div>
+          ))}
+        </nav>
+
+        {/* Properties quick-list */}
+        <div className="border-t border-white/[0.04] p-3 space-y-0.5">
+          <div className="mono text-[8.5px] text-zinc-700 uppercase tracking-[0.18em] px-2 mb-2">Mes biens</div>
+          {props.map((p) => (
+            <div key={p.name} className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/[0.03] cursor-default group">
+              <span className="text-[11px] text-zinc-500 group-hover:text-zinc-300 transition-colors truncate max-w-[108px]">
+                {p.name.split('·')[0].trim()}
+              </span>
+              <span className={`mono text-[10px] font-semibold tabular ${p.status === 'best' ? 'text-emerald-300' : p.status === 'warn' ? 'text-orange-300' : 'text-zinc-400'}`}>
+                {p.score}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Main content ── */}
+      <div className="flex-1 p-5 lg:p-6 space-y-4 overflow-hidden">
+
+        {/* KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {[
+            { l: 'Valeur portefeuille', v: `${Math.round(portfolio / 1000)} k€`,      sub: '3 biens',    tone: 'neutral' as const },
+            { l: 'Rendement moyen',     v: '5.9%',                                     sub: 'brut annuel', tone: 'good'    as const },
+            { l: 'Cashflow total',      v: `+${cashflow} €/m`,                        sub: 'net charges', tone: 'good'    as const },
+            { l: 'Économie fiscale',    v: `+${Math.round(economie / 1000)}k €/an`,   sub: 'vs micro',   tone: 'em'      as const },
+          ].map((k) => {
+            const styles = {
+              neutral: { border: 'border-white/[0.06]',        bg: 'bg-white/[0.02]',       color: 'text-white'       },
+              good:    { border: 'border-white/[0.06]',        bg: 'bg-white/[0.02]',       color: 'text-emerald-300' },
+              em:      { border: 'border-emerald-500/[0.22]',  bg: 'bg-emerald-500/[0.05]', color: 'text-emerald-300' },
+            }[k.tone]
+            return (
+              <div key={k.l} className={`p-3.5 rounded-xl border ${styles.border} ${styles.bg}`}>
+                <div className="mono text-[8.5px] text-zinc-500 uppercase tracking-[0.18em] mb-2">{k.l}</div>
+                <div className={`text-[18px] font-bold tabular ${styles.color}`} style={{ letterSpacing: '-0.04em' }}>{k.v}</div>
+                <div className="mono text-[9px] text-zinc-700 mt-1">{k.sub}</div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Chart multi-biens */}
+        <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="mono text-[9.5px] text-zinc-500 uppercase tracking-[0.18em]">Projection patrimoine · 20 ans</span>
+            <div className="flex items-center gap-4">
+              {[
+                { color: '#34d399', label: 'Lyon' },
+                { color: '#818cf8', label: 'Bordeaux' },
+                { color: '#fb923c', label: 'Paris' },
+              ].map((s) => (
+                <span key={s.label} className="flex items-center gap-1.5">
+                  <span className="w-3 h-0.5 rounded-full inline-block" style={{ background: s.color }} />
+                  <span className="mono text-[9px] text-zinc-600">{s.label}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+          <svg viewBox="0 0 600 68" preserveAspectRatio="none" className="w-full h-[60px]">
+            <defs>
+              <linearGradient id="db-g1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="db-g2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.18" />
+                <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {/* Lyon */}
+            <path d="M0 62 C100 54 200 42 300 26 S480 10 600 5 L600 68 L0 68Z" fill="url(#db-g1)"
+              style={{ opacity: inView ? 1 : 0, transition: 'opacity 1.4s ease 0.5s' }} />
+            <path d="M0 62 C100 54 200 42 300 26 S480 10 600 5" fill="none" stroke="#34d399" strokeWidth="1.6" strokeLinecap="round"
+              style={{ strokeDasharray: 900, strokeDashoffset: inView ? 0 : 900, transition: 'stroke-dashoffset 2.2s cubic-bezier(0.16,1,0.3,1) 0.1s' }} />
+            {/* Bordeaux */}
+            <path d="M0 60 C100 50 200 36 300 18 S480 4 600 1 L600 68 L0 68Z" fill="url(#db-g2)"
+              style={{ opacity: inView ? 1 : 0, transition: 'opacity 1.4s ease 0.7s' }} />
+            <path d="M0 60 C100 50 200 36 300 18 S480 4 600 1" fill="none" stroke="#818cf8" strokeWidth="1.6" strokeLinecap="round"
+              style={{ strokeDasharray: 900, strokeDashoffset: inView ? 0 : 900, transition: 'stroke-dashoffset 2.2s cubic-bezier(0.16,1,0.3,1) 0.3s' }} />
+            {/* Paris — en retard, pointillé */}
+            <path d="M0 65 C100 62 200 57 300 50 S480 42 600 36" fill="none" stroke="#fb923c" strokeWidth="1.4" strokeLinecap="round" strokeDasharray="5 3"
+              style={{ opacity: inView ? 0.7 : 0, transition: 'opacity 1s ease 0.6s' }} />
+          </svg>
+          <div className="flex justify-between mt-2 mono text-[8.5px] text-zinc-800">
+            {['Auj.', '5 ans', '10 ans', '15 ans', '20 ans'].map((l) => <span key={l}>{l}</span>)}
+          </div>
+        </div>
+
+        {/* Properties table */}
+        <div className="rounded-xl border border-white/[0.05] overflow-hidden">
+          <div className="grid grid-cols-5 gap-2 px-4 py-2.5 bg-white/[0.01] border-b border-white/[0.04]">
+            {['Bien', 'Rendement', 'Cashflow', 'Score', 'Régime'].map((h) => (
+              <span key={h} className="mono text-[8.5px] text-zinc-600 uppercase tracking-[0.14em]">{h}</span>
+            ))}
+          </div>
+          {props.map((p, i) => (
+            <div key={p.name}
+              className={`grid grid-cols-5 gap-2 px-4 py-3 border-b border-white/[0.03] last:border-0 items-center ${p.status === 'best' ? 'bg-emerald-500/[0.025]' : ''}`}
+              style={{ opacity: inView ? 1 : 0, transform: inView ? 'none' : 'translateY(8px)', transition: `opacity 0.5s ease ${p.delay + 350}ms, transform 0.5s ease ${p.delay + 350}ms` }}
+            >
+              {/* Nom */}
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${p.cf >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                <span className="text-[11.5px] text-zinc-300 truncate">{p.name}</span>
+              </div>
+              {/* Rendement */}
+              <span className="mono text-[12px] font-semibold tabular text-emerald-300">{p.rend}%</span>
+              {/* Cashflow */}
+              <span className={`mono text-[12px] font-semibold tabular ${p.cf >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+                {p.cf >= 0 ? '+' : ''}{p.cf} €/m
+              </span>
+              {/* Score bar */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1 bg-white/[0.05] rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${p.status === 'best' ? 'bg-emerald-400' : p.status === 'warn' ? 'bg-orange-400' : 'bg-emerald-500'}`}
+                    style={{ width: inView ? `${p.score}%` : '0%', transition: `width 1.4s cubic-bezier(0.16,1,0.3,1) ${p.delay + 500}ms` }}
+                  />
+                </div>
+                <span className="mono text-[10px] text-zinc-400 tabular w-5 text-right">{p.score}</span>
+              </div>
+              {/* Régime */}
+              <div className={`inline-flex px-2 py-0.5 rounded-md mono text-[9.5px] w-fit border ${p.status === 'warn' ? 'bg-orange-500/[0.08] text-orange-300 border-orange-500/[0.18]' : 'bg-white/[0.03] text-zinc-500 border-white/[0.06]'}`}>
+                {p.regime}
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   )

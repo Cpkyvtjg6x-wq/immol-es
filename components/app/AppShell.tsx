@@ -7,14 +7,37 @@ import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations } from '@/lib/hooks/useSimulations'
 import { NotificationBell } from '@/components/app/NotificationBell'
-import { formatCurrency } from '@/lib/utils'
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+const SIDEBAR_TAGS = [
+  { id: 'visit',  label: 'A visiter',     color: '#60a5fa' },
+  { id: 'heart',  label: 'Coup de coeur', color: '#fb7185' },
+  { id: 'offer',  label: 'Sous offre',    color: '#fbbf24' },
+  { id: 'signed', label: 'Signe',         color: '#4ade80' },
+  { id: 'owned',  label: 'Possede',       color: '#c4b5fd' },
+  { id: 'refuse', label: 'Refuse',        color: '#52525b' },
+]
+
+interface TagDef {
+  id: string
+  label: string
+  color: string
+}
+
+interface AppShellProps {
+  children: React.ReactNode
+  activeTag?: string
+  onTagFilter?: (tag: string) => void
+  customTags?: TagDef[]
+  onCreateTag?: () => void
+}
+
+export function AppShell({ children, activeTag, onTagFilter, customTags = [], onCreateTag }: AppShellProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { user, isPro, tier } = useAuth()
   const { simulations } = useSimulations(user?.id ?? null)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [tagsExpanded, setTagsExpanded] = useState(false)
 
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
@@ -28,6 +51,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const recentSims = simulations.slice(0, 4)
+  const isBibliotheque = pathname.startsWith('/bibliotheque')
+
+  /* Tous les tags (fixes + custom) */
+  const allSidebarTags: TagDef[] = [...SIDEBAR_TAGS, ...customTags]
 
   const nav = [
     {
@@ -50,6 +77,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       badge: simulations.length > 0 ? `${simulations.length}` : null as string | null,
     },
     {
+      href: '/bibliotheque',
+      label: 'Bibliotheque',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+        </svg>
+      ),
+      badge: null as string | null,
+    },
+    {
       href: '/analyse',
       label: 'Analyser un bien',
       highlight: true,
@@ -70,17 +107,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      ),
-    },
-    {
-      href: '/analyse',
-      label: 'Export PDF / Excel',
-      disabled: false,
-      badge: null as string | null,
-      icon: (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
         </svg>
       ),
     },
@@ -111,7 +137,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-[#09090b] text-white">
 
-      {/* ── Mobile top bar ── */}
+      {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-[#09090b]/95 backdrop-blur-md border-b border-white/[0.05] flex items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
@@ -127,20 +153,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onClick={() => setMobileOpen(!mobileOpen)}
             className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center text-zinc-300 hover:bg-white/[0.1] transition-colors"
           >
-          {mobileOpen ? (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          )}
+            {mobileOpen ? (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
 
-      {/* ── Mobile overlay ── */}
+      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
@@ -148,7 +174,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* ── Sidebar (desktop always visible / mobile slide-in) ── */}
+      {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 w-56 border-r border-white/[0.05] flex flex-col z-40 bg-[#09090b] transition-transform duration-200 ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
@@ -165,7 +191,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
 
-        {/* Plan badge — tier réel */}
+        {/* Plan badge */}
         {user && (
           <div className="px-3 py-2.5 border-b border-white/[0.05] shrink-0">
             {isPro ? (
@@ -183,7 +209,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
                 <span className="text-[11px] font-semibold text-zinc-500 group-hover:text-zinc-300">Gratuit</span>
-                <span className="ml-auto text-[10px] font-bold text-emerald-500 group-hover:text-emerald-400">→ Pro</span>
+                <span className="ml-auto text-[10px] font-bold text-emerald-500 group-hover:text-emerald-400">Pro</span>
               </button>
             )}
           </div>
@@ -195,7 +221,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Main nav */}
           <div className="space-y-0.5 mb-5">
             {nav.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href || (item.href === '/bibliotheque' && isBibliotheque)
               return (
                 <Link
                   key={item.href}
@@ -221,35 +247,114 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </div>
 
-          {/* Recent simulations */}
-          {recentSims.length > 0 && (
+          {/* Mes tags — visible uniquement sur /bibliotheque */}
+          {isBibliotheque && onTagFilter && (
             <div className="mb-5">
-              <p className="px-3 mb-2 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">Récentes</p>
+              <p className="px-3 mb-1.5 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">Mes tags</p>
+              <div className="space-y-0">
+
+                {/* Tous — toujours visible, sert de toggle */}
+                <button
+                  onClick={() => {
+                    setTagsExpanded(v => !v)
+                    onTagFilter('all')
+                  }}
+                  className={`w-full flex items-center gap-2.5 px-3 py-[6px] rounded-lg text-[12.5px] transition-all text-left ${
+                    activeTag === 'all' || !activeTag
+                      ? 'bg-white/[0.06] text-white'
+                      : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.03]'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 shrink-0" />
+                  <span className="flex-1">Tous</span>
+                  <span className="text-[10px] text-zinc-600 tabular-nums mr-1">{simulations.length}</span>
+                  {/* Chevron rotatif */}
+                  <svg
+                    className="w-3 h-3 shrink-0 text-zinc-600 transition-transform duration-250"
+                    style={{ transform: tagsExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Liste depliable avec animation */}
+                <div
+                  style={{
+                    overflow: 'hidden',
+                    maxHeight: tagsExpanded ? `${(allSidebarTags.length + 1) * 32 + 12}px` : '0px',
+                    opacity: tagsExpanded ? 1 : 0,
+                    transition: 'max-height 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease',
+                  }}
+                >
+                  <div className="pt-0.5 space-y-0">
+                    {/* Tags (fixes + custom) */}
+                    {allSidebarTags.map(t => {
+                      const count = simulations.filter(s => (s.tags || []).includes(t.id)).length
+                      const isActive = activeTag === t.id
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => onTagFilter(t.id)}
+                          className={`w-full flex items-center gap-2.5 px-3 py-[6px] rounded-lg text-[12.5px] transition-all text-left ${
+                            isActive
+                              ? 'bg-white/[0.06] text-white'
+                              : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.03]'
+                          }`}
+                        >
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: t.color, flexShrink: 0, display: 'inline-block' }} />
+                          <span className="flex-1 truncate">{t.label}</span>
+                          {count > 0 && <span className="text-[10px] text-zinc-600 tabular-nums shrink-0">{count}</span>}
+                        </button>
+                      )
+                    })}
+
+                    {/* Bouton creer un tag */}
+                    {onCreateTag && (
+                      <button
+                        onClick={onCreateTag}
+                        className="w-full flex items-center gap-2.5 px-3 py-[6px] rounded-lg text-[12.5px] transition-all text-left text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.03]"
+                      >
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Nouveau tag...</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Simulations recentes — masquees sur bibliotheque */}
+          {recentSims.length > 0 && !isBibliotheque && (
+            <div className="mb-5">
+              <p className="px-3 mb-2 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">Recentes</p>
               <div className="space-y-0.5">
                 {recentSims.map((sim) => {
                   const score = sim.score ?? 0
                   const scoreColor = score >= 70 ? 'text-emerald-400' : score >= 45 ? 'text-amber-400' : 'text-red-400'
-                  const cfSign = sim.cashflowMensuel >= 0
+                  const cfOk = sim.cashflowMensuel >= 0
                   return (
                     <button
                       key={sim.id}
                       onClick={() => router.push('/analyse')}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-all text-left group"
                     >
-                      {/* Score dot */}
                       <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                         score >= 70 ? 'bg-emerald-500' : score >= 45 ? 'bg-amber-400' : 'bg-red-400'
                       }`} />
                       <div className="flex-1 min-w-0">
                         <p className="text-[12px] font-medium text-zinc-300 truncate leading-tight">{sim.name}</p>
                         <p className="text-[10px] text-zinc-600 truncate">
-                          {sim.ville} · {sim.rendementBrut.toFixed(1)}% brut
+                          {sim.ville} {sim.rendementBrut.toFixed(1)}% brut
                         </p>
                       </div>
                       <div className="text-right shrink-0">
                         <p className={`text-[11px] font-bold tabular-nums ${scoreColor}`}>{score}</p>
-                        <p className={`text-[10px] tabular-nums ${cfSign ? 'text-emerald-500' : 'text-red-400'}`}>
-                          {cfSign ? '+' : ''}{Math.round(sim.cashflowMensuel)}€
+                        <p className={`text-[10px] tabular-nums ${cfOk ? 'text-emerald-500' : 'text-red-400'}`}>
+                          {cfOk ? '+' : ''}{Math.round(sim.cashflowMensuel)}
                         </p>
                       </div>
                     </button>
@@ -268,7 +373,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          {/* Tools section */}
+          {/* Outils Pro */}
           <div>
             <p className="px-3 mb-2 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">Outils Pro</p>
             <div className="space-y-0.5">
@@ -340,7 +445,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                Se déconnecter
+                Se deconnecter
               </button>
             </>
           ) : (
@@ -351,13 +456,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
-              Se connecter / S'inscrire
+              Se connecter
             </button>
           )}
         </div>
       </aside>
 
-      {/* ── Main content ── */}
+      {/* Main content */}
       <div className="lg:pl-56 flex-1 min-h-screen pt-14 lg:pt-0">
         {children}
       </div>

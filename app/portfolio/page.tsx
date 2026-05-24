@@ -499,7 +499,7 @@ export default function PortfolioPage() {
 
   return (
     <AppShell>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 lg:py-10">
+      <div className="px-4 sm:px-6 md:px-8 py-8 lg:py-10">
 
         {/* ── Page header ── */}
         <div className="mb-8 flex items-start justify-between gap-4">

@@ -11,6 +11,7 @@ export interface SavedSimulation {
   results: InvestmentResult | null
   score: number | null
   is_favorite: boolean
+  tags: string[]
   created_at: string
   // derived display fields
   ville: string
@@ -35,7 +36,7 @@ export function useSimulations(userId: string | null) {
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(20)
+        .limit(50)
 
       if (!error && data) {
         setSimulations(
@@ -49,8 +50,9 @@ export function useSimulations(userId: string | null) {
               results,
               score: (s.score as number) || null,
               is_favorite: (s.is_favorite as boolean) || false,
+              tags: (s.tags as string[]) || [],
               created_at: s.created_at as string,
-              ville: (params.ville as string) || '—',
+              ville: (params.ville as string) || '',
               prixAchat: (params.prixAchat as number) || 0,
               rendementBrut: results?.rendementBrut || 0,
               rendementNet: results?.rendementNet || 0,
@@ -61,7 +63,6 @@ export function useSimulations(userId: string | null) {
       }
     } catch (err) {
       console.error('[useSimulations] fetchSimulations error:', err)
-      // Ne pas crasher l'app — garder l'état vide
     } finally {
       setLoading(false)
     }
@@ -82,7 +83,7 @@ export function useSimulations(userId: string | null) {
     results: InvestmentResult
     score: ScoreResult
   }) => {
-    if (!userId) return { error: 'Non connecté' }
+    if (!userId) return { error: 'Non connecte' }
 
     try {
       const supabase = createBrowserSupabaseClient()
@@ -92,6 +93,7 @@ export function useSimulations(userId: string | null) {
         params,
         results,
         score: score.global,
+        tags: [],
       })
 
       if (!error) await fetchSimulations()
@@ -122,5 +124,15 @@ export function useSimulations(userId: string | null) {
     }
   }, [fetchSimulations])
 
-  return { simulations, loading, saveSimulation, deleteSimulation, toggleFavorite, refetch: fetchSimulations }
+  const updateTags = useCallback(async (id: string, tags: string[]) => {
+    try {
+      const supabase = createBrowserSupabaseClient()
+      await supabase.from('simulations').update({ tags }).eq('id', id)
+      setSimulations(prev => prev.map(s => s.id === id ? { ...s, tags } : s))
+    } catch (err) {
+      console.error('[useSimulations] updateTags error:', err)
+    }
+  }, [])
+
+  return { simulations, loading, saveSimulation, deleteSimulation, toggleFavorite, updateTags, refetch: fetchSimulations }
 }

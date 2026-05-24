@@ -115,7 +115,7 @@ function SubLinks({ items }: { items: Array<{ num: string; label: string }> }) {
       {items.map((item) => (
         <a
           key={item.num}
-          href="/analyse"
+          href="/dashboard"
           className="flex items-center gap-2.5 text-[13px] text-zinc-500 hover:text-zinc-200 transition-colors duration-200 group"
         >
           <span className="mono text-[11px] text-zinc-700 group-hover:text-zinc-500 transition-colors">{item.num}</span>
@@ -251,7 +251,7 @@ function WorkflowSection() {
 export default function LandingPage() {
   useReveal()
   const router = useRouter()
-  const go = () => router.push('/analyse')
+  const go = () => router.push('/dashboard')
   const login = () => router.push('/auth/login')
 
   return (
@@ -302,7 +302,7 @@ function HeroSection() {
           {/* Gauche — titre */}
           <div>
             {/* Announcement pill */}
-            <a href="/analyse"
+            <a href="/dashboard"
               className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] text-[12px] text-zinc-400 hover:text-zinc-200 hover:border-white/[0.14] transition-all group"
             >
               <span className="relative flex w-1.5 h-1.5">
@@ -324,8 +324,8 @@ function HeroSection() {
               <span className="word-reveal" style={{ animationDelay: '0ms',   marginRight: '0.22em' }}>Analysez</span>
               <span className="word-reveal" style={{ animationDelay: '80ms',  marginRight: '0.22em' }}>n&apos;importe</span>
               <span className="word-reveal" style={{ animationDelay: '160ms', marginRight: '0.22em' }}>quel</span>
-              <span className="word-reveal" style={{ animationDelay: '240ms', marginRight: '0.22em' }}>bien.</span>
-              <span className="word-reveal" style={{ animationDelay: '320ms', marginRight: '0.22em' }}>Avec</span>
+              <span className="word-reveal" style={{ animationDelay: '240ms', marginRight: '0.22em' }}>bien</span>
+              <span className="word-reveal" style={{ animationDelay: '320ms', marginRight: '0.22em' }}>avec</span>
               <span className="word-reveal" style={{ animationDelay: '400ms', marginRight: '0.22em' }}>la</span>
               <span className="word-reveal" style={{ animationDelay: '480ms', marginRight: '0.22em' }}>précision</span>
               <span className="word-reveal" style={{ animationDelay: '560ms', marginRight: '0.22em' }}>d&apos;un</span>
@@ -342,7 +342,7 @@ function HeroSection() {
               N&apos;importe quel bien, partout en France. Rentabilité nette, cashflow mensuel et fiscalité optimisée — calculés en 30 secondes.
             </p>
             <div className="flex items-center gap-4 pt-1">
-              <a href="/analyse" className="inline-flex items-center gap-1.5 text-[13.5px] text-zinc-300 hover:text-white transition-colors group">
+              <a href="/dashboard" className="inline-flex items-center gap-1.5 text-[13.5px] text-zinc-300 hover:text-white transition-colors group">
                 Lancer l&apos;analyse
                 <svg className="w-3.5 h-3.5 text-zinc-500 group-hover:translate-x-0.5 group-hover:text-white transition-all" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -547,7 +547,7 @@ function Section1Analyse() {
             <p className="text-[13.5px] text-zinc-600 leading-[1.65]">
               Les données DVF, MeilleursAgents et INSEE de 18 villes françaises sont intégrées nativement. Aucune recherche manuelle, aucun export préalable.
             </p>
-            <SectionLink num="1.0" label="Analyse" href="/analyse" />
+            <SectionLink num="1.0" label="Analyse" href="/dashboard" />
           </div>
         </div>
       </div>
@@ -710,7 +710,7 @@ function Section2Fiscalite() {
             <p className="text-[13.5px] text-zinc-600 leading-[1.65]">
               Ce calcul — qu&apos;un comptable facture 600 à 800 € la consultation — IMMORA le fait instantanément, avec le détail ligne par ligne.
             </p>
-            <SectionLink num="2.0" label="Fiscalité" href="/analyse" />
+            <SectionLink num="2.0" label="Fiscalité" href="/dashboard" />
           </div>
         </div>
       </div>
@@ -862,7 +862,7 @@ function Section3Export() {
             <p className="text-[13.5px] text-zinc-600 leading-[1.65]">
               Structuré dans le format attendu par 95 % des établissements bancaires français. Ratio d&apos;endettement, apport, verdict crédit — tout est là, signé IMMORA.
             </p>
-            <SectionLink num="3.0" label="Export" href="/analyse" />
+            <SectionLink num="3.0" label="Export" href="/dashboard" />
           </div>
         </div>
       </div>
@@ -1076,7 +1076,7 @@ function DashboardSection() {
             <p className="text-[13.5px] text-zinc-600 leading-[1.65]">
               Comparez vos biens entre eux, identifiez ceux qui sous-performent et arbitrez sur la base de chiffres réels, pas d&apos;intuitions.
             </p>
-            <SectionLink num="4.0" label="Portfolio" href="/analyse" />
+            <SectionLink num="4.0" label="Portfolio" href="/dashboard" />
           </div>
         </div>
       </div>
@@ -1372,65 +1372,79 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
   const plans = [
     { name: 'Découverte', price: { m: 0, a: 0 }, desc: 'Pour découvrir l\'outil', features: ['Analyse express', '3 simulations sauvegardées', 'Export PDF (filigrane)', 'Données marché basiques'], cta: 'Commencer gratuitement', featured: false },
     { name: 'Pro', price: { m: 29, a: 19 }, desc: 'Pour investir sérieusement', features: ['Simulations illimitées', '10 régimes fiscaux', 'Analyse IA avancée', 'Export PDF & Excel pro', 'Comparaison multi-biens', 'Support prioritaire'], cta: 'Essai 14 jours gratuit', featured: true },
-    { name: 'Agence', price: { m: 79, a: 59 }, desc: 'Pour les pros de l\'immobilier', features: ['Tout le plan Pro', 'Jusqu\'à 5 sièges', 'Rapports white-label', 'Accès API', 'Onboarding dédié'], cta: 'Contacter l\'équipe', featured: false },
+    { name: 'Agence', price: { m: 79, a: 59 }, desc: 'Pour les pros de l\'immobilier', features: ['Tout le plan Pro', 'Jusqu\'\u00e0 5 si\u00e8ges', 'Rapports white-label', 'Acc\u00e8s API', 'Onboarding d\u00e9di\u00e9'], cta: 'Contacter l\'\u00e9quipe', featured: false },
   ]
 
   return (
     <section id="pricing" className="py-24 lg:py-32">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="mb-16 reveal">
-          <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-end mb-10">
-            <h2 className="text-white" style={{ fontSize: 'clamp(2rem,4vw,3.5rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.05' }}>
-              Simple. Honnête. Sans surprise.
-            </h2>
-            {/* Toggle */}
-            <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/[0.04] border border-white/[0.07] self-end">
-              <button onClick={() => setAnnual(false)}
-                className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-all ${!annual ? 'bg-white text-[#09090b]' : 'text-zinc-400 hover:text-white'}`}>
-                Mensuel
-              </button>
-              <button onClick={() => setAnnual(true)}
-                className={`px-4 py-1.5 rounded-full text-[13px] font-medium flex items-center gap-2 transition-all ${annual ? 'bg-white text-[#09090b]' : 'text-zinc-400 hover:text-white'}`}>
-                Annuel
-                <span className={`mono text-[10px] px-1.5 py-0.5 rounded ${annual ? 'bg-emerald-500/15 text-emerald-700' : 'bg-emerald-500/15 text-emerald-300'}`}>−35%</span>
-              </button>
-            </div>
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+
+        {/* Header — entièrement centré */}
+        <div className="text-center mb-14 reveal">
+          <h2 className="text-white mb-5" style={{ fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 600, letterSpacing: '-0.04em', lineHeight: '1.05' }}>
+            Simple. Honnête. Sans surprise.
+          </h2>
+          <p className="text-[15px] text-zinc-500 mb-8 max-w-md mx-auto leading-relaxed">
+            Choisissez la formule qui correspond à votre rythme d&apos;investissement.
+          </p>
+          {/* Toggle mensuel / annuel */}
+          <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/[0.04] border border-white/[0.07]">
+            <button onClick={() => setAnnual(false)}
+              className={`px-5 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200 ${!annual ? 'bg-white text-[#09090b]' : 'text-zinc-400 hover:text-white'}`}>
+              Mensuel
+            </button>
+            <button onClick={() => setAnnual(true)}
+              className={`px-5 py-1.5 rounded-full text-[13px] font-medium flex items-center gap-2 transition-all duration-200 ${annual ? 'bg-white text-[#09090b]' : 'text-zinc-400 hover:text-white'}`}>
+              Annuel
+              <span className={`mono text-[10px] px-1.5 py-0.5 rounded-md ${annual ? 'bg-emerald-500/20 text-emerald-600' : 'bg-emerald-500/15 text-emerald-400'}`}>−35%</span>
+            </button>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-3 max-w-5xl reveal reveal-d1">
+        {/* Grille de plans — centrée */}
+        <div className="grid md:grid-cols-3 gap-4 reveal reveal-d1">
           {plans.map((plan) => {
             const price = annual ? plan.price.a : plan.price.m
             return (
               <div key={plan.name}
-                className={`relative rounded-xl p-8 border transition-all duration-300 ${plan.featured ? 'bg-white/[0.03] border-white/[0.16] featured-glow' : 'bg-white/[0.015] border-white/[0.06] hover:border-white/[0.12]'}`}>
+                className={`relative rounded-2xl p-7 border transition-all duration-300 flex flex-col ${plan.featured ? 'bg-white/[0.04] border-white/[0.18] featured-glow' : 'bg-white/[0.015] border-white/[0.07] hover:border-white/[0.14] hover:bg-white/[0.025]'}`}>
                 {plan.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex px-3 py-1 rounded-full bg-white text-[#09090b] mono text-[10px] font-bold uppercase tracking-wider">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex px-3.5 py-1 rounded-full bg-white text-[#09090b] mono text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
                     Le plus choisi
                   </div>
                 )}
-                <div className="mb-6">
-                  <h3 className="text-[15px] font-semibold text-white mb-1">{plan.name}</h3>
-                  <p className="text-[12.5px] text-zinc-500">{plan.desc}</p>
+
+                {/* Nom + desc */}
+                <div className="mb-7">
+                  <h3 className="text-[15px] font-semibold text-white mb-1.5">{plan.name}</h3>
+                  <p className="text-[12.5px] text-zinc-500 leading-relaxed">{plan.desc}</p>
                 </div>
-                <div className="mb-6">
+
+                {/* Prix */}
+                <div className="mb-7">
                   {price === 0
-                    ? <div style={{ fontSize: '44px', fontWeight: 700, letterSpacing: '-0.05em' }} className="text-white">Gratuit</div>
-                    : <div className="flex items-baseline gap-1">
-                      <span style={{ fontSize: '44px', fontWeight: 700, letterSpacing: '-0.05em' }} className="text-white tabular">{price}</span>
-                      <span className="text-zinc-500 text-[14px]">€/mois</span>
-                    </div>
+                    ? <div style={{ fontSize: '42px', fontWeight: 700, letterSpacing: '-0.05em' }} className="text-white leading-none">Gratuit</div>
+                    : <div className="flex items-baseline gap-1.5">
+                        <span style={{ fontSize: '42px', fontWeight: 700, letterSpacing: '-0.05em' }} className="text-white tabular leading-none">{price}</span>
+                        <span className="text-zinc-500 text-[13px]">€<span className="text-zinc-600">/mois</span></span>
+                      </div>
                   }
-                  {annual && price > 0 && <p className="mono text-[11px] text-zinc-600 mt-1.5">Facturé {price * 12}€/an</p>}
+                  {annual && price > 0 && (
+                    <p className="mono text-[11px] text-zinc-600 mt-2">Facturé {price * 12}€/an</p>
+                  )}
                 </div>
+
+                {/* CTA */}
                 <button onClick={onSignup}
-                  className={`w-full text-[13.5px] font-semibold py-2.5 rounded-lg transition-all mb-6 ${plan.featured ? 'bg-white text-[#09090b] hover:bg-zinc-100 hover:shadow-[0_0_30px_-4px_rgba(255,255,255,0.3)]' : 'bg-white/[0.04] text-white border border-white/[0.08] hover:bg-white/[0.08]'}`}>
+                  className={`w-full text-[13.5px] font-semibold py-3 rounded-xl transition-all duration-200 mb-7 ${plan.featured ? 'bg-white text-[#09090b] hover:bg-zinc-100 hover:shadow-[0_0_30px_-4px_rgba(255,255,255,0.25)]' : 'bg-white/[0.05] text-white border border-white/[0.09] hover:bg-white/[0.09]'}`}>
                   {plan.cta}
                 </button>
-                <div className="space-y-2.5">
+
+                {/* Features */}
+                <div className="space-y-3 mt-auto">
                   {plan.features.map((f) => (
                     <div key={f} className="flex items-start gap-2.5 text-[13px] text-zinc-400">
-                      <svg className="w-3.5 h-3.5 text-emerald-400/70 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                      <svg className="w-3.5 h-3.5 text-emerald-400/80 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                       {f}
@@ -1441,7 +1455,11 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
             )
           })}
         </div>
-        <p className="mono text-[11px] text-zinc-700 mt-10 tracking-wider">Paiement Stripe sécurisé · Résiliable à tout moment · TVA incluse</p>
+
+        {/* Footnote centrée */}
+        <p className="mono text-[11px] text-zinc-700 mt-10 tracking-wider text-center">
+          Paiement Stripe sécurisé · Résiliable à tout moment · TVA incluse
+        </p>
       </div>
     </section>
   )

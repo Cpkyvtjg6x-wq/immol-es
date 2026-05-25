@@ -13,9 +13,14 @@
    ══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Sidebar — gris ardoise en mode clair, toujours sombre */
+  /* Sidebar — toujours sombre même en mode clair */
   --c-sidebar-bg:    #48443e;
   --c-sidebar-border: rgba(255,255,255,0.08);
+  /* Texte sidebar — assez clair pour contraster sur #48443e (light) */
+  /* zinc-200 = 7.62:1 / zinc-300 = 6.54:1 sur #48443e ✅ AA */
+  --c-sidebar-text-1: #e4e4e7;   /* zinc-200 — nav items, noms */
+  --c-sidebar-text-2: #d4d4d8;   /* zinc-300 — labels sections, badges */
+  --c-sidebar-text-dim: rgba(212,212,216,0.5); /* atténué — éléments décoratifs */
   /* Fond page — parchemin chaud, légèrement texturé visuellement */
   --c-bg:            #edeae4;
   /* Surfaces cartes — blanc pur → contraste max sur fond chaud */
@@ -55,6 +60,10 @@
 .dark {
   --c-sidebar-bg:    #09090b;
   --c-sidebar-border: rgba(255,255,255,0.05);
+  /* Texte sidebar dark — zinc-300/zinc-400 sur #09090b = 13.46:1 / 7.76:1 ✅ */
+  --c-sidebar-text-1: #d4d4d8;   /* zinc-300 */
+  --c-sidebar-text-2: #a1a1aa;   /* zinc-400 */
+  --c-sidebar-text-dim: rgba(161,161,170,0.5); /* zinc-400 atténué */
   --c-bg:            #09090b;
   --c-surface:       #111113;
   --c-surface2:      #18181b;
@@ -141,45 +150,44 @@ body {
    sur fond clair. On surcharge en mode clair uniquement.
    ══════════════════════════════════════════════════════════════ */
 
-/* Texte emerald en mode clair → vert foncé (#047857 = 5.25:1 sur surface ✅ AA)
-   html:not(.dark) cible UNIQUEMENT le mode clair, pas le mode sombre          */
+/* ══ OVERRIDES WCAG AA — mode clair, toute la page ══════════════
+   Spécificité : (0,2,0). L'exception aside ci-dessous a (0,2,1)
+   → elle gagne toujours, pas besoin de !important.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Emerald (#10b981 = 2.43:1) → #047857 = 5.25:1 ✅ AA */
 html:not(.dark) .text-emerald-300,
 html:not(.dark) .text-emerald-400,
-html:not(.dark) .text-emerald-500 {
-  color: #047857;
-}
-html:not(.dark) .text-emerald-600 {
-  color: #065f46;
-}
+html:not(.dark) .text-emerald-500 { color: #047857; }
+html:not(.dark) .text-emerald-600  { color: #065f46; }
 
-/* red-400 en mode clair aussi trop clair sur fond blanc (#f87171 = 3.03:1) */
-html:not(.dark) .text-red-400 {
-  color: #b91c1c;  /* red-700 = 7.5:1 sur surface ✅ AAA */
-}
-html:not(.dark) .text-red-500 {
-  color: #b91c1c;
-}
+/* Red (#f87171 = 2.65:1) → #b91c1c = 6.19:1 ✅ AA */
+html:not(.dark) .text-red-400,
+html:not(.dark) .text-red-500     { color: #b91c1c; }
 
-/* amber-400 en mode clair (#fbbf24 = 1.5:1) → amber-700 = 4.81:1 ✅ AA */
+/* Amber (#fbbf24 = 1.60:1) → #b45309 = 4.81:1 ✅ AA */
 html:not(.dark) .text-amber-400,
-html:not(.dark) .text-amber-500 {
-  color: #b45309;  /* amber-700 = 4.81:1 ✅ AA */
-}
+html:not(.dark) .text-amber-500   { color: #b45309; }
 
-/* indigo-400 (#818cf8 = 2.85:1) → indigo-600 = 6.02:1 ✅ AA */
+/* Indigo (#818cf8 = 2.85:1) → #4f46e5 = 6.02:1 ✅ AA */
 html:not(.dark) .text-indigo-400,
-html:not(.dark) .text-indigo-500 {
-  color: #4f46e5;  /* indigo-600 = 6.02:1 ✅ */
-}
+html:not(.dark) .text-indigo-500  { color: #4f46e5; }
 
-/* violet/purple (#a78bfa = 2.60:1) → violet-700 = 6.81:1 ✅ AA */
+/* Violet (#a78bfa = 2.60:1) → #6d28d9 = 6.81:1 ✅ AA */
 html:not(.dark) .text-violet-400,
-html:not(.dark) .text-purple-400 {
-  color: #6d28d9;  /* violet-700 */
-}
+html:not(.dark) .text-purple-400  { color: #6d28d9; }
 
-/* Bordures/fonds emerald/red/amber restent vifs — seul le texte est ciblé */
-/* Les SVG icons (currentColor sur stroke) bénéficient aussi de la correction */
+/* ── Exception sidebar : fond toujours sombre (#48443e ou #09090b) ──
+   aside a spécificité (0,2,1) > (0,2,0) → override sans !important
+   Les couleurs vives restent lisibles sur fond sombre ────────────── */
+html:not(.dark) aside .text-emerald-300 { color: #6ee7b7; }
+html:not(.dark) aside .text-emerald-400 { color: #34d399; }
+html:not(.dark) aside .text-emerald-500 { color: #10b981; }
+html:not(.dark) aside .text-emerald-600 { color: #059669; }
+html:not(.dark) aside .text-red-400     { color: #f87171; }
+html:not(.dark) aside .text-red-500     { color: #ef4444; }
+html:not(.dark) aside .text-amber-400   { color: #fbbf24; }
+html:not(.dark) aside .text-amber-500   { color: #f59e0b; }
 
 /* ─── Classe utilitaire accent text ──────────────────────── */
 .text-accent {

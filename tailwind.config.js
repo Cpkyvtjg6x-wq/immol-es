@@ -17,7 +17,9 @@ module.exports = {
       colors: {
         /* ── Semantic tokens — mappés sur les CSS variables du thème ── */
         /* Utilisation : bg-th-bg, text-th-text-1, border-th-border, etc. */
-        'th-sidebar':     'var(--c-sidebar-bg)',
+        'th-sidebar':        'var(--c-sidebar-bg)',
+        'th-sidebar-text-1': 'var(--c-sidebar-text-1)',
+        'th-sidebar-text-2': 'var(--c-sidebar-text-2)',
         'th-bg':          'var(--c-bg)',
         'th-surface':     'var(--c-surface)',
         'th-surface2':    'var(--c-surface2)',

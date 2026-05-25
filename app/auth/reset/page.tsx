@@ -29,7 +29,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />
       </div>
@@ -45,13 +45,13 @@ export default function ResetPasswordPage() {
             </div>
             <span className="text-white font-bold text-xl">IMMORA</span>
           </Link>
-          <h1 className="text-2xl font-bold text-white mt-4">Mot de passe oublié</h1>
-          <p className="text-zinc-500 text-sm">
+          <h1 className="text-2xl font-bold text-th-text-1 mt-4">Mot de passe oublié</h1>
+          <p className="text-th-text-2 text-sm">
             Entrez votre email pour recevoir un lien de réinitialisation.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-8">
+        <div className="rounded-2xl border border-th-border bg-th-surface p-8">
           {sent ? (
             <div className="text-center space-y-4">
               <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
@@ -61,7 +61,7 @@ export default function ResetPasswordPage() {
               </div>
               <div>
                 <p className="text-white font-semibold mb-1">Email envoyé !</p>
-                <p className="text-zinc-400 text-sm">
+                <p className="text-th-text-2 text-sm">
                   Vérifiez votre boîte mail à <strong className="text-white">{email}</strong>.
                   Le lien expire dans 1 heure.
                 </p>
@@ -76,7 +76,7 @@ export default function ResetPasswordPage() {
           ) : (
             <form onSubmit={handleReset} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-th-text-1 mb-1.5">
                   Email
                 </label>
                 <input
@@ -85,7 +85,7 @@ export default function ResetPasswordPage() {
                   onChange={e => setEmail(e.target.value)}
                   placeholder="vous@exemple.com"
                   required
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                  className="w-full bg-th-surface2 border border-th-border-med rounded-xl px-4 py-3 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50 transition-colors"
                 />
               </div>
 
@@ -106,7 +106,7 @@ export default function ResetPasswordPage() {
           )}
         </div>
 
-        <p className="text-center text-sm text-zinc-600">
+        <p className="text-center text-sm text-th-text-3">
           Vous vous souvenez ?{' '}
           <Link href="/auth/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
             Se connecter

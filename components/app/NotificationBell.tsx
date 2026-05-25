@@ -178,14 +178,14 @@ export function NotificationBell({ simulationCount, isPro, isTrial, trialDaysLef
       {/* Bell button */}
       <button
         onClick={() => { setOpen(!open); if (!open) markAllRead() }}
-        className="relative w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] transition-all"
+        className="relative w-8 h-8 rounded-lg flex items-center justify-center text-th-text-2 hover:text-th-text-1 hover:bg-th-surface2 transition-all"
         title="Notifications"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-[9px] font-black text-white">
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-[9px] font-black text-th-text-1">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -193,14 +193,14 @@ export function NotificationBell({ simulationCount, isPro, isTrial, trialDaysLef
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-0 w-80 rounded-2xl border border-white/[0.08] bg-[#111113] shadow-2xl z-50 overflow-hidden">
+        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-0 w-80 rounded-2xl border border-th-border-med bg-th-surface shadow-2xl z-50 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.06]">
-            <p className="text-sm font-bold text-white">Notifications</p>
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-th-border">
+            <p className="text-sm font-bold text-th-text-1">Notifications</p>
             {notifications.length > 0 && (
               <button
                 onClick={markAllRead}
-                className="text-[10px] font-semibold text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="text-[10px] font-semibold text-th-text-2 hover:text-th-text-1 transition-colors"
               >
                 Tout marquer lu
               </button>
@@ -208,16 +208,16 @@ export function NotificationBell({ simulationCount, isPro, isTrial, trialDaysLef
           </div>
 
           {/* List */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-white/[0.04]">
+          <div className="max-h-80 overflow-y-auto divide-y divide-th-border">
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center px-4">
-                <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <div className="w-10 h-10 rounded-xl bg-th-surface2 border border-th-border flex items-center justify-center mb-3">
+                  <svg className="w-5 h-5 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                 </div>
-                <p className="text-sm text-zinc-500">Aucune notification</p>
-                <p className="text-xs text-zinc-700 mt-1">Tout est à jour !</p>
+                <p className="text-sm text-th-text-2">Aucune notification</p>
+                <p className="text-xs text-th-text-3 mt-1">Tout est à jour !</p>
               </div>
             ) : (
               notifications.map(notif => {
@@ -226,7 +226,7 @@ export function NotificationBell({ simulationCount, isPro, isTrial, trialDaysLef
                   <div
                     key={notif.id}
                     className={`px-4 py-3.5 transition-colors ${
-                      !notif.read ? 'bg-white/[0.02]' : ''
+                      !notif.read ? 'bg-th-surface' : ''
                     }`}
                     onClick={() => markRead(notif.id)}
                   >
@@ -236,14 +236,14 @@ export function NotificationBell({ simulationCount, isPro, isTrial, trialDaysLef
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-[12px] font-bold text-white leading-snug flex-1">{notif.title}</p>
+                          <p className="text-[12px] font-bold text-th-text-1 leading-snug flex-1">{notif.title}</p>
                           {!notif.read && (
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                           )}
                         </div>
-                        <p className="text-[11px] text-zinc-500 leading-relaxed">{notif.body}</p>
+                        <p className="text-[11px] text-th-text-2 leading-relaxed">{notif.body}</p>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-[10px] text-zinc-700">{notif.time}</span>
+                          <span className="text-[10px] text-th-text-3">{notif.time}</span>
                           {notif.cta && (
                             <Link
                               href={notif.cta.href}

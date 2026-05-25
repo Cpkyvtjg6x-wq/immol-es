@@ -32,20 +32,20 @@ function HeroCard({
 
   const borderBg = accent
     ? 'border-emerald-500/20 bg-emerald-500/[0.04]'
-    : 'border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.05]'
+    : 'border-th-border-med bg-th-surface2 hover:bg-th-surface2'
 
-  const deltaColor = delta?.positive === true ? 'text-emerald-400' : delta?.positive === false ? 'text-red-400' : 'text-zinc-500'
+  const deltaColor = delta?.positive === true ? 'text-emerald-400' : delta?.positive === false ? 'text-red-400' : 'text-th-text-2'
 
   return (
     <div className={`rounded-2xl border ${borderBg} transition-colors px-5 py-4 flex flex-col gap-2`}>
-      <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">{label}</p>
+      <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-wider">{label}</p>
       <p
         className={`font-black tabular-nums leading-none ${valueColor}`}
         style={{ fontSize: '26px', letterSpacing: '-0.04em' }}
       >
         {value}
       </p>
-      {sub && <p className="text-[11px] text-zinc-600 leading-snug">{sub}</p>}
+      {sub && <p className="text-[11px] text-th-text-3 leading-snug">{sub}</p>}
       {delta && (
         <p className={`text-[10px] font-semibold ${deltaColor} flex items-center gap-1`}>
           <span className="opacity-60">vs marché ·</span>
@@ -74,18 +74,18 @@ function MiniCard({
     trend === 'up' ? 'text-emerald-400' :
     trend === 'down' ? 'text-red-400' :
     trend === 'neutral' ? 'text-amber-400' :
-    'text-zinc-200'
+    'text-th-text-1'
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-colors px-3.5 py-3 flex flex-col gap-1.5">
-      <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider leading-tight">{label}</p>
+    <div className="rounded-xl border border-th-border bg-th-surface hover:bg-th-surface2 transition-colors px-3.5 py-3 flex flex-col gap-1.5">
+      <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider leading-tight">{label}</p>
       <p
         className={`font-bold tabular-nums leading-none ${valueColor}`}
         style={{ fontSize: '17px', letterSpacing: '-0.03em' }}
       >
         {value}
       </p>
-      {sub && <p className="text-[10px] text-zinc-700 leading-snug">{sub}</p>}
+      {sub && <p className="text-[10px] text-th-text-3 leading-snug">{sub}</p>}
     </div>
   )
 }

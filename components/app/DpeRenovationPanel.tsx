@@ -105,10 +105,10 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
   // Si aucune cible possible, on affiche un message
   if (ciblesDisponibles.length === 0) {
     return (
-      <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 text-center">
+      <div className="rounded-2xl border border-th-border bg-th-surface p-6 text-center">
         <DpeBadge dpe={dpeActuel} size="lg" />
-        <p className="mt-3 text-sm font-semibold text-white">DPE {dpeActuel} — {DPE_LABELS[dpeActuel]}</p>
-        <p className="text-xs text-zinc-500 mt-1">Aucune amélioration DPE disponible pour ce bien.</p>
+        <p className="mt-3 text-sm font-semibold text-th-text-1">DPE {dpeActuel} — {DPE_LABELS[dpeActuel]}</p>
+        <p className="text-xs text-th-text-2 mt-1">Aucune amélioration DPE disponible pour ce bien.</p>
       </div>
     )
   }
@@ -134,18 +134,18 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
               </span>
             )}
           </div>
-          <p className="text-[11px] text-zinc-500 mt-1 leading-relaxed">{calc.recommandation}</p>
+          <p className="text-[11px] text-th-text-2 mt-1 leading-relaxed">{calc.recommandation}</p>
         </div>
       </div>
 
       {/* ── Configuration ────────────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 space-y-3">
-        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Paramètres de simulation</p>
+      <div className="rounded-xl border border-th-border bg-th-surface p-4 space-y-3">
+        <p className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest">Paramètres de simulation</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* DPE cible */}
           <div>
-            <label className="text-[10px] text-zinc-600 font-semibold uppercase tracking-wider block mb-1.5">
+            <label className="text-[10px] text-th-text-3 font-semibold uppercase tracking-wider block mb-1.5">
               DPE cible
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -169,13 +169,13 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
 
           {/* Profil revenus */}
           <div>
-            <label className="text-[10px] text-zinc-600 font-semibold uppercase tracking-wider block mb-1.5">
+            <label className="text-[10px] text-th-text-3 font-semibold uppercase tracking-wider block mb-1.5">
               Profil revenus (MaPrimeRénov')
             </label>
             <select
               value={profile}
               onChange={(e) => setProfile(e.target.value as ProfileRevenu)}
-              className="w-full bg-white/[0.05] border border-white/[0.08] text-white text-xs rounded-lg px-2 py-2 appearance-none focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
+              className="w-full bg-th-surface2 border border-th-border-med text-th-text-1 text-xs rounded-lg px-2 py-2 appearance-none focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
             >
               <option value="tres-modeste">Très modeste (aide 30%)</option>
               <option value="modeste">Modeste (aide 25%)</option>
@@ -186,7 +186,7 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
 
           {/* Budget custom */}
           <div>
-            <label className="text-[10px] text-zinc-600 font-semibold uppercase tracking-wider block mb-1.5">
+            <label className="text-[10px] text-th-text-3 font-semibold uppercase tracking-wider block mb-1.5">
               Budget travaux (optionnel)
             </label>
             <div className="relative">
@@ -199,9 +199,9 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
                   const v = parseInt(e.target.value)
                   setBudgetCustom(v > 0 ? v : undefined)
                 }}
-                className="w-full bg-white/[0.05] border border-white/[0.08] text-white text-xs rounded-lg px-2 py-2 pr-6 focus:outline-none focus:ring-1 focus:ring-emerald-500/40 placeholder:text-zinc-700"
+                className="w-full bg-th-surface2 border border-th-border-med text-th-text-1 text-xs rounded-lg px-2 py-2 pr-6 focus:outline-none focus:ring-1 focus:ring-emerald-500/40 placeholder:text-th-text-3"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-zinc-600">€</span>
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-th-text-3">€</span>
             </div>
           </div>
         </div>
@@ -210,9 +210,9 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
       {/* ── Coût des travaux ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-        <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 space-y-3">
+        <div className="rounded-xl border border-th-border bg-th-surface p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Coût estimatif travaux</p>
+            <p className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest">Coût estimatif travaux</p>
             {/* Flèche DPE */}
             <div className="flex items-center gap-1.5">
               <DpeBadge dpe={dpeActuel} size="sm" />
@@ -229,33 +229,33 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
               { label: 'Scénario moyen', value: calc.coutMoyen, color: 'text-white', bold: true },
               { label: 'Scénario haut', value: calc.coutHaut, color: 'text-amber-400' },
             ].map((row) => (
-              <div key={row.label} className={`flex items-center justify-between px-3 py-2 rounded-lg ${row.bold ? 'bg-white/[0.04] border border-white/[0.06]' : ''}`}>
-                <span className={`text-xs ${row.bold ? 'font-semibold text-zinc-300' : 'text-zinc-500'}`}>{row.label}</span>
+              <div key={row.label} className={`flex items-center justify-between px-3 py-2 rounded-lg ${row.bold ? 'bg-th-surface2 border border-th-border' : ''}`}>
+                <span className={`text-xs ${row.bold ? 'font-semibold text-th-text-1' : 'text-th-text-2'}`}>{row.label}</span>
                 <span className={`text-sm font-bold tabular-nums ${row.color}`}>{formatCurrency(row.value)}</span>
               </div>
             ))}
           </div>
 
-          <div className="pt-2 border-t border-white/[0.05]">
+          <div className="pt-2 border-t border-th-border">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-zinc-500">Saut DPE</span>
-              <span className="text-[11px] font-bold text-white">{calc.sautClasses} classe{calc.sautClasses > 1 ? 's' : ''}</span>
+              <span className="text-[11px] text-th-text-2">Saut DPE</span>
+              <span className="text-[11px] font-bold text-th-text-1">{calc.sautClasses} classe{calc.sautClasses > 1 ? 's' : ''}</span>
             </div>
           </div>
         </div>
 
         {/* ── Aides disponibles ────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 space-y-3">
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Aides de l'État</p>
+        <div className="rounded-xl border border-th-border bg-th-surface p-4 space-y-3">
+          <p className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest">Aides de l'État</p>
 
           <div className="space-y-2">
             {/* MaPrimeRénov' */}
             <div className={`flex items-center justify-between px-3 py-2 rounded-lg ${calc.maprimerenovEligible ? 'bg-emerald-500/[0.05] border border-emerald-500/20' : 'opacity-40'}`}>
               <div>
-                <p className="text-[11px] font-semibold text-zinc-300">MaPrimeRénov' bailleur</p>
-                <p className="text-[9px] text-zinc-600">{calc.maprimerenovEligible ? `Profil ${profile.replace('-', ' ')} — ${Math.round(({'tres-modeste':30,'modeste':25,'intermediaire':20,'superieur':15})[profile])}%` : 'Nécessite 2+ classes de saut'}</p>
+                <p className="text-[11px] font-semibold text-th-text-1">MaPrimeRénov' bailleur</p>
+                <p className="text-[9px] text-th-text-3">{calc.maprimerenovEligible ? `Profil ${profile.replace('-', ' ')} — ${Math.round(({'tres-modeste':30,'modeste':25,'intermediaire':20,'superieur':15})[profile])}%` : 'Nécessite 2+ classes de saut'}</p>
               </div>
-              <span className={`text-sm font-bold tabular-nums ${calc.maprimerenovEligible ? 'text-emerald-400' : 'text-zinc-600'}`}>
+              <span className={`text-sm font-bold tabular-nums ${calc.maprimerenovEligible ? 'text-emerald-400' : 'text-th-text-3'}`}>
                 {calc.maprimerenovEligible ? `−${formatCurrency(calc.maprimerenovMontant)}` : '—'}
               </span>
             </div>
@@ -263,10 +263,10 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
             {/* CEE */}
             <div className={`flex items-center justify-between px-3 py-2 rounded-lg ${calc.ceeMontant > 0 ? 'bg-blue-500/[0.05] border border-blue-500/20' : 'opacity-40'}`}>
               <div>
-                <p className="text-[11px] font-semibold text-zinc-300">CEE (certificats énergie)</p>
-                <p className="text-[9px] text-zinc-600">{calc.ceeMontant > 0 ? 'Estimation via artisans RGE' : 'Nécessite 2+ classes de saut'}</p>
+                <p className="text-[11px] font-semibold text-th-text-1">CEE (certificats énergie)</p>
+                <p className="text-[9px] text-th-text-3">{calc.ceeMontant > 0 ? 'Estimation via artisans RGE' : 'Nécessite 2+ classes de saut'}</p>
               </div>
-              <span className={`text-sm font-bold tabular-nums ${calc.ceeMontant > 0 ? 'text-blue-400' : 'text-zinc-600'}`}>
+              <span className={`text-sm font-bold tabular-nums ${calc.ceeMontant > 0 ? 'text-blue-400' : 'text-th-text-3'}`}>
                 {calc.ceeMontant > 0 ? `−${formatCurrency(calc.ceeMontant)}` : '—'}
               </span>
             </div>
@@ -274,8 +274,8 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
             {/* TVA réduite */}
             <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-violet-500/[0.05] border border-violet-500/20">
               <div>
-                <p className="text-[11px] font-semibold text-zinc-300">TVA réduite 5.5%</p>
-                <p className="text-[9px] text-zinc-600">Au lieu de 20% sur main d'œuvre</p>
+                <p className="text-[11px] font-semibold text-th-text-1">TVA réduite 5.5%</p>
+                <p className="text-[9px] text-th-text-3">Au lieu de 20% sur main d'œuvre</p>
               </div>
               <span className="text-sm font-bold tabular-nums text-violet-400">−{formatCurrency(calc.tvaMontant)}</span>
             </div>
@@ -283,24 +283,24 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
             {/* Eco-PTZ */}
             <div className={`flex items-center justify-between px-3 py-2 rounded-lg ${calc.ecoPtzEligible ? 'bg-indigo-500/[0.05] border border-indigo-500/20' : 'opacity-40'}`}>
               <div>
-                <p className="text-[11px] font-semibold text-zinc-300">Eco-PTZ à 0%</p>
-                <p className="text-[9px] text-zinc-600">{calc.ecoPtzEligible ? 'Prêt séparé, ne pèse pas sur le taux d\'endettement' : 'Nécessite 2+ classes de saut'}</p>
+                <p className="text-[11px] font-semibold text-th-text-1">Eco-PTZ à 0%</p>
+                <p className="text-[9px] text-th-text-3">{calc.ecoPtzEligible ? 'Prêt séparé, ne pèse pas sur le taux d\'endettement' : 'Nécessite 2+ classes de saut'}</p>
               </div>
-              <span className={`text-sm font-bold tabular-nums ${calc.ecoPtzEligible ? 'text-indigo-400' : 'text-zinc-600'}`}>
+              <span className={`text-sm font-bold tabular-nums ${calc.ecoPtzEligible ? 'text-indigo-400' : 'text-th-text-3'}`}>
                 {calc.ecoPtzEligible ? `${formatCurrency(calc.ecoPtzMontant)}` : '—'}
               </span>
             </div>
           </div>
 
           {/* Total net */}
-          <div className="pt-2 border-t border-white/[0.05] space-y-1.5">
+          <div className="pt-2 border-t border-th-border space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-zinc-500">Total aides (subventions)</span>
+              <span className="text-[11px] text-th-text-2">Total aides (subventions)</span>
               <span className="text-sm font-bold text-emerald-400 tabular-nums">−{formatCurrency(calc.totalAides)}</span>
             </div>
-            <div className="flex items-center justify-between bg-white/[0.04] border border-white/[0.07] px-3 py-2 rounded-lg">
-              <span className="text-xs font-semibold text-zinc-300">Coût net après aides</span>
-              <span className="text-base font-black text-white tabular-nums">{formatCurrency(calc.coutNet)}</span>
+            <div className="flex items-center justify-between bg-th-surface2 border border-th-border px-3 py-2 rounded-lg">
+              <span className="text-xs font-semibold text-th-text-1">Coût net après aides</span>
+              <span className="text-base font-black text-th-text-1 tabular-nums">{formatCurrency(calc.coutNet)}</span>
             </div>
           </div>
         </div>
@@ -315,38 +315,38 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
             <p className="text-[10px] font-bold text-amber-400/80 uppercase tracking-widest mb-3">Décote à l'achat</p>
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-zinc-500">Décote marché</span>
+                <span className="text-th-text-2">Décote marché</span>
                 <span className="font-bold text-amber-400">{Math.round(calc.decotePct * 100)}%</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-zinc-500">Économie</span>
+                <span className="text-th-text-2">Économie</span>
                 <span className="font-bold text-amber-400">{formatCurrency(calc.decoteMontant)}</span>
               </div>
-              <div className="flex justify-between text-xs border-t border-white/[0.05] pt-2">
-                <span className="text-zinc-400 font-medium">Prix négocié</span>
-                <span className="font-bold text-white">{formatCurrency(calc.prixAvecDecote)}</span>
+              <div className="flex justify-between text-xs border-t border-th-border pt-2">
+                <span className="text-th-text-2 font-medium">Prix négocié</span>
+                <span className="font-bold text-th-text-1">{formatCurrency(calc.prixAvecDecote)}</span>
               </div>
             </div>
           </div>
         )}
 
         {/* Rendement avant/après */}
-        <div className={`rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 ${calc.decotePct > 0 ? 'sm:col-span-2' : 'sm:col-span-3'}`}>
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Rentabilité avant / après rénovation</p>
+        <div className={`rounded-xl border border-th-border bg-th-surface p-4 ${calc.decotePct > 0 ? 'sm:col-span-2' : 'sm:col-span-3'}`}>
+          <p className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest mb-3">Rentabilité avant / après rénovation</p>
           <div className="grid grid-cols-2 gap-3">
-            <div className="text-center rounded-lg bg-white/[0.03] border border-white/[0.05] p-3">
-              <p className="text-[9px] text-zinc-600 mb-1">Rendement brut actuel</p>
-              <p className="text-xl font-black text-zinc-400 tabular-nums" style={{ letterSpacing: '-0.04em' }}>
+            <div className="text-center rounded-lg bg-th-surface2 border border-th-border p-3">
+              <p className="text-[9px] text-th-text-3 mb-1">Rendement brut actuel</p>
+              <p className="text-xl font-black text-th-text-2 tabular-nums" style={{ letterSpacing: '-0.04em' }}>
                 {calc.rendBrutAvant.toFixed(1)}%
               </p>
-              <p className="text-[9px] text-zinc-600 mt-0.5">{formatCurrency(loyerMensuel)}/mois</p>
+              <p className="text-[9px] text-th-text-3 mt-0.5">{formatCurrency(loyerMensuel)}/mois</p>
             </div>
             <div className="text-center rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20 p-3">
-              <p className="text-[9px] text-zinc-500 mb-1">Rendement brut après rénov.</p>
+              <p className="text-[9px] text-th-text-2 mb-1">Rendement brut après rénov.</p>
               <p className="text-xl font-black text-emerald-400 tabular-nums" style={{ letterSpacing: '-0.04em' }}>
                 {calc.rendBrutApres.toFixed(1)}%
               </p>
-              <p className="text-[9px] text-zinc-500 mt-0.5">{formatCurrency(calc.loyerApresRenovation)}/mois</p>
+              <p className="text-[9px] text-th-text-2 mt-0.5">{formatCurrency(calc.loyerApresRenovation)}/mois</p>
             </div>
           </div>
         </div>
@@ -358,19 +358,19 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
           <p className="text-[10px] font-bold text-violet-400/80 uppercase tracking-widest mb-3">Amortissement LMNP des travaux</p>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
-              <p className="text-[9px] text-zinc-600 mb-1">Amort. annuel</p>
-              <p className="text-base font-black text-white tabular-nums">{formatCurrency(calc.amortissementAnnuel)}</p>
-              <p className="text-[9px] text-zinc-600 mt-0.5">sur 10 ans</p>
+              <p className="text-[9px] text-th-text-3 mb-1">Amort. annuel</p>
+              <p className="text-base font-black text-th-text-1 tabular-nums">{formatCurrency(calc.amortissementAnnuel)}</p>
+              <p className="text-[9px] text-th-text-3 mt-0.5">sur 10 ans</p>
             </div>
             <div className="text-center">
-              <p className="text-[9px] text-zinc-600 mb-1">Économie impôt/an</p>
+              <p className="text-[9px] text-th-text-3 mb-1">Économie impôt/an</p>
               <p className="text-base font-black text-violet-400 tabular-nums">{formatCurrency(calc.economieImpotAnnuelle)}</p>
-              <p className="text-[9px] text-zinc-600 mt-0.5">TMI {params.tmi}% + PS 17.2%</p>
+              <p className="text-[9px] text-th-text-3 mt-0.5">TMI {params.tmi}% + PS 17.2%</p>
             </div>
             <div className="text-center">
-              <p className="text-[9px] text-zinc-600 mb-1">Recoupement</p>
+              <p className="text-[9px] text-th-text-3 mb-1">Recoupement</p>
               <p className="text-base font-black text-emerald-400 tabular-nums">{calc.recoupementAns} ans</p>
-              <p className="text-[9px] text-zinc-600 mt-0.5">via économie fiscale</p>
+              <p className="text-[9px] text-th-text-3 mt-0.5">via économie fiscale</p>
             </div>
           </div>
         </div>
@@ -378,19 +378,19 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
 
       {/* ── Dossier bancaire ─────────────────────────────────────────────────── */}
       {calc.ltvAvant > 0 && (
-        <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Impact dossier bancaire</p>
+        <div className="rounded-xl border border-th-border bg-th-surface p-4">
+          <p className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest mb-3">Impact dossier bancaire</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="text-center rounded-lg bg-white/[0.03] border border-white/[0.05] p-3">
-              <p className="text-[9px] text-zinc-600 mb-1">LTV avant</p>
+            <div className="text-center rounded-lg bg-th-surface2 border border-th-border p-3">
+              <p className="text-[9px] text-th-text-3 mb-1">LTV avant</p>
               <p className={`text-lg font-black tabular-nums ${calc.ltvAvant > 80 ? 'text-amber-400' : 'text-white'}`}>{calc.ltvAvant}%</p>
             </div>
             <div className="text-center rounded-lg bg-emerald-500/[0.05] border border-emerald-500/20 p-3">
-              <p className="text-[9px] text-zinc-500 mb-1">LTV après rénov.</p>
+              <p className="text-[9px] text-th-text-2 mb-1">LTV après rénov.</p>
               <p className={`text-lg font-black tabular-nums ${calc.ltvApres > 80 ? 'text-amber-400' : 'text-emerald-400'}`}>{calc.ltvApres}%</p>
             </div>
-            <div className="sm:col-span-2 rounded-lg bg-white/[0.03] border border-white/[0.05] p-3">
-              <p className="text-[9px] text-zinc-600 mb-1.5">Points forts pour la banque</p>
+            <div className="sm:col-span-2 rounded-lg bg-th-surface2 border border-th-border p-3">
+              <p className="text-[9px] text-th-text-3 mb-1.5">Points forts pour la banque</p>
               <div className="space-y-1">
                 {calc.ecoPtzEligible && (
                   <p className="text-[10px] text-emerald-400 flex items-center gap-1">
@@ -430,7 +430,7 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
             </svg>
             Appliquer ce scénario au calculateur
           </button>
-          <p className="text-[10px] text-zinc-600">
+          <p className="text-[10px] text-th-text-3">
             Recalcule avec travaux {formatCurrency(calc.coutNet)} et prix {formatCurrency(calc.prixAvecDecote > 0 ? calc.prixAvecDecote : params.prixAchat)}
           </p>
         </div>

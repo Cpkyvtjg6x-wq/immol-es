@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTheme } from 'next-themes'
 import {
   BarChart,
   Bar,
@@ -55,26 +56,26 @@ function HeroKpi({
   delta?: { text: string; positive: boolean | null }
 }) {
   const deltaColor =
-    delta?.positive === true ? 'text-emerald-400' :
+    delta?.positive === true ? 'text-emerald-500' :
     delta?.positive === false ? 'text-red-400' :
-    'text-zinc-600'
+    'text-th-text-3'
 
   return (
     <div
-      className={`rounded-2xl border px-6 py-5 flex flex-col gap-3 transition-colors ${
+      className={`rounded-2xl border px-6 py-5 flex flex-col gap-3 transition-colors shadow-card-th ${
         accent
           ? 'border-emerald-500/20 bg-emerald-500/[0.04]'
-          : 'border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.04]'
+          : 'border-th-border bg-th-surface hover:bg-th-surface2'
       }`}
     >
-      <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">{label}</p>
+      <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-widest">{label}</p>
       <p
-        className={`font-black tabular-nums leading-none ${accent ? 'text-emerald-400' : 'text-white'}`}
+        className={`font-black tabular-nums leading-none ${accent ? 'text-emerald-500' : 'text-th-text-1'}`}
         style={{ fontSize: '30px', letterSpacing: '-0.04em' }}
       >
         {value}
       </p>
-      {sub && <p className="text-[11px] text-zinc-600 leading-snug">{sub}</p>}
+      {sub && <p className="text-[11px] text-th-text-3 leading-snug">{sub}</p>}
       {delta && (
         <p className={`text-[10px] font-semibold ${deltaColor}`}>
           {delta.text}
@@ -93,20 +94,20 @@ function MiniKpi({
   sub?: string
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5 flex flex-col gap-1.5">
-      <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-widest leading-tight">{label}</p>
+    <div className="rounded-xl border border-th-border bg-th-surface px-4 py-3.5 flex flex-col gap-1.5 shadow-card-th">
+      <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-widest leading-tight">{label}</p>
       <p
-        className="font-bold tabular-nums leading-none text-zinc-200"
+        className="font-bold tabular-nums leading-none text-th-text-1"
         style={{ fontSize: '18px', letterSpacing: '-0.03em' }}
       >
         {value}
       </p>
-      {sub && <p className="text-[10px] text-zinc-700 leading-snug">{sub}</p>}
+      {sub && <p className="text-[10px] text-th-text-3 leading-snug">{sub}</p>}
     </div>
   )
 }
 
-/* ── Tooltip recharts ── */
+/* ── Tooltip recharts — theme-aware ── */
 const CustomTooltip = ({
   active,
   payload,
@@ -118,13 +119,13 @@ const CustomTooltip = ({
 }) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-[#18181b] border border-white/[0.08] rounded-xl px-4 py-3 shadow-xl">
-      <p className="text-xs font-semibold text-zinc-400 mb-2">{label}</p>
+    <div className="bg-th-surface2 border border-th-border rounded-xl px-4 py-3 shadow-card-th">
+      <p className="text-xs font-semibold text-th-text-2 mb-2">{label}</p>
       {payload.map((p) => (
         <div key={p.name} className="flex items-center gap-2 text-sm">
           <span className="w-2 h-2 rounded-full" style={{ background: p.color ?? '#10b981' }} />
-          <span className="text-zinc-400 text-xs">{p.name}</span>
-          <span className="font-bold text-white ml-auto pl-4">{p.value}</span>
+          <span className="text-th-text-2 text-xs">{p.name}</span>
+          <span className="font-bold text-th-text-1 ml-auto pl-4">{p.value}</span>
         </div>
       ))}
     </div>
@@ -136,16 +137,16 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       {/* Icon */}
-      <div className="w-16 h-16 rounded-2xl border border-white/[0.08] bg-white/[0.02] flex items-center justify-center mb-8">
-        <svg className="w-7 h-7 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.3}>
+      <div className="w-16 h-16 rounded-2xl border border-th-border bg-th-surface flex items-center justify-center mb-8 shadow-card-th">
+        <svg className="w-7 h-7 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.3}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
       </div>
 
-      <p className="text-xl font-black text-white mb-3" style={{ letterSpacing: '-0.03em' }}>
+      <p className="text-xl font-black text-th-text-1 mb-3" style={{ letterSpacing: '-0.03em' }}>
         Votre premier investissement commence ici
       </p>
-      <p className="text-sm text-zinc-500 mb-10 max-w-md leading-relaxed">
+      <p className="text-sm text-th-text-2 mb-10 max-w-md leading-relaxed">
         Analysez un bien en 2 minutes — rendement net, cashflow mensuel, fiscalité optimale et score Immora calculés instantanément.
       </p>
 
@@ -160,14 +161,14 @@ function EmptyState() {
             <div className="flex flex-col items-center gap-2 w-32">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black border ${
                 i === 0
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                  : 'bg-white/[0.04] border-white/[0.08] text-zinc-600'
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500'
+                  : 'bg-th-surface2 border-th-border text-th-text-3'
               }`}>
                 {step.n}
               </div>
-              <p className="text-[10px] text-zinc-600 text-center leading-tight">{step.label}</p>
+              <p className="text-[10px] text-th-text-3 text-center leading-tight">{step.label}</p>
             </div>
-            {i < 2 && <div className="w-8 h-px bg-white/[0.07] mx-1 mb-6 shrink-0" />}
+            {i < 2 && <div className="w-8 h-px bg-th-border mx-1 mb-6 shrink-0" />}
           </div>
         ))}
       </div>
@@ -181,7 +182,7 @@ function EmptyState() {
         </svg>
         Analyser mon premier bien
       </Link>
-      <p className="text-xs text-zinc-700 mt-4">Résultats instantanés · Sauvegarde automatique</p>
+      <p className="text-xs text-th-text-3 mt-4">Résultats instantanés · Sauvegarde automatique</p>
     </div>
   )
 }
@@ -200,6 +201,15 @@ export default function DashboardPage() {
   const [search, setSearch] = useState('')
   const [filterTab, setFilterTab] = useState<'tous' | 'favoris' | 'top' | 'positif'>('tous')
   const [sortBy, setSortBy] = useState<'date' | 'score' | 'rendement' | 'cashflow'>('date')
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
+
+  /* Chart colors adapt to theme */
+  const chartGrid = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'
+  const chartAxis = isDark ? '#71717a' : '#a1a1aa'
+  const chartCursor = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'
+  const chartBarBrut = isDark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.08)'
+  const chartRefLine = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)'
 
   function loadSimulation(sim: SavedSimulation) {
     if (sim.params && Object.keys(sim.params).length > 0) {
@@ -274,9 +284,9 @@ export default function DashboardPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+      <div className="min-h-screen bg-th-bg flex items-center justify-center">
         <div className="relative w-8 h-8">
-          <div className="w-8 h-8 border border-white/[0.08] rounded-full" />
+          <div className="w-8 h-8 border border-th-border rounded-full" />
           <div className="absolute inset-0 border-t border-emerald-500 rounded-full animate-spin" />
         </div>
       </div>
@@ -334,19 +344,19 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="min-h-screen bg-[#09090b]">
+      <div className="min-h-screen bg-th-bg">
 
         {/* ── Banner checkout ── */}
         {checkoutBanner && (
           <div className="mx-8 mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-5 py-4 flex items-center gap-4">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
-              <IconCheckCircle className="w-5 h-5 text-emerald-400" />
+              <IconCheckCircle className="w-5 h-5 text-emerald-500" />
             </div>
             <div>
-              <p className="text-sm font-bold text-white">Abonnement activé</p>
-              <p className="text-xs text-zinc-400">Bienvenue dans IMMORA Pro. Toutes les fonctionnalités sont débloquées.</p>
+              <p className="text-sm font-bold text-th-text-1">Abonnement activé</p>
+              <p className="text-xs text-th-text-2">Bienvenue dans IMMORA Pro. Toutes les fonctionnalités sont débloquées.</p>
             </div>
-            <button onClick={() => setCheckoutBanner(false)} className="ml-auto text-zinc-600 hover:text-zinc-300">
+            <button onClick={() => setCheckoutBanner(false)} className="ml-auto text-th-text-3 hover:text-th-text-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -355,13 +365,13 @@ export default function DashboardPage() {
         )}
 
         {/* ── Top bar ── */}
-        <div className="border-b border-white/[0.05] px-6 md:px-8 py-5 flex items-center justify-between">
+        <div className="border-b border-th-border px-6 md:px-8 py-5 flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest mb-1">
+            <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-widest mb-1">
               Tableau de bord
             </p>
             <h1
-              className="text-xl font-black text-white"
+              className="text-xl font-black text-th-text-1"
               style={{ letterSpacing: '-0.03em' }}
             >
               {firstName.charAt(0).toUpperCase() + firstName.slice(1)}
@@ -384,10 +394,10 @@ export default function DashboardPage() {
           {simsLoading ? (
             <div className="flex items-center justify-center py-24 gap-3">
               <div className="relative w-6 h-6">
-                <div className="w-6 h-6 border border-white/[0.08] rounded-full" />
+                <div className="w-6 h-6 border border-th-border rounded-full" />
                 <div className="absolute inset-0 border-t border-emerald-500 rounded-full animate-spin" />
               </div>
-              <span className="text-sm text-zinc-500">Chargement…</span>
+              <span className="text-sm text-th-text-2">Chargement…</span>
             </div>
           ) : simulations.length === 0 ? (
             <EmptyState />
@@ -404,15 +414,15 @@ export default function DashboardPage() {
                 />
                 <HeroKpi
                   label="Cashflow mensuel total"
-                  value={`${totalCf >= 0 ? '+' : ''}${Math.round(totalCf)} €`}
-                  sub={`${Math.round(totalCf * 12).toLocaleString('fr')} € par an`}
+                  value={`${totalCf >= 0 ? '+' : ''}${Math.round(totalCf)} €`}
+                  sub={`${Math.round(totalCf * 12).toLocaleString('fr')} € par an`}
                   delta={totalCf >= 0
                     ? { text: 'Portefeuille autofinancé', positive: true }
                     : { text: `Effort mensuel nécessaire`, positive: false }}
                 />
                 <HeroKpi
                   label="Score moyen"
-                  value={`${avgScore} / 100`}
+                  value={`${avgScore} / 100`}
                   sub={avgScore >= 70 ? 'Excellent portefeuille' : avgScore >= 50 ? 'Portefeuille solide' : 'Portefeuille à optimiser'}
                   delta={simulations.length > 1 ? {
                     text: `${simulations.length} biens analysés`,
@@ -435,13 +445,13 @@ export default function DashboardPage() {
                 />
                 <MiniKpi
                   label="Cashflow annuel"
-                  value={`${totalCf >= 0 ? '+' : ''}${Math.round(totalCf * 12).toLocaleString('fr')} €`}
+                  value={`${totalCf >= 0 ? '+' : ''}${Math.round(totalCf * 12).toLocaleString('fr')} €`}
                   sub="Cumul sur 12 mois"
                 />
                 <MiniKpi
                   label="Simulations"
                   value={simLimitDisplay
-                    ? `${simulations.length} / ${simLimitDisplay}`
+                    ? `${simulations.length} / ${simLimitDisplay}`
                     : simulations.length.toString()}
                   sub={simLimitDisplay && simulations.length >= simLimitDisplay * 0.7 ? 'Bientôt à la limite' : 'Sauvegardes actives'}
                 />
@@ -459,28 +469,28 @@ export default function DashboardPage() {
                     <p className="text-[10px] font-semibold text-emerald-500 uppercase tracking-widest mb-0.5">
                       Meilleure simulation
                     </p>
-                    <p className="text-sm font-bold text-white truncate">{best.name}</p>
-                    <p className="text-xs text-zinc-500">{best.ville}</p>
+                    <p className="text-sm font-bold text-th-text-1 truncate">{best.name}</p>
+                    <p className="text-xs text-th-text-2">{best.ville}</p>
                   </div>
                   <div className="hidden md:grid grid-cols-3 gap-8 shrink-0">
                     <div className="text-center">
-                      <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-widest mb-1">Rendement brut</p>
-                      <p className="text-sm font-black text-emerald-400 tabular-nums">{formatPct(best.rendementBrut)}</p>
+                      <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-widest mb-1">Rendement brut</p>
+                      <p className="text-sm font-black text-emerald-500 tabular-nums">{formatPct(best.rendementBrut)}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-widest mb-1">Cashflow</p>
-                      <p className={`text-sm font-black tabular-nums ${best.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {best.cashflowMensuel >= 0 ? '+' : ''}{Math.round(best.cashflowMensuel)} €
+                      <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-widest mb-1">Cashflow</p>
+                      <p className={`text-sm font-black tabular-nums ${best.cashflowMensuel >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
+                        {best.cashflowMensuel >= 0 ? '+' : ''}{Math.round(best.cashflowMensuel)} €
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-widest mb-1">Score</p>
-                      <p className="text-sm font-black text-white tabular-nums">{best.score ?? '—'}/100</p>
+                      <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-widest mb-1">Score</p>
+                      <p className="text-sm font-black text-th-text-1 tabular-nums">{best.score ?? '—'}/100</p>
                     </div>
                   </div>
                   <button
                     onClick={() => loadSimulation(best)}
-                    className="shrink-0 text-[11px] font-semibold text-zinc-400 hover:text-white border border-white/[0.08] hover:border-white/[0.15] px-3 py-1.5 rounded-lg transition-all"
+                    className="shrink-0 text-[11px] font-semibold text-th-text-2 hover:text-th-text-1 border border-th-border hover:border-th-border-med px-3 py-1.5 rounded-lg transition-all"
                   >
                     Ouvrir
                   </button>
@@ -490,10 +500,10 @@ export default function DashboardPage() {
               {/* ── Simulations ── */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">
+                  <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-widest">
                     Simulations
                   </p>
-                  <span className="text-[11px] text-zinc-600">
+                  <span className="text-[11px] text-th-text-3">
                     {simulations.length} enregistr{simulations.length !== 1 ? 'ées' : 'ée'}
                   </span>
                 </div>
@@ -502,7 +512,7 @@ export default function DashboardPage() {
                   {/* Search + Filters */}
                   <div className="flex items-center gap-3 flex-wrap">
                     <div className="relative flex-1 min-w-[200px]">
-                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                       <input
@@ -510,10 +520,10 @@ export default function DashboardPage() {
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Rechercher par nom ou ville…"
-                        className="w-full bg-white/[0.03] border border-white/[0.07] rounded-lg text-sm text-white placeholder:text-zinc-600 pl-9 pr-3 py-2 focus:outline-none focus:border-emerald-500/40 transition-all"
+                        className="w-full bg-th-input-bg border border-th-input-border rounded-lg text-sm text-th-text-1 placeholder:text-th-text-3 pl-9 pr-3 py-2 focus:outline-none focus:border-emerald-500/40 transition-all"
                       />
                       {search && (
-                        <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300">
+                        <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-th-text-3 hover:text-th-text-2">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -521,7 +531,7 @@ export default function DashboardPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1 bg-white/[0.03] border border-white/[0.07] rounded-lg p-1">
+                    <div className="flex items-center gap-1 bg-th-surface2 border border-th-border rounded-lg p-1">
                       {([
                         { id: 'tous',    label: 'Tous' },
                         { id: 'favoris', label: 'Favoris' },
@@ -533,8 +543,8 @@ export default function DashboardPage() {
                           onClick={() => setFilterTab(f.id)}
                           className={`px-3 py-1.5 text-[11px] font-semibold rounded-md transition-all ${
                             filterTab === f.id
-                              ? 'bg-white/[0.09] text-white'
-                              : 'text-zinc-500 hover:text-zinc-300'
+                              ? 'bg-th-surface shadow-card-th text-th-text-1'
+                              : 'text-th-text-2 hover:text-th-text-1'
                           }`}
                         >
                           {f.label}
@@ -545,21 +555,21 @@ export default function DashboardPage() {
                     <select
                       value={sortBy}
                       onChange={e => setSortBy(e.target.value as typeof sortBy)}
-                      className="bg-white/[0.03] border border-white/[0.07] rounded-lg text-[11px] font-semibold text-zinc-400 px-3 py-2 focus:outline-none focus:border-emerald-500/40 transition-all"
+                      className="bg-th-input-bg border border-th-input-border rounded-lg text-[11px] font-semibold text-th-text-2 px-3 py-2 focus:outline-none focus:border-emerald-500/40 transition-all"
                     >
-                      <option value="date" className="bg-zinc-900">Tri : Date</option>
-                      <option value="score" className="bg-zinc-900">Tri : Score</option>
-                      <option value="rendement" className="bg-zinc-900">Tri : Rendement</option>
-                      <option value="cashflow" className="bg-zinc-900">Tri : Cashflow</option>
+                      <option value="date">Tri : Date</option>
+                      <option value="score">Tri : Score</option>
+                      <option value="rendement">Tri : Rendement</option>
+                      <option value="cashflow">Tri : Cashflow</option>
                     </select>
                   </div>
 
                   {filteredSims.length === 0 ? (
-                    <div className="text-center py-12 rounded-xl border border-dashed border-white/[0.07]">
-                      <p className="text-sm text-zinc-500">Aucun résultat pour ce filtre</p>
+                    <div className="text-center py-12 rounded-xl border border-dashed border-th-border">
+                      <p className="text-sm text-th-text-2">Aucun résultat pour ce filtre</p>
                       <button
                         onClick={() => { setSearch(''); setFilterTab('tous') }}
-                        className="text-xs text-emerald-400 hover:underline mt-2 block mx-auto"
+                        className="text-xs text-emerald-500 hover:underline mt-2 block mx-auto"
                       >
                         Réinitialiser
                       </button>
@@ -567,49 +577,49 @@ export default function DashboardPage() {
                   ) : (
                     <>
                       {/* Desktop table */}
-                      <div className="hidden md:block rounded-xl border border-white/[0.07] overflow-hidden">
-                        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_100px] gap-4 px-5 py-3 border-b border-white/[0.05] bg-white/[0.02]">
+                      <div className="hidden md:block rounded-xl border border-th-border overflow-hidden shadow-card-th">
+                        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_100px] gap-4 px-5 py-3 border-b border-th-border bg-th-surface2">
                           {['Simulation', 'Rendement', 'Cashflow', 'Prix achat', 'Score', ''].map((h) => (
-                            <span key={h} className="text-[9px] font-semibold text-zinc-600 uppercase tracking-widest">{h}</span>
+                            <span key={h} className="text-[9px] font-semibold text-th-text-3 uppercase tracking-widest">{h}</span>
                           ))}
                         </div>
-                        <div className="divide-y divide-white/[0.04]">
+                        <div className="divide-y divide-th-border bg-th-surface">
                           {filteredSims.map((sim: SavedSimulation) => (
                             <div
                               key={sim.id}
-                              className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_100px] gap-4 items-center px-5 py-4 hover:bg-white/[0.02] transition-colors"
+                              className="grid grid-cols-[2fr_1fr_1fr_1fr_80px_100px] gap-4 items-center px-5 py-4 hover:bg-th-surface2 transition-colors"
                             >
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
-                                  <p className="text-sm font-semibold text-white truncate">{sim.name}</p>
+                                  <p className="text-sm font-semibold text-th-text-1 truncate">{sim.name}</p>
                                   {sim.is_favorite && (
                                     <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                     </svg>
                                   )}
                                 </div>
-                                <p className="text-[11px] text-zinc-600">{sim.ville} · {formatDate(sim.created_at)}</p>
+                                <p className="text-[11px] text-th-text-3">{sim.ville} · {formatDate(sim.created_at)}</p>
                               </div>
                               <div>
-                                <p className="text-sm font-semibold text-white tabular-nums">{formatPct(sim.rendementBrut)}</p>
-                                <p className="text-[11px] text-zinc-600">{formatPct(sim.rendementNet)} net</p>
+                                <p className="text-sm font-semibold text-th-text-1 tabular-nums">{formatPct(sim.rendementBrut)}</p>
+                                <p className="text-[11px] text-th-text-3">{formatPct(sim.rendementNet)} net</p>
                               </div>
                               <div>
-                                <p className={`text-sm font-bold tabular-nums ${sim.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                  {sim.cashflowMensuel >= 0 ? '+' : ''}{Math.round(sim.cashflowMensuel)} €
+                                <p className={`text-sm font-bold tabular-nums ${sim.cashflowMensuel >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
+                                  {sim.cashflowMensuel >= 0 ? '+' : ''}{Math.round(sim.cashflowMensuel)} €
                                 </p>
-                                <p className="text-[11px] text-zinc-600">par mois</p>
+                                <p className="text-[11px] text-th-text-3">par mois</p>
                               </div>
                               <div>
-                                <p className="text-sm text-white tabular-nums">{formatCurrency(sim.prixAchat)}</p>
+                                <p className="text-sm text-th-text-1 tabular-nums">{formatCurrency(sim.prixAchat)}</p>
                               </div>
                               <div>
-                                {sim.score !== null ? <ScoreBadge score={sim.score} /> : <span className="text-xs text-zinc-600">—</span>}
+                                {sim.score !== null ? <ScoreBadge score={sim.score} /> : <span className="text-xs text-th-text-3">—</span>}
                               </div>
                               <div className="flex items-center gap-1 justify-end">
                                 <button
                                   onClick={() => loadSimulation(sim)}
-                                  className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-emerald-400 transition-colors"
+                                  className="w-7 h-7 rounded-lg hover:bg-th-surface3 flex items-center justify-center text-th-text-3 hover:text-emerald-500 transition-colors"
                                   title="Charger"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -618,7 +628,7 @@ export default function DashboardPage() {
                                 </button>
                                 <button
                                   onClick={() => handleToggleFavorite(sim.id, sim.is_favorite)}
-                                  className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-amber-400 transition-colors"
+                                  className="w-7 h-7 rounded-lg hover:bg-th-surface3 flex items-center justify-center text-th-text-3 hover:text-amber-400 transition-colors"
                                 >
                                   <svg className={`w-3.5 h-3.5 ${sim.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} fill={sim.is_favorite ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -626,7 +636,7 @@ export default function DashboardPage() {
                                 </button>
                                 <button
                                   onClick={() => handleDelete(sim.id)}
-                                  className="w-7 h-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors"
+                                  className="w-7 h-7 rounded-lg hover:bg-th-surface3 flex items-center justify-center text-th-text-3 hover:text-red-400 transition-colors"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -641,47 +651,47 @@ export default function DashboardPage() {
                       {/* Mobile cards */}
                       <div className="md:hidden space-y-3">
                         {filteredSims.map((sim: SavedSimulation) => (
-                          <div key={sim.id} className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+                          <div key={sim.id} className="rounded-xl border border-th-border bg-th-surface p-4 shadow-card-th">
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <p className="text-sm font-bold text-white truncate">{sim.name}</p>
+                                  <p className="text-sm font-bold text-th-text-1 truncate">{sim.name}</p>
                                   {sim.is_favorite && (
                                     <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                     </svg>
                                   )}
                                 </div>
-                                <p className="text-[11px] text-zinc-500 mt-0.5">{sim.ville} · {formatDate(sim.created_at)}</p>
+                                <p className="text-[11px] text-th-text-2 mt-0.5">{sim.ville} · {formatDate(sim.created_at)}</p>
                               </div>
                               {sim.score !== null && <ScoreBadge score={sim.score} />}
                             </div>
                             <div className="grid grid-cols-3 gap-2 mb-3">
-                              <div className="bg-white/[0.03] rounded-lg p-2.5 text-center">
-                                <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wide">Rendement</p>
-                                <p className="text-sm font-bold text-white tabular-nums">{formatPct(sim.rendementBrut)}</p>
+                              <div className="bg-th-surface2 rounded-lg p-2.5 text-center">
+                                <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wide">Rendement</p>
+                                <p className="text-sm font-bold text-th-text-1 tabular-nums">{formatPct(sim.rendementBrut)}</p>
                               </div>
-                              <div className="bg-white/[0.03] rounded-lg p-2.5 text-center">
-                                <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wide">Cashflow</p>
-                                <p className={`text-sm font-bold tabular-nums ${sim.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                  {sim.cashflowMensuel >= 0 ? '+' : ''}{Math.round(sim.cashflowMensuel)} €
+                              <div className="bg-th-surface2 rounded-lg p-2.5 text-center">
+                                <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wide">Cashflow</p>
+                                <p className={`text-sm font-bold tabular-nums ${sim.cashflowMensuel >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
+                                  {sim.cashflowMensuel >= 0 ? '+' : ''}{Math.round(sim.cashflowMensuel)} €
                                 </p>
                               </div>
-                              <div className="bg-white/[0.03] rounded-lg p-2.5 text-center">
-                                <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wide">Prix</p>
-                                <p className="text-sm font-bold text-white tabular-nums">{Math.round(sim.prixAchat / 1000)}k€</p>
+                              <div className="bg-th-surface2 rounded-lg p-2.5 text-center">
+                                <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wide">Prix</p>
+                                <p className="text-sm font-bold text-th-text-1 tabular-nums">{Math.round(sim.prixAchat / 1000)}k€</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => loadSimulation(sim)}
-                                className="flex-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 py-2 rounded-lg hover:bg-emerald-500/20 transition-colors"
+                                className="flex-1 text-xs font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 py-2 rounded-lg hover:bg-emerald-500/20 transition-colors"
                               >
                                 Ouvrir
                               </button>
                               <button
                                 onClick={() => handleToggleFavorite(sim.id, sim.is_favorite)}
-                                className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-zinc-500 hover:text-amber-400 transition-colors"
+                                className="w-9 h-9 rounded-lg bg-th-surface2 flex items-center justify-center text-th-text-3 hover:text-amber-400 transition-colors"
                               >
                                 <svg className={`w-4 h-4 ${sim.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} fill={sim.is_favorite ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -689,7 +699,7 @@ export default function DashboardPage() {
                               </button>
                               <button
                                 onClick={() => handleDelete(sim.id)}
-                                className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center text-zinc-500 hover:text-red-400 transition-colors"
+                                className="w-9 h-9 rounded-lg bg-th-surface2 flex items-center justify-center text-th-text-3 hover:text-red-400 transition-colors"
                               >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -707,56 +717,56 @@ export default function DashboardPage() {
               {/* ── Charts ── */}
               {simulations.length >= 2 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-6">
+                  <div className="rounded-xl border border-th-border bg-th-surface p-6 shadow-card-th">
                     <div className="flex items-center justify-between mb-5">
-                      <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">
+                      <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-widest">
                         Rendement brut vs net
                       </p>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-2.5 h-2.5 rounded-sm bg-white/[0.12]" />
-                          <span className="text-[10px] text-zinc-600">Brut</span>
+                          <div className="w-2.5 h-2.5 rounded-sm" style={{ background: chartBarBrut }} />
+                          <span className="text-[10px] text-th-text-3">Brut</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
-                          <span className="text-[10px] text-zinc-600">Net</span>
+                          <span className="text-[10px] text-th-text-3">Net</span>
                         </div>
                       </div>
                     </div>
                     <ResponsiveContainer width="100%" height={180}>
                       <BarChart data={rendChart} barGap={4} barCategoryGap="35%">
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} unit="%" width={32} />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                        <Bar dataKey="Brut" fill="rgba(255,255,255,0.09)" radius={[3, 3, 0, 0]} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} vertical={false} />
+                        <XAxis dataKey="name" tick={{ fill: chartAxis, fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: chartAxis, fontSize: 10 }} axisLine={false} tickLine={false} unit="%" width={32} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: chartCursor }} />
+                        <Bar dataKey="Brut" fill={chartBarBrut} radius={[3, 3, 0, 0]} />
                         <Bar dataKey="Net" fill="#10b981" radius={[3, 3, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-6">
+                  <div className="rounded-xl border border-th-border bg-th-surface p-6 shadow-card-th">
                     <div className="flex items-center justify-between mb-5">
-                      <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">
+                      <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-widest">
                         Cashflow mensuel
                       </p>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5">
                           <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
-                          <span className="text-[10px] text-zinc-600">Positif</span>
+                          <span className="text-[10px] text-th-text-3">Positif</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <div className="w-2.5 h-2.5 rounded-sm bg-red-500" />
-                          <span className="text-[10px] text-zinc-600">Négatif</span>
+                          <span className="text-[10px] text-th-text-3">Négatif</span>
                         </div>
                       </div>
                     </div>
                     <ResponsiveContainer width="100%" height={180}>
                       <BarChart data={cfChart} barCategoryGap="35%">
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} unit="€" width={40} />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                        <ReferenceLine y={0} stroke="rgba(255,255,255,0.10)" strokeWidth={1} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} vertical={false} />
+                        <XAxis dataKey="name" tick={{ fill: chartAxis, fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: chartAxis, fontSize: 10 }} axisLine={false} tickLine={false} unit="€" width={40} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: chartCursor }} />
+                        <ReferenceLine y={0} stroke={chartRefLine} strokeWidth={1} />
                         <Bar dataKey="cashflow" radius={[3, 3, 0, 0]} name="Cashflow">
                           {cfChart.map((entry, i) => (
                             <Cell key={i} fill={entry.cashflow >= 0 ? '#10b981' : '#ef4444'} />
@@ -770,7 +780,7 @@ export default function DashboardPage() {
 
               {/* ── Actions rapides ── */}
               <div>
-                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mb-4">
+                <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-widest mb-4">
                   Actions rapides
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -796,7 +806,7 @@ export default function DashboardPage() {
                       title: 'Comparer des biens',
                       desc: 'Mettez deux biens côte à côte pour décider sur des données objectives',
                       cta: 'Comparer',
-                      ctaClass: 'bg-white/[0.05] text-zinc-300 border border-white/[0.08] hover:bg-white/[0.09]',
+                      ctaClass: 'bg-th-surface3 text-th-text-1 border border-th-border hover:bg-th-surface2',
                       href: '/comparer',
                     },
                     {
@@ -809,21 +819,21 @@ export default function DashboardPage() {
                       desc: 'Export PDF professionnel pour votre dossier de financement',
                       cta: isPro ? 'Exporter' : 'Pro requis',
                       ctaClass: isPro
-                        ? 'bg-white/[0.05] text-zinc-300 border border-white/[0.08] hover:bg-white/[0.09]'
-                        : 'bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20',
+                        ? 'bg-th-surface3 text-th-text-1 border border-th-border hover:bg-th-surface2'
+                        : 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20',
                       href: '/rapport-bancaire',
                     },
                   ].map((item) => (
                     <div
                       key={item.title}
-                      className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-5 flex flex-col gap-4"
+                      className="rounded-xl border border-th-border bg-th-surface p-5 flex flex-col gap-4 shadow-card-th"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-zinc-400">
+                      <div className="w-8 h-8 rounded-lg bg-th-surface2 border border-th-border flex items-center justify-center text-th-text-2">
                         {item.icon}
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-white">{item.title}</p>
-                        <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{item.desc}</p>
+                        <p className="text-sm font-semibold text-th-text-1">{item.title}</p>
+                        <p className="text-xs text-th-text-2 mt-1 leading-relaxed">{item.desc}</p>
                       </div>
                       <Link
                         href={item.href}
@@ -838,31 +848,31 @@ export default function DashboardPage() {
 
               {/* ── Upsell discret ── */}
               {!isPro && simLimitDisplay && simulations.length >= Math.floor(simLimitDisplay * 0.6) && (
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] px-5 py-4 flex items-center gap-4">
+                <div className="rounded-xl border border-th-border bg-th-surface px-5 py-4 flex items-center gap-4 shadow-card-th">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-zinc-200">
+                    <p className="text-sm font-semibold text-th-text-1">
                       {simulations.length >= simLimitDisplay
                         ? 'Limite du plan gratuit atteinte'
                         : `${simLimitDisplay - simulations.length} simulation${simLimitDisplay - simulations.length > 1 ? 's' : ''} restante${simLimitDisplay - simulations.length > 1 ? 's' : ''}`}
                     </p>
-                    <p className="text-xs text-zinc-600 mt-0.5">
-                      Plan Starter dès 9 €/mois — simulations illimitées, export PDF, dossier bancaire
+                    <p className="text-xs text-th-text-3 mt-0.5">
+                      Plan Starter dès 9 €/mois — simulations illimitées, export PDF, dossier bancaire
                     </p>
                   </div>
                   <div className="shrink-0 w-28">
-                    <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden mb-1.5">
+                    <div className="h-1 bg-th-surface3 rounded-full overflow-hidden mb-1.5">
                       <div
                         className="h-1 bg-amber-500 rounded-full transition-all"
                         style={{ width: `${Math.min(100, (simulations.length / simLimitDisplay) * 100)}%` }}
                       />
                     </div>
-                    <p className="text-[9px] text-zinc-600 text-right tabular-nums">
+                    <p className="text-[9px] text-th-text-3 text-right tabular-nums">
                       {simulations.length} / {simLimitDisplay}
                     </p>
                   </div>
                   <Link
                     href="/#pricing"
-                    className="shrink-0 text-xs font-semibold text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 hover:border-emerald-500/40 px-3.5 py-2 rounded-lg transition-all"
+                    className="shrink-0 text-xs font-semibold text-emerald-500 hover:text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/40 px-3.5 py-2 rounded-lg transition-all"
                   >
                     Passer au Pro
                   </Link>

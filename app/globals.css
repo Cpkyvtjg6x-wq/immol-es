@@ -7,16 +7,86 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ══════════════════════════════════════════════════════════════
+   DESIGN TOKENS — thème clair (:root) / sombre (.dark)
+   Stratégie : sidebar toujours sombre, contenu principal adaptatif
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Fond page — blanc cassé chaud, comme Finary / Linear light */
+  --c-bg:            #f5f4f0;
+  /* Surfaces cartes — blanc pur */
+  --c-surface:       #ffffff;
+  /* Surface secondaire — légèrement teinté */
+  --c-surface2:      #eeedea;
+  /* Surface tertiaire — hover / onglets actifs */
+  --c-surface3:      #e2e1dd;
+  /* Bordures fines */
+  --c-border:        rgba(0,0,0,0.08);
+  /* Bordures moyennes (focus, actif) */
+  --c-border-med:    rgba(0,0,0,0.13);
+  /* Texte principal */
+  --c-text-1:        #18181b;
+  /* Texte secondaire */
+  --c-text-2:        #71717a;
+  /* Texte tertiaire / placeholder */
+  --c-text-3:        #a1a1aa;
+  /* Ombres cartes */
+  --c-shadow-xs:     0 1px 2px rgba(0,0,0,0.06);
+  --c-shadow-sm:     0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+  --c-shadow-md:     0 2px 8px rgba(0,0,0,0.08), 0 16px 40px rgba(0,0,0,0.06);
+  --c-shadow-card:   0 0 0 1px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.06);
+  /* Accent émeraude — identique dans les deux modes */
+  --c-accent:        #10b981;
+  --c-accent-dim:    rgba(16,185,129,0.08);
+  --c-accent-border: rgba(16,185,129,0.20);
+  --c-accent-text:   #059669;
+  /* Scrollbar */
+  --c-scrollbar:     #d4d3ce;
+  --c-scrollbar-hover: #b8b7b2;
+  /* Input */
+  --c-input-bg:      #ffffff;
+  --c-input-border:  rgba(0,0,0,0.10);
+}
+
+.dark {
+  --c-bg:            #09090b;
+  --c-surface:       #111113;
+  --c-surface2:      #18181b;
+  --c-surface3:      #27272a;
+  --c-border:        rgba(255,255,255,0.07);
+  --c-border-med:    rgba(255,255,255,0.12);
+  --c-text-1:        #fafafa;
+  --c-text-2:        #a1a1aa;
+  --c-text-3:        #71717a;
+  --c-shadow-xs:     none;
+  --c-shadow-sm:     none;
+  --c-shadow-md:     0 0 0 1px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.5);
+  --c-shadow-card:   0 0 0 1px rgba(255,255,255,0.05), 0 24px 70px rgba(0,0,0,0.55);
+  --c-accent:        #10b981;
+  --c-accent-dim:    rgba(16,185,129,0.06);
+  --c-accent-border: rgba(16,185,129,0.20);
+  --c-accent-text:   #34d399;
+  --c-scrollbar:     #27272a;
+  --c-scrollbar-hover: #3f3f46;
+  --c-input-bg:      rgba(255,255,255,0.03);
+  --c-input-border:  rgba(255,255,255,0.08);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FIN DESIGN TOKENS
+   ══════════════════════════════════════════════════════════════ */
+
 * { box-sizing: border-box; }
 
 html {
   scroll-behavior: smooth;
-  background: #0a0a0b;
+  background: var(--c-bg);
 }
 
 body {
-  background: #0a0a0b;
-  color: #fafafa;
+  background: var(--c-bg);
+  color: var(--c-text-1);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, sans-serif;
   font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
   -webkit-font-smoothing: antialiased;
@@ -25,6 +95,7 @@ body {
   font-weight: 400;
   font-size: 16px;
   line-height: 1.6;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* ─── Typography classes ─────────────────────────────────────── */
@@ -92,7 +163,7 @@ body {
   font-weight: 400;
   letter-spacing: -0.01em;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--c-text-2);
 }
 
 /* Label / Caption — 10-12px uppercase                             */
@@ -263,8 +334,8 @@ body {
 /* ─── Scrollbar ──────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #27272a; border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+::-webkit-scrollbar-thumb { background: var(--c-scrollbar); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-scrollbar-hover); }
 
 /* ─── Range slider ───────────────────────────────────────────── */
 input[type="range"] {

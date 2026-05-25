@@ -15,6 +15,23 @@ module.exports = {
     },
     extend: {
       colors: {
+        /* ── Semantic tokens — mappés sur les CSS variables du thème ── */
+        /* Utilisation : bg-th-bg, text-th-text-1, border-th-border, etc. */
+        'th-bg':          'var(--c-bg)',
+        'th-surface':     'var(--c-surface)',
+        'th-surface2':    'var(--c-surface2)',
+        'th-surface3':    'var(--c-surface3)',
+        'th-border':      'var(--c-border)',
+        'th-border-med':  'var(--c-border-med)',
+        'th-text-1':      'var(--c-text-1)',
+        'th-text-2':      'var(--c-text-2)',
+        'th-text-3':      'var(--c-text-3)',
+        'th-accent':      'var(--c-accent)',
+        'th-accent-dim':  'var(--c-accent-dim)',
+        'th-input-bg':    'var(--c-input-bg)',
+        'th-input-border':'var(--c-input-border)',
+
+        /* ── Couleurs fixes (landing page, sidebar, etc.) ── */
         background: '#09090B',
         card: '#18181B',
         border: '#27272A',
@@ -70,6 +87,8 @@ module.exports = {
       },
       boxShadow: {
         card: '0 0 0 1px #27272A, 0 4px 24px rgba(0,0,0,0.4)',
+        'card-th': 'var(--c-shadow-card)',
+        'sm-th': 'var(--c-shadow-sm)',
         glow: '0 0 20px rgba(16,185,129,0.15)',
         'glow-indigo': '0 0 20px rgba(99,102,241,0.15)',
       },

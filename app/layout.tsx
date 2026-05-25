@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import { Instrument_Serif } from 'next/font/google'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider } from '@/lib/auth-context'
+import { ThemeProvider } from '@/components/app/ThemeProvider'
 import './globals.css'
 
 const instrumentSerif = Instrument_Serif({
@@ -72,17 +73,24 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
+    /*
+     * suppressHydrationWarning : next-themes injecte la classe `dark` ou
+     * rien côté client, ce qui provoquerait un mismatch sans ce flag.
+     * next-themes gère lui-même la classe — plus besoin du `dark` hardcodé.
+     */
     <html
       lang="fr"
-      className={`${GeistSans.variable} ${instrumentSerif.variable} dark`}
+      className={`${GeistSans.variable} ${instrumentSerif.variable}`}
       suppressHydrationWarning
     >
-      <body className="bg-zinc-950 text-zinc-50 antialiased min-h-screen">
-        <AuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </AuthProvider>
+      <body className="antialiased min-h-screen">
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

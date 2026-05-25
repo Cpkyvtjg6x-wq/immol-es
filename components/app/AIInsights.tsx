@@ -20,7 +20,7 @@ const typeConfig = {
 const priorityConfig = {
   high:   'text-red-400',
   medium: 'text-amber-400',
-  low:    'text-zinc-600',
+  low:    'text-th-text-3',
 }
 
 export function AIInsights({ insights, loading, onGenerate, isPro = false }: AIInsightsProps) {
@@ -28,13 +28,13 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
 
   if (!isPro) {
     return (
-      <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6">
+      <div className="rounded-2xl border border-th-border bg-th-surface2 p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
             </svg>
-            <h3 className="text-sm font-semibold text-white">Analyse IA</h3>
+            <h3 className="text-sm font-semibold text-th-text-1">Analyse IA</h3>
             <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Pro</span>
           </div>
         </div>
@@ -46,8 +46,8 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
             </svg>
           </div>
           <div>
-            <p className="text-sm font-semibold text-white mb-1">Recommandations IA</p>
-            <p className="text-xs text-zinc-500 max-w-xs leading-relaxed">
+            <p className="text-sm font-semibold text-th-text-1 mb-1">Recommandations IA</p>
+            <p className="text-xs text-th-text-2 max-w-xs leading-relaxed">
               Optimisation fiscale, analyse de risques et recommandations personnalisées avec le plan Pro.
             </p>
           </div>
@@ -60,13 +60,13 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
   }
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6">
+    <div className="rounded-2xl border border-th-border bg-th-surface2 p-6">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
           </svg>
-          <h3 className="text-sm font-semibold text-white">Analyse IA</h3>
+          <h3 className="text-sm font-semibold text-th-text-1">Analyse IA</h3>
           <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">GPT-4</span>
         </div>
         <div>
@@ -81,7 +81,7 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
           {insights && (
             <button
               onClick={onGenerate}
-              className="text-xs text-zinc-500 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/[0.05]"
+              className="text-xs text-th-text-2 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-th-surface2"
             >
               Actualiser
             </button>
@@ -93,9 +93,9 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
         <div className="space-y-4 py-2">
           {[0.6, 0.8, 0.5].map((w, i) => (
             <div key={i} className="space-y-2 animate-pulse">
-              <div className="h-3 bg-white/[0.06] rounded-full" style={{ width: `${w * 100}%` }} />
-              <div className="h-2.5 bg-white/[0.04] rounded-full" />
-              <div className="h-2.5 bg-white/[0.04] rounded-full" style={{ width: '70%' }} />
+              <div className="h-3 bg-th-surface2 rounded-full" style={{ width: `${w * 100}%` }} />
+              <div className="h-2.5 bg-th-surface2 rounded-full" />
+              <div className="h-2.5 bg-th-surface2 rounded-full" style={{ width: '70%' }} />
             </div>
           ))}
         </div>
@@ -111,7 +111,7 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
               <button
                 key={i}
                 onClick={() => setExpanded(isOpen ? null : i)}
-                className="w-full text-left rounded-xl border border-white/[0.06] hover:border-white/[0.1] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-200 overflow-hidden"
+                className="w-full text-left rounded-xl border border-th-border hover:border-white/[0.1] bg-th-surface hover:bg-th-surface2 transition-all duration-200 overflow-hidden"
               >
                 <div className="flex items-start gap-3 p-4">
                   <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: tc.dot }} />
@@ -122,10 +122,10 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
                         {insight.priority === 'high' ? '↑ Prioritaire' : insight.priority === 'medium' ? '→ Important' : '↓ Informatif'}
                       </span>
                     </div>
-                    <p className="text-sm font-medium text-white leading-snug">{insight.title}</p>
+                    <p className="text-sm font-medium text-th-text-1 leading-snug">{insight.title}</p>
                   </div>
                   <svg
-                    className={`w-3.5 h-3.5 text-zinc-600 transition-transform mt-0.5 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+                    className={`w-3.5 h-3.5 text-th-text-3 transition-transform mt-0.5 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -133,8 +133,8 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
                 </div>
 
                 {isOpen && (
-                  <div className="px-4 pb-4 border-t border-white/[0.05] pt-3 space-y-2.5">
-                    <p className="text-xs text-zinc-400 leading-relaxed">{insight.description}</p>
+                  <div className="px-4 pb-4 border-t border-th-border pt-3 space-y-2.5">
+                    <p className="text-xs text-th-text-2 leading-relaxed">{insight.description}</p>
                     {insight.impact && (
                       <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 bg-emerald-500/[0.08] border border-emerald-500/20 px-2.5 py-1 rounded-lg">
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -153,7 +153,7 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
 
       {!insights && !loading && (
         <div className="py-6 text-center">
-          <p className="text-xs text-zinc-600 leading-relaxed">
+          <p className="text-xs text-th-text-3 leading-relaxed">
             Cliquez sur "Générer" pour obtenir des recommandations personnalisées basées sur votre simulation.
           </p>
         </div>

@@ -73,25 +73,25 @@ export function ScoreCard({ score }: ScoreCardProps) {
   const summaryIconColor = { emerald: 'text-emerald-400', amber: 'text-amber-400', red: 'text-red-400' }[score.color]
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
+    <div className="rounded-2xl border border-th-border bg-th-surface2 overflow-hidden">
       {/* Hero — score global uniquement */}
       <div className="flex flex-col sm:flex-row items-center sm:items-stretch gap-0">
         {/* Ring + chiffre */}
-        <div className="sm:w-56 shrink-0 flex flex-col items-center justify-center p-8 border-b sm:border-b-0 sm:border-r border-white/[0.06] bg-white/[0.015]">
+        <div className="sm:w-56 shrink-0 flex flex-col items-center justify-center p-8 border-b sm:border-b-0 sm:border-r border-th-border bg-white/[0.015]">
           <div className="relative w-[140px] h-[140px]">
             <ScoreRing value={globalRounded} color={score.color} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className={`text-[44px] font-black leading-none tabular-nums ${textColor}`} style={{ letterSpacing: '-0.04em' }}>
                 {globalRounded}
               </span>
-              <span className="text-[11px] text-zinc-600 mt-1 font-medium">/100</span>
+              <span className="text-[11px] text-th-text-3 mt-1 font-medium">/100</span>
             </div>
           </div>
           <div className="mt-4 text-center space-y-1.5">
             <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full border ${badgeBg}`}>
               {score.label}
             </span>
-            <p className="text-[10px] text-zinc-600 uppercase tracking-wider font-semibold">Score IMMORA</p>
+            <p className="text-[10px] text-th-text-3 uppercase tracking-wider font-semibold">Score IMMORA</p>
           </div>
         </div>
 
@@ -99,13 +99,13 @@ export function ScoreCard({ score }: ScoreCardProps) {
         <div className="flex-1 flex flex-col justify-center p-6 gap-4 min-w-0">
           <div className="flex items-start gap-3">
             <SummaryIcon className={`w-5 h-5 shrink-0 mt-0.5 ${summaryIconColor}`} />
-            <p className="text-[14px] text-zinc-300 leading-relaxed font-medium">
+            <p className="text-[14px] text-th-text-1 leading-relaxed font-medium">
               {score.summary}
             </p>
           </div>
 
           {/* Mini aperçu des 4 dimensions (non-interactif, compact) */}
-          <div className="grid grid-cols-4 gap-2 pt-2 border-t border-white/[0.05]">
+          <div className="grid grid-cols-4 gap-2 pt-2 border-t border-th-border">
             {subScoreLabels.map(({ key, label, Icon }) => {
               const val = Math.round(score.subScores[key])
               const c: 'emerald' | 'amber' | 'red' = val >= 60 ? 'emerald' : val >= 35 ? 'amber' : 'red'
@@ -115,7 +115,7 @@ export function ScoreCard({ score }: ScoreCardProps) {
                 <div key={key} className="flex flex-col items-center gap-0.5">
                   <Icon className={`w-4 h-4 ${iconColor}`} />
                   <span className={`text-[13px] font-bold tabular-nums ${numColor}`}>{val}</span>
-                  <span className="text-[9px] text-zinc-600 font-medium">{label}</span>
+                  <span className="text-[9px] text-th-text-3 font-medium">{label}</span>
                 </div>
               )
             })}
@@ -124,10 +124,10 @@ export function ScoreCard({ score }: ScoreCardProps) {
       </div>
 
       {/* Section déployable — détail barres de progression */}
-      <div className="border-t border-white/[0.05]">
+      <div className="border-t border-th-border">
         <button
           onClick={() => setExpanded(v => !v)}
-          className="w-full flex items-center justify-between px-5 py-3 text-[11px] text-zinc-500 hover:text-zinc-400 transition-colors font-semibold uppercase tracking-wider"
+          className="w-full flex items-center justify-between px-5 py-3 text-[11px] text-th-text-2 hover:text-th-text-2 transition-colors font-semibold uppercase tracking-wider"
         >
           <span>Détail par dimension</span>
           <svg
@@ -150,8 +150,8 @@ export function ScoreCard({ score }: ScoreCardProps) {
               return (
                 <div key={key} className="flex items-center gap-3">
                   <Icon className={`w-4 h-4 shrink-0 ${iconColor}`} />
-                  <span className="text-[12px] text-zinc-400 w-24 shrink-0 font-medium">{label}</span>
-                  <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                  <span className="text-[12px] text-th-text-2 w-24 shrink-0 font-medium">{label}</span>
+                  <div className="flex-1 h-1.5 bg-th-surface2 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full"
                       style={{

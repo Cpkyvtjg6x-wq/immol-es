@@ -10,9 +10,9 @@ import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
-      <div className="px-6 py-4 border-b border-white/[0.05]">
-        <h2 className="text-sm font-bold text-white">{title}</h2>
+    <div className="rounded-2xl border border-th-border bg-white/[0.02] overflow-hidden">
+      <div className="px-6 py-4 border-b border-th-border">
+        <h2 className="text-sm font-bold text-th-text-1">{title}</h2>
       </div>
       <div className="p-6">{children}</div>
     </div>
@@ -36,7 +36,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+      <label className="block text-xs font-semibold text-th-text-2 uppercase tracking-wider mb-2">
         {label}
       </label>
       <input
@@ -45,7 +45,7 @@ function Field({
         onChange={e => onChange?.(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full bg-white/[0.04] border border-th-border-med rounded-xl px-4 py-3 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       />
     </div>
   )
@@ -143,9 +143,9 @@ export default function ProfilePage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+      <div className="min-h-screen bg-th-bg flex items-center justify-center">
         <div className="relative w-8 h-8">
-          <div className="w-8 h-8 border border-white/[0.08] rounded-full" />
+          <div className="w-8 h-8 border border-th-border-med rounded-full" />
           <div className="absolute inset-0 border-t border-emerald-500 rounded-full animate-spin" />
         </div>
       </div>
@@ -154,21 +154,21 @@ export default function ProfilePage() {
 
   return (
     <AppShell>
-      <div className="min-h-screen bg-[#09090b]">
+      <div className="min-h-screen bg-th-bg">
 
         {/* ── Top bar ── */}
-        <div className="border-b border-white/[0.05] px-8 py-5 flex items-center justify-between">
+        <div className="border-b border-th-border px-8 py-5 flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-widest mb-0.5">
+            <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-widest mb-0.5">
               Paramètres
             </p>
-            <h1 className="text-xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+            <h1 className="text-xl font-black text-th-text-1" style={{ letterSpacing: '-0.03em' }}>
               Mon profil
             </h1>
           </div>
           <Link
             href="/dashboard"
-            className="text-xs font-semibold text-zinc-500 hover:text-white transition-colors flex items-center gap-1.5"
+            className="text-xs font-semibold text-th-text-2 hover:text-white transition-colors flex items-center gap-1.5"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -181,14 +181,14 @@ export default function ProfilePage() {
 
           {/* ── Avatar + plan ── */}
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-2xl font-black text-white uppercase shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-2xl font-black text-th-text-1 uppercase shrink-0">
               {firstName.charAt(0)}
             </div>
             <div>
-              <p className="text-lg font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+              <p className="text-lg font-black text-th-text-1" style={{ letterSpacing: '-0.03em' }}>
                 {displayName || user.email}
               </p>
-              <p className="text-sm text-zinc-500">{user.email}</p>
+              <p className="text-sm text-th-text-2">{user.email}</p>
               <span
                 className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full mt-2"
                 style={{ color: tierInfo.color, background: tierInfo.bg }}
@@ -213,7 +213,7 @@ export default function ProfilePage() {
                 value={user.email ?? ''}
                 disabled
               />
-              <p className="text-xs text-zinc-600">
+              <p className="text-xs text-th-text-3">
                 Pour modifier votre adresse e-mail, contactez le support.
               </p>
               <button
@@ -229,10 +229,10 @@ export default function ProfilePage() {
           {/* ── Abonnement ── */}
           <Section title="Abonnement">
             <div className="space-y-5">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-th-border">
                 <div>
-                  <p className="text-sm font-bold text-white">Plan {tierInfo.label}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">
+                  <p className="text-sm font-bold text-th-text-1">Plan {tierInfo.label}</p>
+                  <p className="text-xs text-th-text-2 mt-0.5">
                     {tier === 'free'
                       ? '3 simulations · Fonctionnalités de base'
                       : tier === 'pro'
@@ -250,7 +250,7 @@ export default function ProfilePage() {
 
               {tier === 'free' ? (
                 <div className="space-y-3">
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-th-text-2">
                     Passez à Pro pour débloquer les exports PDF, le dossier bancaire et les simulations illimitées.
                   </p>
                   <Link
@@ -265,13 +265,13 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-th-text-2">
                     Gérez vos informations de paiement, consultez vos factures ou annulez votre abonnement depuis le portail de facturation Stripe.
                   </p>
                   <button
                     onClick={openBillingPortal}
                     disabled={portalLoading}
-                    className="w-full flex items-center justify-center gap-2 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] text-white font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] text-th-text-1 font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-50"
                   >
                     {portalLoading ? (
                       <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -310,7 +310,7 @@ export default function ProfilePage() {
               <button
                 onClick={changePassword}
                 disabled={pwLoading || !pwForm.next}
-                className="w-full bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] text-white font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-40"
+                className="w-full bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] text-th-text-1 font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-40"
               >
                 {pwLoading ? 'Mise à jour…' : 'Changer le mot de passe'}
               </button>
@@ -320,7 +320,7 @@ export default function ProfilePage() {
           {/* ── Danger zone ── */}
           <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.03] p-6">
             <h2 className="text-sm font-bold text-red-400 mb-2">Zone dangereuse</h2>
-            <p className="text-xs text-zinc-500 mb-4">
+            <p className="text-xs text-th-text-2 mb-4">
               La suppression de votre compte est définitive. Toutes vos simulations et données seront effacées.
             </p>
             <button

@@ -24,13 +24,13 @@ function fmtPct(n: number, dec = 1): string {
 function EmptyPortfolio() {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-      <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mb-5 text-3xl">
+      <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-th-border-med flex items-center justify-center mb-5 text-3xl">
         🏘
       </div>
-      <h2 className="text-xl font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>
+      <h2 className="text-xl font-black text-th-text-1 mb-2" style={{ letterSpacing: '-0.03em' }}>
         Votre portfolio est vide
       </h2>
-      <p className="text-sm text-zinc-400 max-w-xs leading-relaxed mb-6">
+      <p className="text-sm text-th-text-2 max-w-xs leading-relaxed mb-6">
         Analysez et sauvegardez des biens dans le calculateur pour les retrouver ici et suivre votre patrimoine global.
       </p>
       <Link
@@ -51,13 +51,13 @@ function KpiCard({
   label: string; value: string; sub?: string; color?: string; icon?: string
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 flex flex-col gap-3">
-      <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">{label}</p>
+    <div className="rounded-2xl border border-th-border bg-white/[0.02] p-5 flex flex-col gap-3">
+      <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">{label}</p>
       <div>
         <p className="text-2xl font-bold tabular-nums leading-none" style={{ letterSpacing: '-0.04em', color: color ?? 'white' }}>
           {icon && <span className="mr-1">{icon}</span>}{value}
         </p>
-        {sub && <p className="text-[11px] text-zinc-600 mt-1.5">{sub}</p>}
+        {sub && <p className="text-[11px] text-th-text-3 mt-1.5">{sub}</p>}
       </div>
     </div>
   )
@@ -68,8 +68,8 @@ function KpiCard({
 function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: string }) {
   return (
     <div className="mb-3">
-      <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-0.5">{children}</p>
-      {sub && <p className="text-[12px] text-zinc-600">{sub}</p>}
+      <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest mb-0.5">{children}</p>
+      {sub && <p className="text-[12px] text-th-text-3">{sub}</p>}
     </div>
   )
 }
@@ -99,7 +99,7 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
       <button
         onClick={() => { if (active) setDesc(!desc); else { setSortKey(k); setDesc(true) } }}
         className={`text-[10px] font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 ${
-          active ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'
+          active ? 'text-white' : 'text-th-text-3 hover:text-th-text-2'
         }`}
       >
         {label}
@@ -109,14 +109,14 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+    <div className="rounded-2xl border border-th-border bg-white/[0.02] overflow-hidden">
       {/* Table header */}
-      <div className="px-5 py-3 border-b border-white/[0.05] grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4">
+      <div className="px-5 py-3 border-b border-th-border grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4">
         <div className="w-6" />
         <ColBtn k="prixAchat" label="Bien" />
         <div className="w-28 hidden md:block"><ColBtn k="rendementBrut" label="Rendement" /></div>
         <div className="w-20 hidden sm:block"><ColBtn k="cashflowMensuel" label="Cashflow" /></div>
-        <div className="w-20 hidden lg:block"><span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Mensualité</span></div>
+        <div className="w-20 hidden lg:block"><span className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">Mensualité</span></div>
         <ColBtn k="score" label="Score" />
       </div>
 
@@ -136,17 +136,17 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
               className="px-5 py-3.5 grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 hover:bg-white/[0.015] transition-colors"
             >
               {/* Rang */}
-              <div className="w-6 h-6 rounded-full bg-white/[0.04] border border-white/[0.07] flex items-center justify-center text-[10px] font-bold text-zinc-600 shrink-0">
+              <div className="w-6 h-6 rounded-full bg-white/[0.04] border border-th-border flex items-center justify-center text-[10px] font-bold text-th-text-3 shrink-0">
                 {i + 1}
               </div>
 
               {/* Nom + ville + prix bar */}
               <div className="min-w-0">
-                <p className="text-[13px] font-semibold text-white truncate leading-snug">{sim.name}</p>
+                <p className="text-[13px] font-semibold text-th-text-1 truncate leading-snug">{sim.name}</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <p className="text-[11px] text-zinc-600 truncate">{sim.ville}</p>
-                  <span className="text-zinc-700 text-[10px]">·</span>
-                  <p className="text-[11px] text-zinc-500 shrink-0">{fmt(sim.prixAchat)}</p>
+                  <p className="text-[11px] text-th-text-3 truncate">{sim.ville}</p>
+                  <span className="text-th-text-3 text-[10px]">·</span>
+                  <p className="text-[11px] text-th-text-2 shrink-0">{fmt(sim.prixAchat)}</p>
                 </div>
                 {/* Prix bar */}
                 <div className="h-0.5 bg-white/[0.05] rounded-full mt-2 overflow-hidden">
@@ -161,7 +161,7 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
               <div className="w-28 hidden md:block">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-[11px] font-bold text-emerald-400 tabular-nums">{fmtPct(sim.rendementBrut)}</p>
-                  <p className="text-[10px] text-zinc-600">{fmtPct(sim.rendementNet)} net</p>
+                  <p className="text-[10px] text-th-text-3">{fmtPct(sim.rendementNet)} net</p>
                 </div>
                 <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${rendPct}%` }} />
@@ -170,7 +170,7 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
 
               {/* Cashflow */}
               <div className="w-20 hidden sm:block text-right">
-                <p className="text-[10px] text-zinc-600 mb-0.5">CF / mois</p>
+                <p className="text-[10px] text-th-text-3 mb-0.5">CF / mois</p>
                 <p className={`text-sm font-bold tabular-nums ${cfPos ? 'text-emerald-400' : 'text-red-400'}`}>
                   {cfPos ? '+' : ''}{Math.round(sim.cashflowMensuel)} €
                 </p>
@@ -178,15 +178,15 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
 
               {/* Mensualité */}
               <div className="w-20 hidden lg:block text-right">
-                <p className="text-[10px] text-zinc-600 mb-0.5">Mensualité</p>
-                <p className="text-sm font-semibold text-zinc-300 tabular-nums">
+                <p className="text-[10px] text-th-text-3 mb-0.5">Mensualité</p>
+                <p className="text-sm font-semibold text-th-text-1 tabular-nums">
                   {mensualite > 0 ? `${Math.round(mensualite)} €` : '—'}
                 </p>
               </div>
 
               {/* Score */}
               <div className="w-10 text-right shrink-0">
-                <p className="text-[10px] text-zinc-600 mb-0.5">Score</p>
+                <p className="text-[10px] text-th-text-3 mb-0.5">Score</p>
                 <p className="text-sm font-black tabular-nums" style={{ color: scoreColor }}>{score}</p>
               </div>
             </div>
@@ -195,8 +195,8 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
       </div>
 
       {/* Footer link */}
-      <div className="px-5 py-3 border-t border-white/[0.04]">
-        <Link href="/comparer" className="text-[11px] font-semibold text-zinc-600 hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+      <div className="px-5 py-3 border-t border-th-border">
+        <Link href="/comparer" className="text-[11px] font-semibold text-th-text-3 hover:text-emerald-400 transition-colors flex items-center gap-1.5">
           Comparaison détaillée →
         </Link>
       </div>
@@ -287,9 +287,9 @@ function ConsolidationFiscale({ simulations }: { simulations: SavedSimulation[] 
   ]
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-white/[0.05]">
-        <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">Consolidation fiscale</p>
+    <div className="rounded-2xl border border-th-border bg-white/[0.02] overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-th-border">
+        <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest">Consolidation fiscale</p>
       </div>
       <div className="divide-y divide-white/[0.04]">
         {rows.map((row, i) => (
@@ -300,8 +300,8 @@ function ConsolidationFiscale({ simulations }: { simulations: SavedSimulation[] 
             }`}
           >
             <div className="min-w-0">
-              <p className="text-[13px] text-zinc-300 leading-snug">{row.label}</p>
-              {row.sub && <p className="text-[10px] text-zinc-600 mt-0.5">{row.sub}</p>}
+              <p className="text-[13px] text-th-text-1 leading-snug">{row.label}</p>
+              {row.sub && <p className="text-[10px] text-th-text-3 mt-0.5">{row.sub}</p>}
             </div>
             <p className="text-[14px] font-bold tabular-nums shrink-0" style={{ color: row.color }}>
               {row.value}
@@ -356,10 +356,10 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
   const ticks = Array.from({ length: 6 }, (_, i) => Math.round(minYear + (i / 5) * totalYears))
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-white/[0.05] flex items-center justify-between">
-        <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">Timeline des prêts</p>
-        <span className="text-[10px] text-zinc-600 tabular-nums">{minYear} — {maxYear}</span>
+    <div className="rounded-2xl border border-th-border bg-white/[0.02] overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-th-border flex items-center justify-between">
+        <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest">Timeline des prêts</p>
+        <span className="text-[10px] text-th-text-3 tabular-nums">{minYear} — {maxYear}</span>
       </div>
 
       <div className="px-5 py-5">
@@ -373,8 +373,8 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
               <div key={sim.id} className="flex items-center gap-3">
                 {/* Label */}
                 <div className="w-28 shrink-0">
-                  <p className="text-[11px] font-semibold text-zinc-300 truncate leading-snug">{sim.name}</p>
-                  <p className="text-[10px] text-zinc-600">
+                  <p className="text-[11px] font-semibold text-th-text-1 truncate leading-snug">{sim.name}</p>
+                  <p className="text-[10px] text-th-text-3">
                     {duree} ans ·{' '}
                     <span style={{ color: isFinished ? '#52525b' : isActive ? color : '#94a3b8' }}>
                       {isFinished ? 'Soldé' : isActive ? `${yearsLeft} an${yearsLeft > 1 ? 's' : ''} restants` : `Début ${Math.round(startYear)}`}
@@ -383,7 +383,7 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
                 </div>
 
                 {/* Track */}
-                <div className="flex-1 h-8 bg-white/[0.025] rounded-lg relative overflow-hidden border border-white/[0.04]">
+                <div className="flex-1 h-8 bg-white/[0.025] rounded-lg relative overflow-hidden border border-th-border">
                   {/* Bar */}
                   <div
                     className="absolute inset-y-0 rounded flex items-center px-2 transition-all"
@@ -426,9 +426,9 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
         </div>
 
         {/* Axis */}
-        <div className="flex justify-between pl-[140px] pr-[52px] border-t border-white/[0.04] pt-2">
+        <div className="flex justify-between pl-[140px] pr-[52px] border-t border-th-border pt-2">
           {ticks.map((year) => (
-            <span key={year} className="text-[9px] text-zinc-700 tabular-nums">{year}</span>
+            <span key={year} className="text-[9px] text-th-text-3 tabular-nums">{year}</span>
           ))}
         </div>
 
@@ -436,7 +436,7 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
         <div className="flex items-center gap-4 mt-3 pl-[140px]">
           <div className="flex items-center gap-1.5">
             <div className="w-px h-4 bg-white/20" />
-            <span className="text-[9px] text-zinc-600">Aujourd'hui</span>
+            <span className="text-[9px] text-th-text-3">Aujourd'hui</span>
           </div>
         </div>
       </div>
@@ -508,13 +508,13 @@ export default function PortfolioPage() {
               Portfolio
             </p>
             <h1
-              className="text-2xl font-black text-white"
+              className="text-2xl font-black text-th-text-1"
               style={{ letterSpacing: '-0.04em' }}
             >
               Mon portefeuille
             </h1>
             {stats && (
-              <p className="text-sm text-zinc-500 mt-1">
+              <p className="text-sm text-th-text-2 mt-1">
                 {stats.count} bien{stats.count > 1 ? 's' : ''} · Vue consolidée de votre patrimoine
               </p>
             )}
@@ -579,25 +579,25 @@ export default function PortfolioPage() {
 
                 {/* Best bien highlight */}
                 {stats.bestBien && (
-                  <div className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-3.5 flex items-center justify-between gap-4">
+                  <div className="mt-3 rounded-xl border border-th-border bg-white/[0.02] px-5 py-3.5 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                         <IconCheckCircle className="w-4 h-4 text-emerald-400" />
                       </div>
                       <div>
-                        <p className="text-[11px] text-zinc-600 mb-0.5">Meilleure performance</p>
-                        <p className="text-[13px] font-bold text-white">{stats.bestBien.name}</p>
+                        <p className="text-[11px] text-th-text-3 mb-0.5">Meilleure performance</p>
+                        <p className="text-[13px] font-bold text-th-text-1">{stats.bestBien.name}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="text-right">
-                        <p className="text-[10px] text-zinc-600">Rendement</p>
+                        <p className="text-[10px] text-th-text-3">Rendement</p>
                         <p className="text-sm font-bold text-emerald-400 tabular-nums">
                           {fmtPct(stats.bestBien.rendementBrut)} brut
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-zinc-600">Cashflow</p>
+                        <p className="text-[10px] text-th-text-3">Cashflow</p>
                         <p className={`text-sm font-bold tabular-nums ${
                           stats.bestBien.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'
                         }`}>
@@ -605,8 +605,8 @@ export default function PortfolioPage() {
                         </p>
                       </div>
                       <div className="text-right hidden sm:block">
-                        <p className="text-[10px] text-zinc-600">Score</p>
-                        <p className="text-sm font-bold text-white tabular-nums">
+                        <p className="text-[10px] text-th-text-3">Score</p>
+                        <p className="text-sm font-bold text-th-text-1 tabular-nums">
                           {stats.bestBien.score ?? '—'} / 100
                         </p>
                       </div>

@@ -39,7 +39,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
       {/* Background gradient */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />
@@ -56,16 +56,16 @@ export default function LoginPage() {
             </div>
             <span className="text-white font-bold text-xl">IMMO<span className="text-emerald-400">RA</span></span>
           </Link>
-          <h1 className="text-2xl font-bold text-white mt-4">Bon retour</h1>
-          <p className="text-zinc-500 text-sm">Connectez-vous pour accéder à vos simulations</p>
+          <h1 className="text-2xl font-bold text-th-text-1 mt-4">Bon retour</h1>
+          <p className="text-th-text-2 text-sm">Connectez-vous pour accéder à vos simulations</p>
         </div>
 
         {/* Form card */}
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-8 space-y-5">
+        <div className="rounded-2xl border border-th-border bg-th-surface p-8 space-y-5">
           {/* Google login */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white rounded-xl py-3 text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-th-text-1 rounded-xl py-3 text-sm font-medium transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -80,8 +80,8 @@ export default function LoginPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-zinc-800" />
             </div>
-            <div className="relative flex justify-center text-xs text-zinc-600">
-              <span className="bg-[#09090b] px-3">ou</span>
+            <div className="relative flex justify-center text-xs text-th-text-3">
+              <span className="bg-th-bg px-3">ou</span>
             </div>
           </div>
 
@@ -104,7 +104,7 @@ export default function LoginPage() {
                 required
               />
               <div className="mt-1.5 text-right">
-                <Link href="/auth/reset" className="text-xs text-zinc-500 hover:text-white transition-colors">
+                <Link href="/auth/reset" className="text-xs text-th-text-2 hover:text-white transition-colors">
                   Mot de passe oublié ?
                 </Link>
               </div>
@@ -122,7 +122,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-sm text-zinc-600">
+        <p className="text-center text-sm text-th-text-3">
           Pas encore de compte ?{' '}
           <Link href="/auth/signup" className="text-emerald-400 hover:text-emerald-300 font-medium">
             Créer un compte gratuit

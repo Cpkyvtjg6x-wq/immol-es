@@ -114,8 +114,8 @@ function SliderRow({ label, value, min, max, step, display, onChange, changed }:
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">{label}</span>
-        <span className={`text-[13px] font-bold tabular-nums transition-colors ${changed ? 'text-amber-400' : 'text-zinc-300'}`}>
+        <span className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider">{label}</span>
+        <span className={`text-[13px] font-bold tabular-nums transition-colors ${changed ? 'text-amber-400' : 'text-th-text-1'}`}>
           {display}
         </span>
       </div>
@@ -145,17 +145,17 @@ interface MetricDeltaProps {
 }
 
 function MetricDelta({ label, value, delta, deltaFmt, color }: MetricDeltaProps) {
-  const deltaColor = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-red-400' : 'text-zinc-600'
+  const deltaColor = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-red-400' : 'text-th-text-3'
   const deltaSign = delta > 0 ? '+' : ''
 
   return (
     <div className="flex flex-col gap-1.5">
-      <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">{label}</p>
+      <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">{label}</p>
       <p className={`text-[22px] font-black tabular-nums leading-none ${color}`} style={{ letterSpacing: '-0.03em' }}>
         {value}
       </p>
       <p className={`text-[11px] font-bold tabular-nums ${deltaColor}`}>
-        {delta === 0 ? <span className="text-zinc-700">base</span> : `${deltaSign}${deltaFmt(delta)}`}
+        {delta === 0 ? <span className="text-th-text-3">base</span> : `${deltaSign}${deltaFmt(delta)}`}
       </p>
     </div>
   )
@@ -308,17 +308,17 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
         }
       `}</style>
 
-      <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
+      <div className="rounded-2xl border border-th-border bg-th-surface2 overflow-hidden">
 
         {/* ── Header ────────────────────────────────────────────────────────── */}
         <button
           type="button"
           onClick={() => setShowSliders(v => !v)}
-          className="w-full flex items-center justify-between px-5 py-3.5 border-b border-white/[0.05] bg-white/[0.015] hover:bg-white/[0.025] transition-colors cursor-pointer"
+          className="w-full flex items-center justify-between px-5 py-3.5 border-b border-th-border bg-white/[0.015] hover:bg-white/[0.025] transition-colors cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
             <div className={`w-2 h-2 rounded-full transition-colors ${hasChanged ? 'bg-amber-400' : 'bg-emerald-500/50'}`} />
-            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+            <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider">
               Et si… — simulateur de scénarios
             </p>
             {hasChanged && (
@@ -329,10 +329,10 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
           </div>
           <div className="flex items-center gap-2">
             {!showSliders && (
-              <span className="text-[10px] text-zinc-600 hidden sm:block">Modifier les paramètres</span>
+              <span className="text-[10px] text-th-text-3 hidden sm:block">Modifier les paramètres</span>
             )}
             <svg
-              className={`w-4 h-4 text-zinc-600 transition-transform duration-250 shrink-0 ${showSliders ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 text-th-text-3 transition-transform duration-250 shrink-0 ${showSliders ? 'rotate-180' : ''}`}
               fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -341,8 +341,8 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
         </button>
 
         {/* ── Résultats temps réel ───────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-0 border-b border-white/[0.05]">
-          <div className="px-5 py-4 border-r border-white/[0.05]">
+        <div className="grid grid-cols-3 gap-0 border-b border-th-border">
+          <div className="px-5 py-4 border-r border-th-border">
             <MetricDelta
               label="Rendement net"
               value={`${scenarioResult.rendementNet.toFixed(1)} %`}
@@ -351,7 +351,7 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
               color={rendColor}
             />
           </div>
-          <div className="px-5 py-4 border-r border-white/[0.05]">
+          <div className="px-5 py-4 border-r border-th-border">
             <MetricDelta
               label="Cashflow / mois"
               value={`${scenarioResult.cashflowMensuel >= 0 ? '+' : ''}${Math.round(scenarioResult.cashflowMensuel)} €`}
@@ -380,7 +380,7 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
           }}
         >
         <div className="overflow-hidden">
-        <div className="px-5 py-5 space-y-5 border-b border-white/[0.05]">
+        <div className="px-5 py-5 space-y-5 border-b border-th-border">
           <SliderRow
             label="Prix d'achat"
             value={s.prixAchat}
@@ -466,14 +466,14 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
         </div>{/* end grid collapsible */}
 
         {/* ── "Faire fonctionner ce bien" ────────────────────────────────── */}
-        <div className="border-t border-white/[0.05]">
+        <div className="border-t border-th-border">
           <button
             onClick={() => setShowEquilibre(v => !v)}
-            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/[0.02] transition-colors group"
+            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-th-surface transition-colors group"
           >
             <div className="flex items-center gap-2.5">
               <div className={`w-1.5 h-1.5 rounded-full ${ecart >= 0 ? 'bg-emerald-500' : 'bg-red-400'}`} />
-              <span className="text-[11px] font-semibold text-zinc-400 group-hover:text-zinc-300 transition-colors uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-th-text-2 group-hover:text-th-text-1 transition-colors uppercase tracking-wider">
                 Faire fonctionner ce bien
               </span>
               {/* Badge résumé */}
@@ -488,7 +488,7 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
               </span>
             </div>
             <svg
-              className={`w-4 h-4 text-zinc-600 transition-transform duration-200 ${showEquilibre ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 text-th-text-3 transition-transform duration-200 ${showEquilibre ? 'rotate-180' : ''}`}
               fill="none" viewBox="0 0 24 24" stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -508,7 +508,7 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
                   ? <IconCheckCircle className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
                   : <IconExclamationTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-400" />
                 }
-                <p className="text-[13px] text-zinc-200 leading-relaxed">
+                <p className="text-[13px] text-th-text-1 leading-relaxed">
                   {ecart >= 0 ? (
                     <>Votre loyer de <span className="text-emerald-400 font-bold">{loyerActuel} €/mois</span> couvre toutes les charges.
                     Marge de <span className="text-emerald-400 font-bold">+{Math.round(ecart)} €/mois</span> après mensualité, copro, taxe foncière et provisions.</>
@@ -521,8 +521,8 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
               </div>
 
               {/* ── Décomposition du point mort ── */}
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
-                <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">
+              <div className="rounded-xl border border-th-border bg-th-surface p-4 space-y-3">
+                <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">
                   Décomposition — {scenarioResult.pointMort} €/mois
                 </p>
                 <div className="space-y-2.5">
@@ -535,14 +535,14 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
                     { label: 'Gestion · vacance · provision', value: Math.max(0, compGestionVacance), pct: Math.max(0, compGestionVacance) / pointMort, color: '#10b981' },
                   ].filter(r => r.value > 0).map(row => (
                     <div key={row.label} className="grid items-center gap-2" style={{ gridTemplateColumns: '130px 1fr 60px' }}>
-                      <span className="text-[11px] text-zinc-500 truncate">{row.label}</span>
-                      <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                      <span className="text-[11px] text-th-text-2 truncate">{row.label}</span>
+                      <div className="h-1.5 bg-th-surface2 rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${Math.min(100, row.pct * 100).toFixed(1)}%`, background: row.color }}
                         />
                       </div>
-                      <span className="text-[11px] font-bold text-zinc-400 tabular-nums text-right">
+                      <span className="text-[11px] font-bold text-th-text-2 tabular-nums text-right">
                         {row.value} €
                       </span>
                     </div>
@@ -635,12 +635,12 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
         </div>
 
         {/* ── Actions — visibles uniquement quand sliders ouverts ─────────── */}
-        {showSliders && <div className="border-t border-white/[0.05] px-5 py-3 flex items-center justify-between gap-3 bg-white/[0.01]">
+        {showSliders && <div className="border-t border-th-border px-5 py-3 flex items-center justify-between gap-3 bg-th-surface">
           <div className="flex items-center gap-3">
             <button
               onClick={handleReset}
               disabled={!hasChanged}
-              className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 text-[11px] font-semibold text-th-text-2 hover:text-th-text-1 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -660,7 +660,7 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
                 className={`flex items-center gap-1.5 text-[11px] font-semibold transition-all px-2.5 py-1.5 rounded-lg border ${
                   copied
                     ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
-                    : 'text-zinc-500 border-white/[0.06] hover:text-zinc-300 hover:border-white/[0.10]'
+                    : 'text-th-text-2 border-th-border hover:text-th-text-1 hover:border-th-border-med'
                 }`}
               >
                 {copied ? (
@@ -683,7 +683,7 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
           </div>
 
           <div className="flex items-center gap-2">
-            <p className="text-[10px] text-zinc-700 hidden sm:block">
+            <p className="text-[10px] text-th-text-3 hidden sm:block">
               Appliquer pour recalculer la fiscalité complète
             </p>
             <button

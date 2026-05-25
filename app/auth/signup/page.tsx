@@ -55,13 +55,13 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-3xl mx-auto">
             ✓
           </div>
-          <h2 className="text-2xl font-bold text-white">Vérifiez votre email</h2>
-          <p className="text-zinc-400">
+          <h2 className="text-2xl font-bold text-th-text-1">Vérifiez votre email</h2>
+          <p className="text-th-text-2">
             Nous avons envoyé un lien de confirmation à <strong className="text-white">{form.email}</strong>.
             Cliquez dessus pour activer votre compte.
           </p>
@@ -74,7 +74,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />
       </div>
@@ -89,18 +89,18 @@ export default function SignupPage() {
             </div>
             <span className="text-white font-bold text-xl">IMMO<span className="text-emerald-400">RA</span></span>
           </Link>
-          <h1 className="text-2xl font-bold text-white mt-4">Créer votre compte</h1>
-          <p className="text-zinc-500 text-sm">
+          <h1 className="text-2xl font-bold text-th-text-1 mt-4">Créer votre compte</h1>
+          <p className="text-th-text-2 text-sm">
             Gratuit · Pas de carte bancaire
           </p>
           <Badge variant="emerald" className="mt-1">14 jours Pro offerts</Badge>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-8 space-y-5">
+        <div className="rounded-2xl border border-th-border bg-th-surface p-8 space-y-5">
           {/* Google */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white rounded-xl py-3 text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-th-text-1 rounded-xl py-3 text-sm font-medium transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -115,7 +115,7 @@ export default function SignupPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-zinc-800" />
             </div>
-            <div className="relative flex justify-center text-xs text-zinc-600">
+            <div className="relative flex justify-center text-xs text-th-text-3">
               <span className="bg-zinc-900 px-3">ou par email</span>
             </div>
           </div>
@@ -158,15 +158,15 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <p className="text-xs text-zinc-600 text-center">
+          <p className="text-xs text-th-text-3 text-center">
             En créant un compte, vous acceptez nos{' '}
-            <Link href="/cgu" className="underline hover:text-zinc-400">CGU</Link>
+            <Link href="/cgu" className="underline hover:text-th-text-2">CGU</Link>
             {' '}et notre{' '}
-            <Link href="/confidentialite" className="underline hover:text-zinc-400">politique de confidentialité</Link>.
+            <Link href="/confidentialite" className="underline hover:text-th-text-2">politique de confidentialité</Link>.
           </p>
         </div>
 
-        <p className="text-center text-sm text-zinc-600">
+        <p className="text-center text-sm text-th-text-3">
           Déjà un compte ?{' '}
           <Link href="/auth/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
             Se connecter

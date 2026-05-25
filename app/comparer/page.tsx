@@ -85,10 +85,10 @@ function SimSelector({
 
   if (selected) {
     return (
-      <div className="relative rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+      <div className="relative rounded-xl border border-th-border-med bg-white/[0.03] p-4">
         <button
           onClick={onRemove}
-          className="absolute top-3 right-3 w-6 h-6 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] flex items-center justify-center text-zinc-500 hover:text-white transition-colors"
+          className="absolute top-3 right-3 w-6 h-6 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] flex items-center justify-center text-th-text-2 hover:text-white transition-colors"
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -97,17 +97,17 @@ function SimSelector({
         <div className="flex items-start gap-2.5 pr-8">
           <ScoreDot score={selected.score ?? 0} />
           <div className="min-w-0">
-            <p className="text-sm font-bold text-white truncate">{selected.name}</p>
-            <p className="text-[11px] text-zinc-500 mt-0.5">{selected.ville}</p>
+            <p className="text-sm font-bold text-th-text-1 truncate">{selected.name}</p>
+            <p className="text-[11px] text-th-text-2 mt-0.5">{selected.ville}</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 mt-4">
-          <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2.5">
-            <p className="text-[10px] text-zinc-600 uppercase tracking-wider">Rend. brut</p>
+          <div className="rounded-lg bg-white/[0.03] border border-th-border p-2.5">
+            <p className="text-[10px] text-th-text-3 uppercase tracking-wider">Rend. brut</p>
             <p className="text-sm font-bold text-emerald-400 tabular-nums mt-0.5">{formatPct(selected.rendementBrut)}</p>
           </div>
-          <div className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2.5">
-            <p className="text-[10px] text-zinc-600 uppercase tracking-wider">Cashflow</p>
+          <div className="rounded-lg bg-white/[0.03] border border-th-border p-2.5">
+            <p className="text-[10px] text-th-text-3 uppercase tracking-wider">Cashflow</p>
             <p className={`text-sm font-bold tabular-nums mt-0.5 ${selected.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {selected.cashflowMensuel >= 0 ? '+' : ''}{Math.round(selected.cashflowMensuel)} €
             </p>
@@ -121,24 +121,24 @@ function SimSelector({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full rounded-xl border border-dashed border-white/[0.15] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.25] transition-all p-6 flex flex-col items-center gap-3 text-center"
+        className="w-full rounded-xl border border-dashed border-th-border-med bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.25] transition-all p-6 flex flex-col items-center gap-3 text-center"
       >
-        <div className="w-10 h-10 rounded-xl border border-white/[0.08] bg-white/[0.04] flex items-center justify-center text-zinc-500">
+        <div className="w-10 h-10 rounded-xl border border-th-border-med bg-white/[0.04] flex items-center justify-center text-th-text-2">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </div>
         <div>
-          <p className="text-sm font-semibold text-zinc-400">Bien {slotIndex + 1}</p>
-          <p className="text-[11px] text-zinc-600 mt-0.5">Sélectionner une simulation</p>
+          <p className="text-sm font-semibold text-th-text-2">Bien {slotIndex + 1}</p>
+          <p className="text-[11px] text-th-text-3 mt-0.5">Sélectionner une simulation</p>
         </div>
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-2 z-20 rounded-xl border border-white/[0.1] bg-[#18181b] shadow-2xl overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 z-20 rounded-xl border border-white/[0.1] bg-th-surface2 shadow-2xl overflow-hidden">
           {simulations.length === 0 ? (
             <div className="px-4 py-6 text-center">
-              <p className="text-sm text-zinc-500">Aucune simulation sauvegardée</p>
+              <p className="text-sm text-th-text-2">Aucune simulation sauvegardée</p>
               <Link href="/analyse" className="text-xs text-emerald-400 hover:underline mt-2 block">
                 Analyser un bien →
               </Link>
@@ -153,8 +153,8 @@ function SimSelector({
                 >
                   <ScoreDot score={s.score ?? 0} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-white truncate">{s.name}</p>
-                    <p className="text-[10px] text-zinc-600">{s.ville} · {formatPct(s.rendementBrut)} brut</p>
+                    <p className="text-[13px] font-semibold text-th-text-1 truncate">{s.name}</p>
+                    <p className="text-[10px] text-th-text-3">{s.ville} · {formatPct(s.rendementBrut)} brut</p>
                   </div>
                   {s.score !== null && <ScoreBadge score={s.score} />}
                 </button>
@@ -176,22 +176,22 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
   let currentSection = ''
 
   return (
-    <div className="rounded-xl border border-white/[0.07] overflow-hidden">
+    <div className="rounded-xl border border-th-border overflow-hidden">
       {/* Column headers */}
       <div
-        className="grid border-b border-white/[0.07] bg-white/[0.02]"
+        className="grid border-b border-th-border bg-white/[0.02]"
         style={{ gridTemplateColumns: `220px repeat(${active.length}, 1fr)` }}
       >
         <div className="px-5 py-3.5">
-          <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Indicateur</p>
+          <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">Indicateur</p>
         </div>
         {active.map((s, i) => (
-          <div key={s.id} className="px-5 py-3.5 border-l border-white/[0.05]">
+          <div key={s.id} className="px-5 py-3.5 border-l border-th-border">
             <div className="flex items-center gap-2">
               <ScoreDot score={s.score ?? 0} />
-              <p className="text-[12px] font-bold text-white truncate">{s.name}</p>
+              <p className="text-[12px] font-bold text-th-text-1 truncate">{s.name}</p>
             </div>
-            <p className="text-[10px] text-zinc-600 mt-0.5 truncate">{s.ville}</p>
+            <p className="text-[10px] text-th-text-3 mt-0.5 truncate">{s.ville}</p>
           </div>
         ))}
       </div>
@@ -210,8 +210,8 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
           return (
             <div key={metric.label}>
               {showSection && (
-                <div className="px-5 py-2.5 bg-white/[0.015] border-b border-white/[0.04]">
-                  <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{metric.section}</p>
+                <div className="px-5 py-2.5 bg-white/[0.015] border-b border-th-border">
+                  <p className="text-[10px] font-bold text-th-text-3 uppercase tracking-widest">{metric.section}</p>
                 </div>
               )}
               <div
@@ -219,7 +219,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
                 style={{ gridTemplateColumns: `220px repeat(${active.length}, 1fr)` }}
               >
                 <div className="px-5 py-3.5 flex items-center">
-                  <p className="text-[12px] text-zinc-400">{metric.label}</p>
+                  <p className="text-[12px] text-th-text-2">{metric.label}</p>
                 </div>
                 {active.map((s, i) => {
                   const val = metric.key(s)
@@ -228,7 +228,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
                   const isWorst = active.length > 1 && num === worst && best !== worst
 
                   return (
-                    <div key={s.id} className="px-5 py-3.5 border-l border-white/[0.05] flex items-center">
+                    <div key={s.id} className="px-5 py-3.5 border-l border-th-border flex items-center">
                       <span className={`text-[13px] font-bold tabular-nums ${
                         isBest && !isWorst
                           ? 'text-emerald-400'
@@ -254,17 +254,17 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
 
       {/* Score footer */}
       <div
-        className="grid border-t border-white/[0.08] bg-white/[0.02]"
+        className="grid border-t border-th-border-med bg-white/[0.02]"
         style={{ gridTemplateColumns: `220px repeat(${active.length}, 1fr)` }}
       >
         <div className="px-5 py-4 flex items-center">
-          <p className="text-[12px] font-bold text-white">Score global</p>
+          <p className="text-[12px] font-bold text-th-text-1">Score global</p>
         </div>
         {active.map((s) => {
           const scores = active.map(x => x.score ?? 0)
           const bestScore = Math.max(...scores)
           return (
-            <div key={s.id} className="px-5 py-4 border-l border-white/[0.05] flex items-center gap-2">
+            <div key={s.id} className="px-5 py-4 border-l border-th-border flex items-center gap-2">
               <ScoreBadge score={s.score ?? 0} />
               {s.score === bestScore && active.length > 1 && (
                 <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
@@ -294,9 +294,9 @@ export default function ComparerPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+      <div className="min-h-screen bg-th-bg flex items-center justify-center">
         <div className="relative w-8 h-8">
-          <div className="w-8 h-8 border border-white/[0.08] rounded-full" />
+          <div className="w-8 h-8 border border-th-border-med rounded-full" />
           <div className="absolute inset-0 border-t border-emerald-500 rounded-full animate-spin" />
         </div>
       </div>
@@ -323,15 +323,15 @@ export default function ComparerPage() {
 
   return (
     <AppShell>
-      <div className="min-h-screen bg-[#09090b] text-white">
+      <div className="min-h-screen bg-th-bg text-th-text-1">
 
         {/* Top bar */}
-        <div className="border-b border-white/[0.05] px-8 py-5 flex items-center justify-between">
+        <div className="border-b border-th-border px-8 py-5 flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-widest mb-0.5">
+            <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-widest mb-0.5">
               Outils Pro
             </p>
-            <h1 className="text-xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+            <h1 className="text-xl font-black text-th-text-1" style={{ letterSpacing: '-0.03em' }}>
               Comparateur de biens
             </h1>
           </div>
@@ -359,15 +359,15 @@ export default function ComparerPage() {
           {simsLoading ? (
             <div className="flex items-center gap-3 py-8">
               <div className="relative w-5 h-5">
-                <div className="w-5 h-5 border border-white/[0.08] rounded-full" />
+                <div className="w-5 h-5 border border-th-border-med rounded-full" />
                 <div className="absolute inset-0 border-t border-emerald-500 rounded-full animate-spin" />
               </div>
-              <span className="text-sm text-zinc-500">Chargement des simulations…</span>
+              <span className="text-sm text-th-text-2">Chargement des simulations…</span>
             </div>
           ) : simulations.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-base font-semibold text-white mb-2">Aucune simulation sauvegardée</p>
-              <p className="text-sm text-zinc-500 mb-6">Analysez et sauvegardez au moins 2 biens pour les comparer.</p>
+              <p className="text-base font-semibold text-th-text-1 mb-2">Aucune simulation sauvegardée</p>
+              <p className="text-sm text-th-text-2 mb-6">Analysez et sauvegardez au moins 2 biens pour les comparer.</p>
               <Link
                 href="/analyse"
                 className="inline-flex items-center gap-2 text-sm font-semibold bg-emerald-500 text-zinc-950 px-5 py-2.5 rounded-xl hover:bg-emerald-400 transition-all"
@@ -378,7 +378,7 @@ export default function ComparerPage() {
           ) : (
             <>
               <div>
-                <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-4">
+                <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest mb-4">
                   Choisir les biens à comparer
                 </p>
                 <div className="grid grid-cols-3 gap-4">
@@ -398,14 +398,14 @@ export default function ComparerPage() {
               {/* Comparison table */}
               {activeCount >= 2 ? (
                 <div>
-                  <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-4">
+                  <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest mb-4">
                     Comparatif détaillé
                   </p>
                   <ComparisonTable selected={selected} />
                 </div>
               ) : (
                 <div className="text-center py-12 rounded-xl border border-dashed border-white/[0.1] bg-white/[0.01]">
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-th-text-2">
                     Sélectionnez au moins 2 simulations pour afficher le comparatif
                   </p>
                 </div>

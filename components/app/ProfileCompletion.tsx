@@ -42,13 +42,13 @@ function Badge({ label, icon, unlocked, description }: {
         border transition-all duration-300
         ${unlocked
           ? 'border-emerald-500/30 bg-emerald-500/10 scale-100 opacity-100'
-          : 'border-white/[0.06] bg-white/[0.02] opacity-30 grayscale'
+          : 'border-th-border bg-th-surface opacity-30 grayscale'
         }
       `}>
         {icon}
       </div>
       <p className={`text-[9px] font-semibold uppercase tracking-wider text-center leading-tight ${
-        unlocked ? 'text-zinc-300' : 'text-zinc-600'
+        unlocked ? 'text-th-text-1' : 'text-th-text-3'
       }`}>
         {label}
       </p>
@@ -56,10 +56,10 @@ function Badge({ label, icon, unlocked, description }: {
       {/* Tooltip */}
       {show && (
         <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-36 bg-[#1c1c1f] border border-white/[0.1] rounded-xl px-3 py-2.5 shadow-2xl pointer-events-none">
-          <p className="text-[11px] font-semibold text-white mb-0.5">{label}</p>
-          <p className="text-[10px] text-zinc-500 leading-snug">{description}</p>
+          <p className="text-[11px] font-semibold text-th-text-1 mb-0.5">{label}</p>
+          <p className="text-[10px] text-th-text-2 leading-snug">{description}</p>
           {!unlocked && (
-            <p className="text-[10px] text-zinc-600 mt-1 italic">Non débloqué</p>
+            <p className="text-[10px] text-th-text-3 mt-1 italic">Non débloqué</p>
           )}
         </div>
       )}
@@ -137,14 +137,14 @@ export function ProfileCompletion({ hasName, hasEmail, simulationCount, isPro }:
   if (isComplete) return null // Ne plus afficher une fois terminé
 
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-5 space-y-4">
+    <div className="rounded-xl border border-th-border bg-th-surface p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+          <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider">
             Complétez votre profil
           </p>
-          <p className="text-sm font-bold text-white mt-0.5">
+          <p className="text-sm font-bold text-th-text-1 mt-0.5">
             {doneCount}/{steps.length} étapes — {pct}%
           </p>
         </div>
@@ -155,14 +155,14 @@ export function ProfileCompletion({ hasName, hasEmail, simulationCount, isPro }:
             transition: 'background 0.8s ease',
           }}
         >
-          <div className="w-8 h-8 rounded-full bg-[#09090b] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-th-bg flex items-center justify-center">
             <span className="text-[10px] font-black text-emerald-400">{pct}%</span>
           </div>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+      <div className="w-full h-1.5 rounded-full bg-th-surface2 overflow-hidden">
         <div
           className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-1000 ease-out"
           style={{ width: `${animPct}%` }}
@@ -178,14 +178,14 @@ export function ProfileCompletion({ hasName, hasEmail, simulationCount, isPro }:
               ${step.done
                 ? 'border-emerald-500/20 bg-emerald-500/[0.06]'
                 : step.href
-                ? 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] hover:bg-white/[0.04] cursor-pointer'
-                : 'border-white/[0.06] bg-white/[0.02]'
+                ? 'border-th-border bg-th-surface hover:border-th-border-med hover:bg-th-surface2 cursor-pointer'
+                : 'border-th-border bg-th-surface'
               }
             `}>
               <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-all ${
                 step.done
                   ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-white/[0.04] text-zinc-600'
+                  : 'bg-th-surface2 text-th-text-3'
               }`}>
                 {step.done ? (
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -194,7 +194,7 @@ export function ProfileCompletion({ hasName, hasEmail, simulationCount, isPro }:
                 ) : step.icon}
               </div>
               <p className={`text-[11px] font-semibold leading-tight ${
-                step.done ? 'text-emerald-400' : 'text-zinc-500'
+                step.done ? 'text-emerald-400' : 'text-th-text-2'
               }`}>
                 {step.label}
               </p>
@@ -210,8 +210,8 @@ export function ProfileCompletion({ hasName, hasEmail, simulationCount, isPro }:
       </div>
 
       {/* Badges */}
-      <div className="pt-2 border-t border-white/[0.05]">
-        <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">Badges</p>
+      <div className="pt-2 border-t border-th-border">
+        <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider mb-3">Badges</p>
         <div className="flex items-center gap-4 flex-wrap">
           {badges.map(b => (
             <Badge key={b.id} label={b.label} icon={b.icon} unlocked={b.unlocked} description={b.description} />

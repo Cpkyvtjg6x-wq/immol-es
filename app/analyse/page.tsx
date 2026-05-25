@@ -43,9 +43,9 @@ function runCalculation(params: InvestmentParams) {
 
 function ParamChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-1.5 bg-white/[0.04] border border-white/[0.06] rounded-lg px-2 py-1">
-      <span className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider">{label}</span>
-      <span className="text-[11px] font-bold text-zinc-300 tabular-nums">{value}</span>
+    <div className="flex items-center gap-1.5 bg-th-surface2 border border-th-border rounded-lg px-2 py-1">
+      <span className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider">{label}</span>
+      <span className="text-[11px] font-bold text-th-text-1 tabular-nums">{value}</span>
     </div>
   )
 }
@@ -237,7 +237,7 @@ export default function AnalysePage() {
 
   return (
     <AppShell>
-      <div className="bg-[#09090b] text-white flex flex-col" style={{ height: '100dvh' }}>
+      <div className="bg-th-bg text-th-text-1 flex flex-col" style={{ height: '100dvh' }}>
 
         <SaveModal
           isOpen={saveModalOpen}
@@ -250,7 +250,7 @@ export default function AnalysePage() {
         />
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <header className="shrink-0 z-40 bg-[#09090b]/95 backdrop-blur-xl border-b border-white/[0.05] h-14 flex items-center justify-between px-5 gap-4">
+        <header className="shrink-0 z-40 bg-th-bg backdrop-blur-xl border-b border-th-border h-14 flex items-center justify-between px-5 gap-4">
 
           {/* Gauche : toggle panel + breadcrumb */}
           <div className="flex items-center gap-2 min-w-0">
@@ -259,8 +259,8 @@ export default function AnalysePage() {
               title={panelOpen ? 'Réduire le panneau' : 'Ouvrir le panneau'}
               className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
                 panelOpen
-                  ? 'bg-white/[0.08] text-white'
-                  : 'bg-white/[0.04] text-zinc-500 hover:text-white hover:bg-white/[0.07]'
+                  ? 'bg-th-surface3 text-th-text-1'
+                  : 'bg-th-surface2 text-th-text-2 hover:text-th-text-1 hover:bg-th-surface3'
               }`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -273,16 +273,16 @@ export default function AnalysePage() {
 
             {result ? (
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-[13px] text-zinc-500 font-medium shrink-0">Analyser</span>
-                <svg className="w-3.5 h-3.5 text-zinc-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <span className="text-[13px] text-th-text-2 font-medium shrink-0">Analyser</span>
+                <svg className="w-3.5 h-3.5 text-th-text-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-                <span className="text-[13px] text-zinc-300 truncate">
+                <span className="text-[13px] text-th-text-1 truncate">
                   {result.ville} · {formatCurrency(result.prixRevient)}
                 </span>
               </div>
             ) : (
-              <span className="text-[13px] font-semibold text-white">Analyser un bien</span>
+              <span className="text-[13px] font-semibold text-th-text-1">Analyser un bien</span>
             )}
           </div>
 
@@ -293,12 +293,12 @@ export default function AnalysePage() {
                 {liveUpdating ? (
                   <>
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                    <span className="text-[11px] text-zinc-600 hidden sm:block">Mise à jour…</span>
+                    <span className="text-[11px] text-th-text-3 hidden sm:block">Mise à jour…</span>
                   </>
                 ) : (
                   <>
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[11px] text-zinc-600 hidden sm:block">Calculé</span>
+                    <span className="text-[11px] text-th-text-3 hidden sm:block">Calculé</span>
                   </>
                 )}
               </div>
@@ -315,7 +315,7 @@ export default function AnalysePage() {
                 />
                 <button
                   onClick={() => router.push('/rapport-bancaire')}
-                  className="hidden md:flex items-center gap-1.5 text-[12px] font-semibold text-zinc-300 bg-white/[0.05] border border-white/[0.08] px-3 py-1.5 rounded-lg hover:bg-white/[0.09] transition-colors"
+                  className="hidden md:flex items-center gap-1.5 text-[12px] font-semibold text-th-text-1 bg-th-surface2 border border-th-border px-3 py-1.5 rounded-lg hover:bg-white/[0.09] transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -341,7 +341,7 @@ export default function AnalysePage() {
 
           {/* ── Panel formulaire ─────────────────────────────────────────── */}
           <aside
-            className="shrink-0 border-r border-white/[0.05] flex flex-col bg-[#0c0c0e] overflow-hidden"
+            className="shrink-0 border-r border-th-border flex flex-col bg-th-surface2 overflow-hidden"
             style={{
               width: panelOpen ? '560px' : '44px',
               transition: 'width 280ms cubic-bezier(0.32, 0.72, 0, 1)',
@@ -351,16 +351,16 @@ export default function AnalysePage() {
               /* ── Panel ouvert ── */
               <>
                 {/* En-tête du panel */}
-                <div className="shrink-0 h-9 px-4 border-b border-white/[0.05] flex items-center justify-between bg-[#0c0c0e]">
+                <div className="shrink-0 h-9 px-4 border-b border-th-border flex items-center justify-between bg-th-surface2">
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60" />
-                    <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">
+                    <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-widest">
                       Paramètres du bien
                     </p>
                   </div>
                   <button
                     onClick={() => setPanelOpen(false)}
-                    className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-600 hover:text-zinc-300 hover:bg-white/[0.06] transition-all"
+                    className="w-6 h-6 rounded-md flex items-center justify-center text-th-text-3 hover:text-th-text-1 hover:bg-th-surface3 transition-all"
                     title="Réduire"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -384,17 +384,17 @@ export default function AnalysePage() {
             ) : (
               /* ── Panel réduit — strip vertical ── */
               <div
-                className="flex-1 flex flex-col items-center pt-3 pb-4 gap-3 cursor-pointer hover:bg-white/[0.015] transition-colors"
+                className="flex-1 flex flex-col items-center pt-3 pb-4 gap-3 cursor-pointer hover:bg-th-surface transition-colors"
                 onClick={() => setPanelOpen(true)}
                 title="Ouvrir les paramètres"
               >
-                <div className="w-7 h-7 rounded-lg bg-white/[0.05] border border-white/[0.07] flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors">
+                <div className="w-7 h-7 rounded-lg bg-th-surface3 border border-th-border flex items-center justify-center text-th-text-2 hover:text-th-text-1 transition-colors">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
                 <p
-                  className="text-[9px] font-semibold text-zinc-700 uppercase tracking-widest select-none"
+                  className="text-[9px] font-semibold text-th-text-3 uppercase tracking-widest select-none"
                   style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
                 >
                   Paramètres
@@ -404,11 +404,11 @@ export default function AnalysePage() {
           </aside>
 
           {/* ── Zone résultats ──────────────────────────────────────────── */}
-          <main className="flex-1 min-w-0 overflow-y-auto bg-[#09090b]">
+          <main className="flex-1 min-w-0 overflow-y-auto bg-th-bg">
 
             {/* Barre résumé des paramètres (panel fermé + résultats présents) */}
             {!panelOpen && lastParams && showResults && (
-              <div className="sticky top-0 z-10 border-b border-white/[0.05] bg-[#09090b]/95 backdrop-blur-sm px-6 py-2 flex items-center gap-2 flex-wrap">
+              <div className="sticky top-0 z-10 border-b border-th-border bg-th-bg backdrop-blur-sm px-6 py-2 flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1.5 flex-wrap flex-1">
                   {lastParams.prixAchat > 0 && (
                     <ParamChip
@@ -459,20 +459,20 @@ export default function AnalysePage() {
                   />
                 </div>
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl border border-white/[0.07] bg-white/[0.02] flex items-center justify-center mb-6 mx-auto">
-                    <svg className="w-7 h-7 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="w-16 h-16 rounded-2xl border border-th-border bg-th-surface flex items-center justify-center mb-6 mx-auto">
+                    <svg className="w-7 h-7 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <h2 className="text-xl font-bold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>
+                  <h2 className="text-xl font-bold text-th-text-1 mb-2" style={{ letterSpacing: '-0.03em' }}>
                     Analyse complète
                   </h2>
-                  <p className="text-sm text-zinc-500 max-w-xs leading-relaxed mb-5">
+                  <p className="text-sm text-th-text-2 max-w-xs leading-relaxed mb-5">
                     Saisissez les paramètres dans le panneau gauche. Rendement, fiscalité et TRI s'affichent ici.
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-2">
                     {['PTZ', 'GLI', 'LMNP Réel', 'SCI IS', 'TRI', 'Plus-value', 'Projection 20 ans'].map((tag) => (
-                      <span key={tag} className="text-[11px] text-zinc-700 bg-white/[0.03] border border-white/[0.05] px-2.5 py-1 rounded-full">
+                      <span key={tag} className="text-[11px] text-th-text-3 bg-th-surface2 border border-th-border px-2.5 py-1 rounded-full">
                         {tag}
                       </span>
                     ))}
@@ -485,10 +485,10 @@ export default function AnalysePage() {
             {loading && (
               <div className="flex flex-col items-center justify-center min-h-full py-24 gap-4">
                 <div className="relative w-9 h-9">
-                  <div className="w-9 h-9 border border-white/[0.06] rounded-full" />
+                  <div className="w-9 h-9 border border-th-border rounded-full" />
                   <div className="absolute inset-0 w-9 h-9 border-t border-emerald-500 rounded-full animate-spin" />
                 </div>
-                <p className="text-sm text-zinc-600">Calcul des régimes fiscaux & TRI…</p>
+                <p className="text-sm text-th-text-3">Calcul des régimes fiscaux & TRI…</p>
               </div>
             )}
 

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useTheme } from 'next-themes'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations } from '@/lib/hooks/useSimulations'
@@ -38,6 +39,8 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
   const { simulations } = useSimulations(user?.id ?? null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tagsExpanded, setTagsExpanded] = useState(false)
+  const { resolvedTheme, setTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
 
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||
@@ -135,23 +138,23 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
   ]
 
   return (
-    <div className="flex min-h-screen bg-[#09090b] text-white">
+    <div className="flex min-h-screen bg-th-bg text-th-text-1">
 
-      {/* Mobile top bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-[#09090b]/95 backdrop-blur-md border-b border-white/[0.05] flex items-center justify-between px-4">
+      {/* Mobile top bar — adapts to theme, sidebar stays dark */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-th-bg backdrop-blur-md border-b border-th-border flex items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
             <svg className="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
           </div>
-          <span className="text-sm font-bold text-white">IMMO<span className="text-emerald-400">RA</span></span>
+          <span className="text-sm font-bold text-th-text-1">IMMO<span className="text-emerald-400">RA</span></span>
         </Link>
         <div className="flex items-center gap-2">
           <NotificationBell simulationCount={simulations.length} isPro={isPro} />
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center text-zinc-300 hover:bg-white/[0.1] transition-colors"
+            className="w-9 h-9 rounded-lg bg-th-surface2 flex items-center justify-center text-th-text-2 hover:bg-th-surface3 transition-colors"
           >
             {mobileOpen ? (
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -417,6 +420,23 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
 
         {/* User footer */}
         <div className="p-2 border-t border-white/[0.05] shrink-0 space-y-0.5">
+          {/* Theme toggle */}
+          <div className="flex items-center justify-between px-3 py-1.5">
+            <span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">
+              {isDark ? 'Mode sombre' : 'Mode clair'}
+            </span>
+            <button
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              className="relative w-9 h-5 rounded-full transition-colors duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+              style={{ background: isDark ? '#27272a' : '#d4d3ce' }}
+              aria-label="Basculer le thème"
+            >
+              <span
+                className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-250"
+                style={{ transform: isDark ? 'translateX(0)' : 'translateX(16px)' }}
+              />
+            </button>
+          </div>
           {user ? (
             <>
               <div className="flex items-center gap-1 px-1 pb-1">

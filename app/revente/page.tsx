@@ -183,7 +183,7 @@ function NumInput({
 }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">{label}</label>
+      <label className="block text-xs font-semibold text-th-text-2 uppercase tracking-wider mb-1.5">{label}</label>
       <div className="relative">
         <input
           type="number"
@@ -191,15 +191,15 @@ function NumInput({
           onChange={e => onChange(parseFloat(e.target.value) || 0)}
           min={min}
           disabled={disabled}
-          className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-colors ${
+          className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50 transition-colors ${
             disabled
-              ? 'bg-white/[0.02] border-white/[0.04] text-zinc-600 cursor-not-allowed'
-              : 'bg-white/[0.04] border-white/[0.08] hover:border-white/[0.15]'
+              ? 'bg-th-surface border-th-border text-th-text-3 cursor-not-allowed'
+              : 'bg-th-surface2 border-th-border-med hover:border-th-border-med'
           }`}
         />
-        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-zinc-500">{suffix}</span>
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-th-text-2">{suffix}</span>
       </div>
-      {hint && <p className="text-[11px] text-zinc-600 mt-1">{hint}</p>}
+      {hint && <p className="text-[11px] text-th-text-3 mt-1">{hint}</p>}
     </div>
   )
 }
@@ -212,8 +212,8 @@ function Row({ label, value, color = 'white', bold = false, sep = false }: {
     : color === 'amber' ? 'text-amber-400'
     : 'text-white'
   return (
-    <div className={`flex items-center justify-between py-2 ${sep ? 'border-t border-white/[0.08] mt-1 pt-3' : 'border-b border-white/[0.04]'}`}>
-      <span className={`text-sm ${bold ? 'font-bold text-white' : 'text-zinc-400'}`}>{label}</span>
+    <div className={`flex items-center justify-between py-2 ${sep ? 'border-t border-th-border-med mt-1 pt-3' : 'border-b border-th-border'}`}>
+      <span className={`text-sm ${bold ? 'font-bold text-th-text-1' : 'text-th-text-2'}`}>{label}</span>
       <span className={`text-sm font-bold tabular-nums ${col}`}>{value}</span>
     </div>
   )
@@ -254,7 +254,7 @@ function FriseAbattements({ ans }: { ans: number }) {
               top: 0,
             }}
           >
-            <span className="text-[11px] text-white font-bold whitespace-nowrap bg-white/[0.1] px-2 py-0.5 rounded-full">
+            <span className="text-[11px] text-th-text-1 font-bold whitespace-nowrap bg-white/[0.1] px-2 py-0.5 rounded-full">
               {ans} an{ans !== 1 ? 's' : ''}
             </span>
           </div>
@@ -267,7 +267,7 @@ function FriseAbattements({ ans }: { ans: number }) {
           <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">IR · 19%</span>
           <span className="text-xs font-bold text-emerald-400">{irPct(ans)}% abattu</span>
         </div>
-        <div className="relative h-5 rounded-full overflow-hidden bg-white/[0.06]">
+        <div className="relative h-5 rounded-full overflow-hidden bg-th-surface2">
           {steps.slice(0, -1).map(i => {
             const avgPct = (irPct(i) + irPct(i + 1)) / 2
             return (
@@ -295,7 +295,7 @@ function FriseAbattements({ ans }: { ans: number }) {
           <span className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">PS · 17.2%</span>
           <span className="text-xs font-bold text-indigo-400">{psPct(ans)}% abattu</span>
         </div>
-        <div className="relative h-5 rounded-full overflow-hidden bg-white/[0.06]">
+        <div className="relative h-5 rounded-full overflow-hidden bg-th-surface2">
           {steps.slice(0, -1).map(i => {
             const avgPct = (psPct(i) + psPct(i + 1)) / 2
             return (
@@ -329,7 +329,7 @@ function FriseAbattements({ ans }: { ans: number }) {
             }}
           >
             <div className={`w-px h-2 mb-0.5 mx-auto ${m.noteColor ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
-            <span className={`text-[10px] whitespace-nowrap font-medium ${m.noteColor ?? 'text-zinc-500'}`}>
+            <span className={`text-[10px] whitespace-nowrap font-medium ${m.noteColor ?? 'text-th-text-2'}`}>
               {m.label}
             </span>
           </div>
@@ -357,12 +357,12 @@ function TableauVendreGarder({ params, currentAns }: { params: ReventeParams; cu
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="border-b border-white/[0.08]">
-            <th className="text-left py-2 pr-3 text-zinc-500 font-semibold">Durée</th>
+          <tr className="border-b border-th-border-med">
+            <th className="text-left py-2 pr-3 text-th-text-2 font-semibold">Durée</th>
             <th className="text-right py-2 px-2 text-emerald-400 font-semibold">Abat. IR</th>
             <th className="text-right py-2 px-2 text-indigo-400 font-semibold">Abat. PS</th>
             <th className="text-right py-2 px-2 text-red-400 font-semibold">Impôts</th>
-            <th className="text-right py-2 pl-2 text-white font-semibold">PV nette</th>
+            <th className="text-right py-2 pl-2 text-th-text-1 font-semibold">PV nette</th>
           </tr>
         </thead>
         <tbody>
@@ -372,16 +372,16 @@ function TableauVendreGarder({ params, currentAns }: { params: ReventeParams; cu
             return (
               <tr
                 key={r.ans}
-                className={`border-b border-white/[0.04] ${isCurrent ? 'bg-emerald-500/[0.06]' : ''}`}
+                className={`border-b border-th-border ${isCurrent ? 'bg-emerald-500/[0.06]' : ''}`}
               >
-                <td className={`py-2 pr-3 font-semibold ${isCurrent ? 'text-emerald-400' : 'text-zinc-300'}`}>
+                <td className={`py-2 pr-3 font-semibold ${isCurrent ? 'text-emerald-400' : 'text-th-text-1'}`}>
                   {r.label}
                   {isCurrent && <span className="ml-1.5 text-[9px] text-emerald-500 font-bold bg-emerald-500/20 px-1.5 py-0.5 rounded-full">Actuel</span>}
                 </td>
-                <td className={`text-right py-2 px-2 tabular-nums ${res.exonerationIR ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                <td className={`text-right py-2 px-2 tabular-nums ${res.exonerationIR ? 'text-emerald-400' : 'text-th-text-2'}`}>
                   {res.exonerationIR ? '100%' : `${res.abattementIR}%`}
                 </td>
-                <td className={`text-right py-2 px-2 tabular-nums ${res.exonerationPS ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                <td className={`text-right py-2 px-2 tabular-nums ${res.exonerationPS ? 'text-emerald-400' : 'text-th-text-2'}`}>
                   {res.exonerationPS ? '100%' : `${res.abattementPS}%`}
                 </td>
                 <td className={`text-right py-2 px-2 tabular-nums ${res.impotTotal > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
@@ -489,9 +489,9 @@ export default function ReventePage() {
   const hasCredit = params.capitalRestantDu > 0
 
   if (authLoading) return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+    <div className="min-h-screen bg-th-bg flex items-center justify-center">
       <div className="relative w-8 h-8">
-        <div className="w-8 h-8 border border-white/[0.08] rounded-full" />
+        <div className="w-8 h-8 border border-th-border-med rounded-full" />
         <div className="absolute inset-0 border-t border-emerald-500 rounded-full animate-spin" />
       </div>
     </div>
@@ -499,13 +499,13 @@ export default function ReventePage() {
 
   return (
     <AppShell>
-      <div className="min-h-screen bg-[#09090b] text-white">
+      <div className="min-h-screen bg-th-bg text-th-text-1">
 
         {/* Top bar */}
-        <div className="border-b border-white/[0.05] px-8 py-5 flex items-center justify-between">
+        <div className="border-b border-th-border px-8 py-5 flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-widest mb-0.5">Outils</p>
-            <h1 className="text-xl font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+            <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-widest mb-0.5">Outils</p>
+            <h1 className="text-xl font-black text-th-text-1" style={{ letterSpacing: '-0.03em' }}>
               Simulateur de revente
             </h1>
           </div>
@@ -519,7 +519,7 @@ export default function ReventePage() {
               </svg>
               Importer depuis l&apos;analyse
             </button>
-            <Link href="/dashboard" className="text-xs font-semibold text-zinc-500 hover:text-white transition-colors flex items-center gap-1.5">
+            <Link href="/dashboard" className="text-xs font-semibold text-th-text-2 hover:text-white transition-colors flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
@@ -535,8 +535,8 @@ export default function ReventePage() {
             <div className="space-y-5">
 
               {/* A. Type de bien */}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-4">
-                <h2 className="text-sm font-bold text-white">Type de bien</h2>
+              <div className="rounded-2xl border border-th-border bg-th-surface p-6 space-y-4">
+                <h2 className="text-sm font-bold text-th-text-1">Type de bien</h2>
                 <div className="grid grid-cols-2 gap-3">
                   {([
                     { id: 'locatif', label: 'Investissement locatif', Icon: IconBuildingOffice, desc: 'Impôt sur le bénéfice de vente' },
@@ -548,15 +548,15 @@ export default function ReventePage() {
                       className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all ${
                         params.typeBien === t.id
                           ? 'border-emerald-500/40 bg-emerald-500/[0.06]'
-                          : 'border-white/[0.07] bg-white/[0.02] hover:border-white/[0.15]'
+                          : 'border-th-border bg-th-surface hover:border-th-border-med'
                       }`}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0">
-                        <t.Icon className="w-4 h-4 text-zinc-400" />
+                      <div className="w-8 h-8 rounded-lg bg-th-surface2 border border-th-border flex items-center justify-center shrink-0">
+                        <t.Icon className="w-4 h-4 text-th-text-2" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-white">{t.label}</p>
-                        <p className="text-[11px] text-zinc-500 mt-0.5">{t.desc}</p>
+                        <p className="text-xs font-bold text-th-text-1">{t.label}</p>
+                        <p className="text-[11px] text-th-text-2 mt-0.5">{t.desc}</p>
                       </div>
                     </button>
                   ))}
@@ -564,11 +564,11 @@ export default function ReventePage() {
               </div>
 
               {/* B. Informations du bien */}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-5">
+              <div className="rounded-2xl border border-th-border bg-th-surface p-6 space-y-5">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold text-white">Informations du bien</h2>
+                  <h2 className="text-sm font-bold text-th-text-1">Informations du bien</h2>
                   {/* Mode toggle */}
-                  <div className="flex rounded-lg border border-white/[0.08] overflow-hidden">
+                  <div className="flex rounded-lg border border-th-border-med overflow-hidden">
                     {([
                       { id: 'manuel', label: 'Simulation' },
                       { id: 'acquis', label: 'Bien acquis' },
@@ -579,7 +579,7 @@ export default function ReventePage() {
                         className={`px-3.5 py-1.5 text-xs font-semibold transition-all ${
                           params.modeSaisie === m.id
                             ? 'bg-emerald-500 text-zinc-950'
-                            : 'text-zinc-400 hover:text-white'
+                            : 'text-th-text-2 hover:text-white'
                         }`}
                       >
                         {m.label}
@@ -592,16 +592,16 @@ export default function ReventePage() {
                   <div className="rounded-xl bg-emerald-500/[0.04] border border-emerald-500/20 p-4 space-y-4">
                     <div>
                       <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-0.5">Votre bien actuel</p>
-                      <p className="text-[11px] text-zinc-500">Renseignez les infos de votre crédit pour calculer ce qu&apos;il vous restera en poche après la vente.</p>
+                      <p className="text-[11px] text-th-text-2">Renseignez les infos de votre crédit pour calculer ce qu&apos;il vous restera en poche après la vente.</p>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Mois et année d&apos;achat</label>
+                      <label className="block text-xs font-semibold text-th-text-2 uppercase tracking-wider mb-1.5">Mois et année d&apos;achat</label>
                       <input
                         type="month"
                         value={params.dateAchat}
                         onChange={e => set('dateAchat', e.target.value)}
                         max={new Date().toISOString().slice(0, 7)}
-                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                        className="w-full bg-th-surface2 border border-th-border-med rounded-xl px-4 py-3 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50 transition-colors"
                       />
                       {params.dateAchat && /^\d{4}-\d{2}$/.test(params.dateAchat) ? (
                         <p className="text-[11px] text-emerald-400 mt-1">
@@ -640,19 +640,19 @@ export default function ReventePage() {
                   <NumInput label="Travaux réalisés" value={params.travauxDeduits} onChange={v => set('travauxDeduits', v)} hint="Travaux non déduits de vos loyers — réduisent l'impôt" />
                   <div className="flex items-end">
                     <div className="w-full">
-                      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Coût total de votre investissement</p>
-                      <p className="text-lg font-black text-white tabular-nums" style={{ letterSpacing: '-0.03em' }}>
+                      <p className="text-xs font-semibold text-th-text-2 uppercase tracking-wider mb-1">Coût total de votre investissement</p>
+                      <p className="text-lg font-black text-th-text-1 tabular-nums" style={{ letterSpacing: '-0.03em' }}>
                         {formatCurrency(params.prixAchat + params.fraisAcquisition + params.travauxDeduits)}
                       </p>
-                      <p className="text-[11px] text-zinc-600 mt-0.5">Base de calcul de votre bénéfice</p>
+                      <p className="text-[11px] text-th-text-3 mt-0.5">Base de calcul de votre bénéfice</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* C. Prix de revente */}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-4">
-                <h2 className="text-sm font-bold text-white">Prix de vente envisagé</h2>
+              <div className="rounded-2xl border border-th-border bg-th-surface p-6 space-y-4">
+                <h2 className="text-sm font-bold text-th-text-1">Prix de vente envisagé</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <NumInput label="Prix de vente" value={params.prixRevente} onChange={v => set('prixRevente', v)} hint="Prix auquel vous vendez le bien" />
                   <NumInput label="Commission agence (vente)" value={params.fraisRevente} onChange={v => set('fraisRevente', v)} hint="Honoraires de l'agent immobilier vendeur" />
@@ -660,11 +660,11 @@ export default function ReventePage() {
               </div>
 
               {/* D. Durée de détention */}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-4">
+              <div className="rounded-2xl border border-th-border bg-th-surface p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-sm font-bold text-white">Durée de possession</h2>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">Plus vous gardez longtemps, moins vous payez d&apos;impôts</p>
+                    <h2 className="text-sm font-bold text-th-text-1">Durée de possession</h2>
+                    <p className="text-[11px] text-th-text-2 mt-0.5">Plus vous gardez longtemps, moins vous payez d&apos;impôts</p>
                   </div>
                   <span className={`text-2xl font-black tabular-nums ${params.anneesDetention >= 30 ? 'text-emerald-400' : params.anneesDetention >= 22 ? 'text-emerald-300' : 'text-white'}`}
                     style={{ letterSpacing: '-0.04em' }}>
@@ -672,7 +672,7 @@ export default function ReventePage() {
                   </span>
                 </div>
                 {params.modeSaisie === 'acquis' && params.dateAchat && /^\d{4}-\d{2}$/.test(params.dateAchat) ? (
-                  <p className="text-xs text-zinc-500">Calculée automatiquement depuis votre date d&apos;achat.</p>
+                  <p className="text-xs text-th-text-2">Calculée automatiquement depuis votre date d&apos;achat.</p>
                 ) : (
                   <>
                     <input
@@ -680,7 +680,7 @@ export default function ReventePage() {
                       onChange={e => set('anneesDetention', parseInt(e.target.value))}
                       className="w-full accent-emerald-500"
                     />
-                    <div className="flex justify-between text-[10px] text-zinc-600">
+                    <div className="flex justify-between text-[10px] text-th-text-3">
                       <span>0</span>
                       <span className="text-emerald-500 font-semibold">22 ans → exo IR</span>
                       <span className="text-emerald-500 font-semibold">30 ans → exo totale</span>
@@ -691,25 +691,25 @@ export default function ReventePage() {
               </div>
 
               {/* E. TRI (collapsible) */}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+              <div className="rounded-2xl border border-th-border bg-th-surface overflow-hidden">
                 <button
                   onClick={() => set('showTRI', !params.showTRI)}
-                  className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors"
+                  className="w-full flex items-center justify-between px-6 py-4 hover:bg-th-surface transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${params.showTRI ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
-                    <h2 className="text-sm font-bold text-white">Rentabilité globale de l&apos;opération</h2>
-                    <span className="text-[11px] text-zinc-500 font-medium">Optionnel</span>
+                    <h2 className="text-sm font-bold text-th-text-1">Rentabilité globale de l&apos;opération</h2>
+                    <span className="text-[11px] text-th-text-2 font-medium">Optionnel</span>
                   </div>
-                  <svg className={`w-4 h-4 text-zinc-500 transition-transform ${params.showTRI ? 'rotate-180' : ''}`}
+                  <svg className={`w-4 h-4 text-th-text-2 transition-transform ${params.showTRI ? 'rotate-180' : ''}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
                 {params.showTRI && (
-                  <div className="px-6 pb-6 space-y-4 border-t border-white/[0.05]">
-                    <p className="text-xs text-zinc-500 pt-4">
+                  <div className="px-6 pb-6 space-y-4 border-t border-th-border">
+                    <p className="text-xs text-th-text-2 pt-4">
                       Le TRI (Taux de Rentabilité Interne) mesure la performance annuelle de votre opération, en comparant ce que vous avez investi, ce que vous avez encaissé chaque mois, et ce que vous récupérez à la vente.
                     </p>
                     <div className="grid grid-cols-2 gap-4">
@@ -733,18 +733,18 @@ export default function ReventePage() {
                         : tri >= 4 ? 'border-amber-500/30 bg-amber-500/[0.04]'
                         : 'border-red-500/20 bg-red-500/[0.04]'
                       }`}>
-                        <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1">Rentabilité annuelle sur {params.anneesDetention} ans</p>
+                        <p className="text-[11px] text-th-text-2 uppercase tracking-wider mb-1">Rentabilité annuelle sur {params.anneesDetention} ans</p>
                         <p className={`text-3xl font-black tabular-nums ${tri >= 8 ? 'text-emerald-400' : tri >= 4 ? 'text-amber-400' : 'text-red-400'}`}
                           style={{ letterSpacing: '-0.04em' }}>
                           {tri.toFixed(1)}% / an
                         </p>
-                        <p className="text-[11px] text-zinc-500 mt-1">
+                        <p className="text-[11px] text-th-text-2 mt-1">
                           {tri >= 10 ? 'Excellent' : tri >= 7 ? 'Très bon' : tri >= 4 ? 'Correct' : 'Faible'}
                           {' '}· Livret A ≈ 2.5% · SCPI ≈ 5%
                         </p>
                       </div>
                     ) : (
-                      <p className="text-xs text-zinc-600 text-center py-2">Renseignez votre apport pour calculer la rentabilité</p>
+                      <p className="text-xs text-th-text-3 text-center py-2">Renseignez votre apport pour calculer la rentabilité</p>
                     )}
                   </div>
                 )}
@@ -761,7 +761,7 @@ export default function ReventePage() {
                   ? 'border-emerald-500/30 bg-emerald-500/[0.06]'
                   : result.plusValueBrute <= 0
                   ? 'border-red-500/20 bg-red-500/[0.04]'
-                  : 'border-white/[0.07] bg-white/[0.03]'
+                  : 'border-th-border bg-white/[0.03]'
               }`}>
                 {exoTotal && (
                   <div className="flex items-center gap-1.5 justify-center mb-2">
@@ -769,7 +769,7 @@ export default function ReventePage() {
                     <p className="text-[11px] text-emerald-500 font-bold uppercase tracking-wider">Exonération totale</p>
                   </div>
                 )}
-                <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider mb-2">
                   {hasCredit ? 'Argent récupéré après la vente' : 'Bénéfice net après impôts'}
                 </p>
                 <p className={`text-4xl font-black tabular-nums ${
@@ -780,7 +780,7 @@ export default function ReventePage() {
                   {formatCurrency(hasCredit ? result.liquiditesNettes : result.plusValueNette)}
                 </p>
                 {!exoTotal && result.plusValueBrute > 0 && (
-                  <p className="text-xs text-zinc-500 mt-2">
+                  <p className="text-xs text-th-text-2 mt-2">
                     Impôts : {formatCurrency(result.impotTotal)}
                     {hasCredit && ` · CRD : ${formatCurrency(params.capitalRestantDu)}`}
                   </p>
@@ -789,15 +789,15 @@ export default function ReventePage() {
 
               {/* Frise abattements */}
               {params.typeBien === 'locatif' && result.plusValueBrute > 0 && (
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-                  <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-4">Réduction d&apos;impôt selon la durée de possession</p>
+                <div className="rounded-2xl border border-th-border bg-th-surface p-5">
+                  <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-wider mb-4">Réduction d&apos;impôt selon la durée de possession</p>
                   <FriseAbattements ans={params.anneesDetention} />
                 </div>
               )}
 
               {/* Détail calcul */}
-              <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-                <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">Comment on calcule</p>
+              <div className="rounded-2xl border border-th-border bg-th-surface p-5">
+                <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-wider mb-3">Comment on calcule</p>
 
                 <Row label="Prix de vente" value={formatCurrency(params.prixRevente)} />
                 <Row label="– Commission agence (vente)" value={`– ${formatCurrency(params.fraisRevente)}`} color="red" />
@@ -840,7 +840,7 @@ export default function ReventePage() {
                   </div>
                 )}
 
-                <div className="mt-3 pt-3 border-t border-white/[0.08]">
+                <div className="mt-3 pt-3 border-t border-th-border-med">
                   <Row label="Ce que vous encaissez à la vente" value={formatCurrency(result.reventeNette + result.impotTotal)} bold />
                   {hasCredit && (
                     <>
@@ -861,8 +861,8 @@ export default function ReventePage() {
 
               {/* Tableau vendre vs garder */}
               {params.typeBien === 'locatif' && result.plusValueBrute > 0 && (
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-                  <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-3">Attendre réduit vos impôts — comparaison</p>
+                <div className="rounded-2xl border border-th-border bg-th-surface p-5">
+                  <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-wider mb-3">Attendre réduit vos impôts — comparaison</p>
                   <TableauVendreGarder params={params} currentAns={params.anneesDetention} />
                 </div>
               )}
@@ -874,7 +874,7 @@ export default function ReventePage() {
                     <IconLightBulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <p className="text-xs font-bold text-amber-400">Optimisation fiscale</p>
                   </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">
+                  <p className="text-xs text-th-text-2 leading-relaxed">
                     {!result.exonerationIR
                       ? <>Attendre <strong className="text-white">{22 - params.anneesDetention} an{22 - params.anneesDetention > 1 ? 's' : ''}</strong> vous exonère d&apos;IR. Économie estimée : <strong className="text-emerald-400">{formatCurrency(result.impotIR)}</strong>.</>
                       : <>Attendre <strong className="text-white">{30 - params.anneesDetention} an{30 - params.anneesDetention > 1 ? 's' : ''}</strong> vous exonère aussi des prélèvements sociaux. Économie estimée : <strong className="text-emerald-400">{formatCurrency(result.prelevementsSociaux)}</strong>.</>

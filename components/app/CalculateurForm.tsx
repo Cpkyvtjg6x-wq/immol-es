@@ -48,20 +48,20 @@ function SectionBubble({
     open ? 'border-white/[0.16] bg-white/[0.025]' :
     status === 'complete' ? 'border-emerald-500/25 bg-emerald-500/[0.02]' :
     status === 'in_progress' ? 'border-amber-500/20 bg-amber-500/[0.015]' :
-    'border-white/[0.07] bg-white/[0.01]'
+    'border-th-border bg-th-surface'
 
   const titleColor =
     open ? 'text-white' :
     status === 'complete' ? 'text-emerald-300/90' :
     status === 'in_progress' ? 'text-white' :
-    'text-zinc-500'
+    'text-th-text-2'
 
   const numStyle =
     status === 'complete' && !open
       ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
       : status === 'in_progress' && !open
       ? 'bg-amber-500/15 border-amber-500/25 text-amber-400'
-      : 'bg-white/[0.06] border-white/[0.08] text-zinc-500'
+      : 'bg-th-surface2 border-th-border-med text-th-text-2'
 
   return (
     <div
@@ -99,7 +99,7 @@ function SectionBubble({
           {/* Résumé : une seule ligne, visible seulement quand replié */}
           <p className={`text-[11px] mt-[3px] leading-tight truncate transition-all duration-250 ${
             open ? 'opacity-0 h-0 mt-0 overflow-hidden' : 'opacity-100 h-auto'
-          } ${status === 'idle' ? 'text-zinc-600 italic' : 'text-zinc-500'}`}>
+          } ${status === 'idle' ? 'text-th-text-3 italic' : 'text-th-text-2'}`}>
             {status === 'idle' ? 'Non renseigné' : summary}
           </p>
         </div>
@@ -112,18 +112,18 @@ function SectionBubble({
               background: `conic-gradient(${ringColor} ${Math.round(pct * 3.6)}deg, rgba(255,255,255,0.05) 0deg)`,
             }}
           >
-            <div className="w-[22px] h-[22px] rounded-full bg-[#0c0c0e] flex items-center justify-center">
+            <div className="w-[22px] h-[22px] rounded-full bg-th-surface2 flex items-center justify-center">
               {status === 'complete' ? (
                 <svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               ) : pct > 0 ? (
-                <span className="text-[8px] font-bold text-zinc-500 tabular-nums leading-none">{pct}</span>
+                <span className="text-[8px] font-bold text-th-text-2 tabular-nums leading-none">{pct}</span>
               ) : null}
             </div>
           </div>
           <svg
-            className={`w-4 h-4 text-zinc-600 transition-transform duration-300 shrink-0 ${open ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-th-text-3 transition-transform duration-300 shrink-0 ${open ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -140,7 +140,7 @@ function SectionBubble({
         }}
       >
         <div className="overflow-hidden">
-          <div className="border-t border-white/[0.06] pt-1">
+          <div className="border-t border-th-border pt-1">
             {children}
             {/* Bouton Continuer */}
             {onNext && (
@@ -148,7 +148,7 @@ function SectionBubble({
                 <button
                   type="button"
                   onClick={onNext}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[12px] font-semibold text-zinc-400 hover:text-white hover:bg-white/[0.07] hover:border-white/[0.14] active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-th-surface2 border border-th-border-med text-[12px] font-semibold text-th-text-2 hover:text-white hover:bg-th-surface3 hover:border-white/[0.14] active:scale-[0.99] transition-all duration-200 cursor-pointer"
                 >
                   Continuer
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -182,7 +182,7 @@ function SectionBubble({
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">{children}</p>
+    <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-wider mb-1.5">{children}</p>
   )
 }
 
@@ -202,10 +202,10 @@ function NumInput({
         min={min}
         step={step}
         placeholder={placeholder ?? '0'}
-        className={`w-full bg-white/[0.04] border border-white/[0.07] rounded-lg text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-emerald-500/40 transition-all pl-3 ${suffix ? 'pr-9' : 'pr-3'} py-2 tabular-nums appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${readOnly ? 'opacity-50 cursor-default' : ''}`}
+        className={`w-full bg-th-surface2 border border-th-border rounded-lg text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/40 transition-all pl-3 ${suffix ? 'pr-9' : 'pr-3'} py-2 tabular-nums appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${readOnly ? 'opacity-50 cursor-default' : ''}`}
       />
       {suffix && (
-        <span className="absolute right-3 text-[11px] text-zinc-500 pointer-events-none">{suffix}</span>
+        <span className="absolute right-3 text-[11px] text-th-text-2 pointer-events-none">{suffix}</span>
       )}
     </div>
   )
@@ -231,7 +231,7 @@ function BtnGroup({
               ? o.color === 'amber'
                 ? 'bg-amber-500 text-zinc-950'
                 : 'bg-emerald-500 text-zinc-950'
-              : 'bg-white/[0.04] border border-white/[0.07] text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.08]'
+              : 'bg-th-surface2 border border-th-border text-th-text-2 hover:text-th-text-1 hover:bg-th-surface3'
           }`}
         >
           {o.label}
@@ -251,18 +251,18 @@ function SliderRow({
     <div>
       <div className="flex items-center justify-between mb-1.5">
         <Label>{label}</Label>
-        <span className="text-[12px] font-bold text-white tabular-nums">{value}{suffix}</span>
+        <span className="text-[12px] font-bold text-th-text-1 tabular-nums">{value}{suffix}</span>
       </div>
       <input
         type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
         className="w-full accent-emerald-500 cursor-pointer h-1.5"
       />
-      <div className="flex justify-between text-[10px] text-zinc-700 mt-1">
+      <div className="flex justify-between text-[10px] text-th-text-3 mt-1">
         <span>{min}{suffix}</span>
         <span>{max}{suffix}</span>
       </div>
-      {hint && <p className="text-[10px] text-zinc-600 mt-1">{hint}</p>}
+      {hint && <p className="text-[10px] text-th-text-3 mt-1">{hint}</p>}
     </div>
   )
 }
@@ -275,8 +275,8 @@ function ToggleRow({
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
-        <p className={`text-[13px] font-medium ${disabled ? 'text-zinc-600' : 'text-zinc-300'}`}>{label}</p>
-        {hint && <p className="text-[10px] text-zinc-600 mt-0.5 leading-snug">{hint}</p>}
+        <p className={`text-[13px] font-medium ${disabled ? 'text-th-text-3' : 'text-th-text-1'}`}>{label}</p>
+        {hint && <p className="text-[10px] text-th-text-3 mt-0.5 leading-snug">{hint}</p>}
       </div>
       <button
         type="button"
@@ -301,7 +301,7 @@ function Row3({ children }: { children: React.ReactNode }) {
 }
 
 function Divider() {
-  return <div className="border-t border-white/[0.04] my-1" />
+  return <div className="border-t border-th-border my-1" />
 }
 
 // ─── Indicateur de progression global ──────────────────────────────────────────
@@ -322,7 +322,7 @@ function FormProgress({ sectionInfos }: { sectionInfos: Record<string, { status:
     'Analyse complète'
 
   const qualityColor =
-    completed === 0 && inProgress === 0 ? 'text-zinc-600' :
+    completed === 0 && inProgress === 0 ? 'text-th-text-3' :
     completed + inProgress <= 2 ? 'text-amber-500/80' :
     completed <= 4 ? 'text-blue-400/80' :
     'text-emerald-400/90'
@@ -338,11 +338,11 @@ function FormProgress({ sectionInfos }: { sectionInfos: Record<string, { status:
         <span className={`text-[10px] font-semibold uppercase tracking-wider transition-colors duration-300 ${qualityColor}`}>
           {qualityLabel}
         </span>
-        <span className="text-[10px] text-zinc-700 tabular-nums">
+        <span className="text-[10px] text-th-text-3 tabular-nums">
           {completed}<span className="text-zinc-800">/{total}</span>
         </span>
       </div>
-      <div className="h-[3px] bg-white/[0.04] rounded-full overflow-hidden">
+      <div className="h-[3px] bg-th-surface2 rounded-full overflow-hidden">
         <div
           className={`h-full ${barColor} rounded-full transition-all duration-500`}
           style={{ width: `${globalPct}%` }}
@@ -691,9 +691,9 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
 
               {/* Prix m² */}
               {p.surface > 0 && p.prixAchat > 0 && (
-                <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                  <span className="text-[11px] text-zinc-500">Prix au m²</span>
-                  <span className="text-sm font-bold text-white tabular-nums">
+                <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-th-surface2 border border-th-border">
+                  <span className="text-[11px] text-th-text-2">Prix au m²</span>
+                  <span className="text-sm font-bold text-th-text-1 tabular-nums">
                     {Math.round(p.prixAchat / p.surface).toLocaleString('fr-FR')} €/m²
                   </span>
                 </div>
@@ -709,7 +709,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     className={`text-[10px] font-semibold px-2 py-0.5 rounded-md transition-all ${
                       p.fraisNotaireAuto
                         ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                        : 'bg-white/[0.05] text-zinc-500 border border-white/[0.08]'
+                        : 'bg-th-surface2 text-th-text-2 border border-th-border-med'
                     }`}
                   >
                     {p.fraisNotaireAuto ? 'Auto' : 'Manuel'}
@@ -723,16 +723,16 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   readOnly={p.fraisNotaireAuto}
                 />
                 {p.fraisNotaireAuto && (
-                  <p className="text-[10px] text-zinc-600 mt-1">
+                  <p className="text-[10px] text-th-text-3 mt-1">
                     Calculé automatiquement selon l&apos;état du bien
                   </p>
                 )}
               </div>
 
               {/* Prix de revient */}
-              <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                <span className="text-[11px] text-zinc-500">Prix de revient total</span>
-                <span className="text-sm font-bold text-white tabular-nums">
+              <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-th-surface2 border border-th-border">
+                <span className="text-[11px] text-th-text-2">Prix de revient total</span>
+                <span className="text-sm font-bold text-th-text-1 tabular-nums">
                   {(p.prixAchat + p.fraisNotaire + p.travaux).toLocaleString('fr-FR')} €
                 </span>
               </div>
@@ -795,7 +795,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   }}
                   placeholder='Ex: "12 rue Nationale, Lyon" ou "Croix-Rousse"'
                 />
-                <p className="text-[10px] text-zinc-700 mt-1.5">
+                <p className="text-[10px] text-th-text-3 mt-1.5">
                   Tapez une adresse, un quartier ou une ville — les suggestions s&apos;affichent automatiquement
                 </p>
               </div>
@@ -829,11 +829,11 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               </div>
 
               {/* ── Toggle rénovation énergétique ───────────────────────────── */}
-              <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3.5">
+              <div className="rounded-xl border border-th-border bg-th-surface p-3.5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[12px] font-semibold text-zinc-300">Rénovation énergétique</p>
-                    <p className="text-[10px] text-zinc-600 mt-0.5 leading-snug">Isolation, chauffage, VMC — aides MaPrimeRénov&apos;, Eco-PTZ, CEE (distinct des travaux esthétiques)</p>
+                    <p className="text-[12px] font-semibold text-th-text-1">Rénovation énergétique</p>
+                    <p className="text-[10px] text-th-text-3 mt-0.5 leading-snug">Isolation, chauffage, VMC — aides MaPrimeRénov&apos;, Eco-PTZ, CEE (distinct des travaux esthétiques)</p>
                   </div>
                   <button
                     type="button"
@@ -859,7 +859,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   const accentBg    = urgence === 'critique' ? 'bg-red-500/[0.04]' : urgence === 'elevee' ? 'bg-orange-500/[0.04]' : urgence === 'moderee' ? 'bg-amber-500/[0.04]' : 'bg-emerald-500/[0.03]'
 
                   return (
-                    <div className="mt-3.5 space-y-3 border-t border-white/[0.06] pt-3.5">
+                    <div className="mt-3.5 space-y-3 border-t border-th-border pt-3.5">
 
                       {/* État DPE actuel */}
                       {reno && (
@@ -877,7 +877,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                             {DPE_INTERDICTION[dpeActuel] ? (
                               <p className={`text-[10px] mt-0.5 ${accentText} opacity-75`}>{DPE_INTERDICTION[dpeActuel]}</p>
                             ) : (
-                              <p className="text-[10px] text-zinc-600 mt-0.5">Pas d&apos;interdiction de location prévue</p>
+                              <p className="text-[10px] text-th-text-3 mt-0.5">Pas d&apos;interdiction de location prévue</p>
                             )}
                           </div>
                         </div>
@@ -906,13 +906,13 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           </div>
                           {reno && (
                             <div className="flex items-center gap-2 mt-2">
-                              <div className="h-1 flex-1 bg-white/[0.06] rounded-full overflow-hidden">
+                              <div className="h-1 flex-1 bg-th-surface2 rounded-full overflow-hidden">
                                 <div
                                   className="h-full rounded-full bg-emerald-500/70 transition-all"
                                   style={{ width: `${Math.min(100, (reno.sautClasses / 6) * 100)}%` }}
                                 />
                               </div>
-                              <span className="text-[10px] text-zinc-500 shrink-0">
+                              <span className="text-[10px] text-th-text-2 shrink-0">
                                 {reno.sautClasses} classe{reno.sautClasses > 1 ? 's' : ''}
                                 {reno.sautClasses >= 2 && <span className="text-emerald-500 font-semibold"> · Éligible MPR</span>}
                               </span>
@@ -920,7 +920,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           )}
                         </div>
                       ) : (
-                        <p className="text-[11px] text-zinc-500 italic py-1">DPE déjà optimal — aucune amélioration possible.</p>
+                        <p className="text-[11px] text-th-text-2 italic py-1">DPE déjà optimal — aucune amélioration possible.</p>
                       )}
 
                       {cibles.length > 0 && reno && (
@@ -932,7 +932,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                               <select
                                 value={renoProfile}
                                 onChange={(e) => setRenoProfile(e.target.value as ProfileRevenu)}
-                                className="w-full bg-white/[0.05] border border-white/[0.08] text-white text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
+                                className="w-full bg-th-surface2 border border-th-border-med text-th-text-1 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
                               >
                                 <option value="tres-modeste">Très modeste (30%)</option>
                                 <option value="modeste">Modeste (25%)</option>
@@ -952,41 +952,41 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                                     const v = parseInt(e.target.value)
                                     setRenoBudgetCustom(v > 0 ? v : undefined)
                                   }}
-                                  className="w-full bg-white/[0.05] border border-white/[0.08] text-white text-xs rounded-lg px-2.5 py-2 pr-7 focus:outline-none focus:ring-1 focus:ring-emerald-500/40 placeholder:text-zinc-600"
+                                  className="w-full bg-th-surface2 border border-th-border-med text-th-text-1 text-xs rounded-lg px-2.5 py-2 pr-7 focus:outline-none focus:ring-1 focus:ring-emerald-500/40 placeholder:text-th-text-3"
                                 />
-                                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-zinc-600">€</span>
+                                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-th-text-3">€</span>
                               </div>
                             </div>
                           </Row2>
 
                           {/* Cascade aides */}
-                          <div className="rounded-xl border border-white/[0.07] overflow-hidden">
-                            <div className="px-3 py-2.5 flex items-center justify-between bg-white/[0.02]">
-                              <span className="text-[11px] text-zinc-500">Coût brut estimé</span>
+                          <div className="rounded-xl border border-th-border overflow-hidden">
+                            <div className="px-3 py-2.5 flex items-center justify-between bg-th-surface">
+                              <span className="text-[11px] text-th-text-2">Coût brut estimé</span>
                               <div className="text-right">
-                                <span className="text-[11px] text-zinc-600 mr-2">fourchette</span>
-                                <span className="text-[12px] font-bold text-white tabular-nums">{formatCurrency(reno.coutBas)} – {formatCurrency(reno.coutHaut)}</span>
+                                <span className="text-[11px] text-th-text-3 mr-2">fourchette</span>
+                                <span className="text-[12px] font-bold text-th-text-1 tabular-nums">{formatCurrency(reno.coutBas)} – {formatCurrency(reno.coutHaut)}</span>
                               </div>
                             </div>
                             {reno.maprimerenovEligible && (
-                              <div className="px-3 py-2.5 flex items-center justify-between border-t border-white/[0.05]">
+                              <div className="px-3 py-2.5 flex items-center justify-between border-t border-th-border">
                                 <div className="flex items-center gap-1.5">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                  <span className="text-[11px] text-zinc-400">MaPrimeRénov&apos; bailleur</span>
+                                  <span className="text-[11px] text-th-text-2">MaPrimeRénov&apos; bailleur</span>
                                 </div>
                                 <span className="text-[12px] font-semibold text-emerald-400 tabular-nums">−{formatCurrency(reno.maprimerenovMontant)}</span>
                               </div>
                             )}
-                            <div className="px-3 py-2.5 flex items-center justify-between border-t border-white/[0.05]">
+                            <div className="px-3 py-2.5 flex items-center justify-between border-t border-th-border">
                               <div className="flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 shrink-0" />
-                                <span className="text-[11px] text-zinc-400">CEE + TVA réduite 5.5%</span>
+                                <span className="text-[11px] text-th-text-2">CEE + TVA réduite 5.5%</span>
                               </div>
                               <span className="text-[12px] font-semibold text-emerald-400 tabular-nums">−{formatCurrency(reno.ceeMontant + reno.tvaMontant)}</span>
                             </div>
-                            <div className="px-3 py-3 flex items-center justify-between border-t border-white/[0.08] bg-white/[0.04]">
-                              <span className="text-[12px] font-bold text-zinc-200">Coût net après aides</span>
-                              <span className="text-[15px] font-black text-white tabular-nums" style={{ letterSpacing: '-0.02em' }}>{formatCurrency(reno.coutNet)}</span>
+                            <div className="px-3 py-3 flex items-center justify-between border-t border-th-border-med bg-th-surface2">
+                              <span className="text-[12px] font-bold text-th-text-1">Coût net après aides</span>
+                              <span className="text-[15px] font-black text-th-text-1 tabular-nums" style={{ letterSpacing: '-0.02em' }}>{formatCurrency(reno.coutNet)}</span>
                             </div>
                             {reno.ecoPtzEligible && (
                               <div className="px-3 py-2.5 flex items-center justify-between border-t border-indigo-500/20 bg-indigo-500/[0.04]">
@@ -1001,9 +1001,9 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
 
                           {/* Rendement avant/après */}
                           <div className="grid grid-cols-2 gap-2">
-                            <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5 text-center">
-                              <p className="text-[10px] text-zinc-600 mb-1">Rdt brut avant</p>
-                              <p className="text-[15px] font-black text-zinc-400 tabular-nums">{reno.rendBrutAvant.toFixed(1)}%</p>
+                            <div className="rounded-lg bg-th-surface2 border border-th-border px-3 py-2.5 text-center">
+                              <p className="text-[10px] text-th-text-3 mb-1">Rdt brut avant</p>
+                              <p className="text-[15px] font-black text-th-text-2 tabular-nums">{reno.rendBrutAvant.toFixed(1)}%</p>
                             </div>
                             <div className="rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20 px-3 py-2.5 text-center">
                               <p className="text-[10px] text-emerald-400/70 mb-1">Rdt brut après</p>
@@ -1014,7 +1014,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           {/* LMNP si applicable */}
                           {(p.locType === 'meuble' || p.locType === 'coloc' || p.locType === 'saisonnier') && reno.amortissementAnnuel > 0 && (
                             <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-violet-500/[0.05] border border-violet-500/15">
-                              <span className="text-[11px] text-zinc-500">Économie fiscale LMNP/an</span>
+                              <span className="text-[11px] text-th-text-2">Économie fiscale LMNP/an</span>
                               <span className="text-[12px] font-bold text-violet-400 tabular-nums">{formatCurrency(reno.economieImpotAnnuelle)}/an</span>
                             </div>
                           )}
@@ -1033,7 +1033,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                                 }}
                                 className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-semibold transition-all border ${
                                   dejaApplique
-                                    ? 'text-zinc-600 bg-white/[0.02] border-white/[0.05] cursor-not-allowed'
+                                    ? 'text-th-text-3 bg-th-surface border-th-border cursor-not-allowed'
                                     : 'text-amber-400 bg-amber-500/[0.08] border-amber-500/20 hover:bg-amber-500/[0.15] hover:border-amber-500/30'
                                 }`}
                               >
@@ -1058,13 +1058,13 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               {p.travaux > 0 && (
                 <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] px-4 py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-0.5">Total travaux injectés</p>
+                    <p className="text-[10px] font-bold text-th-text-2 uppercase tracking-wider mb-0.5">Total travaux injectés</p>
                     {renoDpeEnabled && renoCalc ? (
-                      <p className="text-[10px] text-zinc-600 truncate">
+                      <p className="text-[10px] text-th-text-3 truncate">
                         {formatCurrency(travauxEsthetiques)} esthétiques + {formatCurrency(renoCalc.coutNet)} DPE net
                       </p>
                     ) : (
-                      <p className="text-[10px] text-zinc-600">Injecté dans le calcul (amortissement LMNP inclus)</p>
+                      <p className="text-[10px] text-th-text-3">Injecté dans le calcul (amortissement LMNP inclus)</p>
                     )}
                   </div>
                   <p className="text-[15px] font-bold text-emerald-400 tabular-nums shrink-0" style={{ letterSpacing: '-0.02em' }}>
@@ -1122,7 +1122,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               <button
                 type="button"
                 onClick={() => setShowFinancementAvance(!showFinancementAvance)}
-                className="flex items-center gap-2 text-[11px] font-semibold text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="flex items-center gap-2 text-[11px] font-semibold text-th-text-2 hover:text-th-text-1 transition-colors"
               >
                 <svg className={`w-3 h-3 transition-transform ${showFinancementAvance ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -1131,7 +1131,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               </button>
 
               {showFinancementAvance && (
-                <div className="space-y-3 pl-3 border-l border-white/[0.05]">
+                <div className="space-y-3 pl-3 border-l border-th-border">
                   <Row2>
                     <div>
                       <Label>Assurance</Label>
@@ -1179,9 +1179,9 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               )}
 
               {/* Récap financement */}
-              <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                <span className="text-[11px] text-zinc-500">Montant emprunté</span>
-                <span className="text-sm font-bold text-white tabular-nums">
+              <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-th-surface2 border border-th-border">
+                <span className="text-[11px] text-th-text-2">Montant emprunté</span>
+                <span className="text-sm font-bold text-th-text-1 tabular-nums">
                   {Math.max(0, p.prixAchat + p.fraisNotaire + p.travaux - p.apport - (p.ptzEnabled ? p.ptzMontant : 0)).toLocaleString('fr-FR')} €
                 </span>
               </div>
@@ -1248,14 +1248,14 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <Label>Nombre de chambres</Label>
-                      <span className="text-sm font-bold text-white">{p.nbChambres}</span>
+                      <span className="text-sm font-bold text-th-text-1">{p.nbChambres}</span>
                     </div>
                     <input
                       type="range" min={1} max={8} step={1} value={p.nbChambres}
                       onChange={(e) => set('nbChambres', parseInt(e.target.value))}
                       className="w-full accent-emerald-500 cursor-pointer h-1.5"
                     />
-                    <div className="flex justify-between text-[10px] text-zinc-700 mt-1">
+                    <div className="flex justify-between text-[10px] text-th-text-3 mt-1">
                       <span>1</span><span>8 chambres</span>
                     </div>
                   </div>
@@ -1264,7 +1264,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     <NumInput value={p.loyerParChambre} onChange={(v) => set('loyerParChambre', v)} suffix="€" />
                   </div>
                   <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-emerald-500/[0.05] border border-emerald-500/15">
-                    <span className="text-[11px] text-zinc-500">Loyer total</span>
+                    <span className="text-[11px] text-th-text-2">Loyer total</span>
                     <span className="text-sm font-bold text-emerald-400 tabular-nums">
                       {(p.loyerParChambre * p.nbChambres).toLocaleString('fr-FR')} €/mois
                     </span>
@@ -1291,14 +1291,14 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <Label>Taux d&apos;occupation</Label>
-                      <span className="text-sm font-bold text-white">{p.tauxOccupation ?? 65}%</span>
+                      <span className="text-sm font-bold text-th-text-1">{p.tauxOccupation ?? 65}%</span>
                     </div>
                     <input
                       type="range" min={10} max={100} step={5} value={p.tauxOccupation ?? 65}
                       onChange={(e) => set('tauxOccupation', parseInt(e.target.value))}
                       className="w-full accent-emerald-500 cursor-pointer h-1.5"
                     />
-                    <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
+                    <div className="flex justify-between text-[10px] text-th-text-3 mt-1">
                       <span>10% faible</span><span>65% correct</span><span>80% excellent</span>
                     </div>
                   </div>
@@ -1319,7 +1319,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           className={`py-1.5 px-2 rounded-lg text-[11px] font-medium border transition-all ${
                             (p.commissionPlateforme ?? 15) === opt.value
                               ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                              : 'bg-white/[0.03] border-white/[0.08] text-zinc-400 hover:border-white/20'
+                              : 'bg-th-surface2 border-th-border-med text-th-text-2 hover:border-white/20'
                           }`}
                         >
                           {opt.label}<br />
@@ -1327,7 +1327,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         </button>
                       ))}
                     </div>
-                    <p className="text-[10px] text-zinc-600 mt-1.5">Autre montant : <NumInput value={p.commissionPlateforme ?? 15} onChange={(v) => set('commissionPlateforme', v)} suffix="%" step={1} /></p>
+                    <p className="text-[10px] text-th-text-3 mt-1.5">Autre montant : <NumInput value={p.commissionPlateforme ?? 15} onChange={(v) => set('commissionPlateforme', v)} suffix="%" step={1} /></p>
                   </div>
 
                   {/* Stats auto-calculées */}
@@ -1344,8 +1344,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           { label: 'Rotations', val: `${rotations}/an` },
                           { label: 'Rev. net plateforme', val: `${revNet.toLocaleString('fr-FR')} €/an`, highlight: true },
                         ].map((s, i) => (
-                          <div key={i} className={`py-2 px-3 rounded-lg border text-center ${s.highlight ? 'bg-emerald-500/[0.07] border-emerald-500/20' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                            <div className="text-[10px] text-zinc-500">{s.label}</div>
+                          <div key={i} className={`py-2 px-3 rounded-lg border text-center ${s.highlight ? 'bg-emerald-500/[0.07] border-emerald-500/20' : 'bg-th-surface border-th-border'}`}>
+                            <div className="text-[10px] text-th-text-2">{s.label}</div>
                             <div className={`text-[13px] font-bold tabular-nums mt-0.5 ${s.highlight ? 'text-emerald-400' : 'text-white'}`}>{s.val}</div>
                           </div>
                         ))}
@@ -1364,7 +1364,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     <p className="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">
                       <IconBuildingOffice className="w-3 h-3 inline mr-1" />Composition de l&apos;immeuble
                     </p>
-                    <span className="text-[10px] text-zinc-600">
+                    <span className="text-[10px] text-th-text-3">
                       {(p.lotGroups ?? []).reduce((s, g) => s + g.nb, 0)} lots au total
                     </span>
                   </div>
@@ -1372,27 +1372,27 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   {/* Liste des groupes */}
                   <div className="space-y-2">
                     {(p.lotGroups ?? []).map((g, idx) => (
-                      <div key={g.id} className="rounded-xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
+                      <div key={g.id} className="rounded-xl border border-th-border-med bg-th-surface2 overflow-hidden">
 
                         {/* Ligne header du groupe */}
-                        <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.05]">
+                        <div className="flex items-center gap-2 px-3 py-2 border-b border-th-border">
                           {/* Label éditable */}
                           <input
                             type="text"
                             value={g.label}
                             onChange={(e) => updateLotGroup(g.id, { label: e.target.value })}
-                            className="flex-1 bg-transparent text-[12px] font-bold text-white focus:outline-none placeholder:text-zinc-600"
+                            className="flex-1 bg-transparent text-[12px] font-bold text-th-text-1 focus:outline-none placeholder:text-th-text-3"
                             placeholder="T2, Studio…"
                           />
                           {/* Nb lots stepper */}
                           <div className="flex items-center gap-1">
                             <button type="button" onClick={() => updateLotGroup(g.id, { nb: Math.max(1, g.nb - 1) })}
-                              className="w-5 h-5 rounded-md bg-white/[0.06] text-zinc-400 hover:text-white text-sm flex items-center justify-center transition-colors">−</button>
-                            <span className="text-[12px] font-bold text-white w-5 text-center tabular-nums">{g.nb}</span>
+                              className="w-5 h-5 rounded-md bg-th-surface2 text-th-text-2 hover:text-white text-sm flex items-center justify-center transition-colors">−</button>
+                            <span className="text-[12px] font-bold text-th-text-1 w-5 text-center tabular-nums">{g.nb}</span>
                             <button type="button" onClick={() => updateLotGroup(g.id, { nb: g.nb + 1 })}
-                              className="w-5 h-5 rounded-md bg-white/[0.06] text-zinc-400 hover:text-white text-sm flex items-center justify-center transition-colors">+</button>
+                              className="w-5 h-5 rounded-md bg-th-surface2 text-th-text-2 hover:text-white text-sm flex items-center justify-center transition-colors">+</button>
                           </div>
-                          <span className="text-[10px] text-zinc-600">lot{g.nb > 1 ? 's' : ''}</span>
+                          <span className="text-[10px] text-th-text-3">lot{g.nb > 1 ? 's' : ''}</span>
                           {/* Supprimer */}
                           {(p.lotGroups ?? []).length > 1 && (
                             <button type="button" onClick={() => removeLotGroup(g.id)}
@@ -1401,7 +1401,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         </div>
 
                         {/* Régime */}
-                        <div className="px-3 py-2 border-b border-white/[0.04]">
+                        <div className="px-3 py-2 border-b border-th-border">
                           <div className="grid grid-cols-3 gap-1">
                             {([
                               { v: 'meuble', label: 'Meublé' },
@@ -1415,7 +1415,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                                     ? opt.v === 'vendre'
                                       ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
                                       : 'bg-sky-500/20 border-sky-500/40 text-sky-300'
-                                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-500 hover:border-white/20'
+                                    : 'bg-th-surface border-th-border text-th-text-2 hover:border-white/20'
                                 }`}>
                                 {opt.label}
                               </button>
@@ -1428,17 +1428,17 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           {g.regime !== 'vendre' ? (
                             <div className="grid grid-cols-2 gap-2">
                               <div>
-                                <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Loyer / lot / mois</p>
+                                <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider mb-1">Loyer / lot / mois</p>
                                 <NumInput value={g.loyer} onChange={(v) => updateLotGroup(g.id, { loyer: v })} suffix="€" />
                               </div>
                               <div>
-                                <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Vacance / lot</p>
+                                <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider mb-1">Vacance / lot</p>
                                 <NumInput value={g.vacance} onChange={(v) => updateLotGroup(g.id, { vacance: Math.max(0, Math.min(12, v)) })} suffix="mois/an" step={0.5} />
                               </div>
                             </div>
                           ) : (
                             <div>
-                              <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Prix de cession / lot</p>
+                              <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider mb-1">Prix de cession / lot</p>
                               <NumInput value={g.prixVente} onChange={(v) => updateLotGroup(g.id, { prixVente: v })} suffix="€" step={1000} />
                             </div>
                           )}
@@ -1447,15 +1447,15 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         {/* Mini synthèse par groupe */}
                         <div className="px-3 pb-2.5">
                           {g.regime !== 'vendre' ? (
-                            <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-white/[0.02] border border-white/[0.05]">
-                              <span className="text-[10px] text-zinc-600">{g.nb} lot{g.nb > 1 ? 's' : ''} → revenu annuel</span>
+                            <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-th-surface border border-th-border">
+                              <span className="text-[10px] text-th-text-3">{g.nb} lot{g.nb > 1 ? 's' : ''} → revenu annuel</span>
                               <span className="text-[11px] font-bold text-sky-400 tabular-nums">
                                 {Math.round(g.loyer * g.nb * (12 - g.vacance)).toLocaleString('fr-FR')} €/an
                               </span>
                             </div>
                           ) : (
                             <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-amber-500/[0.04] border border-amber-500/15">
-                              <span className="text-[10px] text-zinc-600">{g.nb} lot{g.nb > 1 ? 's' : ''} → produit de cession</span>
+                              <span className="text-[10px] text-th-text-3">{g.nb} lot{g.nb > 1 ? 's' : ''} → produit de cession</span>
                               <span className="text-[11px] font-bold text-amber-400 tabular-nums">
                                 {Math.round(g.prixVente * g.nb).toLocaleString('fr-FR')} €
                               </span>
@@ -1471,7 +1471,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <button
                     type="button"
                     onClick={addLotGroup}
-                    className="w-full py-2 rounded-xl border border-dashed border-white/[0.12] text-[11px] font-semibold text-zinc-500 hover:text-sky-400 hover:border-sky-500/30 transition-all"
+                    className="w-full py-2 rounded-xl border border-dashed border-th-border-med text-[11px] font-semibold text-th-text-2 hover:text-sky-400 hover:border-sky-500/30 transition-all"
                   >
                     + Ajouter un groupe de lots
                   </button>
@@ -1493,9 +1493,9 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         <div className="grid grid-cols-2 gap-2">
                           {nbLouesTotal > 0 && (
                             <>
-                              <div className="py-1.5 px-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
-                                <div className="text-[9px] text-zinc-600 mb-0.5">{nbLouesTotal} lot{nbLouesTotal > 1 ? 's' : ''} loués · loyer/mois</div>
-                                <div className="text-[13px] font-bold text-white tabular-nums">{loyerMensuel.toLocaleString('fr-FR')} €</div>
+                              <div className="py-1.5 px-2 rounded-lg bg-th-surface2 border border-th-border text-center">
+                                <div className="text-[9px] text-th-text-3 mb-0.5">{nbLouesTotal} lot{nbLouesTotal > 1 ? 's' : ''} loués · loyer/mois</div>
+                                <div className="text-[13px] font-bold text-th-text-1 tabular-nums">{loyerMensuel.toLocaleString('fr-FR')} €</div>
                               </div>
                               <div className="py-1.5 px-2 rounded-lg bg-emerald-500/[0.07] border border-emerald-500/20 text-center">
                                 <div className="text-[9px] text-emerald-400/70 mb-0.5">Revenu locatif / an</div>
@@ -1506,8 +1506,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           {nbVendreTotal > 0 && (
                             <div className="col-span-2 py-1.5 px-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/20 flex items-center justify-between">
                               <div>
-                                <div className="text-[9px] text-zinc-500">{nbVendreTotal} lot{nbVendreTotal > 1 ? 's' : ''} à vendre</div>
-                                <div className="text-[10px] text-zinc-600 mt-0.5">Ces produits peuvent rembourser partiellement le crédit</div>
+                                <div className="text-[9px] text-th-text-2">{nbVendreTotal} lot{nbVendreTotal > 1 ? 's' : ''} à vendre</div>
+                                <div className="text-[10px] text-th-text-3 mt-0.5">Ces produits peuvent rembourser partiellement le crédit</div>
                               </div>
                               <div className="text-[13px] font-bold text-amber-400 tabular-nums">{Math.round(prodCession).toLocaleString('fr-FR')} €</div>
                             </div>
@@ -1574,14 +1574,14 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                               className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${
                                 p.venteStrategy === opt.v
                                   ? 'bg-amber-500/15 border-amber-500/40'
-                                  : 'bg-white/[0.02] border-white/[0.06] hover:border-white/15'
+                                  : 'bg-th-surface border-th-border hover:border-white/15'
                               }`}
                             >
                               <div className="flex items-center gap-2">
                                 <div className={`w-3 h-3 rounded-full border-2 shrink-0 ${p.venteStrategy === opt.v ? 'bg-amber-400 border-amber-400' : 'border-zinc-600'}`} />
-                                <span className={`text-[11px] font-semibold ${p.venteStrategy === opt.v ? 'text-amber-300' : 'text-zinc-400'}`}>{opt.label}</span>
+                                <span className={`text-[11px] font-semibold ${p.venteStrategy === opt.v ? 'text-amber-300' : 'text-th-text-2'}`}>{opt.label}</span>
                               </div>
-                              <p className="text-[10px] text-zinc-600 mt-0.5 ml-5">{opt.desc}</p>
+                              <p className="text-[10px] text-th-text-3 mt-0.5 ml-5">{opt.desc}</p>
                             </button>
                           ))}
                         </div>
@@ -1591,7 +1591,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
                               <Label>Part réinjectée</Label>
-                              <span className="text-sm font-bold text-white">{p.venteReinjectPct ?? 100}%</span>
+                              <span className="text-sm font-bold text-th-text-1">{p.venteReinjectPct ?? 100}%</span>
                             </div>
                             <input
                               type="range" min={10} max={100} step={10}
@@ -1599,7 +1599,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                               onChange={(e) => set('venteReinjectPct', parseInt(e.target.value))}
                               className="w-full accent-amber-500 cursor-pointer h-1.5"
                             />
-                            <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
+                            <div className="flex justify-between text-[10px] text-th-text-3 mt-1">
                               <span>{Math.round(prodCession * (p.venteReinjectPct ?? 100) / 100).toLocaleString('fr-FR')} € remboursés</span>
                               <span>{Math.round(prodCession * (1 - (p.venteReinjectPct ?? 100) / 100)).toLocaleString('fr-FR')} € gardés</span>
                             </div>
@@ -1609,20 +1609,20 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         {/* Impact mensualité */}
                         {reinjectLocal > 0 && delta > 1 && (
                           <div className="rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20 px-3 py-2.5">
-                            <p className="text-[10px] text-zinc-500 mb-1.5">Impact sur le crédit</p>
+                            <p className="text-[10px] text-th-text-2 mb-1.5">Impact sur le crédit</p>
                             <div className="grid grid-cols-3 gap-2 text-center">
                               <div>
-                                <div className="text-[9px] text-zinc-600 mb-0.5">Capital emprunté</div>
-                                <div className="text-[11px] font-bold text-zinc-400 tabular-nums line-through">{Math.round(emprunted).toLocaleString('fr-FR')} €</div>
+                                <div className="text-[9px] text-th-text-3 mb-0.5">Capital emprunté</div>
+                                <div className="text-[11px] font-bold text-th-text-2 tabular-nums line-through">{Math.round(emprunted).toLocaleString('fr-FR')} €</div>
                                 <div className="text-[12px] font-bold text-emerald-400 tabular-nums">{Math.round(emprunter).toLocaleString('fr-FR')} €</div>
                               </div>
                               <div>
-                                <div className="text-[9px] text-zinc-600 mb-0.5">Mensualité</div>
-                                <div className="text-[11px] font-bold text-zinc-400 tabular-nums line-through">{Math.round(mensAvant).toLocaleString('fr-FR')} €</div>
+                                <div className="text-[9px] text-th-text-3 mb-0.5">Mensualité</div>
+                                <div className="text-[11px] font-bold text-th-text-2 tabular-nums line-through">{Math.round(mensAvant).toLocaleString('fr-FR')} €</div>
                                 <div className="text-[12px] font-bold text-emerald-400 tabular-nums">{Math.round(mensApres).toLocaleString('fr-FR')} €</div>
                               </div>
                               <div>
-                                <div className="text-[9px] text-zinc-600 mb-0.5">Gain / mois</div>
+                                <div className="text-[9px] text-th-text-3 mb-0.5">Gain / mois</div>
                                 <div className="text-[14px] font-black text-emerald-400 tabular-nums">−{Math.round(delta).toLocaleString('fr-FR')} €</div>
                               </div>
                             </div>
@@ -1630,7 +1630,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         )}
 
                         {p.venteStrategy === 'garder' && (
-                          <p className="text-[10px] text-zinc-600">
+                          <p className="text-[10px] text-th-text-3">
                             Ces {Math.round(prodCession).toLocaleString('fr-FR')} € restent en trésorerie et réduisent votre capital effectivement immobilisé dans l&apos;opération.
                           </p>
                         )}
@@ -1681,7 +1681,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 const revAnnuel = Math.round(loyer * (12 - p.vacance))
                 return loyer > 0 ? (
                   <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-emerald-500/[0.05] border border-emerald-500/15">
-                    <span className="text-[11px] text-zinc-500">Revenu locatif annuel estimé</span>
+                    <span className="text-[11px] text-th-text-2">Revenu locatif annuel estimé</span>
                     <span className="text-sm font-bold text-emerald-400 tabular-nums">
                       {revAnnuel.toLocaleString('fr-FR')} €/an
                     </span>
@@ -1737,7 +1737,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       <NumInput value={p.assuranceImmeuble} onChange={(v) => set('assuranceImmeuble', v)} suffix="€/an" step={100} />
                     </div>
                   </Row2>
-                  <p className="text-[10px] text-zinc-600">Charges copro supprimées — vous êtes le seul copropriétaire (syndicat = vous)</p>
+                  <p className="text-[10px] text-th-text-3">Charges copro supprimées — vous êtes le seul copropriétaire (syndicat = vous)</p>
                 </div>
               )}
 
@@ -1784,8 +1784,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     const taxeAn = (p.taxeSejour ?? 0) * (p.nbPersonnesMax ?? 2) * nuits
                     const totalSaison = menageAn + conciergeAn + fournituresAn + elecAn + taxeAn
                     return totalSaison > 0 ? (
-                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                        <span className="text-[11px] text-zinc-500">Total charges exploitation estimé</span>
+                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-th-surface2 border border-th-border">
+                        <span className="text-[11px] text-th-text-2">Total charges exploitation estimé</span>
                         <span className="text-sm font-bold text-orange-400 tabular-nums">
                           {Math.round(totalSaison).toLocaleString('fr-FR')} €/an
                         </span>
@@ -1813,7 +1813,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 )}
               </Row3>
               {!isSaisonnier && (
-                <p className="text-[10px] text-zinc-600 -mt-1">GLI : garantie loyers impayés — optionnel, ~2.5% du loyer</p>
+                <p className="text-[10px] text-th-text-3 -mt-1">GLI : garantie loyers impayés — optionnel, ~2.5% du loyer</p>
               )}
 
               {/* CFE & Comptable — uniquement meublé/coloc/saisonnier */}
@@ -1865,8 +1865,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   chargesSaison
                 )
                 return total > 0 ? (
-                  <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                    <span className="text-[11px] text-zinc-500">Total charges annuelles estimées</span>
+                  <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-th-surface2 border border-th-border">
+                    <span className="text-[11px] text-th-text-2">Total charges annuelles estimées</span>
                     <span className="text-sm font-bold text-amber-400 tabular-nums">
                       {total.toLocaleString('fr-FR')} €/an
                     </span>
@@ -1903,14 +1903,14 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       className={`py-2 text-[11px] font-bold rounded-lg transition-all ${
                         p.tmi === t
                           ? 'bg-emerald-500 text-zinc-950'
-                          : 'bg-white/[0.04] border border-white/[0.07] text-zinc-500 hover:text-zinc-200'
+                          : 'bg-th-surface2 border border-th-border text-th-text-2 hover:text-th-text-1'
                       }`}
                     >
                       {t}%
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-zinc-600 mt-1.5">
+                <p className="text-[10px] text-th-text-3 mt-1.5">
                   Taux s&apos;appliquant à votre tranche la plus haute de revenus
                 </p>
               </div>
@@ -1924,7 +1924,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   suffix="€"
                   step={1000}
                 />
-                <p className="text-[10px] text-zinc-600 mt-1">
+                <p className="text-[10px] text-th-text-3 mt-1">
                   Utilisé pour calculer l&apos;impact fiscal global sur votre foyer
                 </p>
               </div>
@@ -1932,7 +1932,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               <Divider />
 
               {/* ── Structure juridique ─────────────────────────────────────── */}
-              <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Structure juridique</p>
+              <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">Structure juridique</p>
 
               <div className="grid grid-cols-2 gap-2">
                 {([
@@ -1951,12 +1951,12 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     : rendNN >= 2 ? 'text-amber-400'
                     : 'text-red-400'
                   const previewBorder = rendNN === null
-                    ? (active ? 'border-emerald-500/30' : 'border-white/[0.07]')
+                    ? (active ? 'border-emerald-500/30' : 'border-th-border')
                     : rendNN >= 4 ? (active ? 'border-emerald-500/40' : 'border-emerald-500/20')
                     : rendNN >= 2 ? (active ? 'border-amber-500/40' : 'border-amber-500/20')
                     : (active ? 'border-red-500/40' : 'border-red-500/20')
                   const previewBg = rendNN === null
-                    ? (active ? 'bg-emerald-500/[0.08]' : 'bg-white/[0.03]')
+                    ? (active ? 'bg-emerald-500/[0.08]' : 'bg-th-surface2')
                     : rendNN >= 4 ? (active ? 'bg-emerald-500/[0.10]' : 'bg-emerald-500/[0.04]')
                     : rendNN >= 2 ? (active ? 'bg-amber-500/[0.10]' : 'bg-amber-500/[0.04]')
                     : (active ? 'bg-red-500/[0.10]' : 'bg-red-500/[0.04]')
@@ -1978,7 +1978,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       }}
                       className={`flex flex-col items-start gap-0.5 p-3 rounded-xl border transition-all text-left relative ${
                         disabled
-                          ? 'opacity-30 cursor-not-allowed bg-white/[0.02] border-white/[0.05]'
+                          ? 'opacity-30 cursor-not-allowed bg-th-surface border-th-border'
                           : `${previewBg} ${previewBorder} hover:brightness-110`
                       }`}
                     >
@@ -1986,24 +1986,24 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       {active && (
                         <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
                       )}
-                      <div className="w-6 h-6 rounded-md bg-white/[0.05] flex items-center justify-center">
-                        <Icon className="w-3.5 h-3.5 text-zinc-400" />
+                      <div className="w-6 h-6 rounded-md bg-th-surface2 flex items-center justify-center">
+                        <Icon className="w-3.5 h-3.5 text-th-text-2" />
                       </div>
-                      <p className={`text-[12px] font-bold leading-tight mt-1 ${active ? 'text-white' : 'text-zinc-300'}`}>{label}</p>
-                      <p className="text-[10px] text-zinc-500 leading-snug">{desc}</p>
+                      <p className={`text-[12px] font-bold leading-tight mt-1 ${active ? 'text-white' : 'text-th-text-1'}`}>{label}</p>
+                      <p className="text-[10px] text-th-text-2 leading-snug">{desc}</p>
 
                       {/* Preview rendement nette-nette */}
                       {preview && !disabled && (
-                        <div className="mt-1.5 pt-1.5 border-t border-white/[0.06] w-full flex items-center justify-between gap-1">
-                          <span className="text-[9px] text-zinc-600 uppercase tracking-wide">Meilleur régime</span>
+                        <div className="mt-1.5 pt-1.5 border-t border-th-border w-full flex items-center justify-between gap-1">
+                          <span className="text-[9px] text-th-text-3 uppercase tracking-wide">Meilleur régime</span>
                           <span className={`text-[11px] font-black tabular-nums ${previewColor}`}>
                             {preview.rendNetNet.toFixed(2)}%
                           </span>
                         </div>
                       )}
                       {!preview && result && !disabled && (
-                        <div className="mt-1.5 pt-1.5 border-t border-white/[0.06] w-full">
-                          <span className="text-[9px] text-zinc-600">Non applicable</span>
+                        <div className="mt-1.5 pt-1.5 border-t border-th-border w-full">
+                          <span className="text-[9px] text-th-text-3">Non applicable</span>
                         </div>
                       )}
                     </button>
@@ -2021,8 +2021,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     : 'bg-red-500/[0.06] border-red-500/20'
                 }`}>
                   <div>
-                    <p className="text-[10px] text-zinc-500">Régime optimal pour cette structure</p>
-                    <p className="text-[12px] font-semibold text-white mt-0.5">{structurePreviews[p.structure]?.bestName}</p>
+                    <p className="text-[10px] text-th-text-2">Régime optimal pour cette structure</p>
+                    <p className="text-[12px] font-semibold text-th-text-1 mt-0.5">{structurePreviews[p.structure]?.bestName}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className={`text-lg font-black tabular-nums ${
@@ -2032,7 +2032,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                     }`}>
                       {(structurePreviews[p.structure]?.rendNetNet ?? 0).toFixed(2)}%
                     </p>
-                    <p className="text-[9px] text-zinc-600">nette-nette</p>
+                    <p className="text-[9px] text-th-text-3">nette-nette</p>
                   </div>
                 </div>
               )}
@@ -2064,7 +2064,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       className={`py-2 px-2 text-[11px] font-semibold rounded-lg transition-all text-center ${
                         p.profilFis === o.value
                           ? 'bg-emerald-500 text-zinc-950'
-                          : 'bg-white/[0.04] border border-white/[0.07] text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.08]'
+                          : 'bg-th-surface2 border border-th-border text-th-text-2 hover:text-th-text-1 hover:bg-th-surface3'
                       }`}
                     >
                       {o.label}
@@ -2072,7 +2072,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   ))}
                 </div>
                 {p.profilFis === 'confirme' && (
-                  <p className="text-[10px] text-zinc-600 mt-1.5">
+                  <p className="text-[10px] text-th-text-3 mt-1.5">
                     Mode expert : amortissement par composants LMNP disponible ci-dessous
                   </p>
                 )}
@@ -2081,15 +2081,15 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               {/* ── Amortissement par composants (mode expert) ─────────────── */}
               {p.profilFis === 'confirme' && isMeuble && (
                 <div className="space-y-3">
-                  <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+                  <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-wider">
                     Amortissement par composants — LMNP Réel
                   </p>
-                  <div className="rounded-xl border border-white/[0.07] overflow-hidden">
+                  <div className="rounded-xl border border-th-border overflow-hidden">
                     {/* Header */}
-                    <div className="grid grid-cols-3 px-3 py-2 bg-white/[0.03] border-b border-white/[0.05]">
-                      <span className="text-[10px] font-semibold text-zinc-600 uppercase">Composant</span>
-                      <span className="text-[10px] font-semibold text-zinc-600 uppercase text-center">% valeur</span>
-                      <span className="text-[10px] font-semibold text-zinc-600 uppercase text-right">Durée</span>
+                    <div className="grid grid-cols-3 px-3 py-2 bg-th-surface2 border-b border-th-border">
+                      <span className="text-[10px] font-semibold text-th-text-3 uppercase">Composant</span>
+                      <span className="text-[10px] font-semibold text-th-text-3 uppercase text-center">% valeur</span>
+                      <span className="text-[10px] font-semibold text-th-text-3 uppercase text-right">Durée</span>
                     </div>
                     {/* Rows */}
                     {([
@@ -2099,17 +2099,17 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       { label: 'Installs.',  pctKey: 'amortInstallationsPct', ansKey: 'amortInstallationsAns', defaultPct: 15, defaultAns: 15 },
                       { label: 'Agenc.',     pctKey: 'amortAgencementsPct', ansKey: 'amortAgencementsAns', defaultPct: 15, defaultAns: 10 },
                     ] as { label: string; pctKey: keyof InvestmentParams; ansKey: keyof InvestmentParams; defaultPct: number; defaultAns: number }[]).map((row) => (
-                      <div key={row.label} className="grid grid-cols-3 items-center px-3 py-2 border-b border-white/[0.04] last:border-0">
-                        <span className="text-[11px] text-zinc-400">{row.label}</span>
+                      <div key={row.label} className="grid grid-cols-3 items-center px-3 py-2 border-b border-th-border last:border-0">
+                        <span className="text-[11px] text-th-text-2">{row.label}</span>
                         <div className="flex items-center justify-center">
                           <input
                             type="number"
                             value={p[row.pctKey] as number || row.defaultPct}
                             onChange={(e) => set(row.pctKey, parseFloat(e.target.value) || 0)}
                             min={0} max={100} step={1}
-                            className="w-14 bg-white/[0.04] border border-white/[0.07] rounded-md text-[11px] text-white text-center py-1 focus:outline-none focus:border-emerald-500/40"
+                            className="w-14 bg-th-surface2 border border-th-border rounded-md text-[11px] text-th-text-1 text-center py-1 focus:outline-none focus:border-emerald-500/40"
                           />
-                          <span className="text-[10px] text-zinc-600 ml-1">%</span>
+                          <span className="text-[10px] text-th-text-3 ml-1">%</span>
                         </div>
                         <div className="flex items-center justify-end">
                           <input
@@ -2117,18 +2117,18 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                             value={p[row.ansKey] as number || row.defaultAns}
                             onChange={(e) => set(row.ansKey, parseFloat(e.target.value) || 0)}
                             min={1} max={100} step={1}
-                            className="w-14 bg-white/[0.04] border border-white/[0.07] rounded-md text-[11px] text-white text-center py-1 focus:outline-none focus:border-emerald-500/40"
+                            className="w-14 bg-th-surface2 border border-th-border rounded-md text-[11px] text-th-text-1 text-center py-1 focus:outline-none focus:border-emerald-500/40"
                           />
-                          <span className="text-[10px] text-zinc-600 ml-1">ans</span>
+                          <span className="text-[10px] text-th-text-3 ml-1">ans</span>
                         </div>
                       </div>
                     ))}
                     {/* Travaux row */}
                     {p.travaux > 0 && (
-                      <div className="grid grid-cols-3 items-center px-3 py-2 bg-white/[0.02]">
-                        <span className="text-[11px] text-zinc-400">Travaux</span>
+                      <div className="grid grid-cols-3 items-center px-3 py-2 bg-th-surface">
+                        <span className="text-[11px] text-th-text-2">Travaux</span>
                         <div className="flex items-center justify-center">
-                          <span className="text-[11px] text-zinc-500">100%</span>
+                          <span className="text-[11px] text-th-text-2">100%</span>
                         </div>
                         <div className="flex items-center justify-end">
                           <input
@@ -2136,15 +2136,15 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                             value={p.amortTravauxAns || 10}
                             onChange={(e) => set('amortTravauxAns', parseFloat(e.target.value) || 0)}
                             min={1} max={50} step={1}
-                            className="w-14 bg-white/[0.04] border border-white/[0.07] rounded-md text-[11px] text-white text-center py-1 focus:outline-none focus:border-emerald-500/40"
+                            className="w-14 bg-th-surface2 border border-th-border rounded-md text-[11px] text-th-text-1 text-center py-1 focus:outline-none focus:border-emerald-500/40"
                           />
-                          <span className="text-[10px] text-zinc-600 ml-1">ans</span>
+                          <span className="text-[10px] text-th-text-3 ml-1">ans</span>
                         </div>
                       </div>
                     )}
                     {/* Total check */}
-                    <div className="px-3 py-2 bg-white/[0.03] border-t border-white/[0.05] flex items-center justify-between">
-                      <span className="text-[10px] text-zinc-600">Total composants</span>
+                    <div className="px-3 py-2 bg-th-surface2 border-t border-th-border flex items-center justify-between">
+                      <span className="text-[10px] text-th-text-3">Total composants</span>
                       <span className={`text-[11px] font-bold tabular-nums ${
                         Math.abs(
                           (p.amortGrosOeuvrePct || 50) +
@@ -2158,7 +2158,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       </span>
                     </div>
                   </div>
-                  <p className="text-[10px] text-zinc-600">
+                  <p className="text-[10px] text-th-text-3">
                     La somme des composants doit totaliser 100% de la valeur du bien (hors travaux).
                   </p>
                 </div>
@@ -2210,16 +2210,16 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
 
               {/* Preview revente */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                  <span className="text-[11px] text-zinc-500">Prix revente estimé (dans {p.horizonRevente} ans)</span>
-                  <span className="text-sm font-bold text-white tabular-nums">
+                <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-th-surface2 border border-th-border">
+                  <span className="text-[11px] text-th-text-2">Prix revente estimé (dans {p.horizonRevente} ans)</span>
+                  <span className="text-sm font-bold text-th-text-1 tabular-nums">
                     {Math.round(p.prixAchat * Math.pow(1 + p.valorisationAnnuelle / 100, p.horizonRevente)).toLocaleString('fr-FR')} €
                   </span>
                 </div>
               </div>
 
-              <div className="py-2.5 px-3 rounded-lg bg-white/[0.03] border border-white/[0.05]">
-                <p className="text-[11px] text-zinc-500">
+              <div className="py-2.5 px-3 rounded-lg bg-th-surface2 border border-th-border">
+                <p className="text-[11px] text-th-text-2">
                   Le TRI (Taux de Rendement Interne) sera calculé automatiquement après l&apos;analyse et intègre l&apos;ensemble des flux : apport, cashflows annuels, plus-value nette et impôts.
                 </p>
               </div>
@@ -2230,18 +2230,18 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
       </div>
 
       {/* ─── Footer contextuel ─────────────────────────────────────────────────── */}
-      <div className="shrink-0 px-4 py-3 border-t border-white/[0.05] bg-[#0c0c0e]/90 backdrop-blur-xl">
+      <div className="shrink-0 px-4 py-3 border-t border-th-border bg-th-surface2/90 backdrop-blur-xl">
         {result ? (
           /* Résultats existants — mise à jour live, action secondaire */
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 shrink-0" />
-              <span className="text-[11px] text-zinc-600 truncate">Mise à jour automatique</span>
+              <span className="text-[11px] text-th-text-3 truncate">Mise à jour automatique</span>
             </div>
             <button
               type="submit"
               disabled={loading || p.prixAchat <= 0}
-              className="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500 hover:text-white bg-white/[0.04] border border-white/[0.07] hover:border-white/[0.14] px-3 py-1.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] cursor-pointer"
+              className="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold text-th-text-2 hover:text-white bg-th-surface2 border border-th-border hover:border-white/[0.14] px-3 py-1.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] cursor-pointer"
             >
               {loading ? (
                 <div className="w-3 h-3 border-[1.5px] border-zinc-600/40 border-t-zinc-400 rounded-full animate-spin" />

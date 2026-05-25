@@ -20,8 +20,8 @@ export default function DashboardError({
   }, [error])
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8 text-center space-y-5">
+    <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
+      <div className="max-w-md w-full bg-white/[0.03] border border-th-border-med rounded-2xl p-8 text-center space-y-5">
         {/* Icon */}
         <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
           <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -30,10 +30,10 @@ export default function DashboardError({
         </div>
 
         <div>
-          <h2 className="text-lg font-black text-white mb-2" style={{ letterSpacing: '-0.03em' }}>
+          <h2 className="text-lg font-black text-th-text-1 mb-2" style={{ letterSpacing: '-0.03em' }}>
             Une erreur est survenue
           </h2>
-          <p className="text-sm text-zinc-500 leading-relaxed">
+          <p className="text-sm text-th-text-2 leading-relaxed">
             Le tableau de bord n&apos;a pas pu se charger.
           </p>
         </div>
@@ -58,7 +58,7 @@ export default function DashboardError({
           </button>
           <Link
             href="/analyse"
-            className="w-full bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] text-zinc-300 font-semibold py-3 rounded-xl text-sm transition-all block"
+            className="w-full bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] text-th-text-1 font-semibold py-3 rounded-xl text-sm transition-all block"
           >
             Aller au calculateur
           </Link>

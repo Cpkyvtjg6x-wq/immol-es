@@ -37,15 +37,15 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
   ]
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+    <div className="rounded-2xl border border-th-border bg-th-surface overflow-hidden">
       {/* Tab nav */}
-      <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none bg-white/[0.01]">
+      <div className="flex border-b border-th-border overflow-x-auto scrollbar-none bg-th-surface">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-4 py-3.5 text-[12px] font-semibold whitespace-nowrap transition-colors relative ${
-              tab === t.id ? 'text-white' : 'text-zinc-600 hover:text-zinc-300'
+              tab === t.id ? 'text-white' : 'text-th-text-3 hover:text-th-text-1'
             }`}
           >
             {t.label}
@@ -98,7 +98,7 @@ export function CashflowTab({ result }: { result: InvestmentResult }) {
   return (
     <div className="space-y-4">
       {/* Cascade rows */}
-      <div className="space-y-0.5 rounded-xl overflow-hidden border border-white/[0.06]">
+      <div className="space-y-0.5 rounded-xl overflow-hidden border border-th-border">
         {rows.map((row, i) => {
           const isResult = row.type === 'result'
           const isSubtotal = row.type === 'subtotal'
@@ -106,20 +106,20 @@ export function CashflowTab({ result }: { result: InvestmentResult }) {
           const color = isResult
             ? row.value >= 0 ? 'text-emerald-400' : 'text-red-400'
             : row.type === 'income' ? 'text-emerald-400'
-            : isNeutral ? 'text-zinc-600'
+            : isNeutral ? 'text-th-text-3'
             : 'text-red-400'
           return (
             <div
               key={i}
               className={`flex items-center justify-between px-3.5 py-2.5 ${
                 isResult
-                  ? `border-t border-white/[0.06] mt-0.5 ${cfBg}`
+                  ? `border-t border-th-border mt-0.5 ${cfBg}`
                   : isSubtotal
-                  ? 'bg-white/[0.03]'
+                  ? 'bg-th-surface2'
                   : 'hover:bg-white/[0.015]'
               }`}
             >
-              <span className={`text-[12px] truncate mr-3 ${isResult ? `font-bold ${cfColor}` : isSubtotal ? 'font-semibold text-zinc-300' : 'text-zinc-500'}`}>
+              <span className={`text-[12px] truncate mr-3 ${isResult ? `font-bold ${cfColor}` : isSubtotal ? 'font-semibold text-th-text-1' : 'text-th-text-2'}`}>
                 {row.label}
               </span>
               <span className={`text-[12px] font-bold tabular-nums shrink-0 ${color}`}>
@@ -143,7 +143,7 @@ export function CashflowTab({ result }: { result: InvestmentResult }) {
             label: 'Mensualité crédit',
             value: `${Math.round(result.mensualiteCredit)} €/mois`,
             color: 'text-white',
-            bg: 'border-white/[0.07]',
+            bg: 'border-th-border',
           },
           {
             label: 'Point mort locatif',
@@ -152,8 +152,8 @@ export function CashflowTab({ result }: { result: InvestmentResult }) {
             bg: 'border-amber-500/20',
           },
         ].map((m) => (
-          <div key={m.label} className={`text-center rounded-xl bg-white/[0.02] border py-3 px-2 ${m.bg}`}>
-            <p className="text-[10px] text-zinc-600 mb-1.5 leading-tight">{m.label}</p>
+          <div key={m.label} className={`text-center rounded-xl bg-th-surface border py-3 px-2 ${m.bg}`}>
+            <p className="text-[10px] text-th-text-3 mb-1.5 leading-tight">{m.label}</p>
             <p className={`text-[15px] font-black tabular-nums leading-none ${m.color}`} style={{ letterSpacing: '-0.02em' }}>{m.value}</p>
           </div>
         ))}
@@ -211,14 +211,14 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
   if (!fiscalResults || fiscalResults.length === 0) {
     return (
       <div className="py-12 text-center space-y-3">
-        <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mx-auto">
-          <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-10 h-10 rounded-xl bg-th-surface2 border border-th-border flex items-center justify-center mx-auto">
+          <svg className="w-5 h-5 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
         <div>
-          <p className="text-sm font-semibold text-white mb-1">Renseignez votre TMI</p>
-          <p className="text-xs text-zinc-500 max-w-xs mx-auto">Dans la section Fiscalité du formulaire, sélectionnez votre tranche marginale pour comparer les régimes fiscaux.</p>
+          <p className="text-sm font-semibold text-th-text-1 mb-1">Renseignez votre TMI</p>
+          <p className="text-xs text-th-text-2 max-w-xs mx-auto">Dans la section Fiscalité du formulaire, sélectionnez votre tranche marginale pour comparer les régimes fiscaux.</p>
         </div>
       </div>
     )
@@ -256,18 +256,18 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
             best.rendNetNet >= 4 ? 'text-emerald-400' : best.rendNetNet >= 2 ? 'text-amber-400' : 'text-red-400'
           }`}>★</div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-0.5">Régime recommandé</p>
-            <p className="text-sm font-bold text-white truncate">{best.name}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-th-text-2 mb-0.5">Régime recommandé</p>
+            <p className="text-sm font-bold text-th-text-1 truncate">{best.name}</p>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
-              <span className="text-[11px] text-zinc-500">
+              <span className="text-[11px] text-th-text-2">
                 Net/an : <span className="text-white font-semibold">{formatCurrency(best.net)}</span>
               </span>
-              <span className="text-[11px] text-zinc-500">
+              <span className="text-[11px] text-th-text-2">
                 CF/mois : <span className={`font-semibold ${best.cfNet >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                   {best.cfNet >= 0 ? '+' : ''}{formatCurrency(best.cfNet)}
                 </span>
               </span>
-              <span className="text-[11px] text-zinc-500">
+              <span className="text-[11px] text-th-text-2">
                 Impôt : <span className="text-red-400 font-semibold">{formatCurrency(best.impot)}</span>
               </span>
             </div>
@@ -278,7 +278,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
             }`} style={{ letterSpacing: '-0.04em' }}>
               {formatPct(best.rendNetNet)}
             </p>
-            <p className="text-[10px] text-zinc-600">nette-nette</p>
+            <p className="text-[10px] text-th-text-3">nette-nette</p>
           </div>
         </div>
       )}
@@ -297,7 +297,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
       {/* ── Graphique ────────────────────────────────────────────────────────── */}
       {chartData.length > 1 && (
         <div>
-          <p className="text-[11px] text-zinc-600 mb-3">Rendement nette-nette par régime (classé du meilleur au moins bon)</p>
+          <p className="text-[11px] text-th-text-3 mb-3">Rendement nette-nette par régime (classé du meilleur au moins bon)</p>
           <ResponsiveContainer width="100%" height={150}>
             <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barCategoryGap="28%">
               <XAxis dataKey="name" tick={{ fill: '#52525b', fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -315,7 +315,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
 
       {/* ── Liste des régimes (cartes cliquables) ────────────────────────────── */}
       <div className="space-y-1.5">
-        <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">
+        <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider mb-2">
           Tous les régimes — cliquez pour voir les détails
         </p>
 
@@ -349,7 +349,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
               <div className="flex items-center gap-3 px-3 py-3">
                 {/* Rang */}
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                  isBest ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/[0.05] text-zinc-600'
+                  isBest ? 'bg-emerald-500/20 text-emerald-400' : 'bg-th-surface2 text-th-text-3'
                 }`}>
                   {i + 1}
                 </div>
@@ -357,12 +357,12 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
                 {/* Nom + tag */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className={`text-xs font-bold ${isBest ? 'text-white' : 'text-zinc-300'}`}>{r.name}</p>
+                    <p className={`text-xs font-bold ${isBest ? 'text-white' : 'text-th-text-1'}`}>{r.name}</p>
                     {isBest && <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">★ OPTIMAL</span>}
-                    {r.tag && <span className="text-[9px] text-zinc-600 bg-white/[0.04] px-1.5 py-0.5 rounded-full">{r.tag}</span>}
+                    {r.tag && <span className="text-[9px] text-th-text-3 bg-th-surface2 px-1.5 py-0.5 rounded-full">{r.tag}</span>}
                   </div>
                   {/* Barre performance */}
-                  <div className="mt-1.5 h-1 bg-white/[0.06] rounded-full overflow-hidden w-full">
+                  <div className="mt-1.5 h-1 bg-th-surface2 rounded-full overflow-hidden w-full">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${barPct}%`, background: barColor }}
@@ -373,15 +373,15 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
                 {/* Valeurs clés */}
                 <div className="hidden sm:flex items-center gap-4 text-right shrink-0">
                   <div>
-                    <p className="text-[9px] text-zinc-600">Impôt</p>
+                    <p className="text-[9px] text-th-text-3">Impôt</p>
                     <p className="text-[11px] text-red-400 tabular-nums font-medium">{formatCurrency(r.impot)}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] text-zinc-600">Net/an</p>
+                    <p className="text-[9px] text-th-text-3">Net/an</p>
                     <p className={`text-[11px] tabular-nums font-semibold ${r.net >= 0 ? 'text-white' : 'text-red-400'}`}>{formatCurrency(r.net)}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] text-zinc-600">CF/mois</p>
+                    <p className="text-[9px] text-th-text-3">CF/mois</p>
                     <p className={`text-[11px] tabular-nums font-semibold ${r.cfNet >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                       {r.cfNet >= 0 ? '+' : ''}{formatCurrency(r.cfNet)}
                     </p>
@@ -393,12 +393,12 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
                   <p className={`text-base font-black tabular-nums ${nnColor}`} style={{ letterSpacing: '-0.03em' }}>
                     {formatPct(r.rendNetNet)}
                   </p>
-                  <p className="text-[9px] text-zinc-600">N-N</p>
+                  <p className="text-[9px] text-th-text-3">N-N</p>
                 </div>
 
                 {/* Chevron expand */}
                 <svg
-                  className={`w-3.5 h-3.5 text-zinc-600 transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                  className={`w-3.5 h-3.5 text-th-text-3 transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -407,17 +407,17 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
 
               {/* Panel expandé — détails + pros/cons */}
               {isExpanded && (
-                <div className="px-3 pb-3 border-t border-white/[0.05] pt-3 space-y-3">
+                <div className="px-3 pb-3 border-t border-th-border pt-3 space-y-3">
                   {/* Détail chiffres */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { label: 'Rev. imposable', value: formatCurrency(r.revImposable), color: 'text-zinc-300' },
+                      { label: 'Rev. imposable', value: formatCurrency(r.revImposable), color: 'text-th-text-1' },
                       { label: 'Impôt IR', value: formatCurrency(r.impot), color: 'text-red-400' },
                       { label: 'Prélèv. soc.', value: formatCurrency(r.ps), color: 'text-amber-400' },
                       { label: 'Total fiscal', value: formatCurrency(r.totalFiscal), color: 'text-red-400' },
                     ].map((m) => (
-                      <div key={m.label} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2 text-center">
-                        <p className="text-[9px] text-zinc-600 mb-0.5">{m.label}</p>
+                      <div key={m.label} className="rounded-lg bg-th-surface2 border border-th-border p-2 text-center">
+                        <p className="text-[9px] text-th-text-3 mb-0.5">{m.label}</p>
                         <p className={`text-[11px] font-bold tabular-nums ${m.color}`}>{m.value}</p>
                       </div>
                     ))}
@@ -433,7 +433,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
                         </div>
                         <div className="space-y-1">
                           {pc.pros.map((pro, i) => (
-                            <p key={i} className="text-[10px] text-zinc-400 flex gap-1.5 leading-snug">
+                            <p key={i} className="text-[10px] text-th-text-2 flex gap-1.5 leading-snug">
                               <span className="text-emerald-500 shrink-0 mt-0.5">·</span>
                               {pro}
                             </p>
@@ -447,7 +447,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
                         </div>
                         <div className="space-y-1">
                           {pc.cons.map((con, i) => (
-                            <p key={i} className="text-[10px] text-zinc-400 flex gap-1.5 leading-snug">
+                            <p key={i} className="text-[10px] text-th-text-2 flex gap-1.5 leading-snug">
                               <span className="text-red-500 shrink-0 mt-0.5">·</span>
                               {con}
                             </p>
@@ -465,7 +465,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
         {enabled.length > 6 && (
           <button
             onClick={() => setShowAll((s) => !s)}
-            className="w-full text-xs text-zinc-600 hover:text-zinc-400 transition-colors py-2"
+            className="w-full text-xs text-th-text-3 hover:text-th-text-2 transition-colors py-2"
           >
             {showAll ? '↑ Afficher moins' : `↓ Voir ${enabled.length - 6} régimes de plus`}
           </button>
@@ -474,13 +474,13 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
 
       {/* ── Régimes non éligibles ─────────────────────────────────────────────── */}
       {disabled.length > 0 && (
-        <div className="pt-3 border-t border-white/[0.05]">
-          <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Non éligibles dans votre situation</p>
+        <div className="pt-3 border-t border-th-border">
+          <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider mb-2">Non éligibles dans votre situation</p>
           <div className="space-y-1">
             {disabled.map((r) => (
               <div key={r.id} className="flex items-center justify-between px-3 py-2 rounded-lg opacity-35">
-                <p className="text-xs text-zinc-500 line-through">{r.name}</p>
-                <p className="text-[10px] text-zinc-600 text-right max-w-[60%]">{r.disabledReason}</p>
+                <p className="text-xs text-th-text-2 line-through">{r.name}</p>
+                <p className="text-[10px] text-th-text-3 text-right max-w-[60%]">{r.disabledReason}</p>
               </div>
             ))}
           </div>
@@ -505,14 +505,14 @@ export function ReventeTab({ result }: { result: InvestmentResult }) {
   if (!hasData) {
     return (
       <div className="py-12 text-center space-y-3">
-        <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mx-auto">
-          <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-10 h-10 rounded-xl bg-th-surface2 border border-th-border flex items-center justify-center mx-auto">
+          <svg className="w-5 h-5 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
         <div>
-          <p className="text-sm font-semibold text-white mb-1">Configurez l&apos;horizon de revente</p>
-          <p className="text-xs text-zinc-500 max-w-xs mx-auto">Ouvrez la section «&nbsp;Revente & TRI&nbsp;» dans le formulaire pour définir votre horizon et la valorisation annuelle.</p>
+          <p className="text-sm font-semibold text-th-text-1 mb-1">Configurez l&apos;horizon de revente</p>
+          <p className="text-xs text-th-text-2 max-w-xs mx-auto">Ouvrez la section «&nbsp;Revente & TRI&nbsp;» dans le formulaire pour définir votre horizon et la valorisation annuelle.</p>
         </div>
       </div>
     )
@@ -528,7 +528,7 @@ export function ReventeTab({ result }: { result: InvestmentResult }) {
     {
       label: 'Plus-value brute',
       value: formatCurrency(plusValue),
-      color: plusValue > 0 ? 'text-emerald-400' : 'text-zinc-500',
+      color: plusValue > 0 ? 'text-emerald-400' : 'text-th-text-2',
       sub: 'Prix revente − prix acquisition',
     },
     {
@@ -564,7 +564,7 @@ export function ReventeTab({ result }: { result: InvestmentResult }) {
         <div className="rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20 p-5 flex items-center justify-between">
           <div>
             <p className="text-[11px] text-emerald-400/80 font-semibold uppercase tracking-wider mb-1">TRI — Taux de Rendement Interne</p>
-            <p className="text-xs text-zinc-500 max-w-xs leading-relaxed">
+            <p className="text-xs text-th-text-2 max-w-xs leading-relaxed">
               Rentabilité globale de l&apos;opération, intégrant l&apos;apport initial, les cashflows annuels, la plus-value nette et les impôts à la revente.
             </p>
           </div>
@@ -572,7 +572,7 @@ export function ReventeTab({ result }: { result: InvestmentResult }) {
             <p className={`text-3xl font-black ${tri >= 8 ? 'text-emerald-400' : tri >= 4 ? 'text-amber-400' : 'text-red-400'}`} style={{ letterSpacing: '-0.04em' }}>
               {tri.toFixed(1)}%
             </p>
-            <p className="text-[11px] text-zinc-600 mt-0.5">
+            <p className="text-[11px] text-th-text-3 mt-0.5">
               {tri >= 8 ? 'Excellent' : tri >= 5 ? 'Bon' : tri >= 3 ? 'Moyen' : 'Faible'}
             </p>
           </div>
@@ -582,20 +582,20 @@ export function ReventeTab({ result }: { result: InvestmentResult }) {
       {/* Metrics grid */}
       <div className="grid grid-cols-2 gap-3">
         {metrics.map((m) => (
-          <div key={m.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4">
-            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">{m.label}</p>
+          <div key={m.label} className="rounded-xl bg-th-surface2 border border-th-border p-4">
+            <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-wider mb-2">{m.label}</p>
             <p className={`text-lg font-bold tabular-nums ${m.color}`} style={{ letterSpacing: '-0.02em' }}>{m.value}</p>
-            <p className="text-[10px] text-zinc-600 mt-1 leading-snug">{m.sub}</p>
+            <p className="text-[10px] text-th-text-3 mt-1 leading-snug">{m.sub}</p>
           </div>
         ))}
       </div>
 
       {/* Plus-value timeline */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] p-4">
-        <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3">Abattements plus-value selon durée de détention</p>
+      <div className="rounded-xl bg-th-surface border border-th-border p-4">
+        <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider mb-3">Abattements plus-value selon durée de détention</p>
         {/* En-tête */}
-        <div className="grid grid-cols-[1fr_70px_80px] gap-2 pb-2 mb-1 border-b border-white/[0.05]">
-          <span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Durée</span>
+        <div className="grid grid-cols-[1fr_70px_80px] gap-2 pb-2 mb-1 border-b border-th-border">
+          <span className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">Durée</span>
           <span className="text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider text-right">IR 19%</span>
           <span className="text-[10px] font-semibold text-amber-400/70 uppercase tracking-wider text-right">PS 17.2%</span>
         </div>
@@ -609,9 +609,9 @@ export function ReventeTab({ result }: { result: InvestmentResult }) {
             { label: '23 à 29 ans', ir: '100%', ps: '9%/an', special: '' },
             { label: '30 ans et +', ir: '100%', ps: '100%', special: 'Exonération totale' },
           ].map((row) => (
-            <div key={row.label} className="grid grid-cols-[1fr_70px_80px] gap-2 items-center py-1 rounded-md hover:bg-white/[0.02] px-1 -mx-1 transition-colors">
+            <div key={row.label} className="grid grid-cols-[1fr_70px_80px] gap-2 items-center py-1 rounded-md hover:bg-th-surface px-1 -mx-1 transition-colors">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-[11px] text-zinc-400 truncate">{row.label}</span>
+                <span className="text-[11px] text-th-text-2 truncate">{row.label}</span>
                 {row.special && (
                   <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap">{row.special}</span>
                 )}
@@ -624,11 +624,11 @@ export function ReventeTab({ result }: { result: InvestmentResult }) {
       </div>
 
       {/* Footnote */}
-      <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-        <svg className="w-3.5 h-3.5 text-zinc-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-th-surface border border-th-border">
+        <svg className="w-3.5 h-3.5 text-th-text-3 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <p className="text-[10px] text-zinc-600 leading-relaxed">
+        <p className="text-[10px] text-th-text-3 leading-relaxed">
           Calcul indicatif selon les règles fiscales en vigueur. Les abattements s&apos;appliquent par année de détention complète. Consultez un conseiller fiscal pour votre situation personnelle.
         </p>
       </div>
@@ -641,7 +641,7 @@ export function AmortTab({ result }: { result: InvestmentResult }) {
   const [view, setView] = useState<'chart' | 'table'>('chart')
 
   if (!result.tableauAmortissement || result.tableauAmortissement.length === 0) {
-    return <p className="text-sm text-zinc-500 py-8 text-center">Données d&apos;amortissement non disponibles.</p>
+    return <p className="text-sm text-th-text-2 py-8 text-center">Données d&apos;amortissement non disponibles.</p>
   }
 
   const chartData = result.tableauAmortissement
@@ -656,18 +656,18 @@ export function AmortTab({ result }: { result: InvestmentResult }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-th-text-2">
           Capital emprunté : <span className="text-white font-semibold">{formatCurrency(result.montantEmprunte)}</span>
           {' · '}
           Coût total crédit : <span className="text-red-400 font-semibold">{formatCurrency(result.coutCredit)}</span>
         </p>
-        <div className="flex items-center gap-1 p-0.5 bg-white/[0.04] rounded-lg border border-white/[0.06]">
+        <div className="flex items-center gap-1 p-0.5 bg-th-surface2 rounded-lg border border-th-border">
           {(['chart', 'table'] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
               className={`px-3 py-1 text-[11px] font-medium rounded-md transition-all ${
-                view === v ? 'bg-white text-zinc-950' : 'text-zinc-500 hover:text-white'
+                view === v ? 'bg-white text-zinc-950' : 'text-th-text-2 hover:text-white'
               }`}
             >
               {v === 'chart' ? 'Graphique' : 'Tableau'}
@@ -694,19 +694,19 @@ export function AmortTab({ result }: { result: InvestmentResult }) {
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-white/[0.06]">
+              <tr className="border-b border-th-border">
                 {['Année', 'Capital remboursé', 'Intérêts payés', 'Capital restant'].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left py-2 pr-4 text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {chartData.map((row, i) => (
-                <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
-                  <td className="py-2 pr-4 text-zinc-400">{row.an}</td>
+                <tr key={i} className="border-b border-white/[0.03] hover:bg-th-surface">
+                  <td className="py-2 pr-4 text-th-text-2">{row.an}</td>
                   <td className="py-2 pr-4 text-emerald-400 tabular-nums">{formatCurrency(row.capital)}</td>
                   <td className="py-2 pr-4 text-violet-400 tabular-nums">{formatCurrency(row.interets)}</td>
-                  <td className="py-2 pr-4 text-white tabular-nums">{formatCurrency(row.restant)}</td>
+                  <td className="py-2 pr-4 text-th-text-1 tabular-nums">{formatCurrency(row.restant)}</td>
                 </tr>
               ))}
             </tbody>
@@ -720,7 +720,7 @@ export function AmortTab({ result }: { result: InvestmentResult }) {
 /* ─── Projection tab ───────────────────────────────────────────────────────── */
 export function ProjectionTab({ result }: { result: InvestmentResult }) {
   if (!result.projection || result.projection.length === 0) {
-    return <p className="text-sm text-zinc-500 py-8 text-center">Données de projection non disponibles.</p>
+    return <p className="text-sm text-th-text-2 py-8 text-center">Données de projection non disponibles.</p>
   }
 
   const data = result.projection.map((p) => ({
@@ -741,15 +741,15 @@ export function ProjectionTab({ result }: { result: InvestmentResult }) {
           { label: 'Valeur estimée du bien', value: formatCurrency(final.valeur), color: 'text-white' },
           { label: 'Cashflow cumulé', value: `${final.cashflow >= 0 ? '+' : ''}${formatCurrency(final.cashflow)}`, color: final.cashflow >= 0 ? 'text-emerald-400' : 'text-red-400' },
         ].map((m) => (
-          <div key={m.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-center">
-            <p className="text-[10px] text-zinc-600 mb-2 leading-tight">{m.label}</p>
+          <div key={m.label} className="rounded-xl bg-th-surface2 border border-th-border p-4 text-center">
+            <p className="text-[10px] text-th-text-3 mb-2 leading-tight">{m.label}</p>
             <p className={`text-base font-bold tabular-nums ${m.color}`} style={{ letterSpacing: '-0.02em' }}>{m.value}</p>
           </div>
         ))}
       </div>
 
       <div>
-        <p className="text-[11px] text-zinc-600 mb-3">Évolution du patrimoine net — valeur bien moins capital restant dû</p>
+        <p className="text-[11px] text-th-text-3 mb-3">Évolution du patrimoine net — valeur bien moins capital restant dû</p>
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -765,7 +765,7 @@ export function ProjectionTab({ result }: { result: InvestmentResult }) {
       </div>
 
       <div>
-        <p className="text-[11px] text-zinc-600 mb-3">Cashflow cumulé sur 20 ans</p>
+        <p className="text-[11px] text-th-text-3 mb-3">Cashflow cumulé sur 20 ans</p>
         <ResponsiveContainer width="100%" height={140}>
           <LineChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -784,7 +784,7 @@ export function ProjectionTab({ result }: { result: InvestmentResult }) {
         </ResponsiveContainer>
       </div>
 
-      <p className="text-[10px] text-zinc-600 leading-relaxed border-t border-white/[0.05] pt-3">
+      <p className="text-[10px] text-th-text-3 leading-relaxed border-t border-th-border pt-3">
         * Projection sur 20 ans avec revalorisation IRL des loyers. Résultats indicatifs, avant fiscalité.
       </p>
     </div>

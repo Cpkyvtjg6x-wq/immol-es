@@ -129,7 +129,7 @@ function TabButton({
     <button
       onClick={onClick}
       className={`relative px-4 py-3 text-[12px] font-semibold whitespace-nowrap transition-colors ${
-        active ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
+        active ? 'text-white' : 'text-th-text-2 hover:text-th-text-1'
       }`}
     >
       <span className="flex items-center gap-1.5">
@@ -151,7 +151,7 @@ function TabButton({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest mb-3">{children}</p>
+    <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-widest mb-3">{children}</p>
   )
 }
 
@@ -222,14 +222,14 @@ function FiscaliteTab({
   if (!fiscalResults || fiscalResults.length === 0) {
     return (
       <div className="py-24 text-center space-y-5 px-8">
-        <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mx-auto">
-          <svg className="w-7 h-7 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-14 h-14 rounded-2xl bg-th-surface2 border border-th-border flex items-center justify-center mx-auto">
+          <svg className="w-7 h-7 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
         <div>
-          <p className="text-[16px] font-semibold text-white mb-2">Renseignez votre TMI</p>
-          <p className="text-[13px] text-zinc-500 max-w-sm mx-auto leading-relaxed">
+          <p className="text-[16px] font-semibold text-th-text-1 mb-2">Renseignez votre TMI</p>
+          <p className="text-[13px] text-th-text-2 max-w-sm mx-auto leading-relaxed">
             Dans la section Fiscalité du formulaire, sélectionnez votre tranche marginale d&apos;imposition pour obtenir une analyse personnalisée.
           </p>
         </div>
@@ -259,7 +259,7 @@ function FiscaliteTab({
       {/* ════════════════════════════════════════════════════════════════════ */}
       {/* ZONE A — Hero régime recommandé (pleine largeur, bulle avec contour) */}
       {/* ════════════════════════════════════════════════════════════════════ */}
-      <div className="border-b border-white/[0.06] px-8 py-10">
+      <div className="border-b border-th-border px-8 py-10">
         {/* Header badge */}
         <div className="flex items-center gap-3 mb-7">
           <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5">
@@ -267,8 +267,8 @@ function FiscaliteTab({
             <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest">Régime optimal · TMI {params.tmi}%</p>
           </div>
           {economieImpot > 500 && (
-            <div className="flex items-center gap-2 rounded-full border border-white/[0.10] bg-white/[0.04] px-3.5 py-1.5">
-              <p className="text-[11px] font-semibold text-zinc-300">
+            <div className="flex items-center gap-2 rounded-full border border-th-border-med bg-th-surface2 px-3.5 py-1.5">
+              <p className="text-[11px] font-semibold text-th-text-1">
                 Économie jusqu&apos;à <span className="text-emerald-400 font-bold">+{formatCurrency(economieImpot)}/an</span> vs. le pire régime
               </p>
             </div>
@@ -276,20 +276,20 @@ function FiscaliteTab({
         </div>
 
         {/* Card principale — bulle avec contour */}
-        <div className="rounded-2xl border border-emerald-500/20 bg-white/[0.02] p-8">
+        <div className="rounded-2xl border border-emerald-500/20 bg-th-surface p-8">
           <div className="flex items-start gap-12">
 
             {/* Gauche */}
             <div className="flex-1 min-w-0 space-y-6">
               <div>
                 <h2
-                  className="text-[28px] font-black text-white leading-tight"
+                  className="text-[28px] font-black text-th-text-1 leading-tight"
                   style={{ letterSpacing: '-0.04em' }}
                 >
                   {best.name}
                 </h2>
                 {bestExpl && (
-                  <p className="text-[14px] text-zinc-300 mt-3 leading-relaxed max-w-xl">
+                  <p className="text-[14px] text-th-text-1 mt-3 leading-relaxed max-w-xl">
                     {bestExpl.detail}
                   </p>
                 )}
@@ -298,15 +298,15 @@ function FiscaliteTab({
               {/* Étapes concrètes */}
               {bestExpl && (
                 <div className="space-y-2.5">
-                  <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                  <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider">
                     Comment mettre en place ce régime
                   </p>
                   {bestExpl.pratique.map((step, i) => (
-                    <div key={i} className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
+                    <div key={i} className="flex items-start gap-3 rounded-xl border border-th-border bg-th-surface2 px-4 py-3">
                       <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5">
                         <span className="text-[10px] font-black text-emerald-400">{i + 1}</span>
                       </div>
-                      <p className="text-[13px] text-zinc-200 leading-relaxed">{step}</p>
+                      <p className="text-[13px] text-th-text-1 leading-relaxed">{step}</p>
                     </div>
                   ))}
                 </div>
@@ -327,17 +327,17 @@ function FiscaliteTab({
                 </p>
               </div>
 
-              <div className="h-px bg-white/[0.06]" />
+              <div className="h-px bg-th-surface2" />
 
               <div className="space-y-3">
                 <div>
-                  <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-0.5">Impôts / an</p>
+                  <p className="text-[10px] text-th-text-3 uppercase tracking-wider mb-0.5">Impôts / an</p>
                   <p className="text-[20px] font-black text-red-400 tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
                     {formatCurrency(best.impot)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-0.5">Cashflow / mois</p>
+                  <p className="text-[10px] text-th-text-3 uppercase tracking-wider mb-0.5">Cashflow / mois</p>
                   <p className={`text-[20px] font-black tabular-nums leading-none ${best.cfNet >= 0 ? 'text-emerald-400' : 'text-red-400'}`} style={{ letterSpacing: '-0.03em' }}>
                     {best.cfNet >= 0 ? '+' : ''}{formatCurrency(best.cfNet)}
                   </p>
@@ -353,8 +353,8 @@ function FiscaliteTab({
       {/* ZONE A.5 — Avant / Après (si >= 2 régimes éligibles)               */}
       {/* ════════════════════════════════════════════════════════════════════ */}
       {sorted.length >= 2 && economieImpot > 0 && (
-        <div className="border-b border-white/[0.06] px-8 py-8">
-          <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-5">
+        <div className="border-b border-th-border px-8 py-8">
+          <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider mb-5">
             Impact de l&apos;optimisation fiscale — Avant / Après
           </p>
           <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-stretch">
@@ -369,17 +369,17 @@ function FiscaliteTab({
                 </div>
                 <div>
                   <p className="text-[10px] text-red-400/60 uppercase tracking-wider">Sans optimisation</p>
-                  <p className="text-[13px] font-bold text-zinc-400">{worst!.name}</p>
+                  <p className="text-[13px] font-bold text-th-text-2">{worst!.name}</p>
                 </div>
               </div>
               <div className="space-y-2.5">
                 {[
                   { label: 'Impôts / an', value: formatCurrency(worst!.impot), color: 'text-red-400' },
-                  { label: 'Cashflow / mois', value: `${worst!.cfNet >= 0 ? '+' : ''}${formatCurrency(worst!.cfNet)}`, color: worst!.cfNet >= 0 ? 'text-zinc-300' : 'text-red-400' },
-                  { label: 'Rendement nette-nette', value: `${worst!.rendNetNet.toFixed(1)} %`, color: worst!.rendNetNet >= 3 ? 'text-zinc-300' : 'text-red-400' },
+                  { label: 'Cashflow / mois', value: `${worst!.cfNet >= 0 ? '+' : ''}${formatCurrency(worst!.cfNet)}`, color: worst!.cfNet >= 0 ? 'text-th-text-1' : 'text-red-400' },
+                  { label: 'Rendement nette-nette', value: `${worst!.rendNetNet.toFixed(1)} %`, color: worst!.rendNetNet >= 3 ? 'text-th-text-1' : 'text-red-400' },
                 ].map((m) => (
                   <div key={m.label} className="flex items-center justify-between">
-                    <p className="text-[11px] text-zinc-600">{m.label}</p>
+                    <p className="text-[11px] text-th-text-3">{m.label}</p>
                     <p className={`text-[13px] font-bold tabular-nums ${m.color}`}>{m.value}</p>
                   </div>
                 ))}
@@ -398,7 +398,7 @@ function FiscaliteTab({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
               <div className="text-center">
-                <p className="text-[9px] text-zinc-600 uppercase tracking-wider">Sur 10 ans</p>
+                <p className="text-[9px] text-th-text-3 uppercase tracking-wider">Sur 10 ans</p>
                 <p className="text-[14px] font-black text-emerald-400 tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
                   +{formatCurrency(economieImpot * 10)}
                 </p>
@@ -415,7 +415,7 @@ function FiscaliteTab({
                 </div>
                 <div>
                   <p className="text-[10px] text-emerald-400/60 uppercase tracking-wider">Avec optimisation</p>
-                  <p className="text-[13px] font-bold text-white">{best.name}</p>
+                  <p className="text-[13px] font-bold text-th-text-1">{best.name}</p>
                 </div>
               </div>
               <div className="space-y-2.5">
@@ -425,7 +425,7 @@ function FiscaliteTab({
                   { label: 'Rendement nette-nette', value: `${best.rendNetNet.toFixed(1)} %`, color: best.rendNetNet >= 4 ? 'text-emerald-400' : best.rendNetNet >= 2 ? 'text-amber-400' : 'text-red-400' },
                 ].map((m) => (
                   <div key={m.label} className="flex items-center justify-between">
-                    <p className="text-[11px] text-zinc-600">{m.label}</p>
+                    <p className="text-[11px] text-th-text-3">{m.label}</p>
                     <p className={`text-[13px] font-bold tabular-nums ${m.color}`}>{m.value}</p>
                   </div>
                 ))}
@@ -439,15 +439,15 @@ function FiscaliteTab({
       {/* ════════════════════════════════════════════════════════════════════ */}
       {/* ZONE B — Comparatif visuel + sélecteur de régime                   */}
       {/* ════════════════════════════════════════════════════════════════════ */}
-      <div className="border-b border-white/[0.06]">
+      <div className="border-b border-th-border">
 
         {/* Label section */}
         <div className="px-8 pt-8 pb-5 flex items-center justify-between">
           <div>
-            <p className="text-[13px] font-semibold text-zinc-300">
+            <p className="text-[13px] font-semibold text-th-text-1">
               Comparatif des {sorted.length} régimes éligibles
             </p>
-            <p className="text-[11px] text-zinc-600 mt-0.5">Cliquez sur une ligne pour afficher la fiche complète ↓</p>
+            <p className="text-[11px] text-th-text-3 mt-0.5">Cliquez sur une ligne pour afficher la fiche complète ↓</p>
           </div>
         </div>
 
@@ -467,20 +467,20 @@ function FiscaliteTab({
                 key={r.id}
                 className={`group flex items-center gap-5 rounded-xl px-4 py-3.5 cursor-pointer transition-all ${
                   isSelected
-                    ? 'bg-white/[0.06] border border-white/[0.10]'
-                    : 'hover:bg-white/[0.04] border border-white/[0.04] hover:border-white/[0.08]'
+                    ? 'bg-th-surface2 border border-th-border-med'
+                    : 'hover:bg-th-surface2 border border-th-border hover:border-th-border-med'
                 }`}
                 onClick={() => setSelectedId(r.id === selectedId ? null : r.id)}
               >
                 {/* Rang + nom */}
                 <div className="flex items-center gap-3 w-56 shrink-0">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
-                    isBest ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-400' : 'bg-white/[0.05] border border-white/[0.06] text-zinc-500'
+                    isBest ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-400' : 'bg-th-surface2 border border-th-border text-th-text-2'
                   }`}>
                     {i + 1}
                   </div>
                   <div className="min-w-0">
-                    <p className={`text-[13px] font-bold truncate ${isBest ? 'text-white' : 'text-zinc-300'}`}>
+                    <p className={`text-[13px] font-bold truncate ${isBest ? 'text-white' : 'text-th-text-1'}`}>
                       {r.name}
                     </p>
                     {isBest && (
@@ -490,7 +490,7 @@ function FiscaliteTab({
                 </div>
 
                 {/* Barre */}
-                <div className="flex-1 h-6 bg-white/[0.04] rounded-md overflow-hidden">
+                <div className="flex-1 h-6 bg-th-surface2 rounded-md overflow-hidden">
                   <div
                     className="h-full rounded-md transition-all"
                     style={{ width: `${barW}%`, background: barColor, opacity: isBest ? 0.85 : 0.35 }}
@@ -500,11 +500,11 @@ function FiscaliteTab({
                 {/* Valeur + impôts + CTA */}
                 <div className="flex items-center gap-5 shrink-0 text-right">
                   <div>
-                    <p className="text-[10px] text-zinc-600">Impôts/an</p>
+                    <p className="text-[10px] text-th-text-3">Impôts/an</p>
                     <p className="text-[12px] text-red-400 font-bold tabular-nums">{formatCurrency(r.impot)}</p>
                   </div>
                   <div className="min-w-[52px]">
-                    <p className="text-[10px] text-zinc-600">Net-nette</p>
+                    <p className="text-[10px] text-th-text-3">Net-nette</p>
                     <p className={`text-[18px] font-black tabular-nums ${nnColor}`} style={{ letterSpacing: '-0.03em' }}>
                       {r.rendNetNet.toFixed(1)}%
                     </p>
@@ -512,8 +512,8 @@ function FiscaliteTab({
                   {/* CTA "Voir fiche" */}
                   <div className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-all ${
                     isSelected
-                      ? 'border-white/[0.12] bg-white/[0.06] text-zinc-200'
-                      : 'border-white/[0.06] bg-transparent text-zinc-500 group-hover:text-zinc-300 group-hover:border-white/[0.10]'
+                      ? 'border-th-border-med bg-th-surface2 text-th-text-1'
+                      : 'border-th-border bg-transparent text-th-text-2 group-hover:text-th-text-1 group-hover:border-th-border-med'
                   }`}>
                     <span className="text-[11px] font-semibold whitespace-nowrap">
                       {isSelected ? 'Fermer' : 'Voir fiche'}
@@ -539,19 +539,19 @@ function FiscaliteTab({
         <div className="px-8 py-8 space-y-6">
 
           {/* Titre fiche — bulle avec contour */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6">
+          <div className="rounded-2xl border border-th-border-med bg-th-surface p-6">
             <div className="flex items-start justify-between gap-8 mb-5">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-1 h-4 rounded-full bg-blue-400" />
                   <p className="text-[11px] font-semibold text-blue-400/70 uppercase tracking-widest">Fiche détaillée</p>
                 </div>
-                <h3 className="text-[22px] font-black text-white" style={{ letterSpacing: '-0.03em' }}>
+                <h3 className="text-[22px] font-black text-th-text-1" style={{ letterSpacing: '-0.03em' }}>
                   {selected.name}
                 </h3>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-1">Rendement nette-nette</p>
+                <p className="text-[10px] text-th-text-3 uppercase tracking-wider mb-1">Rendement nette-nette</p>
                 <p className={`font-black tabular-nums leading-none ${selected.rendNetNet >= 4 ? 'text-emerald-400' : selected.rendNetNet >= 2 ? 'text-amber-400' : 'text-red-400'}`} style={{ fontSize: '32px', letterSpacing: '-0.04em' }}>
                   {selected.rendNetNet.toFixed(1)}%
                 </p>
@@ -560,7 +560,7 @@ function FiscaliteTab({
 
             {/* Explication plain text */}
             {selectedExpl && (
-              <p className="text-[14px] text-zinc-300 leading-relaxed border-t border-white/[0.06] pt-4">
+              <p className="text-[14px] text-th-text-1 leading-relaxed border-t border-th-border pt-4">
                 {selectedExpl.detail}
               </p>
             )}
@@ -569,17 +569,17 @@ function FiscaliteTab({
           {/* 4 métriques fiscales */}
           <div className="grid grid-cols-4 gap-3">
             {[
-              { label: 'Revenu imposable', value: formatCurrency(selected.revImposable), color: 'text-zinc-200', sub: 'Base de calcul' },
+              { label: 'Revenu imposable', value: formatCurrency(selected.revImposable), color: 'text-th-text-1', sub: 'Base de calcul' },
               { label: 'Impôt sur le revenu', value: formatCurrency(selected.impot), color: 'text-red-400', sub: `TMI ${params.tmi}%` },
               { label: 'Prélèvements sociaux', value: formatCurrency(selected.ps), color: 'text-amber-400', sub: '17.2% fixe' },
               { label: 'Charge fiscale totale', value: formatCurrency(selected.totalFiscal), color: 'text-red-400', sub: 'IR + PS' },
             ].map((m) => (
-              <div key={m.label} className="rounded-2xl bg-white/[0.02] border border-white/[0.07] p-5">
-                <p className="text-[11px] text-zinc-600 mb-3 leading-tight">{m.label}</p>
+              <div key={m.label} className="rounded-2xl bg-th-surface border border-th-border p-5">
+                <p className="text-[11px] text-th-text-3 mb-3 leading-tight">{m.label}</p>
                 <p className={`text-[22px] font-black tabular-nums leading-none ${m.color}`} style={{ letterSpacing: '-0.03em' }}>
                   {m.value}
                 </p>
-                <p className="text-[10px] text-zinc-700 mt-2">{m.sub}</p>
+                <p className="text-[10px] text-th-text-3 mt-2">{m.sub}</p>
               </div>
             ))}
           </div>
@@ -587,16 +587,16 @@ function FiscaliteTab({
           {/* Étapes pratiques */}
           {selectedExpl && (
             <div className="space-y-3">
-              <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-wider">
+              <p className="text-[12px] font-semibold text-th-text-2 uppercase tracking-wider">
                 Mise en place — étapes concrètes
               </p>
               <div className="grid grid-cols-2 gap-3">
                 {selectedExpl.pratique.map((step, i) => (
-                  <div key={i} className="flex items-start gap-3 rounded-xl bg-white/[0.02] border border-white/[0.06] px-4 py-3.5">
+                  <div key={i} className="flex items-start gap-3 rounded-xl bg-th-surface border border-th-border px-4 py-3.5">
                     <div className="w-7 h-7 rounded-full bg-blue-500/15 border border-blue-500/25 flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-[11px] font-black text-blue-400">{i + 1}</span>
                     </div>
-                    <p className="text-[13px] text-zinc-200 leading-relaxed">{step}</p>
+                    <p className="text-[13px] text-th-text-1 leading-relaxed">{step}</p>
                   </div>
                 ))}
               </div>
@@ -608,15 +608,15 @@ function FiscaliteTab({
 
       {/* Régimes non éligibles */}
       {disabled.length > 0 && (
-        <div className="px-8 pb-8 border-t border-white/[0.05] pt-6">
-          <p className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider mb-3">
+        <div className="px-8 pb-8 border-t border-th-border pt-6">
+          <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-wider mb-3">
             Non disponibles dans votre situation
           </p>
           <div className="space-y-1.5">
             {disabled.map((r) => (
-              <div key={r.id} className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/[0.01] border border-white/[0.04] opacity-35">
-                <p className="text-[13px] text-zinc-500 line-through">{r.name}</p>
-                <p className="text-[11px] text-zinc-600 text-right max-w-[55%]">{r.disabledReason}</p>
+              <div key={r.id} className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-th-surface border border-th-border opacity-35">
+                <p className="text-[13px] text-th-text-2 line-through">{r.name}</p>
+                <p className="text-[11px] text-th-text-3 text-right max-w-[55%]">{r.disabledReason}</p>
               </div>
             ))}
           </div>
@@ -640,15 +640,15 @@ function ProjectionsTab({ result }: { result: InvestmentResult }) {
 
   return (
     <div>
-      <div className="flex gap-1 mb-5 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06] w-fit">
+      <div className="flex gap-1 mb-5 p-1 rounded-xl bg-th-surface2 border border-th-border w-fit">
         {subs.map((s) => (
           <button
             key={s.id}
             onClick={() => setSub(s.id)}
             className={`px-3.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
               sub === s.id
-                ? 'bg-white/[0.08] text-white shadow-sm'
-                : 'text-zinc-600 hover:text-zinc-300'
+                ? 'bg-th-surface3 text-th-text-1 shadow-sm'
+                : 'text-th-text-3 hover:text-th-text-1'
             }`}
           >
             {s.label}
@@ -699,15 +699,15 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
             label: 'Capital emprunté',
             value: formatCurrency(result.montantEmprunte),
             sub: 'Hors apport personnel',
-            color: 'text-zinc-200',
+            color: 'text-th-text-1',
           },
         ].map((m) => (
-          <div key={m.label} className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-4">
-            <p className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">{m.label}</p>
+          <div key={m.label} className="rounded-xl border border-th-border bg-th-surface2 p-4">
+            <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider mb-2">{m.label}</p>
             <p className={`text-[18px] font-black tabular-nums leading-none ${m.color}`} style={{ letterSpacing: '-0.03em' }}>
               {m.value}
             </p>
-            <p className="text-[10px] text-zinc-700 mt-1.5">{m.sub}</p>
+            <p className="text-[10px] text-th-text-3 mt-1.5">{m.sub}</p>
           </div>
         ))}
       </div>
@@ -717,7 +717,7 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
         <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.02] overflow-hidden">
 
           {/* Header */}
-          <div className="px-6 pt-5 pb-4 border-b border-white/[0.06]">
+          <div className="px-6 pt-5 pb-4 border-b border-th-border">
             <div className="flex items-start justify-between gap-6">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -726,39 +726,39 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
                   </svg>
                   <p className="text-[10px] font-semibold text-amber-400/70 uppercase tracking-widest">Impact travaux</p>
                 </div>
-                <p className="text-[22px] font-black text-white tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
+                <p className="text-[22px] font-black text-th-text-1 tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
                   {formatCurrency(params.travaux)}
                 </p>
-                <p className="text-[11px] text-zinc-500 mt-1">
+                <p className="text-[11px] text-th-text-2 mt-1">
                   {pctPrixRevient}% du prix de revient total · Financé au crédit
                 </p>
               </div>
 
               {/* Valorisation estimée */}
               <div className="text-right shrink-0">
-                <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-1">Valorisation estimée</p>
+                <p className="text-[10px] text-th-text-3 uppercase tracking-wider mb-1">Valorisation estimée</p>
                 <p className="text-[18px] font-black text-emerald-400 tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
                   +{formatCurrency(valorisationTravaux)}
                 </p>
-                <p className="text-[10px] text-zinc-600 mt-0.5">~+10% sur la valeur du bien</p>
+                <p className="text-[10px] text-th-text-3 mt-0.5">~+10% sur la valeur du bien</p>
               </div>
             </div>
           </div>
 
           {/* Impact rendement */}
           <div className="px-6 py-5">
-            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-4">
+            <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider mb-4">
               Impact sur le rendement brut
             </p>
             <div className="grid grid-cols-3 items-center gap-4">
 
               {/* Sans travaux */}
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-center">
-                <p className="text-[10px] text-zinc-600 mb-2">Sans travaux</p>
-                <p className="text-[24px] font-black text-zinc-400 tabular-nums leading-none" style={{ letterSpacing: '-0.04em' }}>
+              <div className="rounded-xl border border-th-border bg-th-surface p-4 text-center">
+                <p className="text-[10px] text-th-text-3 mb-2">Sans travaux</p>
+                <p className="text-[24px] font-black text-th-text-2 tabular-nums leading-none" style={{ letterSpacing: '-0.04em' }}>
                   {rendBrutSansTravaux.toFixed(1)}%
                 </p>
-                <p className="text-[10px] text-zinc-700 mt-1.5">
+                <p className="text-[10px] text-th-text-3 mt-1.5">
                   Base {formatCurrency(prixRevientSansTravaux)}
                 </p>
               </div>
@@ -770,10 +770,10 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
                     {deltaRend >= 0 ? '+' : ''}{deltaRend.toFixed(1)} pts
                   </p>
                 </div>
-                <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-5 h-5 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
-                <p className="text-[10px] text-zinc-600 text-center leading-snug">
+                <p className="text-[10px] text-th-text-3 text-center leading-snug">
                   {deltaRend >= 0
                     ? 'Les travaux améliorent le rendement'
                     : 'Les travaux pèsent sur le rendement'}
@@ -783,10 +783,10 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
               {/* Avec travaux */}
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4 text-center">
                 <p className="text-[10px] text-amber-400/60 mb-2">Avec travaux</p>
-                <p className={`text-[24px] font-black tabular-nums leading-none ${result.rendementBrut >= 6 ? 'text-emerald-400' : result.rendementBrut >= 4 ? 'text-amber-400' : 'text-zinc-300'}`} style={{ letterSpacing: '-0.04em' }}>
+                <p className={`text-[24px] font-black tabular-nums leading-none ${result.rendementBrut >= 6 ? 'text-emerald-400' : result.rendementBrut >= 4 ? 'text-amber-400' : 'text-th-text-1'}`} style={{ letterSpacing: '-0.04em' }}>
                   {result.rendementBrut.toFixed(1)}%
                 </p>
-                <p className="text-[10px] text-zinc-700 mt-1.5">
+                <p className="text-[10px] text-th-text-3 mt-1.5">
                   Base {formatCurrency(result.prixRevient)}
                 </p>
               </div>
@@ -794,12 +794,12 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
             </div>
 
             {/* Note pédagogique */}
-            <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-white/[0.05] bg-white/[0.02] px-4 py-3">
-              <svg className="w-3.5 h-3.5 text-zinc-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-th-border bg-th-surface px-4 py-3">
+              <svg className="w-3.5 h-3.5 text-th-text-3 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
               </svg>
-              <p className="text-[11px] text-zinc-600 leading-relaxed">
-                Le budget travaux est financé au crédit et intégré dans le prix de revient. L&apos;impact fiscal (déficit foncier, amortissement LMNP/LMP) est calculé dans l&apos;onglet <span className="text-zinc-400 font-semibold">Fiscalité</span>.
+              <p className="text-[11px] text-th-text-3 leading-relaxed">
+                Le budget travaux est financé au crédit et intégré dans le prix de revient. L&apos;impact fiscal (déficit foncier, amortissement LMNP/LMP) est calculé dans l&apos;onglet <span className="text-th-text-2 font-semibold">Fiscalité</span>.
               </p>
             </div>
           </div>
@@ -840,11 +840,11 @@ export function ResultTabs({
   return (
     <div>
       {/* ── Tabs nav — sticky dans le scroll du parent ──────────────────── */}
-      <div className="sticky top-0 z-10 bg-[#09090b]/95 backdrop-blur-xl border-b border-white/[0.06]">
+      <div className="sticky top-0 z-10 bg-th-bg/95 backdrop-blur-xl border-b border-th-border">
         {/* Titre + sous-titre */}
         <div className="px-6 pt-4 flex items-end justify-between">
           <div className="flex items-center gap-2.5">
-            <h2 className="text-[15px] font-semibold text-white" style={{ letterSpacing: '-0.02em' }}>
+            <h2 className="text-[15px] font-semibold text-th-text-1" style={{ letterSpacing: '-0.02em' }}>
               Analyse complète
             </h2>
             {hasFiscal && (
@@ -853,7 +853,7 @@ export function ResultTabs({
               </span>
             )}
           </div>
-          <p className="text-[12px] text-zinc-500 pb-0.5">
+          <p className="text-[12px] text-th-text-2 pb-0.5">
             {result.ville} · {formatCurrency(result.prixRevient)}
           </p>
         </div>

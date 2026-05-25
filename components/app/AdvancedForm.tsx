@@ -57,13 +57,13 @@ function Section({
         onClick={() => collapsible && setOpen((o) => !o)}
         className="flex items-center gap-2.5 w-full group"
       >
-        <span className="w-4 h-4 rounded-full bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-[10px] font-bold text-zinc-500 shrink-0">
+        <span className="w-4 h-4 rounded-full bg-th-surface2 border border-white/[0.1] flex items-center justify-center text-[10px] font-bold text-th-text-2 shrink-0">
           {step}
         </span>
-        <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest flex-1 text-left">{title}</p>
+        <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest flex-1 text-left">{title}</p>
         {collapsible && (
           <svg
-            className={`w-3.5 h-3.5 text-zinc-600 transition-transform ${open ? 'rotate-0' : '-rotate-90'}`}
+            className={`w-3.5 h-3.5 text-th-text-3 transition-transform ${open ? 'rotate-0' : '-rotate-90'}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -78,7 +78,7 @@ function Section({
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-center justify-between cursor-pointer py-1">
-      <span className="text-xs text-zinc-400">{label}</span>
+      <span className="text-xs text-th-text-2">{label}</span>
       <button
         type="button"
         onClick={() => onChange(!checked)}
@@ -93,7 +93,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 }
 
 function Divider() {
-  return <div className="h-px bg-white/[0.05]" />
+  return <div className="h-px bg-th-surface2" />
 }
 
 export function AdvancedForm({ onCalculate, loading }: AdvancedFormProps) {
@@ -178,14 +178,14 @@ export function AdvancedForm({ onCalculate, loading }: AdvancedFormProps) {
           {/* Vacance slider */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-zinc-300">Vacance locative</label>
-              <span className="text-xs text-zinc-400 tabular-nums">{form.vacance} mois/an</span>
+              <label className="text-xs font-medium text-th-text-1">Vacance locative</label>
+              <span className="text-xs text-th-text-2 tabular-nums">{form.vacance} mois/an</span>
             </div>
             <input
               type="range" min={0} max={3} step={0.25} value={form.vacance}
               onChange={(e) => set('vacance', +e.target.value)}
             />
-            <div className="flex justify-between text-[10px] text-zinc-600">
+            <div className="flex justify-between text-[10px] text-th-text-3">
               <span>0 — Toujours loué</span>
               <span>3 mois vide</span>
             </div>
@@ -221,7 +221,7 @@ export function AdvancedForm({ onCalculate, loading }: AdvancedFormProps) {
         <div className="space-y-3">
           <Toggle label="Prêt à Taux Zéro activé" checked={form.ptzEnabled} onChange={(v) => set('ptzEnabled', v)} />
           {form.ptzEnabled && (
-            <div className="space-y-3 pl-3 border-l border-white/[0.06]">
+            <div className="space-y-3 pl-3 border-l border-th-border">
               <div className="grid grid-cols-2 gap-3">
                 <Input label="Montant PTZ" type="number" value={form.ptzMontant} suffix="€" onChange={(e) => set('ptzMontant', +e.target.value)} />
                 <Input label="Taux PTZ" type="number" step="0.1" value={form.ptzTaux} suffix="%" onChange={(e) => set('ptzTaux', +e.target.value)} />
@@ -263,7 +263,7 @@ export function AdvancedForm({ onCalculate, loading }: AdvancedFormProps) {
       {/* 6 — Fiscalité */}
       <Section step="6" title="Fiscalité">
         <div className="space-y-1.5">
-          <label className="block text-xs font-medium text-zinc-300">Tranche marginale d'imposition (TMI)</label>
+          <label className="block text-xs font-medium text-th-text-1">Tranche marginale d'imposition (TMI)</label>
           <div className="grid grid-cols-5 gap-1.5">
             {[0, 11, 30, 41, 45].map((t) => (
               <button
@@ -273,14 +273,14 @@ export function AdvancedForm({ onCalculate, loading }: AdvancedFormProps) {
                 className={`py-2 rounded-lg text-xs font-semibold transition-all ${
                   tmi === t
                     ? 'bg-emerald-500 text-zinc-950'
-                    : 'bg-white/[0.05] text-zinc-500 hover:bg-white/[0.08] hover:text-white border border-white/[0.06]'
+                    : 'bg-th-surface2 text-th-text-2 hover:bg-th-surface3 hover:text-white border border-th-border'
                 }`}
               >
                 {t}%
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-zinc-600 pt-0.5">Permet le calcul nette-nette et la comparaison des 10 régimes fiscaux</p>
+          <p className="text-[10px] text-th-text-3 pt-0.5">Permet le calcul nette-nette et la comparaison des 10 régimes fiscaux</p>
         </div>
       </Section>
 

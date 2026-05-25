@@ -16,11 +16,11 @@
   /* Sidebar — toujours sombre même en mode clair */
   --c-sidebar-bg:    #48443e;
   --c-sidebar-border: rgba(255,255,255,0.08);
-  /* Texte sidebar — assez clair pour contraster sur #48443e (light) */
-  /* zinc-200 = 7.62:1 / zinc-300 = 6.54:1 sur #48443e ✅ AA */
-  --c-sidebar-text-1: #e4e4e7;   /* zinc-200 — nav items, noms */
-  --c-sidebar-text-2: #d4d4d8;   /* zinc-300 — labels sections, badges */
-  --c-sidebar-text-dim: rgba(212,212,216,0.5); /* atténué — éléments décoratifs */
+  /* Texte sidebar — clair pour contraster sur #48443e (light) */
+  /* zinc-100 = 9.35:1 / zinc-200 = 7.62:1 sur #48443e ✅✅ AA */
+  --c-sidebar-text-1: #f4f4f5;   /* zinc-100 — nav items, noms, labels sections */
+  --c-sidebar-text-2: #e4e4e7;   /* zinc-200 — sous-titres, badges, helper text */
+  --c-sidebar-text-dim: rgba(228,228,231,0.55); /* atténué — éléments décoratifs */
   /* Fond page — parchemin chaud, légèrement texturé visuellement */
   --c-bg:            #edeae4;
   /* Surfaces cartes — blanc pur → contraste max sur fond chaud */

@@ -257,7 +257,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
           {/* Mes tags — visible uniquement sur /bibliotheque */}
           {isBibliotheque && onTagFilter && (
             <div className="mb-5">
-              <p className="px-3 mb-1.5 text-[10px] font-semibold text-th-sidebar-text-2 uppercase tracking-widest">Mes tags</p>
+              <p className="px-3 mb-1.5 text-[10px] font-semibold text-th-sidebar-text-1 uppercase tracking-widest">Mes tags</p>
               <div className="space-y-0">
 
                 {/* Tous — toujours visible, sert de toggle */}
@@ -337,7 +337,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
           {/* Simulations recentes — masquees sur bibliotheque */}
           {recentSims.length > 0 && !isBibliotheque && (
             <div className="mb-5">
-              <p className="px-3 mb-2 text-[10px] font-semibold text-th-sidebar-text-2 uppercase tracking-widest">Recentes</p>
+              <p className="px-3 mb-2 text-[10px] font-semibold text-th-sidebar-text-1 uppercase tracking-widest">Recentes</p>
               <div className="space-y-0.5">
                 {recentSims.map((sim) => {
                   const score = sim.score ?? 0
@@ -370,7 +370,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
               </div>
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 mt-1 text-[10px] font-semibold text-th-sidebar-text-2 hover:text-th-sidebar-text-2 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 mt-1 text-[10px] font-semibold text-th-sidebar-text-1 hover:text-white transition-colors"
               >
                 Voir toutes les simulations
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -382,7 +382,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
 
           {/* Outils Pro */}
           <div>
-            <p className="px-3 mb-2 text-[10px] font-semibold text-th-sidebar-text-2 uppercase tracking-widest">Outils Pro</p>
+            <p className="px-3 mb-2 text-[10px] font-semibold text-th-sidebar-text-1 uppercase tracking-widest">Outils Pro</p>
             <div className="space-y-0.5">
               {tools.map((item) => {
                 const isActive = pathname === item.href
@@ -426,7 +426,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
         <div className="p-2 shrink-0 space-y-0.5" style={{ borderTop: '1px solid var(--c-sidebar-border)' }}>
           {/* Theme toggle */}
           <div className="flex items-center justify-between px-3 py-1.5">
-            <span className="text-[10px] font-semibold text-th-sidebar-text-2 uppercase tracking-widest">
+            <span className="text-[10px] font-semibold text-th-sidebar-text-1 uppercase tracking-widest">
               {isDark ? 'Mode sombre' : 'Mode clair'}
             </span>
             <button
@@ -445,7 +445,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
             <>
               <div className="flex items-center gap-1 px-1 pb-1">
                 <NotificationBell simulationCount={simulations.length} isPro={isPro} />
-                <p className="text-[10px] text-th-sidebar-text-2 ml-1">Notifications</p>
+                <p className="text-[10px] text-th-sidebar-text-1 ml-1">Notifications</p>
               </div>
               <Link
                 href="/profile"
@@ -464,7 +464,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
               </Link>
               <button
                 onClick={signOut}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-th-sidebar-text-2 hover:text-th-sidebar-text-1 hover:bg-white/[0.04] transition-all"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-th-sidebar-text-1 hover:text-white hover:bg-white/[0.04] transition-all"
               >
                 <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

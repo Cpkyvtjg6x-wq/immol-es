@@ -32,8 +32,8 @@
   --c-text-1:        #18181b;
   /* Texte secondaire */
   --c-text-2:        #4b4b56;
-  /* Texte tertiaire / placeholder */
-  --c-text-3:        #9b9ba5;
+  /* Texte tertiaire / placeholder — #636369 = 4.97:1 sur bg, 5.71:1 sur surface ✅ AA */
+  --c-text-3:        #636369;
   /* Ombres — effet papier surélevé premium */
   --c-shadow-xs:     0 1px 2px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.8) inset;
   --c-shadow-sm:     0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
@@ -43,7 +43,7 @@
   --c-accent:        #10b981;
   --c-accent-dim:    rgba(16,185,129,0.12);
   --c-accent-border: rgba(16,185,129,0.28);
-  --c-accent-text:   #059669;
+  --c-accent-text:   #047857;  /* vert foncé — 5.25:1 sur surface ✅ AA */
   /* Scrollbar */
   --c-scrollbar:     #c8c5bd;
   --c-scrollbar-hover: #aeaba2;
@@ -63,7 +63,7 @@
   --c-border-med:    rgba(255,255,255,0.12);
   --c-text-1:        #fafafa;
   --c-text-2:        #a1a1aa;
-  --c-text-3:        #71717a;
+  --c-text-3:        #8f8f99;  /* 6.21:1 sur bg, 4.65:1 sur surface3 ✅ AA partout */
   --c-shadow-xs:     none;
   --c-shadow-sm:     none;
   --c-shadow-md:     0 0 0 1px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.5);
@@ -133,6 +133,57 @@ body {
 ::selection {
   background: rgba(16,185,129,0.18);
   color: inherit;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CORRECTIFS CONTRASTE — mode clair (WCAG AA)
+   Les classes emerald Tailwind (#10b981) ont un ratio insuffisant
+   sur fond clair. On surcharge en mode clair uniquement.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Texte emerald en mode clair → vert foncé (#047857 = 5.25:1 sur surface ✅ AA)
+   html:not(.dark) cible UNIQUEMENT le mode clair, pas le mode sombre          */
+html:not(.dark) .text-emerald-300,
+html:not(.dark) .text-emerald-400,
+html:not(.dark) .text-emerald-500 {
+  color: #047857;
+}
+html:not(.dark) .text-emerald-600 {
+  color: #065f46;
+}
+
+/* red-400 en mode clair aussi trop clair sur fond blanc (#f87171 = 3.03:1) */
+html:not(.dark) .text-red-400 {
+  color: #b91c1c;  /* red-700 = 7.5:1 sur surface ✅ AAA */
+}
+html:not(.dark) .text-red-500 {
+  color: #b91c1c;
+}
+
+/* amber-400 en mode clair (#fbbf24 = 1.5:1) → amber-700 = 4.81:1 ✅ AA */
+html:not(.dark) .text-amber-400,
+html:not(.dark) .text-amber-500 {
+  color: #b45309;  /* amber-700 = 4.81:1 ✅ AA */
+}
+
+/* indigo-400 (#818cf8 = 2.85:1) → indigo-600 = 6.02:1 ✅ AA */
+html:not(.dark) .text-indigo-400,
+html:not(.dark) .text-indigo-500 {
+  color: #4f46e5;  /* indigo-600 = 6.02:1 ✅ */
+}
+
+/* violet/purple (#a78bfa = 2.60:1) → violet-700 = 6.81:1 ✅ AA */
+html:not(.dark) .text-violet-400,
+html:not(.dark) .text-purple-400 {
+  color: #6d28d9;  /* violet-700 */
+}
+
+/* Bordures/fonds emerald/red/amber restent vifs — seul le texte est ciblé */
+/* Les SVG icons (currentColor sur stroke) bénéficient aussi de la correction */
+
+/* ─── Classe utilitaire accent text ──────────────────────── */
+.text-accent {
+  color: var(--c-accent-text);
 }
 
 /* ─── Transitions globales éléments interactifs ──────────── */

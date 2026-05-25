@@ -29,6 +29,7 @@ module.exports = {
         'th-text-3':      'var(--c-text-3)',
         'th-accent':      'var(--c-accent)',
         'th-accent-dim':  'var(--c-accent-dim)',
+        'th-accent-text': 'var(--c-accent-text)',
         'th-input-bg':    'var(--c-input-bg)',
         'th-input-border':'var(--c-input-border)',
 

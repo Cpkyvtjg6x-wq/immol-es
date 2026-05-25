@@ -111,7 +111,7 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
               <button
                 key={i}
                 onClick={() => setExpanded(isOpen ? null : i)}
-                className="w-full text-left rounded-xl border border-th-border hover:border-white/[0.1] bg-th-surface hover:bg-th-surface2 transition-all duration-200 overflow-hidden"
+                className="w-full text-left rounded-xl border border-th-border hover:border-th-border-med bg-th-surface hover:bg-th-surface2 transition-all duration-200 overflow-hidden"
               >
                 <div className="flex items-start gap-3 p-4">
                   <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: tc.dot }} />

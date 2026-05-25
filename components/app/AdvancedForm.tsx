@@ -57,7 +57,7 @@ function Section({
         onClick={() => collapsible && setOpen((o) => !o)}
         className="flex items-center gap-2.5 w-full group"
       >
-        <span className="w-4 h-4 rounded-full bg-th-surface2 border border-white/[0.1] flex items-center justify-center text-[10px] font-bold text-th-text-2 shrink-0">
+        <span className="w-4 h-4 rounded-full bg-th-surface2 border border-th-border flex items-center justify-center text-[10px] font-bold text-th-text-2 shrink-0">
           {step}
         </span>
         <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest flex-1 text-left">{title}</p>

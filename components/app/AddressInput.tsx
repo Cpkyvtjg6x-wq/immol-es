@@ -255,7 +255,7 @@ export function AddressInput({
               </button>
             ))}
           </div>
-          <div className="px-3 py-2 border-t border-white/[0.05] flex items-center gap-1.5">
+          <div className="px-3 py-2 border-t border-th-border flex items-center gap-1.5">
             <svg className="w-2.5 h-2.5 text-th-text-3" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/>
             </svg>

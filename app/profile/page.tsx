@@ -10,7 +10,7 @@ import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-th-border bg-white/[0.02] overflow-hidden">
+    <div className="rounded-2xl border border-th-border bg-th-surface overflow-hidden">
       <div className="px-6 py-4 border-b border-th-border">
         <h2 className="text-sm font-bold text-th-text-1">{title}</h2>
       </div>
@@ -45,7 +45,7 @@ function Field({
         onChange={e => onChange?.(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full bg-white/[0.04] border border-th-border-med rounded-xl px-4 py-3 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full bg-th-input-bg border border-th-border-med rounded-xl px-4 py-3 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       />
     </div>
   )
@@ -229,7 +229,7 @@ export default function ProfilePage() {
           {/* ── Abonnement ── */}
           <Section title="Abonnement">
             <div className="space-y-5">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-th-border">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-th-surface border border-th-border">
                 <div>
                   <p className="text-sm font-bold text-th-text-1">Plan {tierInfo.label}</p>
                   <p className="text-xs text-th-text-2 mt-0.5">
@@ -271,7 +271,7 @@ export default function ProfilePage() {
                   <button
                     onClick={openBillingPortal}
                     disabled={portalLoading}
-                    className="w-full flex items-center justify-center gap-2 bg-white/[0.05] hover:bg-th-surface3 border border-white/[0.1] text-th-text-1 font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 bg-th-surface2 hover:bg-th-surface3 border border-th-border text-th-text-1 font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-50"
                   >
                     {portalLoading ? (
                       <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -310,7 +310,7 @@ export default function ProfilePage() {
               <button
                 onClick={changePassword}
                 disabled={pwLoading || !pwForm.next}
-                className="w-full bg-white/[0.05] hover:bg-th-surface3 border border-white/[0.1] text-th-text-1 font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-40"
+                className="w-full bg-th-surface2 hover:bg-th-surface3 border border-th-border text-th-text-1 font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-40"
               >
                 {pwLoading ? 'Mise à jour…' : 'Changer le mot de passe'}
               </button>

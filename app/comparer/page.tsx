@@ -85,10 +85,10 @@ function SimSelector({
 
   if (selected) {
     return (
-      <div className="relative rounded-xl border border-th-border-med bg-white/[0.03] p-4">
+      <div className="relative rounded-xl border border-th-border-med bg-th-surface p-4">
         <button
           onClick={onRemove}
-          className="absolute top-3 right-3 w-6 h-6 rounded-lg bg-white/[0.06] hover:bg-th-surface3 flex items-center justify-center text-th-text-2 hover:text-th-text-1 transition-colors"
+          className="absolute top-3 right-3 w-6 h-6 rounded-lg bg-th-surface2 hover:bg-th-surface3 flex items-center justify-center text-th-text-2 hover:text-th-text-1 transition-colors"
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -102,11 +102,11 @@ function SimSelector({
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 mt-4">
-          <div className="rounded-lg bg-white/[0.03] border border-th-border p-2.5">
+          <div className="rounded-lg bg-th-surface border border-th-border p-2.5">
             <p className="text-[10px] text-th-text-3 uppercase tracking-wider">Rend. brut</p>
             <p className="text-sm font-bold text-emerald-400 tabular-nums mt-0.5">{formatPct(selected.rendementBrut)}</p>
           </div>
-          <div className="rounded-lg bg-white/[0.03] border border-th-border p-2.5">
+          <div className="rounded-lg bg-th-surface border border-th-border p-2.5">
             <p className="text-[10px] text-th-text-3 uppercase tracking-wider">Cashflow</p>
             <p className={`text-sm font-bold tabular-nums mt-0.5 ${selected.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {selected.cashflowMensuel >= 0 ? '+' : ''}{Math.round(selected.cashflowMensuel)} €
@@ -121,9 +121,9 @@ function SimSelector({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full rounded-xl border border-dashed border-th-border-med bg-white/[0.02] hover:bg-th-surface2 hover:border-white/[0.25] transition-all p-6 flex flex-col items-center gap-3 text-center"
+        className="w-full rounded-xl border border-dashed border-th-border-med bg-th-surface hover:bg-th-surface2 hover:border-th-border-med transition-all p-6 flex flex-col items-center gap-3 text-center"
       >
-        <div className="w-10 h-10 rounded-xl border border-th-border-med bg-white/[0.04] flex items-center justify-center text-th-text-2">
+        <div className="w-10 h-10 rounded-xl border border-th-border-med bg-th-surface2 flex items-center justify-center text-th-text-2">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
@@ -135,7 +135,7 @@ function SimSelector({
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-2 z-20 rounded-xl border border-white/[0.1] bg-th-surface2 shadow-2xl overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 z-20 rounded-xl border border-th-border bg-th-surface2 shadow-2xl overflow-hidden">
           {simulations.length === 0 ? (
             <div className="px-4 py-6 text-center">
               <p className="text-sm text-th-text-2">Aucune simulation sauvegardée</p>
@@ -144,12 +144,12 @@ function SimSelector({
               </Link>
             </div>
           ) : (
-            <div className="max-h-64 overflow-y-auto divide-y divide-white/[0.04]">
+            <div className="max-h-64 overflow-y-auto divide-y divide-th-border">
               {simulations.map(s => (
                 <button
                   key={s.id}
                   onClick={() => { onSelect(s); setOpen(false) }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.05] transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-th-surface2 transition-colors text-left"
                 >
                   <ScoreDot score={s.score ?? 0} />
                   <div className="flex-1 min-w-0">
@@ -179,7 +179,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
     <div className="rounded-xl border border-th-border overflow-hidden">
       {/* Column headers */}
       <div
-        className="grid border-b border-th-border bg-white/[0.02]"
+        className="grid border-b border-th-border bg-th-surface"
         style={{ gridTemplateColumns: `220px repeat(${active.length}, 1fr)` }}
       >
         <div className="px-5 py-3.5">
@@ -197,7 +197,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
       </div>
 
       {/* Rows */}
-      <div className="divide-y divide-white/[0.04]">
+      <div className="divide-y divide-th-border">
         {METRICS.map((metric) => {
           const values = active.map(s => metric.key(s))
           const nums = values.map(v => typeof v === 'number' ? v : parseFloat(v as string) || 0)
@@ -254,7 +254,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
 
       {/* Score footer */}
       <div
-        className="grid border-t border-th-border-med bg-white/[0.02]"
+        className="grid border-t border-th-border-med bg-th-surface"
         style={{ gridTemplateColumns: `220px repeat(${active.length}, 1fr)` }}
       >
         <div className="px-5 py-4 flex items-center">
@@ -404,7 +404,7 @@ export default function ComparerPage() {
                   <ComparisonTable selected={selected} />
                 </div>
               ) : (
-                <div className="text-center py-12 rounded-xl border border-dashed border-th-border bg-white/[0.01]">
+                <div className="text-center py-12 rounded-xl border border-dashed border-th-border bg-th-surface">
                   <p className="text-sm text-th-text-2">
                     Sélectionnez au moins 2 simulations pour afficher le comparatif
                   </p>

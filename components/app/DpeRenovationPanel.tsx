@@ -154,7 +154,7 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
                   key={d}
                   onClick={() => setDpeCible(d)}
                   className={`w-8 h-8 rounded-lg text-sm font-black transition-all ${
-                    dpeCible === d ? 'ring-2 ring-white/40 scale-110' : 'opacity-60 hover:opacity-100'
+                    dpeCible === d ? 'ring-2 ring-emerald-500/40 scale-110' : 'opacity-60 hover:opacity-100'
                   }`}
                   style={{
                     backgroundColor: DPE_COLORS[d].bg,

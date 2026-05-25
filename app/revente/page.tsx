@@ -254,7 +254,7 @@ function FriseAbattements({ ans }: { ans: number }) {
               top: 0,
             }}
           >
-            <span className="text-[11px] text-th-text-1 font-bold whitespace-nowrap bg-white/[0.1] px-2 py-0.5 rounded-full">
+            <span className="text-[11px] text-th-text-1 font-bold whitespace-nowrap bg-th-surface2 px-2 py-0.5 rounded-full">
               {ans} an{ans !== 1 ? 's' : ''}
             </span>
           </div>
@@ -761,7 +761,7 @@ export default function ReventePage() {
                   ? 'border-emerald-500/30 bg-emerald-500/[0.12]'
                   : result.plusValueBrute <= 0
                   ? 'border-red-500/20 bg-red-500/[0.04]'
-                  : 'border-th-border bg-white/[0.03]'
+                  : 'border-th-border bg-th-surface'
               }`}>
                 {exoTotal && (
                   <div className="flex items-center gap-1.5 justify-center mb-2">

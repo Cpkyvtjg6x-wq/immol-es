@@ -14,8 +14,8 @@
 
 :root {
   /* Sidebar — gris ardoise en mode clair, toujours sombre */
-  --c-sidebar-bg:    #2f2f38;
-  --c-sidebar-border: rgba(255,255,255,0.07);
+  --c-sidebar-bg:    #48443e;
+  --c-sidebar-border: rgba(255,255,255,0.08);
   /* Fond page — parchemin chaud, légèrement texturé visuellement */
   --c-bg:            #edeae4;
   /* Surfaces cartes — blanc pur → contraste max sur fond chaud */
@@ -218,7 +218,7 @@ button, a, input, select, textarea {
   font-weight: 500;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--c-text-3);
 }
 
 /* ─── Gradient text (very subtle) ────────────────────────────── */

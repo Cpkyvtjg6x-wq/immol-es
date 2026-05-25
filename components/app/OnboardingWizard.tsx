@@ -50,7 +50,7 @@ function StepDots({ total, current }: { total: number; current: number }) {
         <div
           key={i}
           className={`rounded-full transition-all duration-300 ${
-            i === current ? 'w-6 h-1.5 bg-emerald-500' : i < current ? 'w-1.5 h-1.5 bg-emerald-500/40' : 'w-1.5 h-1.5 bg-white/[0.1]'
+            i === current ? 'w-6 h-1.5 bg-emerald-500' : i < current ? 'w-1.5 h-1.5 bg-emerald-500/40' : 'w-1.5 h-1.5 bg-th-surface3'
           }`}
         />
       ))}
@@ -246,7 +246,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
             <div className="flex gap-3">
               <button
                 onClick={() => setStep(0)}
-                className="flex-1 bg-th-surface2 hover:bg-th-surface3 border border-white/[0.1] text-th-text-1 font-semibold py-3 rounded-xl text-sm transition-all"
+                className="flex-1 bg-th-surface2 hover:bg-th-surface3 border border-th-border text-th-text-1 font-semibold py-3 rounded-xl text-sm transition-all"
               >
                 ← Retour
               </button>

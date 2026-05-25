@@ -895,7 +895,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                                 onClick={() => setRenoDpeCible(d)}
                                 className={`w-8 h-8 rounded-lg text-[11px] font-bold transition-all ${
                                   dpeCibleValide === d
-                                    ? 'ring-2 ring-white/30 ring-offset-1 ring-offset-transparent scale-105 shadow-md'
+                                    ? 'ring-2 ring-emerald-500/30 ring-offset-1 ring-offset-transparent scale-105 shadow-md'
                                     : 'opacity-35 hover:opacity-60'
                                 }`}
                                 style={{ backgroundColor: DPE_COLORS[d]?.bg, color: DPE_COLORS[d]?.text }}
@@ -1319,7 +1319,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           className={`py-1.5 px-2 rounded-lg text-[11px] font-medium border transition-all ${
                             (p.commissionPlateforme ?? 15) === opt.value
                               ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                              : 'bg-th-surface2 border-th-border-med text-th-text-2 hover:border-white/20'
+                              : 'bg-th-surface2 border-th-border-med text-th-text-2 hover:border-th-border-med'
                           }`}
                         >
                           {opt.label}<br />
@@ -1415,7 +1415,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                                     ? opt.v === 'vendre'
                                       ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
                                       : 'bg-sky-500/20 border-sky-500/40 text-sky-300'
-                                    : 'bg-th-surface border-th-border text-th-text-2 hover:border-white/20'
+                                    : 'bg-th-surface border-th-border text-th-text-2 hover:border-th-border-med'
                                 }`}>
                                 {opt.label}
                               </button>
@@ -1574,7 +1574,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                               className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${
                                 p.venteStrategy === opt.v
                                   ? 'bg-amber-500/15 border-amber-500/40'
-                                  : 'bg-th-surface border-th-border hover:border-white/15'
+                                  : 'bg-th-surface border-th-border hover:border-th-border-med'
                               }`}
                             >
                               <div className="flex items-center gap-2">

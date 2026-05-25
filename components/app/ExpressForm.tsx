@@ -113,7 +113,7 @@ export function ExpressForm({ onCalculate, loading }: ExpressFormProps) {
         </div>
       </FormSection>
 
-      <div className="h-px bg-white/[0.05]" />
+      <div className="h-px bg-th-border" />
 
       {/* Section 2: Location */}
       <FormSection step="2" title="Location">
@@ -134,7 +134,7 @@ export function ExpressForm({ onCalculate, loading }: ExpressFormProps) {
         </div>
       </FormSection>
 
-      <div className="h-px bg-white/[0.05]" />
+      <div className="h-px bg-th-border" />
 
       {/* Section 3: Financement */}
       <FormSection step="3" title="Financement">
@@ -166,7 +166,7 @@ export function ExpressForm({ onCalculate, loading }: ExpressFormProps) {
         </div>
       </FormSection>
 
-      <div className="h-px bg-white/[0.05]" />
+      <div className="h-px bg-th-border" />
 
       {/* Section 4: Charges */}
       <FormSection step="4" title="Charges annuelles">

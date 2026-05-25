@@ -22,7 +22,7 @@ function RatioBar({ value, max, danger }: { value: number; max: number; danger?:
     ? pct >= 100 ? 'bg-red-500' : pct >= 85 ? 'bg-amber-400' : 'bg-emerald-500'
     : pct <= 70 ? 'bg-emerald-500' : pct <= 85 ? 'bg-amber-400' : 'bg-red-500'
   return (
-    <div className="w-full bg-white/5 rounded-full h-1.5 mt-1">
+    <div className="w-full bg-th-surface3 rounded-full h-1.5 mt-1">
       <div className={`h-1.5 rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
     </div>
   )
@@ -920,7 +920,7 @@ export default function RapportBancairePage() {
                 Le générateur de dossier bancaire est réservé aux membres Pro. Passez à Pro pour créer des dossiers professionnels en quelques minutes.
               </p>
             </div>
-            <div className="bg-white/[0.03] border border-th-border rounded-xl p-4 text-left space-y-2">
+            <div className="bg-th-surface border border-th-border rounded-xl p-4 text-left space-y-2">
               {['Ratios bancaires HCSF calculés automatiquement', 'Stress tests intégrés', 'Structures juridiques (SCI, SARL…)', 'PDF 8 pages prêt à envoyer à la banque'].map(f => (
                 <div key={f} className="flex items-center gap-2 text-sm text-th-text-1">
                   <span className="text-emerald-400 text-xs">✓</span> {f}
@@ -968,7 +968,7 @@ export default function RapportBancairePage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                 canGenerate && !generating
                   ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400'
-                  : 'bg-white/5 text-th-text-3 cursor-not-allowed'
+                  : 'bg-th-surface3 text-th-text-3 cursor-not-allowed'
               }`}
             >
               {generating ? (
@@ -1004,7 +1004,7 @@ export default function RapportBancairePage() {
 
               {/* ── Données du calculateur ── */}
               {hasData && result && (
-                <section className="bg-white/[0.03] border border-th-border rounded-2xl p-5">
+                <section className="bg-th-surface border border-th-border rounded-2xl p-5">
                   <h2 className="text-xs font-bold text-th-text-2 uppercase tracking-widest mb-4">Données du calculateur</h2>
                   <div className="grid grid-cols-4 gap-3">
                     {[
@@ -1017,7 +1017,7 @@ export default function RapportBancairePage() {
                       { label: 'Score IMMORA', value: score ? score.global + '/100' : '—' },
                       { label: 'Apport', value: fE(params.apport) },
                     ].map(({ label, value }) => (
-                      <div key={label} className="bg-white/[0.03] rounded-lg p-3">
+                      <div key={label} className="bg-th-surface rounded-lg p-3">
                         <div className="text-[9px] text-th-text-2 uppercase tracking-widest mb-1">{label}</div>
                         <div className="text-sm font-bold text-th-text-1">{value}</div>
                       </div>
@@ -1027,7 +1027,7 @@ export default function RapportBancairePage() {
               )}
 
               {/* ── Emprunteur principal ── */}
-              <section className="bg-white/[0.03] border border-th-border rounded-2xl overflow-hidden">
+              <section className="bg-th-surface border border-th-border rounded-2xl overflow-hidden">
                 {/* En-tête section */}
                 <div className="flex items-center gap-3 px-5 py-4 border-b border-th-border">
                   <div className="w-7 h-7 rounded-lg bg-emerald-500/[0.14] flex items-center justify-center flex-shrink-0">
@@ -1047,12 +1047,12 @@ export default function RapportBancairePage() {
                       <div>
                         <label className="text-[11px] text-th-text-2 mb-1 block">Nom & Prénom *</label>
                         <input value={profile.nomPrenom} onChange={e => updateProfile('nomPrenom', e.target.value)}
-                          placeholder="Jean Dupont" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                          placeholder="Jean Dupont" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                       </div>
                       <div>
                         <label className="text-[11px] text-th-text-2 mb-1 block">Situation familiale</label>
                         <select value={profile.situationFamiliale} onChange={e => updateProfile('situationFamiliale', e.target.value as BankReportProfile['situationFamiliale'])}
-                          className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50">
+                          className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50">
                           <option value="celibataire">Célibataire</option>
                           <option value="marie">Marié(e)</option>
                           <option value="pacse">Pacsé(e)</option>
@@ -1063,12 +1063,12 @@ export default function RapportBancairePage() {
                       <div>
                         <label className="text-[11px] text-th-text-2 mb-1 block">Enfants à charge</label>
                         <input type="number" min={0} value={profile.nbEnfants} onChange={e => updateProfile('nbEnfants', Number(e.target.value))}
-                          className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
+                          className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
                       </div>
                       <div>
                         <label className="text-[11px] text-th-text-2 mb-1 block">Parts fiscales</label>
                         <input type="number" min={1} step={0.5} value={profile.nbParts} onChange={e => updateProfile('nbParts', Number(e.target.value))}
-                          className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
+                          className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
                       </div>
                     </div>
                   </div>
@@ -1080,12 +1080,12 @@ export default function RapportBancairePage() {
                       <div>
                         <label className="text-[11px] text-th-text-2 mb-1 block">Profession *</label>
                         <input value={profile.profession} onChange={e => updateProfile('profession', e.target.value)}
-                          placeholder="Ingénieur, Médecin…" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                          placeholder="Ingénieur, Médecin…" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                       </div>
                       <div>
                         <label className="text-[11px] text-th-text-2 mb-1 block">Type de contrat</label>
                         <select value={profile.typeContrat} onChange={e => updateProfile('typeContrat', e.target.value as BankReportProfile['typeContrat'])}
-                          className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50">
+                          className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50">
                           <option value="cdi">CDI</option>
                           <option value="fonctionnaire">Fonctionnaire</option>
                           <option value="independant">Indépendant / Libéral</option>
@@ -1097,7 +1097,7 @@ export default function RapportBancairePage() {
                       <div className="col-span-2">
                         <label className="text-[11px] text-th-text-2 mb-1 block">Ancienneté au poste (années)</label>
                         <input type="number" min={0} value={profile.anciennetePoste} onChange={e => updateProfile('anciennetePoste', Number(e.target.value))}
-                          className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
+                          className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
                       </div>
                     </div>
                   </div>
@@ -1110,7 +1110,7 @@ export default function RapportBancairePage() {
                         <label className="text-[11px] text-th-text-2 mb-1 block">Revenus nets mensuels * <span className="text-th-text-3">(salaires, pensions…)</span></label>
                         <div className="relative">
                           <input type="number" min={0} value={profile.revenusNetsProFoyer || ''} onChange={e => updateProfile('revenusNetsProFoyer', Number(e.target.value))}
-                            placeholder="3 500" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            placeholder="3 500" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                           <span className="absolute right-3 top-2.5 text-xs text-th-text-2">€</span>
                         </div>
                       </div>
@@ -1118,7 +1118,7 @@ export default function RapportBancairePage() {
                         <label className="text-[11px] text-th-text-2 mb-1 block">Autres revenus locatifs <span className="text-th-text-3">(autres biens)</span></label>
                         <div className="relative">
                           <input type="number" min={0} value={profile.autresRevenusLocatifs || ''} onChange={e => updateProfile('autresRevenusLocatifs', Number(e.target.value))}
-                            placeholder="0" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            placeholder="0" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                           <span className="absolute right-3 top-2.5 text-xs text-th-text-2">€</span>
                         </div>
                       </div>
@@ -1126,7 +1126,7 @@ export default function RapportBancairePage() {
                         <label className="text-[11px] text-th-text-2 mb-1 block">Loyer / mensualité RP actuelle</label>
                         <div className="relative">
                           <input type="number" min={0} value={profile.loyerActuel || ''} onChange={e => updateProfile('loyerActuel', Number(e.target.value))}
-                            placeholder="900" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            placeholder="900" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                           <span className="absolute right-3 top-2.5 text-xs text-th-text-2">€</span>
                         </div>
                       </div>
@@ -1134,7 +1134,7 @@ export default function RapportBancairePage() {
                         <label className="text-[11px] text-th-text-2 mb-1 block">Autres crédits en cours <span className="text-th-text-3">(mensualités)</span></label>
                         <div className="relative">
                           <input type="number" min={0} value={profile.autresCreditsMensualites || ''} onChange={e => updateProfile('autresCreditsMensualites', Number(e.target.value))}
-                            placeholder="0" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            placeholder="0" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                           <span className="absolute right-3 top-2.5 text-xs text-th-text-2">€</span>
                         </div>
                       </div>
@@ -1142,7 +1142,7 @@ export default function RapportBancairePage() {
                         <label className="text-[11px] text-th-text-2 mb-1 block">Épargne totale disponible <span className="text-th-text-3">(apport + réserve)</span></label>
                         <div className="relative">
                           <input type="number" min={0} value={profile.epargneTotale || ''} onChange={e => updateProfile('epargneTotale', Number(e.target.value))}
-                            placeholder="50 000" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            placeholder="50 000" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                           <span className="absolute right-3 top-2.5 text-xs text-th-text-2">€</span>
                         </div>
                       </div>
@@ -1157,7 +1157,7 @@ export default function RapportBancairePage() {
                 className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl border transition-all text-sm font-semibold ${
                   profile.hasCoEmprunteur
                     ? 'bg-emerald-500/[0.14] border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/[0.12]'
-                    : 'bg-white/[0.02] border-th-border border-dashed text-th-text-2 hover:border-th-border-med hover:text-th-text-1'
+                    : 'bg-th-surface border-th-border border-dashed text-th-text-2 hover:border-th-border-med hover:text-th-text-1'
                 }`}
               >
                 {profile.hasCoEmprunteur ? (
@@ -1195,12 +1195,12 @@ export default function RapportBancairePage() {
                         <div>
                           <label className="text-[11px] text-th-text-2 mb-1 block">Nom & Prénom</label>
                           <input value={profile.coemprunteurNom ?? ''} onChange={e => updateProfile('coemprunteurNom', e.target.value)}
-                            placeholder="Marie Dupont" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            placeholder="Marie Dupont" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                         </div>
                         <div>
                           <label className="text-[11px] text-th-text-2 mb-1 block">Profession</label>
                           <input value={profile.coemprunteurProfession ?? ''} onChange={e => updateProfile('coemprunteurProfession', e.target.value)}
-                            placeholder="Infirmière, Comptable…" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            placeholder="Infirmière, Comptable…" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                         </div>
                       </div>
                     </div>
@@ -1212,7 +1212,7 @@ export default function RapportBancairePage() {
                         <div>
                           <label className="text-[11px] text-th-text-2 mb-1 block">Type de contrat</label>
                           <select value={profile.coemprunteurTypeContrat ?? 'cdi'} onChange={e => updateProfile('coemprunteurTypeContrat', e.target.value)}
-                            className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50">
+                            className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50">
                             <option value="cdi">CDI</option>
                             <option value="fonctionnaire">Fonctionnaire</option>
                             <option value="independant">Indépendant / Libéral</option>
@@ -1224,7 +1224,7 @@ export default function RapportBancairePage() {
                         <div>
                           <label className="text-[11px] text-th-text-2 mb-1 block">Ancienneté au poste (années)</label>
                           <input type="number" min={0} value={profile.coemprunteurAnciennete ?? 1} onChange={e => updateProfile('coemprunteurAnciennete', Number(e.target.value))}
-                            className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
+                            className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
                         </div>
                       </div>
                     </div>
@@ -1236,7 +1236,7 @@ export default function RapportBancairePage() {
                         <label className="text-[11px] text-th-text-2 mb-1 block">Revenus nets mensuels <span className="text-th-text-3">(salaires, pensions…)</span></label>
                         <div className="relative">
                           <input type="number" min={0} value={profile.coemprunteurRevenus || ''} onChange={e => updateProfile('coemprunteurRevenus', Number(e.target.value))}
-                            placeholder="2 800" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            placeholder="2 800" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                           <span className="absolute right-3 top-2.5 text-xs text-th-text-2">€</span>
                         </div>
                         {(profile.coemprunteurRevenus ?? 0) > 0 && profile.revenusNetsProFoyer > 0 && (
@@ -1252,7 +1252,7 @@ export default function RapportBancairePage() {
               )}
 
               {/* ── Structure d'acquisition ── */}
-              <section className="bg-white/[0.03] border border-th-border rounded-2xl p-5">
+              <section className="bg-th-surface border border-th-border rounded-2xl p-5">
                 <h2 className="text-xs font-bold text-th-text-2 uppercase tracking-widest mb-4">Structure d'acquisition</h2>
                 <div className="grid grid-cols-5 gap-2 mb-4">
                   {(['nom-propre', 'sci-ir', 'sci-is', 'sarl-famille', 'holding-sci'] as const).map(mode => (
@@ -1260,7 +1260,7 @@ export default function RapportBancairePage() {
                       className={`px-3 py-2.5 rounded-lg text-[11px] font-semibold border transition-all text-center ${
                         profile.modeAcquisition === mode
                           ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                          : 'bg-white/[0.03] border-th-border text-th-text-2 hover:text-th-text-1 hover:border-th-border-med'
+                          : 'bg-th-surface border-th-border text-th-text-2 hover:text-th-text-1 hover:border-th-border-med'
                       }`}>
                       {mode === 'nom-propre' ? 'Nom propre' : mode === 'sci-ir' ? 'SCI IR' : mode === 'sci-is' ? 'SCI IS' : mode === 'sarl-famille' ? 'SARL fam.' : 'Holding + SCI'}
                     </button>
@@ -1272,23 +1272,23 @@ export default function RapportBancairePage() {
                     <div>
                       <label className="text-[11px] text-th-text-2 mb-1 block">Nom de la société</label>
                       <input value={profile.nomSociete ?? ''} onChange={e => updateProfile('nomSociete', e.target.value)}
-                        placeholder="SCI Les Jardins" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                        placeholder="SCI Les Jardins" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                     </div>
                     <div>
                       <label className="text-[11px] text-th-text-2 mb-1 block">SIREN</label>
                       <input value={profile.siren ?? ''} onChange={e => updateProfile('siren', e.target.value)}
-                        placeholder="123 456 789" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                        placeholder="123 456 789" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                     </div>
                     <div>
                       <label className="text-[11px] text-th-text-2 mb-1 block">Date de création</label>
                       <input value={profile.dateCreationSociete ?? ''} onChange={e => updateProfile('dateCreationSociete', e.target.value)}
-                        placeholder="01/2023" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                        placeholder="01/2023" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                     </div>
                     <div>
                       <label className="text-[11px] text-th-text-2 mb-1 block">Capital social</label>
                       <div className="relative">
                         <input type="number" min={0} value={profile.capitalSocial || ''} onChange={e => updateProfile('capitalSocial', Number(e.target.value))}
-                          placeholder="1 000" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                          placeholder="1 000" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 pr-8 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                         <span className="absolute right-3 top-2.5 text-xs text-th-text-2">€</span>
                       </div>
                     </div>
@@ -1297,7 +1297,7 @@ export default function RapportBancairePage() {
                       <div className="flex gap-2 flex-wrap">
                         {[1, 2, 3, 4].map(n => (
                           <button key={n} onClick={() => updateAssocies(n)}
-                            className={`w-8 h-8 rounded-lg text-sm font-bold border transition-all ${nbAssocies === n ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-white/[0.03] border-th-border text-th-text-2 hover:text-th-text-1'}`}>
+                            className={`w-8 h-8 rounded-lg text-sm font-bold border transition-all ${nbAssocies === n ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-th-surface border-th-border text-th-text-2 hover:text-th-text-1'}`}>
                             {n}
                           </button>
                         ))}
@@ -1305,10 +1305,10 @@ export default function RapportBancairePage() {
                       {(profile.associes ?? []).slice(0, nbAssocies).map((a, i) => (
                         <div key={i} className="grid grid-cols-[1fr_100px] gap-2 mt-2">
                           <input value={a.nom} onChange={e => { const arr = [...(profile.associes ?? [])]; arr[i] = { ...arr[i], nom: e.target.value }; updateProfile('associes', arr) }}
-                            placeholder={`Associé ${i + 1}`} className="bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                            placeholder={`Associé ${i + 1}`} className="bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                           <div className="relative">
                             <input type="number" min={0} max={100} value={a.partsPct} onChange={e => { const arr = [...(profile.associes ?? [])]; arr[i] = { ...arr[i], partsPct: Number(e.target.value) }; updateProfile('associes', arr) }}
-                              className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 pr-7 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
+                              className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 pr-7 text-sm text-th-text-1 focus:outline-none focus:border-emerald-500/50" />
                             <span className="absolute right-3 top-2.5 text-xs text-th-text-2">%</span>
                           </div>
                         </div>
@@ -1319,7 +1319,7 @@ export default function RapportBancairePage() {
               </section>
 
               {/* ── Montage optimisé ── */}
-              <section className="bg-white/[0.03] border border-th-border rounded-2xl p-5">
+              <section className="bg-th-surface border border-th-border rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-xs font-bold text-th-text-2 uppercase tracking-widest">Montage optimisé</h2>
                   <span className="text-[10px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-md font-semibold">Argumentaire banque</span>
@@ -1328,7 +1328,7 @@ export default function RapportBancairePage() {
 
                 {!montageOpt ? (
                   <div className="flex flex-col items-center justify-center py-8 gap-2">
-                    <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-th-border flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-th-surface border border-th-border flex items-center justify-center">
                       <svg className="w-5 h-5 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
@@ -1345,7 +1345,7 @@ export default function RapportBancairePage() {
                             methode === m
                               ? m === 'differentielle'
                                 ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
-                                : 'bg-white/10 text-th-text-1 border border-white/10'
+                                : 'bg-th-surface2 text-th-text-1 border border-th-border'
                               : 'text-th-text-2 hover:text-th-text-1'
                           }`}>
                           {m === 'differentielle' ? '✦ Méthode différentielle' : 'Méthode globale'}
@@ -1359,7 +1359,7 @@ export default function RapportBancairePage() {
                     {/* ── Comparaison côte à côte ── */}
                     <div className="grid grid-cols-2 gap-3 mb-4">
                       {/* Montage actuel */}
-                      <div className="bg-white/[0.03] border border-th-border rounded-xl p-4">
+                      <div className="bg-th-surface border border-th-border rounded-xl p-4">
                         <div className="text-[10px] text-th-text-2 uppercase tracking-widest mb-3">Situation actuelle</div>
                         <div className="space-y-3">
                           <div>
@@ -1477,7 +1477,7 @@ export default function RapportBancairePage() {
                         <div className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest mb-2">Arguments à présenter à la banque</div>
                         <div className="space-y-1.5">
                           {montageOpt.points.map((pt, i) => (
-                            <div key={i} className="flex items-start gap-2.5 bg-white/[0.02] border border-th-border rounded-lg px-3 py-2.5">
+                            <div key={i} className="flex items-start gap-2.5 bg-th-surface border border-th-border rounded-lg px-3 py-2.5">
                               <span className="text-emerald-400 text-[11px] mt-0.5 shrink-0">→</span>
                               <span className="text-[11px] text-th-text-1 leading-relaxed">{pt}</span>
                             </div>
@@ -1490,18 +1490,18 @@ export default function RapportBancairePage() {
               </section>
 
               {/* ── Informations complémentaires ── */}
-              <section className="bg-white/[0.03] border border-th-border rounded-2xl p-5">
+              <section className="bg-th-surface border border-th-border rounded-2xl p-5">
                 <h2 className="text-xs font-bold text-th-text-2 uppercase tracking-widest mb-4">Informations complémentaires</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-[11px] text-th-text-2 mb-1 block">Adresse du bien</label>
                     <input value={profile.adresseBien ?? ''} onChange={e => updateProfile('adresseBien', e.target.value)}
-                      placeholder="12 rue des Lilas, Lyon 3e" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                      placeholder="12 rue des Lilas, Lyon 3e" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                   </div>
                   <div>
                     <label className="text-[11px] text-th-text-2 mb-1 block">Source estimation loyer</label>
                     <input value={profile.sourceEstimationLoyer ?? ''} onChange={e => updateProfile('sourceEstimationLoyer', e.target.value)}
-                      placeholder="Estimation agent immobilier" className="w-full bg-white/[0.04] border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50" />
+                      placeholder="Estimation agent immobilier" className="w-full bg-th-input-bg border border-th-border-med rounded-lg px-3 py-2 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/50" />
                   </div>
                 </div>
               </section>
@@ -1529,7 +1529,7 @@ export default function RapportBancairePage() {
 
               {/* Score de bancabilité */}
               {scoreBancabilite && (
-                <div className="bg-white/[0.03] border border-th-border rounded-2xl p-4">
+                <div className="bg-th-surface border border-th-border rounded-2xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest">Score bancabilité</div>
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
@@ -1547,7 +1547,7 @@ export default function RapportBancairePage() {
                       }`}>{scoreBancabilite.total}</span>
                       <span className="text-sm text-th-text-2">/100</span>
                     </div>
-                    <div className="w-full bg-white/5 rounded-full h-2">
+                    <div className="w-full bg-th-surface3 rounded-full h-2">
                       <div className={`h-2 rounded-full transition-all ${
                         scoreBancabilite.color === 'emerald' ? 'bg-emerald-500'
                         : scoreBancabilite.color === 'amber' ? 'bg-amber-400' : 'bg-red-500'
@@ -1560,7 +1560,7 @@ export default function RapportBancairePage() {
                       <div key={d.label} className="flex items-center gap-2">
                         <div className="flex-1">
                           <div className="text-[10px] text-th-text-2">{d.label}</div>
-                          <div className="w-full bg-white/5 rounded-full h-1 mt-0.5">
+                          <div className="w-full bg-th-surface3 rounded-full h-1 mt-0.5">
                             <div className={`h-1 rounded-full transition-all ${d.pts === d.max ? 'bg-emerald-500' : d.pts >= d.max * 0.5 ? 'bg-amber-400' : 'bg-red-500'}`}
                               style={{ width: `${(d.pts / d.max) * 100}%` }} />
                           </div>
@@ -1575,7 +1575,7 @@ export default function RapportBancairePage() {
               )}
 
               {/* Ratios bancaires */}
-              <div className="bg-white/[0.03] border border-th-border rounded-2xl p-4">
+              <div className="bg-th-surface border border-th-border rounded-2xl p-4">
                 <div className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest mb-3">Ratios bancaires</div>
                 <div className="space-y-3">
                   {[
@@ -1630,7 +1630,7 @@ export default function RapportBancairePage() {
 
               {/* Points forts/vigilance */}
               {ratios && (
-                <div className="bg-white/[0.03] border border-th-border rounded-2xl p-4">
+                <div className="bg-th-surface border border-th-border rounded-2xl p-4">
                   <div className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest mb-3">Analyse rapide</div>
                   <div className="space-y-1.5">
                     {ratios.pointsForts.slice(0, 3).map((p, i) => (
@@ -1654,7 +1654,7 @@ export default function RapportBancairePage() {
                 className={`w-full py-3 rounded-xl text-sm font-bold transition-all ${
                   canGenerate && !generating
                     ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/20'
-                    : 'bg-white/5 text-th-text-3 cursor-not-allowed'
+                    : 'bg-th-surface3 text-th-text-3 cursor-not-allowed'
                 }`}
               >
                 {generating ? 'Génération en cours…' : !canGenerate ? 'Remplissez le formulaire' : '↓ Générer le dossier PDF'}
@@ -1671,12 +1671,12 @@ export default function RapportBancairePage() {
                 const checked = docsList.filter((_, i) => checkedDocs[`${profile.modeAcquisition}_${i}`]).length
                 const pct = docsList.length > 0 ? Math.round((checked / docsList.length) * 100) : 0
                 return (
-                  <div className="bg-white/[0.02] border border-th-border rounded-xl p-4">
+                  <div className="bg-th-surface border border-th-border rounded-xl p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest">Checklist documents</div>
                       <span className={`text-[10px] font-bold ${pct === 100 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-th-text-2'}`}>{checked}/{docsList.length}</span>
                     </div>
-                    <div className="w-full bg-white/5 rounded-full h-1 mb-3">
+                    <div className="w-full bg-th-surface3 rounded-full h-1 mb-3">
                       <div className={`h-1 rounded-full transition-all ${pct === 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-zinc-600'}`} style={{ width: `${pct}%` }} />
                     </div>
                     <div className="space-y-0.5 max-h-64 overflow-y-auto pr-1">
@@ -1685,7 +1685,7 @@ export default function RapportBancairePage() {
                         const isChecked = !!checkedDocs[key]
                         return (
                           <button key={key} onClick={() => toggleDoc(key)}
-                            className="w-full flex items-start gap-2 py-1.5 text-left hover:bg-white/[0.02] rounded-lg px-1 transition-colors">
+                            className="w-full flex items-start gap-2 py-1.5 text-left hover:bg-th-surface rounded-lg px-1 transition-colors">
                             <div className={`w-3.5 h-3.5 rounded shrink-0 mt-0.5 border transition-all flex items-center justify-center ${isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'}`}>
                               {isChecked && <svg className="w-2 h-2 text-zinc-950" fill="none" viewBox="0 0 10 10" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M1.5 5l2.5 2.5 4.5-4.5" /></svg>}
                             </div>

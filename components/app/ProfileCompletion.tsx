@@ -55,7 +55,7 @@ function Badge({ label, icon, unlocked, description }: {
 
       {/* Tooltip */}
       {show && (
-        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-36 bg-[#1c1c1f] border border-white/[0.1] rounded-xl px-3 py-2.5 shadow-2xl pointer-events-none">
+        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-36 bg-th-surface2 border border-th-border rounded-xl px-3 py-2.5 shadow-2xl pointer-events-none">
           <p className="text-[11px] font-semibold text-th-text-1 mb-0.5">{label}</p>
           <p className="text-[10px] text-th-text-2 leading-snug">{description}</p>
           {!unlocked && (

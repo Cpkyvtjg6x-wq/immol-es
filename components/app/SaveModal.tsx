@@ -49,11 +49,11 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md rounded-2xl border border-white/[0.1] bg-th-surface shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md rounded-2xl border border-th-border bg-th-surface shadow-2xl overflow-hidden">
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-7 h-7 rounded-lg bg-th-surface2 hover:bg-white/[0.1] flex items-center justify-center text-th-text-2 hover:text-white transition-colors"
+          className="absolute top-4 right-4 w-7 h-7 rounded-lg bg-th-surface2 hover:bg-th-surface3 flex items-center justify-center text-th-text-2 hover:text-white transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -151,7 +151,7 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={defaultName}
-                className="w-full bg-th-surface2 border border-white/[0.1] rounded-xl px-3 py-2.5 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/40 transition-all"
+                className="w-full bg-th-surface2 border border-th-border rounded-xl px-3 py-2.5 text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/40 transition-all"
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                 autoFocus
               />

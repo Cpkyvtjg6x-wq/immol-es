@@ -702,7 +702,7 @@ export function AmortTab({ result }: { result: InvestmentResult }) {
             </thead>
             <tbody>
               {chartData.map((row, i) => (
-                <tr key={i} className="border-b border-white/[0.03] hover:bg-th-surface">
+                <tr key={i} className="border-b border-th-border hover:bg-th-surface">
                   <td className="py-2 pr-4 text-th-text-2">{row.an}</td>
                   <td className="py-2 pr-4 text-emerald-400 tabular-nums">{formatCurrency(row.capital)}</td>
                   <td className="py-2 pr-4 text-violet-400 tabular-nums">{formatCurrency(row.interets)}</td>

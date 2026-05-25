@@ -24,7 +24,7 @@ function fmtPct(n: number, dec = 1): string {
 function EmptyPortfolio() {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-      <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-th-border-med flex items-center justify-center mb-5 text-3xl">
+      <div className="w-16 h-16 rounded-2xl bg-th-surface2 border border-th-border-med flex items-center justify-center mb-5 text-3xl">
         🏘
       </div>
       <h2 className="text-xl font-black text-th-text-1 mb-2" style={{ letterSpacing: '-0.03em' }}>
@@ -51,10 +51,10 @@ function KpiCard({
   label: string; value: string; sub?: string; color?: string; icon?: string
 }) {
   return (
-    <div className="rounded-2xl border border-th-border bg-white/[0.02] p-5 flex flex-col gap-3">
+    <div className="rounded-2xl border border-th-border bg-th-surface p-5 flex flex-col gap-3">
       <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">{label}</p>
       <div>
-        <p className="text-2xl font-bold tabular-nums leading-none" style={{ letterSpacing: '-0.04em', color: color ?? 'white' }}>
+        <p className="text-2xl font-bold tabular-nums leading-none" style={{ letterSpacing: '-0.04em', color: color ?? 'var(--c-text-1)' }}>
           {icon && <span className="mr-1">{icon}</span>}{value}
         </p>
         {sub && <p className="text-[11px] text-th-text-3 mt-1.5">{sub}</p>}
@@ -109,7 +109,7 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
   }
 
   return (
-    <div className="rounded-2xl border border-th-border bg-white/[0.02] overflow-hidden">
+    <div className="rounded-2xl border border-th-border bg-th-surface overflow-hidden">
       {/* Table header */}
       <div className="px-5 py-3 border-b border-th-border grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4">
         <div className="w-6" />
@@ -121,7 +121,7 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
       </div>
 
       {/* Rows */}
-      <div className="divide-y divide-white/[0.03]">
+      <div className="divide-y divide-th-border">
         {sorted.map((sim, i) => {
           const score = sim.score ?? 0
           const scoreColor = score >= 70 ? '#10b981' : score >= 45 ? '#f59e0b' : '#ef4444'
@@ -136,7 +136,7 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
               className="px-5 py-3.5 grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 hover:bg-th-surface2 transition-colors"
             >
               {/* Rang */}
-              <div className="w-6 h-6 rounded-full bg-white/[0.04] border border-th-border flex items-center justify-center text-[10px] font-bold text-th-text-3 shrink-0">
+              <div className="w-6 h-6 rounded-full bg-th-surface2 border border-th-border flex items-center justify-center text-[10px] font-bold text-th-text-3 shrink-0">
                 {i + 1}
               </div>
 
@@ -149,9 +149,9 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
                   <p className="text-[11px] text-th-text-2 shrink-0">{fmt(sim.prixAchat)}</p>
                 </div>
                 {/* Prix bar */}
-                <div className="h-0.5 bg-white/[0.05] rounded-full mt-2 overflow-hidden">
+                <div className="h-0.5 bg-th-surface2 rounded-full mt-2 overflow-hidden">
                   <div
-                    className="h-full bg-white/20 rounded-full"
+                    className="h-full bg-th-surface3 rounded-full"
                     style={{ width: `${prixPct}%` }}
                   />
                 </div>
@@ -163,7 +163,7 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
                   <p className="text-[11px] font-bold text-emerald-400 tabular-nums">{fmtPct(sim.rendementBrut)}</p>
                   <p className="text-[10px] text-th-text-3">{fmtPct(sim.rendementNet)} net</p>
                 </div>
-                <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
+                <div className="h-1 bg-th-surface2 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${rendPct}%` }} />
                 </div>
               </div>
@@ -287,16 +287,16 @@ function ConsolidationFiscale({ simulations }: { simulations: SavedSimulation[] 
   ]
 
   return (
-    <div className="rounded-2xl border border-th-border bg-white/[0.02] overflow-hidden">
+    <div className="rounded-2xl border border-th-border bg-th-surface overflow-hidden">
       <div className="px-5 py-3.5 border-b border-th-border">
         <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest">Consolidation fiscale</p>
       </div>
-      <div className="divide-y divide-white/[0.04]">
+      <div className="divide-y divide-th-border">
         {rows.map((row, i) => (
           <div
             key={i}
             className={`px-5 py-3 flex items-center justify-between gap-4 ${
-              i === rows.length - 1 ? 'bg-white/[0.02]' : ''
+              i === rows.length - 1 ? 'bg-th-surface' : ''
             }`}
           >
             <div className="min-w-0">
@@ -356,7 +356,7 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
   const ticks = Array.from({ length: 6 }, (_, i) => Math.round(minYear + (i / 5) * totalYears))
 
   return (
-    <div className="rounded-2xl border border-th-border bg-white/[0.02] overflow-hidden">
+    <div className="rounded-2xl border border-th-border bg-th-surface overflow-hidden">
       <div className="px-5 py-3.5 border-b border-th-border flex items-center justify-between">
         <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest">Timeline des prêts</p>
         <span className="text-[10px] text-th-text-3 tabular-nums">{minYear} — {maxYear}</span>
@@ -435,7 +435,7 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
         {/* Legend */}
         <div className="flex items-center gap-4 mt-3 pl-[140px]">
           <div className="flex items-center gap-1.5">
-            <div className="w-px h-4 bg-white/20" />
+            <div className="w-px h-4 bg-th-surface3" />
             <span className="text-[9px] text-th-text-3">Aujourd'hui</span>
           </div>
         </div>
@@ -579,7 +579,7 @@ export default function PortfolioPage() {
 
                 {/* Best bien highlight */}
                 {stats.bestBien && (
-                  <div className="mt-3 rounded-xl border border-th-border bg-white/[0.02] px-5 py-3.5 flex items-center justify-between gap-4">
+                  <div className="mt-3 rounded-xl border border-th-border bg-th-surface px-5 py-3.5 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <div className="w-7 h-7 rounded-lg bg-emerald-500/[0.14] border border-emerald-500/20 flex items-center justify-center">
                         <IconCheckCircle className="w-4 h-4 text-emerald-400" />

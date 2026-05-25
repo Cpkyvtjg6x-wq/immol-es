@@ -909,7 +909,7 @@ export default function RapportBancairePage() {
       <AppShell>
         <div className="min-h-screen bg-th-bg text-th-text-1 flex items-center justify-center p-8">
           <div className="max-w-md text-center space-y-6">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/[0.14] border border-emerald-500/20 flex items-center justify-center mx-auto">
               <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -950,7 +950,7 @@ export default function RapportBancairePage() {
         <div className="border-b border-th-border bg-th-bg/80 backdrop-blur sticky top-0 z-30">
           <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 bg-emerald-500/[0.14] border border-emerald-500/30 rounded-lg flex items-center justify-center">
                 <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z" />
                   <polyline points="17 21 17 13 7 13 7 21" />
@@ -992,7 +992,7 @@ export default function RapportBancairePage() {
 
           {/* ── Alerte si pas de données ── */}
           {!hasData && (
-            <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-300 text-sm">
+            <div className="mb-6 p-4 bg-amber-500/[0.14] border border-amber-500/20 rounded-xl text-amber-300 text-sm">
               <strong>Aucune simulation détectée.</strong> Rendez-vous sur <a href="/analyse" className="underline">la page Analyser</a> pour remplir le calculateur, puis revenez ici pour générer votre dossier.
             </div>
           )}
@@ -1030,7 +1030,7 @@ export default function RapportBancairePage() {
               <section className="bg-white/[0.03] border border-th-border rounded-2xl overflow-hidden">
                 {/* En-tête section */}
                 <div className="flex items-center gap-3 px-5 py-4 border-b border-th-border">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/[0.14] flex items-center justify-center flex-shrink-0">
                     <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                   </div>
                   <div>
@@ -1156,7 +1156,7 @@ export default function RapportBancairePage() {
                 onClick={() => updateProfile('hasCoEmprunteur', !profile.hasCoEmprunteur)}
                 className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl border transition-all text-sm font-semibold ${
                   profile.hasCoEmprunteur
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/[0.06]'
+                    ? 'bg-emerald-500/[0.14] border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/[0.12]'
                     : 'bg-white/[0.02] border-th-border border-dashed text-th-text-2 hover:border-th-border-med hover:text-th-text-1'
                 }`}
               >
@@ -1240,7 +1240,7 @@ export default function RapportBancairePage() {
                           <span className="absolute right-3 top-2.5 text-xs text-th-text-2">€</span>
                         </div>
                         {(profile.coemprunteurRevenus ?? 0) > 0 && profile.revenusNetsProFoyer > 0 && (
-                          <div className="mt-2 px-3 py-2 bg-emerald-500/[0.06] rounded-lg flex items-center justify-between">
+                          <div className="mt-2 px-3 py-2 bg-emerald-500/[0.12] rounded-lg flex items-center justify-between">
                             <span className="text-[10px] text-th-text-2">Total revenus foyer retenus</span>
                             <span className="text-xs font-bold text-emerald-400">{fE(profile.revenusNetsProFoyer + (profile.coemprunteurRevenus || 0))}/mois</span>
                           </div>
@@ -1370,8 +1370,8 @@ export default function RapportBancairePage() {
                               return (
                                 <div className="flex items-baseline gap-1.5">
                                   <span className={`text-2xl font-black ${col}`}>{val.toFixed(1)}<span className="text-sm font-bold"> %</span></span>
-                                  {val > 35 && <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">Hors HCSF</span>}
-                                  {val <= 35 && <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">✓ OK</span>}
+                                  {val > 35 && <span className="text-[9px] text-red-400 bg-red-500/[0.14] px-1.5 py-0.5 rounded">Hors HCSF</span>}
+                                  {val <= 35 && <span className="text-[9px] text-emerald-400 bg-emerald-500/[0.14] px-1.5 py-0.5 rounded">✓ OK</span>}
                                 </div>
                               )
                             })()}
@@ -1403,8 +1403,8 @@ export default function RapportBancairePage() {
                               return (
                                 <div className="flex items-baseline gap-1.5">
                                   <span className={`text-2xl font-black ${col}`}>{val.toFixed(1)}<span className="text-sm font-bold"> %</span></span>
-                                  {val <= 35 && <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">✓ HCSF</span>}
-                                  {val > 35 && <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">Hors HCSF</span>}
+                                  {val <= 35 && <span className="text-[9px] text-emerald-400 bg-emerald-500/[0.14] px-1.5 py-0.5 rounded">✓ HCSF</span>}
+                                  {val > 35 && <span className="text-[9px] text-red-400 bg-red-500/[0.14] px-1.5 py-0.5 rounded">Hors HCSF</span>}
                                 </div>
                               )
                             })()}
@@ -1443,7 +1443,7 @@ export default function RapportBancairePage() {
                           <div className="text-xs font-semibold text-violet-300 mb-0.5">Méthode différentielle disponible</div>
                           <div className="text-[11px] text-th-text-2">
                             Légalement applicable à tout investisseur locatif — elle réduit votre taux de{' '}
-                            <span className="text-white font-semibold">{(montageOpt.endettGlobal - montageOpt.endettDiff).toFixed(1)} pts</span>
+                            <span className="text-th-text-1 font-semibold">{(montageOpt.endettGlobal - montageOpt.endettDiff).toFixed(1)} pts</span>
                             {montageOpt.endettDiff <= 35 && montageOpt.endettGlobal > 35 && (
                               <span className="text-violet-300"> et fait passer le dossier sous 35 %</span>
                             )}.
@@ -1464,7 +1464,7 @@ export default function RapportBancairePage() {
                           <div className="text-xs font-semibold text-amber-300 mb-0.5">Taux toujours au-dessus de 35 %</div>
                           <div className="text-[11px] text-th-text-2">
                             Un apport complémentaire de{' '}
-                            <span className="text-white font-semibold">{fE(montageOpt.apportComplementaire)}</span>
+                            <span className="text-th-text-1 font-semibold">{fE(montageOpt.apportComplementaire)}</span>
                             {' '}suffirait à passer sous le seuil HCSF à 25 ans.
                           </div>
                         </div>
@@ -1513,7 +1513,7 @@ export default function RapportBancairePage() {
 
               {/* Score + statut */}
               {score && (
-                <div className={`rounded-2xl p-5 border ${score.global >= 65 ? 'bg-emerald-500/[0.06] border-emerald-500/20' : score.global >= 40 ? 'bg-amber-500/[0.06] border-amber-500/20' : 'bg-red-500/[0.06] border-red-500/20'}`}>
+                <div className={`rounded-2xl p-5 border ${score.global >= 65 ? 'bg-emerald-500/[0.12] border-emerald-500/20' : score.global >= 40 ? 'bg-amber-500/[0.06] border-amber-500/20' : 'bg-red-500/[0.06] border-red-500/20'}`}>
                   <div className="flex items-center gap-3">
                     <div>
                       <div className={`text-4xl font-black ${score.global >= 65 ? 'text-emerald-400' : score.global >= 40 ? 'text-amber-400' : 'text-red-400'}`}>{score.global}</div>
@@ -1533,9 +1533,9 @@ export default function RapportBancairePage() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest">Score bancabilité</div>
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
-                      scoreBancabilite.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400'
-                      : scoreBancabilite.color === 'amber' ? 'bg-amber-500/10 text-amber-400'
-                      : 'bg-red-500/10 text-red-400'
+                      scoreBancabilite.color === 'emerald' ? 'bg-emerald-500/[0.14] text-emerald-400'
+                      : scoreBancabilite.color === 'amber' ? 'bg-amber-500/[0.14] text-amber-400'
+                      : 'bg-red-500/[0.14] text-red-400'
                     }`}>{scoreBancabilite.label}</span>
                   </div>
                   {/* Jauge */}

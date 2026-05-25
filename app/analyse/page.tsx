@@ -324,7 +324,7 @@ export default function AnalysePage() {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-1.5 text-[12px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/[0.18] transition-colors"
+                  className="flex items-center gap-1.5 text-[12px] font-semibold text-emerald-400 bg-emerald-500/[0.14] border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/[0.18] transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />

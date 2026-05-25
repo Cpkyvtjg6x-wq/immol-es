@@ -11,8 +11,8 @@ interface AIInsightsProps {
 }
 
 const typeConfig = {
-  opportunity: { label: 'Opportunité', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', dot: '#10b981' },
-  risk:        { label: 'Risque',       color: 'text-red-400',     bg: 'bg-red-500/10 border-red-500/20',         dot: '#ef4444' },
+  opportunity: { label: 'Opportunité', color: 'text-emerald-400', bg: 'bg-emerald-500/[0.14] border-emerald-500/20', dot: '#10b981' },
+  risk:        { label: 'Risque',       color: 'text-red-400',     bg: 'bg-red-500/[0.14] border-red-500/20',         dot: '#ef4444' },
   optimization:{ label: 'Optimisation', color: 'text-violet-400',  bg: 'bg-violet-500/10 border-violet-500/20',   dot: '#8b5cf6' },
   market:      { label: 'Marché',       color: 'text-sky-400',     bg: 'bg-sky-500/10 border-sky-500/20',         dot: '#38bdf8' },
 }
@@ -35,12 +35,12 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
             </svg>
             <h3 className="text-sm font-semibold text-th-text-1">Analyse IA</h3>
-            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Pro</span>
+            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/[0.14] border border-amber-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Pro</span>
           </div>
         </div>
 
         <div className="flex flex-col items-center text-center py-6 gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/15 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/[0.14] border border-amber-500/15 flex items-center justify-center">
             <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
@@ -51,7 +51,7 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
               Optimisation fiscale, analyse de risques et recommandations personnalisées avec le plan Pro.
             </p>
           </div>
-          <button className="text-sm font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-2 rounded-xl hover:bg-amber-500/20 transition-colors">
+          <button className="text-sm font-semibold bg-amber-500/[0.14] text-amber-400 border border-amber-500/20 px-4 py-2 rounded-xl hover:bg-amber-500/20 transition-colors">
             Passer à Pro — 29€/mois
           </button>
         </div>
@@ -67,13 +67,13 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
           </svg>
           <h3 className="text-sm font-semibold text-th-text-1">Analyse IA</h3>
-          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">GPT-4</span>
+          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/[0.14] border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">GPT-4</span>
         </div>
         <div>
           {!insights && !loading && (
             <button
               onClick={onGenerate}
-              className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors"
+              className="text-xs font-semibold text-emerald-400 bg-emerald-500/[0.14] border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors"
             >
               Générer
             </button>
@@ -81,7 +81,7 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
           {insights && (
             <button
               onClick={onGenerate}
-              className="text-xs text-th-text-2 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-th-surface2"
+              className="text-xs text-th-text-2 hover:text-th-text-1 transition-colors px-3 py-1.5 rounded-lg hover:bg-th-surface2"
             >
               Actualiser
             </button>
@@ -136,7 +136,7 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
                   <div className="px-4 pb-4 border-t border-th-border pt-3 space-y-2.5">
                     <p className="text-xs text-th-text-2 leading-relaxed">{insight.description}</p>
                     {insight.impact && (
-                      <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 bg-emerald-500/[0.08] border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                      <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 bg-emerald-500/[0.13] border border-emerald-500/20 px-2.5 py-1 rounded-lg">
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>

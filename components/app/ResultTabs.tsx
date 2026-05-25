@@ -262,7 +262,7 @@ function FiscaliteTab({
       <div className="border-b border-th-border px-8 py-10">
         {/* Header badge */}
         <div className="flex items-center gap-3 mb-7">
-          <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5">
+          <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/[0.14] px-3.5 py-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest">Régime optimal · TMI {params.tmi}%</p>
           </div>
@@ -362,7 +362,7 @@ function FiscaliteTab({
             {/* Avant — pire régime */}
             <div className="rounded-2xl border border-red-500/15 bg-red-500/[0.02] p-5 space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full border border-red-500/30 bg-red-500/10 flex items-center justify-center shrink-0">
+                <div className="w-5 h-5 rounded-full border border-red-500/30 bg-red-500/[0.14] flex items-center justify-center shrink-0">
                   <svg className="w-2.5 h-2.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -388,7 +388,7 @@ function FiscaliteTab({
 
             {/* Flèche centrale + économie */}
             <div className="flex flex-col items-center justify-center gap-2 px-2 min-w-[100px]">
-              <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-center">
+              <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.14] px-3 py-2 text-center">
                 <p className="text-[9px] text-emerald-400/60 uppercase tracking-wider mb-0.5">Économie/an</p>
                 <p className="text-[16px] font-black text-emerald-400 tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
                   +{formatCurrency(economieImpot)}
@@ -765,7 +765,7 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
 
               {/* Flèche + delta */}
               <div className="flex flex-col items-center gap-2">
-                <div className={`rounded-lg border px-3 py-1.5 text-center ${deltaRend >= 0 ? 'border-emerald-500/25 bg-emerald-500/10' : 'border-red-500/20 bg-red-500/[0.05]'}`}>
+                <div className={`rounded-lg border px-3 py-1.5 text-center ${deltaRend >= 0 ? 'border-emerald-500/25 bg-emerald-500/[0.14]' : 'border-red-500/20 bg-red-500/[0.05]'}`}>
                   <p className={`text-[14px] font-black tabular-nums ${deltaRend >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                     {deltaRend >= 0 ? '+' : ''}{deltaRend.toFixed(1)} pts
                   </p>
@@ -848,7 +848,7 @@ export function ResultTabs({
               Analyse complète
             </h2>
             {hasFiscal && (
-              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/[0.14] border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Fiscal inclus
               </span>
             )}

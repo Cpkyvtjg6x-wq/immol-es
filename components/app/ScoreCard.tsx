@@ -64,9 +64,9 @@ export function ScoreCard({ score }: ScoreCardProps) {
   }[score.color]
 
   const badgeBg = {
-    emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    red: 'bg-red-500/10 text-red-400 border-red-500/20',
+    emerald: 'bg-emerald-500/[0.14] text-emerald-400 border-emerald-500/20',
+    amber: 'bg-amber-500/[0.14] text-amber-400 border-amber-500/20',
+    red: 'bg-red-500/[0.14] text-red-400 border-red-500/20',
   }[score.color]
 
   const SummaryIcon = score.color === 'emerald' ? IconCheckCircle : score.color === 'amber' ? IconExclamationTriangle : IconExclamationCircle

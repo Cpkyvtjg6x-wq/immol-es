@@ -13,42 +13,42 @@
    ══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Sidebar — gris foncé en mode clair (comme Linear/Finary), noir en dark */
-  --c-sidebar-bg:    #26262d;
-  --c-sidebar-border: rgba(255,255,255,0.06);
-  /* Fond page — blanc cassé chaud */
-  --c-bg:            #f0ede8;
-  /* Surfaces cartes — blanc pur */
-  --c-surface:       #ffffff;
-  /* Surface secondaire — teinté visible */
-  --c-surface2:      #e7e4de;
-  /* Surface tertiaire — hover / onglets actifs */
-  --c-surface3:      #d9d6cf;
-  /* Bordures fines — plus visibles */
-  --c-border:        rgba(0,0,0,0.11);
+  /* Sidebar — gris ardoise en mode clair, toujours sombre */
+  --c-sidebar-bg:    #2f2f38;
+  --c-sidebar-border: rgba(255,255,255,0.07);
+  /* Fond page — parchemin chaud, légèrement texturé visuellement */
+  --c-bg:            #edeae4;
+  /* Surfaces cartes — blanc pur → contraste max sur fond chaud */
+  --c-surface:       #fafaf8;
+  /* Surface secondaire */
+  --c-surface2:      #e4e1db;
+  /* Surface tertiaire — hover / inset */
+  --c-surface3:      #d5d2ca;
+  /* Bordures fines */
+  --c-border:        rgba(0,0,0,0.10);
   /* Bordures moyennes (focus, actif) */
-  --c-border-med:    rgba(0,0,0,0.18);
+  --c-border-med:    rgba(0,0,0,0.17);
   /* Texte principal */
   --c-text-1:        #18181b;
   /* Texte secondaire */
-  --c-text-2:        #52525b;
+  --c-text-2:        #4b4b56;
   /* Texte tertiaire / placeholder */
-  --c-text-3:        #a1a1aa;
-  /* Ombres cartes — plus marquées */
-  --c-shadow-xs:     0 1px 3px rgba(0,0,0,0.08);
-  --c-shadow-sm:     0 1px 4px rgba(0,0,0,0.09), 0 4px 16px rgba(0,0,0,0.07);
-  --c-shadow-md:     0 2px 8px rgba(0,0,0,0.10), 0 16px 40px rgba(0,0,0,0.08);
-  --c-shadow-card:   0 0 0 1px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.07), 0 12px 32px rgba(0,0,0,0.07);
-  /* Accent émeraude — identique dans les deux modes */
+  --c-text-3:        #9b9ba5;
+  /* Ombres — effet papier surélevé premium */
+  --c-shadow-xs:     0 1px 2px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.8) inset;
+  --c-shadow-sm:     0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+  --c-shadow-md:     0 2px 6px rgba(0,0,0,0.09), 0 12px 32px rgba(0,0,0,0.07);
+  --c-shadow-card:   0 0 0 1px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.07), 0 8px 24px rgba(0,0,0,0.06);
+  /* Accent émeraude */
   --c-accent:        #10b981;
-  --c-accent-dim:    rgba(16,185,129,0.10);
-  --c-accent-border: rgba(16,185,129,0.25);
+  --c-accent-dim:    rgba(16,185,129,0.12);
+  --c-accent-border: rgba(16,185,129,0.28);
   --c-accent-text:   #059669;
   /* Scrollbar */
-  --c-scrollbar:     #ccc9c2;
-  --c-scrollbar-hover: #b0aca4;
-  /* Input */
-  --c-input-bg:      #ffffff;
+  --c-scrollbar:     #c8c5bd;
+  --c-scrollbar-hover: #aeaba2;
+  /* Input — légèrement surélevé par rapport au fond */
+  --c-input-bg:      #fafaf8;
   --c-input-border:  rgba(0,0,0,0.12);
 }
 
@@ -101,6 +101,45 @@ body {
   font-size: 16px;
   line-height: 1.6;
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ─── Light mode: halo accent très subtil en haut de page ─── */
+:root body {
+  background-image:
+    radial-gradient(ellipse 100% 40% at 50% -5%, rgba(16,185,129,0.05) 0%, transparent 55%);
+}
+
+/* ─── Cards premium — highlight bord supérieur en light ──── */
+/* Donne l'impression que la lumière vient d'en haut */
+:root .rounded-2xl.shadow-card-th,
+:root .rounded-xl.shadow-card-th {
+  box-shadow: var(--c-shadow-card);
+}
+
+/* ─── Scrollbar fine et discrète ─────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--c-scrollbar); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-scrollbar-hover); }
+
+/* ─── Focus rings premium ─────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ─── Sélection texte thématisée ──────────────────────────── */
+::selection {
+  background: rgba(16,185,129,0.18);
+  color: inherit;
+}
+
+/* ─── Transitions globales éléments interactifs ──────────── */
+button, a, input, select, textarea {
+  transition-property: background-color, border-color, color, box-shadow, opacity, transform;
+  transition-duration: 0.15s;
+  transition-timing-function: ease;
 }
 
 /* ─── Typography classes ─────────────────────────────────────── */

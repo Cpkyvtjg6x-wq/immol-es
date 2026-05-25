@@ -90,8 +90,10 @@ module.exports = {
         card: '0 0 0 1px #27272A, 0 4px 24px rgba(0,0,0,0.4)',
         'card-th': 'var(--c-shadow-card)',
         'sm-th': 'var(--c-shadow-sm)',
+        'md-th': 'var(--c-shadow-md)',
         glow: '0 0 20px rgba(16,185,129,0.15)',
         'glow-indigo': '0 0 20px rgba(99,102,241,0.15)',
+        'glow-th': '0 0 0 1px var(--c-accent-border), 0 0 20px var(--c-accent-dim)',
       },
       animation: {
         fadeIn: 'fadeIn 0.5s ease-out',

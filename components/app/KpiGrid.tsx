@@ -28,7 +28,7 @@ function HeroCard({
     trend === 'up' ? 'text-emerald-400' :
     trend === 'down' ? 'text-red-400' :
     trend === 'neutral' ? 'text-amber-400' :
-    'text-white'
+    'text-th-text-1'
 
   const borderBg = accent
     ? 'border-emerald-500/20 bg-emerald-500/[0.04]'

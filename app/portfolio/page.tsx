@@ -99,7 +99,7 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
       <button
         onClick={() => { if (active) setDesc(!desc); else { setSortKey(k); setDesc(true) } }}
         className={`text-[10px] font-semibold uppercase tracking-wider transition-colors flex items-center gap-1 ${
-          active ? 'text-white' : 'text-th-text-3 hover:text-th-text-2'
+          active ? 'text-th-text-1' : 'text-th-text-3 hover:text-th-text-2'
         }`}
       >
         {label}
@@ -581,7 +581,7 @@ export default function PortfolioPage() {
                 {stats.bestBien && (
                   <div className="mt-3 rounded-xl border border-th-border bg-white/[0.02] px-5 py-3.5 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-500/[0.14] border border-emerald-500/20 flex items-center justify-center">
                         <IconCheckCircle className="w-4 h-4 text-emerald-400" />
                       </div>
                       <div>

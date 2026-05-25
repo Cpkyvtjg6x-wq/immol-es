@@ -45,7 +45,7 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-4 py-3.5 text-[12px] font-semibold whitespace-nowrap transition-colors relative ${
-              tab === t.id ? 'text-white' : 'text-th-text-3 hover:text-th-text-1'
+              tab === t.id ? 'text-th-text-1' : 'text-th-text-3 hover:text-th-text-1'
             }`}
           >
             {t.label}
@@ -142,7 +142,7 @@ export function CashflowTab({ result }: { result: InvestmentResult }) {
           {
             label: 'Mensualité crédit',
             value: `${Math.round(result.mensualiteCredit)} €/mois`,
-            color: 'text-white',
+            color: 'text-th-text-1',
             bg: 'border-th-border',
           },
           {
@@ -260,7 +260,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
             <p className="text-sm font-bold text-th-text-1 truncate">{best.name}</p>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
               <span className="text-[11px] text-th-text-2">
-                Net/an : <span className="text-white font-semibold">{formatCurrency(best.net)}</span>
+                Net/an : <span className="text-th-text-1 font-semibold">{formatCurrency(best.net)}</span>
               </span>
               <span className="text-[11px] text-th-text-2">
                 CF/mois : <span className={`font-semibold ${best.cfNet >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -357,7 +357,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
                 {/* Nom + tag */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className={`text-xs font-bold ${isBest ? 'text-white' : 'text-th-text-1'}`}>{r.name}</p>
+                    <p className={`text-xs font-bold ${isBest ? 'text-th-text-1' : 'text-th-text-1'}`}>{r.name}</p>
                     {isBest && <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">★ OPTIMAL</span>}
                     {r.tag && <span className="text-[9px] text-th-text-3 bg-th-surface2 px-1.5 py-0.5 rounded-full">{r.tag}</span>}
                   </div>
@@ -378,7 +378,7 @@ export function FiscalTab({ fiscalResults }: { fiscalResults: FiscalRegime[] | n
                   </div>
                   <div>
                     <p className="text-[9px] text-th-text-3">Net/an</p>
-                    <p className={`text-[11px] tabular-nums font-semibold ${r.net >= 0 ? 'text-white' : 'text-red-400'}`}>{formatCurrency(r.net)}</p>
+                    <p className={`text-[11px] tabular-nums font-semibold ${r.net >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>{formatCurrency(r.net)}</p>
                   </div>
                   <div>
                     <p className="text-[9px] text-th-text-3">CF/mois</p>
@@ -522,7 +522,7 @@ export function ReventeTab({ result }: { result: InvestmentResult }) {
     {
       label: 'Prix de revente estimé',
       value: formatCurrency(prixRevente),
-      color: 'text-white',
+      color: 'text-th-text-1',
       sub: 'Valorisation annuelle appliquée',
     },
     {
@@ -657,7 +657,7 @@ export function AmortTab({ result }: { result: InvestmentResult }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-xs text-th-text-2">
-          Capital emprunté : <span className="text-white font-semibold">{formatCurrency(result.montantEmprunte)}</span>
+          Capital emprunté : <span className="text-th-text-1 font-semibold">{formatCurrency(result.montantEmprunte)}</span>
           {' · '}
           Coût total crédit : <span className="text-red-400 font-semibold">{formatCurrency(result.coutCredit)}</span>
         </p>
@@ -667,7 +667,7 @@ export function AmortTab({ result }: { result: InvestmentResult }) {
               key={v}
               onClick={() => setView(v)}
               className={`px-3 py-1 text-[11px] font-medium rounded-md transition-all ${
-                view === v ? 'bg-white text-zinc-950' : 'text-th-text-2 hover:text-white'
+                view === v ? 'bg-th-accent text-white' : 'text-th-text-2 hover:text-th-text-1'
               }`}
             >
               {v === 'chart' ? 'Graphique' : 'Tableau'}
@@ -738,7 +738,7 @@ export function ProjectionTab({ result }: { result: InvestmentResult }) {
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: 'Patrimoine net à 20 ans', value: formatCurrency(final.patrimoine), color: 'text-emerald-400' },
-          { label: 'Valeur estimée du bien', value: formatCurrency(final.valeur), color: 'text-white' },
+          { label: 'Valeur estimée du bien', value: formatCurrency(final.valeur), color: 'text-th-text-1' },
           { label: 'Cashflow cumulé', value: `${final.cashflow >= 0 ? '+' : ''}${formatCurrency(final.cashflow)}`, color: final.cashflow >= 0 ? 'text-emerald-400' : 'text-red-400' },
         ].map((m) => (
           <div key={m.label} className="rounded-xl bg-th-surface2 border border-th-border p-4 text-center">

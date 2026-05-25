@@ -64,7 +64,7 @@ function ArcGauge({ score, color }: { score: number; color: string }) {
       <path
         d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
         fill="none"
-        stroke="rgba(255,255,255,0.06)"
+        stroke="var(--c-surface3)"
         strokeWidth={strokeW}
         strokeLinecap="round"
       />
@@ -80,10 +80,10 @@ function ArcGauge({ score, color }: { score: number; color: string }) {
         style={{ transition: 'stroke-dasharray 1s cubic-bezier(0.16,1,0.3,1)' }}
       />
       {/* Score text */}
-      <text x={cx} y={cy - 4} textAnchor="middle" fill="white" fontSize="20" fontWeight="700" fontFamily="var(--font-geist-sans)">
+      <text x={cx} y={cy - 4} textAnchor="middle" fill="var(--c-text-1)" fontSize="20" fontWeight="700" fontFamily="var(--font-geist-sans)">
         {score}
       </text>
-      <text x={cx} y={cy + 10} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="9" fontFamily="var(--font-geist-sans)">
+      <text x={cx} y={cy + 10} textAnchor="middle" fill="var(--c-text-3)" fontSize="9" fontFamily="var(--font-geist-sans)">
         /100
       </text>
     </svg>
@@ -118,7 +118,7 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
       <div className="px-6 py-4 border-b border-th-border flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-1.5 h-1.5 rounded-full" style={{ background: health.color }} />
-          <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">Santé du portefeuille</p>
+          <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-widest">Santé du portefeuille</p>
         </div>
         <span
           className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border"
@@ -136,29 +136,29 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
         {/* Jauge */}
         <div className="px-8 py-6 flex flex-col items-center justify-center gap-1">
           <ArcGauge score={health.score} color={health.color} />
-          <p className="text-[10px] text-zinc-600 text-center">Score global</p>
+          <p className="text-[10px] text-th-text-3 text-center">Score global</p>
         </div>
 
         {/* Patrimoine */}
         <div className="px-6 py-6 flex flex-col justify-between">
-          <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Patrimoine</p>
+          <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider mb-1">Patrimoine</p>
           <p className="text-2xl font-bold text-th-text-1 tabular-nums" style={{ letterSpacing: '-0.04em' }}>
             {fmt(totalInvested)}
           </p>
-          <p className="text-[11px] text-zinc-600 mt-1">{simulations.length} bien{simulations.length > 1 ? 's' : ''} simulé{simulations.length > 1 ? 's' : ''}</p>
+          <p className="text-[11px] text-th-text-3 mt-1">{simulations.length} bien{simulations.length > 1 ? 's' : ''} simulé{simulations.length > 1 ? 's' : ''}</p>
           <MiniBar value={simulations.length} max={10} color="var(--c-text-3)" />
         </div>
 
         {/* Cashflow */}
         <div className="px-6 py-6 flex flex-col justify-between">
-          <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Cashflow mensuel</p>
+          <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider mb-1">Cashflow mensuel</p>
           <p
             className="text-2xl font-bold tabular-nums"
             style={{ letterSpacing: '-0.04em', color: totalCf >= 0 ? '#10b981' : '#ef4444' }}
           >
             {totalCf >= 0 ? '+' : ''}{Math.round(totalCf)} €
           </p>
-          <p className="text-[11px] text-zinc-600 mt-1">
+          <p className="text-[11px] text-th-text-3 mt-1">
             {totalCfAnnual >= 0 ? '+' : ''}{fmt(Math.abs(totalCfAnnual))}/an
           </p>
           <MiniBar
@@ -170,25 +170,25 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
 
         {/* Rendement */}
         <div className="px-6 py-6 flex flex-col justify-between">
-          <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Rendement moy.</p>
+          <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider mb-1">Rendement moy.</p>
           <p className="text-2xl font-bold text-th-text-1 tabular-nums" style={{ letterSpacing: '-0.04em' }}>
-            {avgYield.toFixed(1)}<span className="text-base text-zinc-400">%</span>
+            {avgYield.toFixed(1)}<span className="text-base text-th-text-3">%</span>
           </p>
-          <p className="text-[11px] text-zinc-600 mt-1">brut moyen</p>
+          <p className="text-[11px] text-th-text-3 mt-1">brut moyen</p>
           <MiniBar value={avgYield} max={12} color="#a78bfa" />
         </div>
 
         {/* Meilleur bien */}
         <div className="px-6 py-6 flex flex-col justify-between">
-          <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Meilleur bien</p>
+          <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider mb-1">Meilleur bien</p>
           {bestBien ? (
             <>
               <p className="text-sm font-semibold text-th-text-1 truncate">{bestBien.name}</p>
-              <p className="text-[11px] text-zinc-600 mt-0.5">{bestBien.ville}</p>
+              <p className="text-[11px] text-th-text-3 mt-0.5">{bestBien.ville}</p>
               <div className="flex items-center gap-1.5 mt-auto pt-2">
                 <span className="text-xs font-bold text-emerald-400">{bestBien.rendementBrut.toFixed(1)}%</span>
-                <span className="text-[10px] text-zinc-600">brut</span>
-                <span className="text-[10px] text-zinc-700 mx-1">·</span>
+                <span className="text-[10px] text-th-text-3">brut</span>
+                <span className="text-[10px] text-th-text-3 mx-1">·</span>
                 <span
                   className="text-xs font-bold"
                   style={{ color: bestBien.cashflowMensuel >= 0 ? '#10b981' : '#ef4444' }}
@@ -198,7 +198,7 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
               </div>
             </>
           ) : (
-            <p className="text-sm text-zinc-600">—</p>
+            <p className="text-sm text-th-text-3">—</p>
           )}
         </div>
       </div>

@@ -239,7 +239,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
                         {metric.format(val)}
                       </span>
                       {isBest && !isWorst && active.length > 1 && (
-                        <span className="ml-2 text-[9px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+                        <span className="ml-2 text-[9px] font-bold text-emerald-600 bg-emerald-500/[0.14] px-1.5 py-0.5 rounded-full">
                           ↑ Meilleur
                         </span>
                       )}
@@ -267,7 +267,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
             <div key={s.id} className="px-5 py-4 border-l border-th-border flex items-center gap-2">
               <ScoreBadge score={s.score ?? 0} />
               {s.score === bestScore && active.length > 1 && (
-                <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/[0.14] px-2 py-0.5 rounded-full">
                   <IconStar className="w-3 h-3 inline mr-0.5" /> Recommandé
                 </span>
               )}

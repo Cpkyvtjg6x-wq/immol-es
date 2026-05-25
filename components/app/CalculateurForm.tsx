@@ -51,9 +51,9 @@ function SectionBubble({
     'border-th-border bg-th-surface'
 
   const titleColor =
-    open ? 'text-white' :
-    status === 'complete' ? 'text-emerald-300/90' :
-    status === 'in_progress' ? 'text-white' :
+    open ? 'text-th-text-1' :
+    status === 'complete' ? 'text-emerald-500' :
+    status === 'in_progress' ? 'text-th-text-1' :
     'text-th-text-2'
 
   const numStyle =
@@ -148,7 +148,7 @@ function SectionBubble({
                 <button
                   type="button"
                   onClick={onNext}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-th-surface2 border border-th-border-med text-[12px] font-semibold text-th-text-2 hover:text-white hover:bg-th-surface3 hover:border-white/[0.14] active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-th-surface2 border border-th-border-med text-[12px] font-semibold text-th-text-2 hover:text-th-text-1 hover:bg-th-surface3 hover:border-th-border-med active:scale-[0.99] transition-all duration-200 cursor-pointer"
                 >
                   Continuer
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -1346,7 +1346,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                         ].map((s, i) => (
                           <div key={i} className={`py-2 px-3 rounded-lg border text-center ${s.highlight ? 'bg-emerald-500/[0.07] border-emerald-500/20' : 'bg-th-surface border-th-border'}`}>
                             <div className="text-[10px] text-th-text-2">{s.label}</div>
-                            <div className={`text-[13px] font-bold tabular-nums mt-0.5 ${s.highlight ? 'text-emerald-400' : 'text-white'}`}>{s.val}</div>
+                            <div className={`text-[13px] font-bold tabular-nums mt-0.5 ${s.highlight ? 'text-emerald-400' : 'text-th-text-1'}`}>{s.val}</div>
                           </div>
                         ))}
                       </div>
@@ -1387,10 +1387,10 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                           {/* Nb lots stepper */}
                           <div className="flex items-center gap-1">
                             <button type="button" onClick={() => updateLotGroup(g.id, { nb: Math.max(1, g.nb - 1) })}
-                              className="w-5 h-5 rounded-md bg-th-surface2 text-th-text-2 hover:text-white text-sm flex items-center justify-center transition-colors">−</button>
+                              className="w-5 h-5 rounded-md bg-th-surface2 text-th-text-2 hover:text-th-text-1 text-sm flex items-center justify-center transition-colors">−</button>
                             <span className="text-[12px] font-bold text-th-text-1 w-5 text-center tabular-nums">{g.nb}</span>
                             <button type="button" onClick={() => updateLotGroup(g.id, { nb: g.nb + 1 })}
-                              className="w-5 h-5 rounded-md bg-th-surface2 text-th-text-2 hover:text-white text-sm flex items-center justify-center transition-colors">+</button>
+                              className="w-5 h-5 rounded-md bg-th-surface2 text-th-text-2 hover:text-th-text-1 text-sm flex items-center justify-center transition-colors">+</button>
                           </div>
                           <span className="text-[10px] text-th-text-3">lot{g.nb > 1 ? 's' : ''}</span>
                           {/* Supprimer */}
@@ -1989,7 +1989,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       <div className="w-6 h-6 rounded-md bg-th-surface2 flex items-center justify-center">
                         <Icon className="w-3.5 h-3.5 text-th-text-2" />
                       </div>
-                      <p className={`text-[12px] font-bold leading-tight mt-1 ${active ? 'text-white' : 'text-th-text-1'}`}>{label}</p>
+                      <p className={`text-[12px] font-bold leading-tight mt-1 ${active ? 'text-th-text-1' : 'text-th-text-2'}`}>{label}</p>
                       <p className="text-[10px] text-th-text-2 leading-snug">{desc}</p>
 
                       {/* Preview rendement nette-nette */}
@@ -2241,7 +2241,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
             <button
               type="submit"
               disabled={loading || p.prixAchat <= 0}
-              className="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold text-th-text-2 hover:text-white bg-th-surface2 border border-th-border hover:border-white/[0.14] px-3 py-1.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] cursor-pointer"
+              className="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold text-th-text-2 hover:text-th-text-1 bg-th-surface2 border border-th-border hover:border-th-border-med px-3 py-1.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] cursor-pointer"
             >
               {loading ? (
                 <div className="w-3 h-3 border-[1.5px] border-zinc-600/40 border-t-zinc-400 rounded-full animate-spin" />

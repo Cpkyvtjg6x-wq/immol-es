@@ -88,7 +88,7 @@ function SimSelector({
       <div className="relative rounded-xl border border-th-border-med bg-white/[0.03] p-4">
         <button
           onClick={onRemove}
-          className="absolute top-3 right-3 w-6 h-6 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] flex items-center justify-center text-th-text-2 hover:text-white transition-colors"
+          className="absolute top-3 right-3 w-6 h-6 rounded-lg bg-white/[0.06] hover:bg-th-surface3 flex items-center justify-center text-th-text-2 hover:text-th-text-1 transition-colors"
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -121,7 +121,7 @@ function SimSelector({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full rounded-xl border border-dashed border-th-border-med bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.25] transition-all p-6 flex flex-col items-center gap-3 text-center"
+        className="w-full rounded-xl border border-dashed border-th-border-med bg-white/[0.02] hover:bg-th-surface2 hover:border-white/[0.25] transition-all p-6 flex flex-col items-center gap-3 text-center"
       >
         <div className="w-10 h-10 rounded-xl border border-th-border-med bg-white/[0.04] flex items-center justify-center text-th-text-2">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -210,12 +210,12 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
           return (
             <div key={metric.label}>
               {showSection && (
-                <div className="px-5 py-2.5 bg-white/[0.015] border-b border-th-border">
+                <div className="px-5 py-2.5 bg-th-surface2 border-b border-th-border">
                   <p className="text-[10px] font-bold text-th-text-3 uppercase tracking-widest">{metric.section}</p>
                 </div>
               )}
               <div
-                className="grid hover:bg-white/[0.01] transition-colors"
+                className="grid hover:bg-th-surface2 transition-colors"
                 style={{ gridTemplateColumns: `220px repeat(${active.length}, 1fr)` }}
               >
                 <div className="px-5 py-3.5 flex items-center">
@@ -234,7 +234,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
                           ? 'text-emerald-400'
                           : isWorst && !isBest
                           ? 'text-red-400'
-                          : 'text-white'
+                          : 'text-th-text-1'
                       }`}>
                         {metric.format(val)}
                       </span>
@@ -404,7 +404,7 @@ export default function ComparerPage() {
                   <ComparisonTable selected={selected} />
                 </div>
               ) : (
-                <div className="text-center py-12 rounded-xl border border-dashed border-white/[0.1] bg-white/[0.01]">
+                <div className="text-center py-12 rounded-xl border border-dashed border-th-border bg-white/[0.01]">
                   <p className="text-sm text-th-text-2">
                     Sélectionnez au moins 2 simulations pour afficher le comparatif
                   </p>

@@ -82,7 +82,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative w-9 h-5 rounded-full transition-colors ${checked ? 'bg-emerald-500' : 'bg-white/[0.1]'}`}
+        className={`relative w-9 h-5 rounded-full transition-colors ${checked ? 'bg-emerald-500' : 'bg-th-surface3'}`}
       >
         <span
           className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-4' : 'translate-x-0.5'}`}
@@ -273,7 +273,7 @@ export function AdvancedForm({ onCalculate, loading }: AdvancedFormProps) {
                 className={`py-2 rounded-lg text-xs font-semibold transition-all ${
                   tmi === t
                     ? 'bg-emerald-500 text-zinc-950'
-                    : 'bg-th-surface2 text-th-text-2 hover:bg-th-surface3 hover:text-white border border-th-border'
+                    : 'bg-th-surface2 text-th-text-2 hover:bg-th-surface3 hover:text-th-text-1 border border-th-border'
                 }`}
               >
                 {t}%

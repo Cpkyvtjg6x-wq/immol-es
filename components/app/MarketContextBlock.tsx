@@ -22,7 +22,7 @@ function Badge({ label, color }: { label: string; color: 'emerald' | 'amber' | '
 
 // ─── Métrique compacte ──────────────────────────────────────────────────────────
 
-function Metric({ label, value, sub, color = 'text-white' }: {
+function Metric({ label, value, sub, color = 'text-th-text-1' }: {
   label: string; value: string; sub?: string; color?: string
 }) {
   return (
@@ -114,7 +114,7 @@ export function MarketContextBlock({ data, surface, prixAchat, loading }: Props)
     <div className="rounded-2xl border border-th-border bg-th-surface overflow-hidden">
 
       {/* ── Header ───────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-th-border bg-white/[0.015]">
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-th-border bg-th-surface2">
         <div className="flex items-center gap-2.5 min-w-0">
           <svg className="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

@@ -34,7 +34,7 @@ function FormSection({ step, title, children }: { step: string; title: string; c
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2.5">
-        <span className="w-4 h-4 rounded-full bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-[10px] font-bold text-zinc-500 shrink-0">
+        <span className="w-4 h-4 rounded-full bg-th-surface2 border border-th-border flex items-center justify-center text-[10px] font-bold text-zinc-500 shrink-0">
           {step}
         </span>
         <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">{title}</p>

@@ -43,7 +43,7 @@ function healthScore(simulations: SavedSimulation[]): {
 function MiniBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0
   return (
-    <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
+    <div className="h-1 bg-th-surface3 rounded-full overflow-hidden">
       <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
     </div>
   )
@@ -113,9 +113,9 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
   if (simulations.length === 0) return null
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+    <div className="rounded-2xl border border-th-border bg-th-surface overflow-hidden shadow-card-th">
       {/* Top strip */}
-      <div className="px-6 py-4 border-b border-white/[0.05] flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-th-border flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-1.5 h-1.5 rounded-full" style={{ background: health.color }} />
           <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">Santé du portefeuille</p>
@@ -132,7 +132,7 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
         </span>
       </div>
 
-      <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr] divide-x divide-white/[0.05]">
+      <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr] divide-x divide-th-border">
         {/* Jauge */}
         <div className="px-8 py-6 flex flex-col items-center justify-center gap-1">
           <ArcGauge score={health.score} color={health.color} />
@@ -142,11 +142,11 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
         {/* Patrimoine */}
         <div className="px-6 py-6 flex flex-col justify-between">
           <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Patrimoine</p>
-          <p className="text-2xl font-bold text-white tabular-nums" style={{ letterSpacing: '-0.04em' }}>
+          <p className="text-2xl font-bold text-th-text-1 tabular-nums" style={{ letterSpacing: '-0.04em' }}>
             {fmt(totalInvested)}
           </p>
           <p className="text-[11px] text-zinc-600 mt-1">{simulations.length} bien{simulations.length > 1 ? 's' : ''} simulé{simulations.length > 1 ? 's' : ''}</p>
-          <MiniBar value={simulations.length} max={10} color="rgba(255,255,255,0.2)" />
+          <MiniBar value={simulations.length} max={10} color="var(--c-text-3)" />
         </div>
 
         {/* Cashflow */}
@@ -171,7 +171,7 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
         {/* Rendement */}
         <div className="px-6 py-6 flex flex-col justify-between">
           <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Rendement moy.</p>
-          <p className="text-2xl font-bold text-white tabular-nums" style={{ letterSpacing: '-0.04em' }}>
+          <p className="text-2xl font-bold text-th-text-1 tabular-nums" style={{ letterSpacing: '-0.04em' }}>
             {avgYield.toFixed(1)}<span className="text-base text-zinc-400">%</span>
           </p>
           <p className="text-[11px] text-zinc-600 mt-1">brut moyen</p>
@@ -183,7 +183,7 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
           <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Meilleur bien</p>
           {bestBien ? (
             <>
-              <p className="text-sm font-semibold text-white truncate">{bestBien.name}</p>
+              <p className="text-sm font-semibold text-th-text-1 truncate">{bestBien.name}</p>
               <p className="text-[11px] text-zinc-600 mt-0.5">{bestBien.ville}</p>
               <div className="flex items-center gap-1.5 mt-auto pt-2">
                 <span className="text-xs font-bold text-emerald-400">{bestBien.rendementBrut.toFixed(1)}%</span>
@@ -205,7 +205,7 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
 
       {/* Recommandations IA */}
       {health.tips.length > 0 && (
-        <div className="border-t border-white/[0.05] px-6 py-4 flex items-start gap-3">
+        <div className="border-t border-th-border px-6 py-4 flex items-start gap-3">
           <div className="w-5 h-5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
             <svg className="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -215,7 +215,7 @@ export function PatrimoineCard({ simulations, isPro }: Props) {
             <p className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider mb-1.5">Recommandations</p>
             <div className="flex flex-wrap gap-x-6 gap-y-1">
               {health.tips.map((tip, i) => (
-                <p key={i} className="text-[12px] text-zinc-400 leading-relaxed">{tip}</p>
+                <p key={i} className="text-[12px] text-th-text-2 leading-relaxed">{tip}</p>
               ))}
             </div>
           </div>

@@ -133,7 +133,7 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
           return (
             <div
               key={sim.id}
-              className="px-5 py-3.5 grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 hover:bg-white/[0.015] transition-colors"
+              className="px-5 py-3.5 grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-4 hover:bg-th-surface2 transition-colors"
             >
               {/* Rang */}
               <div className="w-6 h-6 rounded-full bg-white/[0.04] border border-th-border flex items-center justify-center text-[10px] font-bold text-th-text-3 shrink-0">
@@ -383,7 +383,7 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
                 </div>
 
                 {/* Track */}
-                <div className="flex-1 h-8 bg-white/[0.025] rounded-lg relative overflow-hidden border border-th-border">
+                <div className="flex-1 h-8 bg-th-surface2 rounded-lg relative overflow-hidden border border-th-border">
                   {/* Bar */}
                   <div
                     className="absolute inset-y-0 rounded flex items-center px-2 transition-all"

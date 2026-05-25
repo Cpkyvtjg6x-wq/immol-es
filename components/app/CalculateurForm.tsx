@@ -45,7 +45,7 @@ function SectionBubble({
     'rgba(255,255,255,0.08)'
 
   const cardBorder =
-    open ? 'border-white/[0.16] bg-white/[0.025]' :
+    open ? 'border-th-border-med bg-th-surface2' :
     status === 'complete' ? 'border-emerald-500/25 bg-emerald-500/[0.02]' :
     status === 'in_progress' ? 'border-amber-500/20 bg-amber-500/[0.015]' :
     'border-th-border bg-th-surface'
@@ -283,7 +283,7 @@ function ToggleRow({
         disabled={disabled}
         onClick={() => !disabled && onChange(!value)}
         className={`w-9 h-5 rounded-full transition-all shrink-0 relative mt-0.5 ${
-          value && !disabled ? 'bg-emerald-500' : 'bg-white/[0.1]'
+          value && !disabled ? 'bg-emerald-500' : 'bg-th-surface3'
         } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
       >
         <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${value && !disabled ? 'left-4' : 'left-0.5'}`} />
@@ -838,7 +838,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <button
                     type="button"
                     onClick={() => setRenoDpeEnabled(!renoDpeEnabled)}
-                    className={`w-9 h-5 rounded-full transition-all shrink-0 relative ${renoDpeEnabled ? 'bg-emerald-500' : 'bg-white/[0.1]'}`}
+                    className={`w-9 h-5 rounded-full transition-all shrink-0 relative ${renoDpeEnabled ? 'bg-emerald-500' : 'bg-th-surface3'}`}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${renoDpeEnabled ? 'left-4' : 'left-0.5'}`} />
                   </button>

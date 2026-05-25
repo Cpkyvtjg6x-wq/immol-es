@@ -933,7 +933,7 @@ export default function RapportBancairePage() {
                 Passer à Pro — 14j gratuits
               </button>
               <button onClick={() => router.back()}
-                className="px-4 py-3 rounded-xl text-sm text-th-text-2 hover:text-white border border-th-border hover:border-white/20 transition-all">
+                className="px-4 py-3 rounded-xl text-sm text-th-text-2 hover:text-th-text-1 border border-th-border hover:border-th-border-med transition-all">
                 Retour
               </button>
             </div>
@@ -1157,7 +1157,7 @@ export default function RapportBancairePage() {
                 className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl border transition-all text-sm font-semibold ${
                   profile.hasCoEmprunteur
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/[0.06]'
-                    : 'bg-white/[0.02] border-th-border border-dashed text-th-text-2 hover:border-white/20 hover:text-white'
+                    : 'bg-white/[0.02] border-th-border border-dashed text-th-text-2 hover:border-th-border-med hover:text-th-text-1'
                 }`}
               >
                 {profile.hasCoEmprunteur ? (
@@ -1260,7 +1260,7 @@ export default function RapportBancairePage() {
                       className={`px-3 py-2.5 rounded-lg text-[11px] font-semibold border transition-all text-center ${
                         profile.modeAcquisition === mode
                           ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                          : 'bg-white/[0.03] border-th-border text-th-text-2 hover:text-white hover:border-white/20'
+                          : 'bg-white/[0.03] border-th-border text-th-text-2 hover:text-th-text-1 hover:border-th-border-med'
                       }`}>
                       {mode === 'nom-propre' ? 'Nom propre' : mode === 'sci-ir' ? 'SCI IR' : mode === 'sci-is' ? 'SCI IS' : mode === 'sarl-famille' ? 'SARL fam.' : 'Holding + SCI'}
                     </button>
@@ -1297,7 +1297,7 @@ export default function RapportBancairePage() {
                       <div className="flex gap-2 flex-wrap">
                         {[1, 2, 3, 4].map(n => (
                           <button key={n} onClick={() => updateAssocies(n)}
-                            className={`w-8 h-8 rounded-lg text-sm font-bold border transition-all ${nbAssocies === n ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-white/[0.03] border-th-border text-th-text-2 hover:text-white'}`}>
+                            className={`w-8 h-8 rounded-lg text-sm font-bold border transition-all ${nbAssocies === n ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-white/[0.03] border-th-border text-th-text-2 hover:text-th-text-1'}`}>
                             {n}
                           </button>
                         ))}

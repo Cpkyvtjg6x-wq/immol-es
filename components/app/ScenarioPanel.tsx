@@ -314,7 +314,7 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
         <button
           type="button"
           onClick={() => setShowSliders(v => !v)}
-          className="w-full flex items-center justify-between px-5 py-3.5 border-b border-th-border bg-white/[0.015] hover:bg-white/[0.025] transition-colors cursor-pointer"
+          className="w-full flex items-center justify-between px-5 py-3.5 border-b border-th-border bg-th-surface2 hover:bg-th-surface3 transition-colors cursor-pointer"
         >
           <div className="flex items-center gap-2.5">
             <div className={`w-2 h-2 rounded-full transition-colors ${hasChanged ? 'bg-amber-400' : 'bg-emerald-500/50'}`} />

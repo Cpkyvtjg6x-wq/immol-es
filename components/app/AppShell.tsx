@@ -178,12 +178,16 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 w-56 border-r border-white/[0.05] flex flex-col z-40 bg-[#09090b] transition-transform duration-200 ${
+      <aside className={`fixed inset-y-0 left-0 w-56 flex flex-col z-40 transition-transform duration-200 ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
+      }`} style={{
+        background: 'var(--c-sidebar-bg)',
+        borderRight: '1px solid var(--c-sidebar-border)',
+        boxShadow: isDark ? 'none' : '4px 0 24px rgba(0,0,0,0.18)',
+      }}>
 
         {/* Logo */}
-        <div className="h-14 flex items-center px-4 border-b border-white/[0.05] shrink-0">
+        <div className="h-14 flex items-center px-4 shrink-0" style={{ borderBottom: '1px solid var(--c-sidebar-border)' }}>
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center transition-transform group-hover:scale-105">
               <svg className="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -196,7 +200,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
 
         {/* Plan badge */}
         {user && (
-          <div className="px-3 py-2.5 border-b border-white/[0.05] shrink-0">
+          <div className="px-3 py-2.5 shrink-0" style={{ borderBottom: '1px solid var(--c-sidebar-border)' }}>
             {isPro ? (
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -419,7 +423,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
         </nav>
 
         {/* User footer */}
-        <div className="p-2 border-t border-white/[0.05] shrink-0 space-y-0.5">
+        <div className="p-2 shrink-0 space-y-0.5" style={{ borderTop: '1px solid var(--c-sidebar-border)' }}>
           {/* Theme toggle */}
           <div className="flex items-center justify-between px-3 py-1.5">
             <span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">
@@ -428,7 +432,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
               className="relative w-9 h-5 rounded-full transition-colors duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
-              style={{ background: isDark ? '#27272a' : '#d4d3ce' }}
+              style={{ background: isDark ? '#27272a' : '#50505a' }}
               aria-label="Basculer le thème"
             >
               <span

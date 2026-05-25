@@ -190,7 +190,7 @@ export function TravauxEstimateur({ surface, ville, value, onChange }: TravauxEs
 
                   {/* Label */}
                   <div className="flex-1 min-w-0">
-                    <p className={`text-[12px] font-semibold truncate ${isOn ? 'text-white' : 'text-th-text-2'}`}>
+                    <p className={`text-[12px] font-semibold truncate ${isOn ? 'text-th-text-1' : 'text-th-text-2'}`}>
                       {poste.label}
                     </p>
                     {isOn && (

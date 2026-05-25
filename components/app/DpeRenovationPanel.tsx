@@ -226,7 +226,7 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
           <div className="space-y-2">
             {[
               { label: 'Scénario bas', value: calc.coutBas, color: 'text-emerald-400' },
-              { label: 'Scénario moyen', value: calc.coutMoyen, color: 'text-white', bold: true },
+              { label: 'Scénario moyen', value: calc.coutMoyen, color: 'text-th-text-1', bold: true },
               { label: 'Scénario haut', value: calc.coutHaut, color: 'text-amber-400' },
             ].map((row) => (
               <div key={row.label} className={`flex items-center justify-between px-3 py-2 rounded-lg ${row.bold ? 'bg-th-surface2 border border-th-border' : ''}`}>
@@ -383,7 +383,7 @@ export function DpeRenovationPanel({ params, result, onApplyScenario }: Props) {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="text-center rounded-lg bg-th-surface2 border border-th-border p-3">
               <p className="text-[9px] text-th-text-3 mb-1">LTV avant</p>
-              <p className={`text-lg font-black tabular-nums ${calc.ltvAvant > 80 ? 'text-amber-400' : 'text-white'}`}>{calc.ltvAvant}%</p>
+              <p className={`text-lg font-black tabular-nums ${calc.ltvAvant > 80 ? 'text-amber-400' : 'text-th-text-1'}`}>{calc.ltvAvant}%</p>
             </div>
             <div className="text-center rounded-lg bg-emerald-500/[0.05] border border-emerald-500/20 p-3">
               <p className="text-[9px] text-th-text-2 mb-1">LTV après rénov.</p>

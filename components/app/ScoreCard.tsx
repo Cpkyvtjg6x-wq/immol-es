@@ -77,7 +77,7 @@ export function ScoreCard({ score }: ScoreCardProps) {
       {/* Hero — score global uniquement */}
       <div className="flex flex-col sm:flex-row items-center sm:items-stretch gap-0">
         {/* Ring + chiffre */}
-        <div className="sm:w-56 shrink-0 flex flex-col items-center justify-center p-8 border-b sm:border-b-0 sm:border-r border-th-border bg-white/[0.015]">
+        <div className="sm:w-56 shrink-0 flex flex-col items-center justify-center p-8 border-b sm:border-b-0 sm:border-r border-th-border bg-th-surface2">
           <div className="relative w-[140px] h-[140px]">
             <ScoreRing value={globalRounded} color={score.color} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">

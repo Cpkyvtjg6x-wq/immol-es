@@ -116,7 +116,7 @@ export function CashflowTab({ result }: { result: InvestmentResult }) {
                   ? `border-t border-th-border mt-0.5 ${cfBg}`
                   : isSubtotal
                   ? 'bg-th-surface2'
-                  : 'hover:bg-white/[0.015]'
+                  : 'hover:bg-th-surface2'
               }`}
             >
               <span className={`text-[12px] truncate mr-3 ${isResult ? `font-bold ${cfColor}` : isSubtotal ? 'font-semibold text-th-text-1' : 'text-th-text-2'}`}>

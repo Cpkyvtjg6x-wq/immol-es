@@ -210,7 +210,7 @@ function Row({ label, value, color = 'white', bold = false, sep = false }: {
   const col = color === 'emerald' ? 'text-emerald-400'
     : color === 'red' ? 'text-red-400'
     : color === 'amber' ? 'text-amber-400'
-    : 'text-white'
+    : 'text-th-text-1'
   return (
     <div className={`flex items-center justify-between py-2 ${sep ? 'border-t border-th-border-med mt-1 pt-3' : 'border-b border-th-border'}`}>
       <span className={`text-sm ${bold ? 'font-bold text-th-text-1' : 'text-th-text-2'}`}>{label}</span>
@@ -519,7 +519,7 @@ export default function ReventePage() {
               </svg>
               Importer depuis l&apos;analyse
             </button>
-            <Link href="/dashboard" className="text-xs font-semibold text-th-text-2 hover:text-white transition-colors flex items-center gap-1.5">
+            <Link href="/dashboard" className="text-xs font-semibold text-th-text-2 hover:text-th-text-1 transition-colors flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
@@ -579,7 +579,7 @@ export default function ReventePage() {
                         className={`px-3.5 py-1.5 text-xs font-semibold transition-all ${
                           params.modeSaisie === m.id
                             ? 'bg-emerald-500 text-zinc-950'
-                            : 'text-th-text-2 hover:text-white'
+                            : 'text-th-text-2 hover:text-th-text-1'
                         }`}
                       >
                         {m.label}
@@ -666,7 +666,7 @@ export default function ReventePage() {
                     <h2 className="text-sm font-bold text-th-text-1">Durée de possession</h2>
                     <p className="text-[11px] text-th-text-2 mt-0.5">Plus vous gardez longtemps, moins vous payez d&apos;impôts</p>
                   </div>
-                  <span className={`text-2xl font-black tabular-nums ${params.anneesDetention >= 30 ? 'text-emerald-400' : params.anneesDetention >= 22 ? 'text-emerald-300' : 'text-white'}`}
+                  <span className={`text-2xl font-black tabular-nums ${params.anneesDetention >= 30 ? 'text-emerald-400' : params.anneesDetention >= 22 ? 'text-emerald-300' : 'text-th-text-1'}`}
                     style={{ letterSpacing: '-0.04em' }}>
                     {isNaN(params.anneesDetention) ? '—' : `${params.anneesDetention} ans`}
                   </span>
@@ -876,8 +876,8 @@ export default function ReventePage() {
                   </div>
                   <p className="text-xs text-th-text-2 leading-relaxed">
                     {!result.exonerationIR
-                      ? <>Attendre <strong className="text-white">{22 - params.anneesDetention} an{22 - params.anneesDetention > 1 ? 's' : ''}</strong> vous exonère d&apos;IR. Économie estimée : <strong className="text-emerald-400">{formatCurrency(result.impotIR)}</strong>.</>
-                      : <>Attendre <strong className="text-white">{30 - params.anneesDetention} an{30 - params.anneesDetention > 1 ? 's' : ''}</strong> vous exonère aussi des prélèvements sociaux. Économie estimée : <strong className="text-emerald-400">{formatCurrency(result.prelevementsSociaux)}</strong>.</>
+                      ? <>Attendre <strong className="text-th-text-1">{22 - params.anneesDetention} an{22 - params.anneesDetention > 1 ? 's' : ''}</strong> vous exonère d&apos;IR. Économie estimée : <strong className="text-emerald-400">{formatCurrency(result.impotIR)}</strong>.</>
+                      : <>Attendre <strong className="text-th-text-1">{30 - params.anneesDetention} an{30 - params.anneesDetention > 1 ? 's' : ''}</strong> vous exonère aussi des prélèvements sociaux. Économie estimée : <strong className="text-emerald-400">{formatCurrency(result.prelevementsSociaux)}</strong>.</>
                     }
                   </p>
                 </div>

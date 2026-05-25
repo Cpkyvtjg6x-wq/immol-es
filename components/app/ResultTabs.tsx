@@ -129,7 +129,7 @@ function TabButton({
     <button
       onClick={onClick}
       className={`relative px-4 py-3 text-[12px] font-semibold whitespace-nowrap transition-colors ${
-        active ? 'text-white' : 'text-th-text-2 hover:text-th-text-1'
+        active ? 'text-th-text-1' : 'text-th-text-2 hover:text-th-text-1'
       }`}
     >
       <span className="flex items-center gap-1.5">
@@ -480,7 +480,7 @@ function FiscaliteTab({
                     {i + 1}
                   </div>
                   <div className="min-w-0">
-                    <p className={`text-[13px] font-bold truncate ${isBest ? 'text-white' : 'text-th-text-1'}`}>
+                    <p className={`text-[13px] font-bold truncate ${isBest ? 'text-th-text-1' : 'text-th-text-1'}`}>
                       {r.name}
                     </p>
                     {isBest && (
@@ -687,7 +687,7 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
             label: 'Mensualité totale',
             value: `${Math.round(result.mensualiteTotale)} €/mois`,
             sub: `Dont assurance ${Math.round(result.mensualiteTotale - result.mensualiteCredit)} €`,
-            color: 'text-white',
+            color: 'text-th-text-1',
           },
           {
             label: 'Coût total crédit',

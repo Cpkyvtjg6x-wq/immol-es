@@ -201,7 +201,7 @@ export function AddressInput({
           onFocus={() => suggestions.length > 0 && setOpen(true)}
           placeholder={placeholder}
           autoComplete="off"
-          className="w-full bg-white/[0.04] border border-white/[0.07] rounded-lg text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-emerald-500/40 transition-all pl-9 pr-3 py-2"
+          className="w-full bg-th-input-bg border border-th-input-border rounded-lg text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/40 transition-all pl-9 pr-3 py-2"
         />
         {query && (
           <button
@@ -224,7 +224,7 @@ export function AddressInput({
 
       {/* ── Dropdown suggestions ── */}
       {open && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl border border-white/[0.1] bg-[#141416] shadow-2xl shadow-black/60 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl border border-th-border bg-th-surface shadow-card-th overflow-hidden">
           <div className="py-1">
             {suggestions.map((s, i) => (
               <button
@@ -233,16 +233,16 @@ export function AddressInput({
                 onMouseDown={(e) => { e.preventDefault(); handleSelect(s) }}
                 onMouseEnter={() => setHighlighted(i)}
                 className={`w-full flex items-start gap-2.5 px-3 py-2.5 text-left transition-colors ${
-                  i === highlighted ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'
+                  i === highlighted ? 'bg-th-surface2' : 'hover:bg-th-surface2'
                 }`}
               >
                 <div className="mt-0.5">{typeIcon(s.type)}</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-medium text-zinc-200 leading-tight truncate">
+                  <p className="text-[12px] font-medium text-th-text-1 leading-tight truncate">
                     {s.label}
                   </p>
                   <p className="text-[10px] text-zinc-600 mt-0.5 flex items-center gap-1.5">
-                    <span className="text-zinc-700">{typeLabel(s.type)}</span>
+                    <span className="text-th-text-3">{typeLabel(s.type)}</span>
                     <span className="w-0.5 h-0.5 rounded-full bg-zinc-700" />
                     <span>{s.context}</span>
                   </p>

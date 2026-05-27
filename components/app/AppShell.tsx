@@ -143,12 +143,12 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
       {/* Mobile top bar — adapts to theme, sidebar stays dark */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-th-bg backdrop-blur-md border-b border-th-border flex items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
-            <svg className="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          <div className="w-5 h-5 rounded-[5px] bg-emerald-500 flex items-center justify-center shrink-0">
+            <svg className="w-3 h-3 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h14V10" />
             </svg>
           </div>
-          <span className="text-sm font-bold text-th-text-1">IMMO<span className="text-emerald-400">RA</span></span>
+          <span className="text-[13px] font-bold text-th-text-1 tracking-[-0.04em]">IMMO<span className="text-emerald-400">RA</span></span>
         </Link>
         <div className="flex items-center gap-2">
           <NotificationBell simulationCount={simulations.length} isPro={isPro} />
@@ -188,13 +188,13 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
 
         {/* Logo */}
         <div className="h-14 flex items-center px-4 shrink-0" style={{ borderBottom: '1px solid var(--c-sidebar-border)' }}>
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center transition-transform group-hover:scale-105">
-              <svg className="w-4 h-4 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-5 h-5 rounded-[5px] bg-emerald-500 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0">
+              <svg className="w-3 h-3 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h14V10" />
               </svg>
             </div>
-            <span className="text-sm font-bold text-white tracking-tight">IMMO<span className="text-emerald-400">RA</span></span>
+            <span className="text-[13px] font-bold text-white tracking-[-0.04em]">IMMO<span className="text-emerald-400">RA</span></span>
           </Link>
         </div>
 

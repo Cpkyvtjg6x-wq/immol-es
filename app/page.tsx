@@ -251,7 +251,14 @@ function WorkflowSection() {
 export default function LandingPage() {
   useReveal()
   const router = useRouter()
-  const go = () => router.push('/dashboard')
+  // Prefetch proactif dès le chargement de la landing — les bundles seront
+  // déjà en cache au moment du clic, navigation quasi-instantanée.
+  useEffect(() => {
+    router.prefetch('/analyse')
+    router.prefetch('/auth/login')
+    router.prefetch('/dashboard')
+  }, [router])
+  const go = () => router.push('/analyse')
   const login = () => router.push('/auth/login')
 
   return (

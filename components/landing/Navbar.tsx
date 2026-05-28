@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 /*
   Logo — cercle + axe X + courbe exponentielle verte
@@ -46,7 +45,6 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
-  const router = useRouter()
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40)
@@ -99,15 +97,16 @@ export function Navbar() {
         <div className="flex items-center gap-2 ml-auto">
           <div className="hidden md:block w-px h-4 bg-white/[0.12] mx-1" />
 
-          <button
-            onClick={() => router.push('/auth/login')}
+          {/* Link prefetch automatique au survol — évite le délai de téléchargement du bundle */}
+          <Link
+            href="/auth/login"
             className="text-[13.5px] text-zinc-500 hover:text-zinc-200 transition-colors duration-200 px-3 py-1.5 rounded-md"
           >
             Se connecter
-          </button>
+          </Link>
 
-          <button
-            onClick={() => router.push('/dashboard')}
+          <Link
+            href="/analyse"
             className="group flex items-center gap-1.5 text-[13.5px] font-medium text-[#09090b] bg-white px-4 py-[7px] rounded-lg hover:bg-zinc-100 hover:-translate-y-px hover:shadow-[0_4px_20px_-4px_rgba(255,255,255,0.18)] transition-all duration-200"
           >
             Commencer
@@ -117,7 +116,7 @@ export function Navbar() {
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-          </button>
+          </Link>
         </div>
 
       </div>

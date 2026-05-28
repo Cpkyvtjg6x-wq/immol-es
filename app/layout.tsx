@@ -86,19 +86,17 @@ export default function RootLayout({
 }) {
   return (
     /*
-     * `dark` côté serveur : évite le FOUC Safari.
-     * Sans cette classe, le premier rendu utilise :root (mode clair, fond beige).
-     * next-themes injecte son script de thème APRÈS la première frame en Safari,
-     * ce qui cause un flash visible. En pré-rendant avec `dark`, la page est
-     * toujours sombre dès le premier pixel — next-themes confirme ensuite et
-     * ne change rien (defaultTheme="dark").
+     * Stratégie anti-FOUC : :root = dark (dans globals.css).
+     * Sans aucune classe sur <html>, le navigateur charge les variables :root
+     * qui sont les tokens sombres. Pas de flash possible — pas de classe à attendre.
+     * Pour le mode clair, next-themes ajoute `.light` (ThemeProvider value prop).
      *
      * suppressHydrationWarning : next-themes peut modifier la classe côté client
-     * (si l'utilisateur avait choisi le mode clair), React ignorerait le mismatch.
+     * si l'utilisateur est en mode clair (ajoute .light) — React accepte le mismatch.
      */
     <html
       lang="fr"
-      className={`dark ${GeistSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
+      className={`${GeistSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased min-h-screen">

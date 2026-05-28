@@ -10,11 +10,46 @@
 @tailwind utilities;
 
 /* ══════════════════════════════════════════════════════════════
-   DESIGN TOKENS — thème clair (:root) / sombre (.dark)
-   Stratégie : sidebar toujours sombre, contenu principal adaptatif
+   DESIGN TOKENS — sombre (:root, défaut) / clair (.light)
+   Stratégie anti-FOUC : dark = aucune classe nécessaire.
+   Sans classe sur <html>, le navigateur utilise :root = dark.
+   next-themes ajoute `.light` pour le mode clair uniquement.
+   → Zéro flash possible, même sur Safari.
    ══════════════════════════════════════════════════════════════ */
 
+/* ─── Mode sombre — défaut (pas de classe requise) ─── */
 :root {
+  --c-sidebar-bg:    #09090b;
+  --c-sidebar-border: rgba(255,255,255,0.05);
+  /* Texte sidebar dark — zinc-300/zinc-400 sur #09090b = 13.46:1 / 7.76:1 ✅ */
+  --c-sidebar-text-1: #d4d4d8;   /* zinc-300 */
+  --c-sidebar-text-2: #a1a1aa;   /* zinc-400 */
+  --c-sidebar-text-dim: rgba(161,161,170,0.5); /* zinc-400 atténué */
+  --c-bg:            #09090b;
+  --c-surface:       #111113;
+  --c-surface2:      #18181b;
+  --c-surface3:      #27272a;
+  --c-border:        rgba(255,255,255,0.07);
+  --c-border-med:    rgba(255,255,255,0.12);
+  --c-text-1:        #fafafa;
+  --c-text-2:        #a1a1aa;
+  --c-text-3:        #8f8f99;  /* 6.21:1 sur bg, 4.65:1 sur surface3 ✅ AA partout */
+  --c-shadow-xs:     none;
+  --c-shadow-sm:     none;
+  --c-shadow-md:     0 0 0 1px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.5);
+  --c-shadow-card:   0 0 0 1px rgba(255,255,255,0.05), 0 24px 70px rgba(0,0,0,0.55);
+  --c-accent:        #10b981;
+  --c-accent-dim:    rgba(16,185,129,0.06);
+  --c-accent-border: rgba(16,185,129,0.20);
+  --c-accent-text:   #34d399;
+  --c-scrollbar:     #27272a;
+  --c-scrollbar-hover: #3f3f46;
+  --c-input-bg:      rgba(255,255,255,0.03);
+  --c-input-border:  rgba(255,255,255,0.08);
+}
+
+/* ─── Mode clair — classe .light requise ─── */
+.light {
   /* Sidebar — toujours sombre même en mode clair */
   --c-sidebar-bg:    #48443e;
   --c-sidebar-border: rgba(255,255,255,0.08);
@@ -59,36 +94,6 @@
   --c-input-border:  rgba(0,0,0,0.12);
 }
 
-.dark {
-  --c-sidebar-bg:    #09090b;
-  --c-sidebar-border: rgba(255,255,255,0.05);
-  /* Texte sidebar dark — zinc-300/zinc-400 sur #09090b = 13.46:1 / 7.76:1 ✅ */
-  --c-sidebar-text-1: #d4d4d8;   /* zinc-300 */
-  --c-sidebar-text-2: #a1a1aa;   /* zinc-400 */
-  --c-sidebar-text-dim: rgba(161,161,170,0.5); /* zinc-400 atténué */
-  --c-bg:            #09090b;
-  --c-surface:       #111113;
-  --c-surface2:      #18181b;
-  --c-surface3:      #27272a;
-  --c-border:        rgba(255,255,255,0.07);
-  --c-border-med:    rgba(255,255,255,0.12);
-  --c-text-1:        #fafafa;
-  --c-text-2:        #a1a1aa;
-  --c-text-3:        #8f8f99;  /* 6.21:1 sur bg, 4.65:1 sur surface3 ✅ AA partout */
-  --c-shadow-xs:     none;
-  --c-shadow-sm:     none;
-  --c-shadow-md:     0 0 0 1px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.5);
-  --c-shadow-card:   0 0 0 1px rgba(255,255,255,0.05), 0 24px 70px rgba(0,0,0,0.55);
-  --c-accent:        #10b981;
-  --c-accent-dim:    rgba(16,185,129,0.06);
-  --c-accent-border: rgba(16,185,129,0.20);
-  --c-accent-text:   #34d399;
-  --c-scrollbar:     #27272a;
-  --c-scrollbar-hover: #3f3f46;
-  --c-input-bg:      rgba(255,255,255,0.03);
-  --c-input-border:  rgba(255,255,255,0.08);
-}
-
 /* ══════════════════════════════════════════════════════════════
    FIN DESIGN TOKENS
    ══════════════════════════════════════════════════════════════ */
@@ -115,16 +120,16 @@ body {
      next-themes (disableTransitionOnChange gère le switch manuel) */
 }
 
-/* ─── Light mode: halo accent très subtil en haut de page ─── */
-:root body {
+/* ─── Halo accent en haut de page (dark + light) ─── */
+body {
   background-image:
     radial-gradient(ellipse 100% 40% at 50% -5%, rgba(16,185,129,0.05) 0%, transparent 55%);
 }
 
 /* ─── Cards premium — highlight bord supérieur en light ──── */
 /* Donne l'impression que la lumière vient d'en haut */
-:root .rounded-2xl.shadow-card-th,
-:root .rounded-xl.shadow-card-th {
+.light .rounded-2xl.shadow-card-th,
+.light .rounded-xl.shadow-card-th {
   box-shadow: var(--c-shadow-card);
 }
 
@@ -159,38 +164,38 @@ body {
    ════════════════════════════════════════════════════════════════ */
 
 /* Emerald (#10b981 = 2.43:1) → #047857 = 5.25:1 ✅ AA */
-html:not(.dark) .text-emerald-300,
-html:not(.dark) .text-emerald-400,
-html:not(.dark) .text-emerald-500 { color: #047857; }
-html:not(.dark) .text-emerald-600  { color: #065f46; }
+html.light .text-emerald-300,
+html.light .text-emerald-400,
+html.light .text-emerald-500 { color: #047857; }
+html.light .text-emerald-600  { color: #065f46; }
 
 /* Red (#f87171 = 2.65:1) → #b91c1c = 6.19:1 ✅ AA */
-html:not(.dark) .text-red-400,
-html:not(.dark) .text-red-500     { color: #b91c1c; }
+html.light .text-red-400,
+html.light .text-red-500     { color: #b91c1c; }
 
 /* Amber (#fbbf24 = 1.60:1) → #b45309 = 4.81:1 ✅ AA */
-html:not(.dark) .text-amber-400,
-html:not(.dark) .text-amber-500   { color: #b45309; }
+html.light .text-amber-400,
+html.light .text-amber-500   { color: #b45309; }
 
 /* Indigo (#818cf8 = 2.85:1) → #4f46e5 = 6.02:1 ✅ AA */
-html:not(.dark) .text-indigo-400,
-html:not(.dark) .text-indigo-500  { color: #4f46e5; }
+html.light .text-indigo-400,
+html.light .text-indigo-500  { color: #4f46e5; }
 
 /* Violet (#a78bfa = 2.60:1) → #6d28d9 = 6.81:1 ✅ AA */
-html:not(.dark) .text-violet-400,
-html:not(.dark) .text-purple-400  { color: #6d28d9; }
+html.light .text-violet-400,
+html.light .text-purple-400  { color: #6d28d9; }
 
 /* ── Exception sidebar : fond toujours sombre (#48443e ou #09090b) ──
    aside a spécificité (0,2,1) > (0,2,0) → override sans !important
    Les couleurs vives restent lisibles sur fond sombre ────────────── */
-html:not(.dark) aside .text-emerald-300 { color: #6ee7b7; }
-html:not(.dark) aside .text-emerald-400 { color: #34d399; }
-html:not(.dark) aside .text-emerald-500 { color: #10b981; }
-html:not(.dark) aside .text-emerald-600 { color: #059669; }
-html:not(.dark) aside .text-red-400     { color: #f87171; }
-html:not(.dark) aside .text-red-500     { color: #ef4444; }
-html:not(.dark) aside .text-amber-400   { color: #fbbf24; }
-html:not(.dark) aside .text-amber-500   { color: #f59e0b; }
+html.light aside .text-emerald-300 { color: #6ee7b7; }
+html.light aside .text-emerald-400 { color: #34d399; }
+html.light aside .text-emerald-500 { color: #10b981; }
+html.light aside .text-emerald-600 { color: #059669; }
+html.light aside .text-red-400     { color: #f87171; }
+html.light aside .text-red-500     { color: #ef4444; }
+html.light aside .text-amber-400   { color: #fbbf24; }
+html.light aside .text-amber-500   { color: #f59e0b; }
 
 /* ─── Classe utilitaire accent text ──────────────────────── */
 .text-accent {

@@ -83,6 +83,15 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${instrumentSerif.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        {/* Script anti-FOUC : applique le thème AVANT le premier rendu,
+            évite le flash blanc → sombre lors de l'hydration next-themes */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="antialiased min-h-screen">
         <ThemeProvider>
           <AuthProvider>

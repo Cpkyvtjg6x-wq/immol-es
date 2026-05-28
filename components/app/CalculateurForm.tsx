@@ -175,7 +175,7 @@ function SectionBubble({
                 <button
                   type="button"
                   onClick={onNext}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-th-surface2 border border-th-border-med text-[12px] font-semibold text-th-text-2 hover:text-th-text-1 hover:bg-th-surface3 hover:border-th-border-med active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[12px] font-semibold text-emerald-400 hover:bg-emerald-500/18 hover:border-emerald-500/40 hover:text-emerald-300 active:scale-[0.99] transition-all duration-200 cursor-pointer"
                 >
                   Continuer
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

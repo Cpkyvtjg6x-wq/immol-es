@@ -202,10 +202,11 @@ function NumInput({
   placeholder?: string; min?: number; step?: number; readOnly?: boolean
 }) {
   const [focused, setFocused] = useState(false)
+  // Saisie brute locale — permet de taper "3,5" sans que la virgule disparaisse
+  const [rawInput, setRawInput] = useState('')
 
-  // Affichage : formaté avec séparateur de milliers hors focus, brut en focus
   const displayValue = focused
-    ? (value ? String(value) : '')
+    ? rawInput
     : (value ? value.toLocaleString('fr-FR') : '')
 
   return (
@@ -215,12 +216,23 @@ function NumInput({
         inputMode="decimal"
         value={displayValue}
         readOnly={readOnly}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        onChange={(e) => {
-          // Accepte virgule ou point comme séparateur décimal, ignore les espaces
+        onFocus={() => {
+          setFocused(true)
+          // Initialiser avec la valeur actuelle (point → virgule pour cohérence FR)
+          setRawInput(value ? String(value).replace('.', ',') : '')
+        }}
+        onBlur={(e) => {
+          setFocused(false)
           const raw = e.target.value.replace(/\s/g, '').replace(',', '.')
           onChange?.(parseFloat(raw) || 0)
+        }}
+        onChange={(e) => {
+          const str = e.target.value
+          setRawInput(str)
+          // Mise à jour en temps réel uniquement si c'est un nombre valide
+          const raw = str.replace(/\s/g, '').replace(',', '.')
+          const num = parseFloat(raw)
+          if (!isNaN(num)) onChange?.(num)
         }}
         placeholder={placeholder ?? '0'}
         className={`w-full bg-th-surface2 border border-th-border rounded-lg text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/40 transition-all pl-3 ${suffix ? 'pr-9' : 'pr-3'} py-2 tabular-nums ${readOnly ? 'opacity-50 cursor-default' : ''}`}

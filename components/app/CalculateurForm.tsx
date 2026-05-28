@@ -16,6 +16,7 @@ interface Props {
   onCalculate: (params: InvestmentParams) => Promise<void>
   onChange?: (params: InvestmentParams) => void
   onReset?: () => void
+  onCollapse?: () => void
   loading: boolean
   initialParams?: InvestmentParams
   result?: InvestmentResult | null
@@ -380,7 +381,7 @@ function Divider() {
 
 // ─── Indicateur de progression global ──────────────────────────────────────────
 
-function FormProgress({ sectionInfos }: { sectionInfos: Record<string, { status: SectionStatus }> }) {
+function FormProgress({ sectionInfos, onCollapse }: { sectionInfos: Record<string, { status: SectionStatus }>; onCollapse?: () => void }) {
   const sections = Object.values(sectionInfos)
   const completed = sections.filter(s => s.status === 'complete').length
   const inProgress = sections.filter(s => s.status === 'in_progress').length
@@ -427,7 +428,7 @@ function FormProgress({ sectionInfos }: { sectionInfos: Record<string, { status:
     'bg-emerald-500'
 
   return (
-    <div className="px-3 pt-2 pb-1">
+    <div className="px-3 pt-2 pb-2">
       <div className="flex items-center justify-between mb-1.5">
         <span
           key={qualityLabel}
@@ -435,12 +436,26 @@ function FormProgress({ sectionInfos }: { sectionInfos: Record<string, { status:
         >
           {qualityLabel}
         </span>
-        <span
-          key={badgeKey}
-          className={`text-[10px] tabular-nums font-semibold ${reward ? 'badge-bounce text-emerald-400' : 'text-th-text-3'} transition-colors duration-300`}
-        >
-          {completed}<span className="opacity-40">/{total}</span>
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            key={badgeKey}
+            className={`text-[10px] tabular-nums font-semibold ${reward ? 'badge-bounce text-emerald-400' : 'text-th-text-3'} transition-colors duration-300`}
+          >
+            {completed}<span className="opacity-40">/{total}</span>
+          </span>
+          {onCollapse && (
+            <button
+              type="button"
+              onClick={onCollapse}
+              className="w-5 h-5 rounded-md flex items-center justify-center text-th-text-3 hover:text-th-text-1 hover:bg-th-surface3 transition-all cursor-pointer"
+              title="Réduire"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
       <div className="h-[3px] bg-th-surface2 rounded-full overflow-hidden">
         <div
@@ -454,7 +469,7 @@ function FormProgress({ sectionInfos }: { sectionInfos: Record<string, { status:
           {[25, 50, 75, 100].map(milestone => (
             <div
               key={milestone}
-              className={`w-0.5 h-0.5 rounded-full transition-colors duration-500 ${globalPct >= milestone ? barColor.replace('bg-', 'bg-') : 'bg-th-border'}`}
+              className={`w-0.5 h-0.5 rounded-full transition-colors duration-500 ${globalPct >= milestone ? barColor : 'bg-th-border'}`}
             />
           ))}
         </div>
@@ -478,7 +493,7 @@ function estimerCFE(loyerMensuel: number, vacance = 0.5): number {
 
 // ─── Main form ─────────────────────────────────────────────────────────────────
 
-export function CalculateurForm({ onCalculate, onChange, onReset, loading, initialParams, result, marketData }: Props) {
+export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, loading, initialParams, result, marketData }: Props) {
   const [p, setP] = useState<InvestmentParams>(initialParams ?? DEFAULT_PARAMS)
   // true = valeur CFE posée automatiquement, false = saisie manuelle
   const [cfeIsEstimated, setCfeIsEstimated] = useState(false)
@@ -803,10 +818,13 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto py-2 px-3 space-y-2">
 
-        {/* ─── Progression globale ─────────────────────────────────────────── */}
-        <FormProgress sectionInfos={sectionInfos} />
+      {/* ─── Progression globale — sticky, toujours visible ──────────────── */}
+      <div className="shrink-0 border-b border-th-border bg-th-surface2">
+        <FormProgress sectionInfos={sectionInfos} onCollapse={onCollapse} />
+      </div>
+
+      <div className="flex-1 overflow-y-auto py-2 px-3 space-y-2">
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 1 — LE BIEN                                                 */}

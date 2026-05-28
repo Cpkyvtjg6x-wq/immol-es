@@ -404,40 +404,19 @@ export default function AnalysePage() {
           >
             {panelOpen ? (
               /* ── Panel ouvert ── */
-              <>
-                {/* En-tête du panel */}
-                <div className="shrink-0 h-9 px-4 border-b border-th-border flex items-center justify-between bg-th-surface2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60" />
-                    <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-widest">
-                      Paramètres du bien
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setPanelOpen(false)}
-                    className="w-6 h-6 rounded-md flex items-center justify-center text-th-text-3 hover:text-th-text-1 hover:bg-th-surface3 transition-all"
-                    title="Réduire"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Formulaire — scroll interne géré par le composant */}
-                <div className="flex-1 overflow-hidden">
-                  <CalculateurForm
-                    key={formKey}
-                    onCalculate={handleCalculate}
-                    onChange={handleChange}
-                    onReset={handleFormReset}
-                    loading={loading}
-                    initialParams={initialParams}
-                    result={result}
-                    marketData={marketData}
-                  />
-                </div>
-              </>
+              <div className="flex-1 overflow-hidden">
+                <CalculateurForm
+                  key={formKey}
+                  onCalculate={handleCalculate}
+                  onChange={handleChange}
+                  onReset={handleFormReset}
+                  onCollapse={() => setPanelOpen(false)}
+                  loading={loading}
+                  initialParams={initialParams}
+                  result={result}
+                  marketData={marketData}
+                />
+              </div>
             ) : (
               /* ── Panel réduit — strip vertical ── */
               <div

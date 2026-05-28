@@ -213,7 +213,7 @@ export default function DashboardPage() {
 
   function loadSimulation(sim: SavedSimulation) {
     if (sim.params && Object.keys(sim.params).length > 0) {
-      localStorage.setItem('immolyse_last_params', JSON.stringify(sim.params))
+      sessionStorage.setItem('immolyse_load_params', JSON.stringify(sim.params))
     }
     toast.info('Simulation chargée — paramètres restaurés')
     router.push('/analyse')

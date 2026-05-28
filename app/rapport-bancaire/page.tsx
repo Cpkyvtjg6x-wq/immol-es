@@ -10,7 +10,7 @@ import { calculateScore } from '@/lib/score'
 import { calculateBankRatios, structureLabel, typeContratLabel, situationFamLabel, documentsRequis } from '@/lib/bank-report'
 import type { InvestmentParams, InvestmentResult, FiscalResult, ScoreResult, BankReportProfile, BankRatios } from '@/lib/types'
 
-const LS_KEY = 'immolyse_last_params'
+const LS_KEY = 'immolyse_last_params' // sessionStorage uniquement
 
 // ─── Helpers d'affichage ──────────────────────────────────────────────────────
 const fE = (n: number) => Math.round(n).toLocaleString('fr-FR') + ' €'
@@ -844,7 +844,7 @@ export default function RapportBancairePage() {
   // Charger les params depuis localStorage
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(LS_KEY)
+      const raw = sessionStorage.getItem(LS_KEY)
       if (raw) {
         const p: InvestmentParams = JSON.parse(raw)
         setParams(p)

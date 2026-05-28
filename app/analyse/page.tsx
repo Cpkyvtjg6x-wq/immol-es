@@ -16,7 +16,6 @@ import { AppShell } from '@/components/app/AppShell'
 import { ExportButtons } from '@/components/app/ExportButtons'
 import type { LocalMarketData } from '@/lib/types'
 
-const LS_KEY = 'immolyse_last_params'
 
 function runCalculation(params: InvestmentParams) {
   const res = calculateInvestment(params)
@@ -102,10 +101,15 @@ export default function AnalysePage() {
         cfe:          locType === 'meuble' ? 500 : 0,
       }
     }
+    // Simulation chargée depuis le dashboard (one-shot via sessionStorage)
     try {
-      const raw = localStorage.getItem(LS_KEY)
-      return raw ? { ...DEFAULT_PARAMS, ...JSON.parse(raw) } : DEFAULT_PARAMS
-    } catch { return DEFAULT_PARAMS }
+      const raw = sessionStorage.getItem('immolyse_load_params')
+      if (raw) {
+        sessionStorage.removeItem('immolyse_load_params')
+        return { ...DEFAULT_PARAMS, ...JSON.parse(raw) }
+      }
+    } catch { /* ignore */ }
+    return DEFAULT_PARAMS
   })
 
   const [result, setResult]               = useState<InvestmentResult | null>(null)
@@ -173,7 +177,8 @@ export default function AnalysePage() {
 
   const applyCalculation = useCallback((params: InvestmentParams, isLive = false) => {
     if (params.prixAchat <= 0) return
-    try { localStorage.setItem(LS_KEY, JSON.stringify(params)) } catch {}
+    // Sauvegarde session uniquement (pour revente / rapport-bancaire dans le même onglet)
+    try { sessionStorage.setItem('immolyse_last_params', JSON.stringify(params)) } catch {}
     setLastParams(params)
     if (!isLive) { setInsights(null); setResultsVisible(false) }
     const { res, fiscalResult, best, sc } = runCalculation(params)

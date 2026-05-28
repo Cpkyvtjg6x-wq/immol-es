@@ -455,7 +455,7 @@ export default function ReventePage() {
 
   function importFromSimulateur() {
     try {
-      const raw = localStorage.getItem('immolyse_last_params')
+      const raw = sessionStorage.getItem('immolyse_last_params')
       if (!raw) { alert('Aucune simulation trouvée. Lancez d\'abord une analyse.'); return }
       const d = JSON.parse(raw)
       setParams(p => ({

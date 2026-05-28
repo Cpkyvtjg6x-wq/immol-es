@@ -90,7 +90,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
     setClosing(true)
     await markComplete()
     // Charger le bien démo dans le calculateur
-    localStorage.setItem('immolyse_last_params', JSON.stringify({
+    sessionStorage.setItem('immolyse_load_params', JSON.stringify({
       prixAchat: DEMO_BIEN.prixAchat,
       loyer: DEMO_BIEN.loyer,
       charges: DEMO_BIEN.charges,

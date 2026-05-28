@@ -72,9 +72,12 @@ function SectionBubble({
       : 'bg-th-surface2 border-th-border-med text-th-text-2'
 
   return (
-    <div className={isNew ? 'section-reveal' : ''}>
     <div
       ref={domRef}
+      className={isNew ? 'section-reveal' : ''}
+      style={{ scrollMarginTop: '8px' }}
+    >
+    <div
       className={`rounded-2xl border ${cardBorder} ${isNew ? 'section-reveal-card' : ''}`}
       style={{ transition: 'border-color 400ms cubic-bezier(0.16,1,0.3,1), background-color 400ms cubic-bezier(0.16,1,0.3,1)' }}
     >
@@ -524,14 +527,19 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
       if (!revealedSections.has(nextId)) {
         setRevealedSections(prev => new Set(Array.from(prev).concat(nextId)))
         setJustRevealed(prev => new Set(Array.from(prev).concat(nextId)))
-        // Retirer du justRevealed après la fin de l'animation (380ms)
+        // Scroll vers la nouvelle section après que l'animation de slide-in ait commencé
+        setTimeout(() => {
+          const el = sectionRefs.current[nextId]
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 220)
+        // Retirer du justRevealed après la fin de l'animation (550ms)
         setTimeout(() => {
           setJustRevealed(prev => {
             const n = new Set(prev)
             n.delete(nextId)
             return n
           })
-        }, 450)
+        }, 600)
       }
     }
   }
@@ -620,7 +628,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
     if (!activeSection) return
     const el = sectionRefs.current[activeSection]
     if (el) {
-      const timer = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120)
+      const timer = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
       return () => clearTimeout(timer)
     }
   }, [activeSection])

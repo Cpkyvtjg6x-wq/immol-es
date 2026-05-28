@@ -10,7 +10,7 @@ import { calculateScore } from '@/lib/score'
 import { InvestmentParams, InvestmentResult, ScoreResult, AIInsight, FiscalRegime } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/lib/hooks/useAuth'
-import { useSimulations } from '@/lib/hooks/useSimulations'
+import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { SaveModal } from '@/components/app/SaveModal'
 import { AppShell } from '@/components/app/AppShell'
 import { ExportButtons } from '@/components/app/ExportButtons'
@@ -141,7 +141,6 @@ export default function AnalysePage() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { user } = useAuth()
-  const { saveSimulation } = useSimulations(user?.id ?? null)
 
   useEffect(() => {
     if (showResults) {
@@ -287,8 +286,22 @@ export default function AnalysePage() {
 
   const handleDoSave = useCallback(async (name: string) => {
     if (!result || !score || !lastParams) return { error: 'Aucun résultat à sauvegarder' }
-    return saveSimulation({ name, params: lastParams as Partial<InvestmentParams>, results: result, score })
-  }, [result, score, lastParams, saveSimulation])
+    if (!user?.id) return { error: 'Non connecté' }
+    try {
+      const supabase = createBrowserSupabaseClient()
+      const { error } = await supabase.from('simulations').insert({
+        user_id: user.id,
+        name,
+        params: lastParams as Partial<InvestmentParams>,
+        results: result,
+        score: score.global,
+        tags: [],
+      })
+      return { error: error?.message || null }
+    } catch {
+      return { error: 'Erreur lors de la sauvegarde' }
+    }
+  }, [result, score, lastParams, user?.id])
 
   // ─── Mode Express → Expert: bascule avec transfert des params ───────────────
   const handleSwitchToExpert = useCallback((params: InvestmentParams) => {

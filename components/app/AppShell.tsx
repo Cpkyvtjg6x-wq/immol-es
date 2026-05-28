@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTheme } from '@/components/app/ThemeProvider'
@@ -36,7 +36,16 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
   const pathname = usePathname()
   const router = useRouter()
   const { user, isPro, tier } = useAuth()
-  const { simulations } = useSimulations(user?.id ?? null)
+
+  // Différer le fetch des simulations pour ne pas bloquer le rendu initial.
+  // Sur /analyse, la liste des simulations est optionnelle (sidebar décorative).
+  // On attend 400ms pour laisser le contenu principal s'afficher d'abord.
+  const [deferredUserId, setDeferredUserId] = useState<string | null>(null)
+  useEffect(() => {
+    const t = setTimeout(() => setDeferredUserId(user?.id ?? null), 400)
+    return () => clearTimeout(t)
+  }, [user?.id])
+  const { simulations } = useSimulations(deferredUserId)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tagsExpanded, setTagsExpanded] = useState(false)
   const { theme, setTheme } = useTheme()

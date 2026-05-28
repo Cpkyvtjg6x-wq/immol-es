@@ -1,18 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Affiche un message si le callback OAuth a échoué
+  useEffect(() => {
+    if (searchParams.get('error') === 'oauth_failed') {
+      setError('La connexion Google a échoué. Réessayez ou utilisez email + mot de passe.')
+    }
+  }, [searchParams])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +42,12 @@ export default function LoginPage() {
     const supabase = createBrowserSupabaseClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/dashboard` },
+      options: {
+        // ⚠️ Doit pointer sur /auth/callback (pas /dashboard directement).
+        // Sans ça, le code PKCE n'est jamais échangé côté serveur → pas de
+        // session sur Safari (ITP) alors que Chrome tolère l'implicit flow.
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+      },
     })
   }
 

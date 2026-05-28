@@ -2182,37 +2182,88 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, lo
               )}
 
               {/* CFE & Comptable — uniquement meublé/coloc/saisonnier */}
-              {!isNu && (
-                <Row2>
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label>CFE</Label>
-                      {cfeIsEstimated && (
-                        <span className="text-[9px] font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-1.5 py-0.5 rounded-full">
-                          estimé
-                        </span>
-                      )}
-                    </div>
-                    <NumInput
-                      value={p.cfe}
-                      onChange={(v) => {
-                        setCfeIsEstimated(false)
-                        set('cfe', v)
-                      }}
-                      suffix="€/an"
-                    />
-                    {cfeIsEstimated && (
-                      <p className="text-[10px] text-th-text-3 mt-1">
-                        Barème cotisation minimale LMNP · à affiner selon votre commune
-                      </p>
+              {!isNu && !isImmeuble && (() => {
+                // Loyer de référence pour l'estimation CFE
+                const loyerRef = isColoc
+                  ? p.loyerParChambre * p.nbChambres
+                  : isSaisonnier
+                  ? Math.round((p.prixNuit ?? 0) * (p.tauxOccupation ?? 65) / 100 * 365 / 12)
+                  : p.loyerMeuble
+                const cfeSuggere = loyerRef > 0 ? estimerCFE(loyerRef, p.vacance) : null
+                const showSuggestion = cfeSuggere !== null && (p.cfe === 0 || (cfeIsEstimated && p.cfe !== cfeSuggere))
+
+                return (
+                  <div className="space-y-2">
+                    {/* Chip suggestion CFE */}
+                    {cfeSuggere !== null && (
+                      <div className={`rounded-lg border px-3 py-2 transition-all ${
+                        p.cfe === 0
+                          ? 'bg-sky-500/[0.06] border-sky-500/20'
+                          : 'bg-th-surface2 border-th-border'
+                      }`}>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <span className="text-[10px] font-semibold text-sky-400">CFE estimée (barème LMNP 2024) :</span>
+                            <span className="text-[10px] font-bold text-th-text-1 tabular-nums ml-1.5">
+                              {cfeSuggere.toLocaleString('fr-FR')} €/an
+                            </span>
+                            <p className="text-[9px] text-th-text-3 mt-0.5 leading-tight">
+                              Cotisation minimale · varie selon votre commune
+                            </p>
+                          </div>
+                          {(p.cfe === 0 || (cfeIsEstimated && p.cfe !== cfeSuggere)) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                set('cfe', cfeSuggere)
+                                setCfeIsEstimated(true)
+                              }}
+                              className="shrink-0 text-[10px] font-bold text-sky-400 bg-sky-500/10 border border-sky-500/25 px-2 py-1 rounded-md hover:bg-sky-500/20 active:scale-[0.97] transition-all cursor-pointer whitespace-nowrap"
+                            >
+                              Appliquer
+                            </button>
+                          )}
+                          {p.cfe > 0 && cfeIsEstimated && p.cfe === cfeSuggere && (
+                            <span className="text-[9px] font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-1.5 py-0.5 rounded-full shrink-0">
+                              appliqué
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     )}
+
+                    <Row2>
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <Label>CFE</Label>
+                          {cfeIsEstimated && p.cfe > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => { setCfeIsEstimated(false); set('cfe', 0) }}
+                              className="text-[9px] text-th-text-3 hover:text-red-400 transition-colors cursor-pointer"
+                              title="Effacer l'estimation"
+                            >
+                              Effacer
+                            </button>
+                          )}
+                        </div>
+                        <NumInput
+                          value={p.cfe}
+                          onChange={(v) => {
+                            setCfeIsEstimated(false)
+                            set('cfe', v)
+                          }}
+                          suffix="€/an"
+                        />
+                      </div>
+                      <div>
+                        <Label>Frais comptable</Label>
+                        <NumInput value={p.fraisComptable} onChange={(v) => set('fraisComptable', v)} suffix="€/an" />
+                      </div>
+                    </Row2>
                   </div>
-                  <div>
-                    <Label>Frais comptable</Label>
-                    <NumInput value={p.fraisComptable} onChange={(v) => set('fraisComptable', v)} suffix="€/an" />
-                  </div>
-                </Row2>
-              )}
+                )
+              })()}
 
               {/* Total charges estimé */}
               {(() => {

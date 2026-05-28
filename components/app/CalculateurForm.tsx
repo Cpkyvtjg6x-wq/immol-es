@@ -74,7 +74,7 @@ function SectionBubble({
     <div className={isNew ? 'section-reveal' : ''}>
     <div
       ref={domRef}
-      className={`rounded-2xl border transition-colors duration-250 ${cardBorder}`}
+      className={`rounded-2xl border transition-colors duration-250 ${cardBorder} ${isNew ? 'section-reveal-card' : ''}`}
     >
       {/* ── Header — cliquable sur toute la largeur ── */}
       <button
@@ -83,7 +83,7 @@ function SectionBubble({
         className="w-full flex items-center gap-3.5 px-4 py-[14px] text-left cursor-pointer select-none"
       >
         {/* Badge numéro / check */}
-        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 border transition-all duration-250 ${numStyle}`}>
+        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 border transition-all duration-250 ${numStyle} ${isNew ? 'section-badge-new' : ''}`}>
           {status === 'complete' && !open ? (
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />

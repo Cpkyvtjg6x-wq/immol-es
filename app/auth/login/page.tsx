@@ -1,26 +1,31 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 
+// ── Sous-composant isolé pour useSearchParams (requis par Next.js 14) ─────────
+// useSearchParams() doit être dans un <Suspense> — on l'isole ici.
+function OAuthErrorBanner({ onError }: { onError: (msg: string) => void }) {
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    if (searchParams.get('error') === 'oauth_failed') {
+      onError('La connexion Google a échoué. Réessayez ou utilisez email + mot de passe.')
+    }
+  }, [searchParams, onError])
+  return null
+}
+
+// ── Page principale ───────────────────────────────────────────────────────────
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  // Affiche un message si le callback OAuth a échoué
-  useEffect(() => {
-    if (searchParams.get('error') === 'oauth_failed') {
-      setError('La connexion Google a échoué. Réessayez ou utilisez email + mot de passe.')
-    }
-  }, [searchParams])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,9 +48,7 @@ export default function LoginPage() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // ⚠️ Doit pointer sur /auth/callback (pas /dashboard directement).
-        // Sans ça, le code PKCE n'est jamais échangé côté serveur → pas de
-        // session sur Safari (ITP) alors que Chrome tolère l'implicit flow.
+        // Pointe sur /auth/callback pour l'échange PKCE côté serveur (Safari)
         redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
       },
     })
@@ -53,6 +56,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
+      {/* Lit ?error= dans l'URL sans bloquer le prerender */}
+      <Suspense fallback={null}>
+        <OAuthErrorBanner onError={setError} />
+      </Suspense>
+
       {/* Background gradient */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />

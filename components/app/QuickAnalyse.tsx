@@ -61,7 +61,7 @@ function QInput({
       </label>
       <div className={`relative flex items-center rounded-xl border transition-all duration-200 ${
         focused
-          ? 'border-emerald-500/40 bg-[#0f1f18] shadow-[0_0_0_3px_rgba(16,185,129,0.08)]'
+          ? 'border-emerald-500/50 bg-[#0f1f18]'
           : 'border-white/[0.08] bg-[#111113] hover:border-white/[0.14]'
       }`}>
         {prefix && (
@@ -241,7 +241,7 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
             <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
               Ville / Adresse
             </label>
-            <div className="rounded-xl border border-white/[0.08] bg-[#111113] hover:border-white/[0.14] transition-colors focus-within:border-emerald-500/40 focus-within:shadow-[0_0_0_3px_rgba(16,185,129,0.08)]">
+            <div className="rounded-xl border border-white/[0.08] bg-[#111113] hover:border-white/[0.14] transition-colors focus-within:border-emerald-500/50 focus-within:bg-[#0f1f18]">
               <AddressInput
                 value={adresseText}
                 onSelect={handleAddress}
@@ -299,7 +299,7 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
                   </button>
                 ))}
               </div>
-              <div className={`relative flex items-center rounded-xl border transition-all duration-200 border-white/[0.08] bg-[#111113] hover:border-white/[0.14]`}>
+              <div className="relative flex items-center rounded-xl border border-white/[0.08] bg-[#111113] hover:border-white/[0.14] transition-all duration-200 focus-within:border-emerald-500/50 focus-within:bg-[#0f1f18]">
                 <input
                   type="text"
                   inputMode="numeric"

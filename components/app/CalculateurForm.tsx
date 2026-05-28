@@ -2471,27 +2471,23 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
       </div>
 
       {/* ─── Footer contextuel ─────────────────────────────────────────────────── */}
-      <div className="shrink-0 px-4 py-1.5 border-t border-th-border bg-th-surface2/90 backdrop-blur-xl space-y-0.5">
+      <div className="shrink-0 px-4 py-1.5 border-t border-th-border bg-th-surface2/90 backdrop-blur-xl">
         {result ? (
-          /* Résultats existants — mise à jour live + recalculer */
+          /* Résultats existants — mise à jour auto + réinitialiser */
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 shrink-0" />
               <span className="text-[11px] text-th-text-3 truncate">Mise à jour automatique</span>
             </div>
             <button
-              type="submit"
-              disabled={loading || p.prixAchat <= 0}
-              className="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold text-th-text-2 hover:text-th-text-1 bg-th-surface2 border border-th-border hover:border-th-border-med px-3 py-1.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] cursor-pointer"
+              type="button"
+              onClick={handleReset}
+              className="shrink-0 flex items-center gap-1 text-[11px] text-th-text-3 hover:text-red-400 transition-colors active:scale-[0.97] cursor-pointer"
             >
-              {loading ? (
-                <div className="w-3 h-3 border-[1.5px] border-zinc-600/40 border-t-zinc-400 rounded-full animate-spin" />
-              ) : (
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              )}
-              Recalculer
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Réinitialiser
             </button>
           </div>
         ) : (
@@ -2515,20 +2511,6 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
                 Lancer l'analyse
               </>
             )}
-          </button>
-        )}
-
-        {/* Réinitialiser — visible dès qu'un champ est rempli */}
-        {p.prixAchat > 0 && (
-          <button
-            type="button"
-            onClick={handleReset}
-            className="w-full flex items-center justify-center gap-1.5 py-0.5 text-[10px] font-medium text-th-text-3 hover:text-red-400 hover:bg-red-500/[0.05] rounded-md border border-transparent hover:border-red-500/15 transition-all active:scale-[0.98] cursor-pointer"
-          >
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Réinitialiser le formulaire
           </button>
         )}
       </div>

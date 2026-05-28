@@ -214,10 +214,11 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 function NumInput({
-  value, onChange, suffix, placeholder, min = 0, step = 1, readOnly,
+  value, onChange, suffix, placeholder, min = 0, step = 1, readOnly, error, warn,
 }: {
   value: number; onChange?: (v: number) => void; suffix?: string
   placeholder?: string; min?: number; step?: number; readOnly?: boolean
+  error?: string; warn?: string
 }) {
   const [focused, setFocused] = useState(false)
   // Saisie brute locale — permet de taper "3,5" sans que la virgule disparaisse
@@ -227,36 +228,58 @@ function NumInput({
     ? rawInput
     : (value ? value.toLocaleString('fr-FR') : '')
 
+  const borderClass = error
+    ? 'border-red-500/50 focus:border-red-500/70'
+    : warn
+    ? 'border-amber-500/40 focus:border-amber-500/60'
+    : 'border-th-border focus:border-emerald-500/40'
+
   return (
-    <div className="relative flex items-center">
-      <input
-        type="text"
-        inputMode="decimal"
-        value={displayValue}
-        readOnly={readOnly}
-        onFocus={() => {
-          setFocused(true)
-          // Initialiser avec la valeur actuelle (point → virgule pour cohérence FR)
-          setRawInput(value ? String(value).replace('.', ',') : '')
-        }}
-        onBlur={(e) => {
-          setFocused(false)
-          const raw = e.target.value.replace(/\s/g, '').replace(',', '.')
-          onChange?.(parseFloat(raw) || 0)
-        }}
-        onChange={(e) => {
-          const str = e.target.value
-          setRawInput(str)
-          // Mise à jour en temps réel uniquement si c'est un nombre valide
-          const raw = str.replace(/\s/g, '').replace(',', '.')
-          const num = parseFloat(raw)
-          if (!isNaN(num)) onChange?.(num)
-        }}
-        placeholder={placeholder ?? '0'}
-        className={`w-full bg-th-surface2 border border-th-border rounded-lg text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/40 transition-all pl-3 ${suffix ? 'pr-9' : 'pr-3'} py-2 tabular-nums ${readOnly ? 'opacity-50 cursor-default' : ''}`}
-      />
-      {suffix && (
-        <span className="absolute right-3 text-[11px] text-th-text-2 pointer-events-none">{suffix}</span>
+    <div>
+      <div className="relative flex items-center">
+        <input
+          type="text"
+          inputMode="decimal"
+          value={displayValue}
+          readOnly={readOnly}
+          onFocus={() => {
+            setFocused(true)
+            setRawInput(value ? String(value).replace('.', ',') : '')
+          }}
+          onBlur={(e) => {
+            setFocused(false)
+            const raw = e.target.value.replace(/\s/g, '').replace(',', '.')
+            onChange?.(parseFloat(raw) || 0)
+          }}
+          onChange={(e) => {
+            const str = e.target.value
+            setRawInput(str)
+            const raw = str.replace(/\s/g, '').replace(',', '.')
+            const num = parseFloat(raw)
+            if (!isNaN(num)) onChange?.(num)
+          }}
+          placeholder={placeholder ?? '0'}
+          className={`w-full bg-th-surface2 border ${borderClass} rounded-lg text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none transition-all pl-3 ${suffix ? 'pr-9' : 'pr-3'} py-2 tabular-nums ${readOnly ? 'opacity-50 cursor-default' : ''}`}
+        />
+        {suffix && (
+          <span className="absolute right-3 text-[11px] text-th-text-2 pointer-events-none">{suffix}</span>
+        )}
+      </div>
+      {error && (
+        <p className="flex items-center gap-1 mt-1 text-[10px] font-medium text-red-400 leading-tight">
+          <svg className="w-2.5 h-2.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          {error}
+        </p>
+      )}
+      {!error && warn && (
+        <p className="flex items-center gap-1 mt-1 text-[10px] font-medium text-amber-400 leading-tight">
+          <svg className="w-2.5 h-2.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          {warn}
+        </p>
       )}
     </div>
   )
@@ -363,42 +386,79 @@ function FormProgress({ sectionInfos }: { sectionInfos: Record<string, { status:
   const inProgress = sections.filter(s => s.status === 'in_progress').length
   const total = sections.length
   const globalPct = Math.round(((completed + inProgress * 0.5) / total) * 100)
+  const remaining = total - completed
+
+  // Micro-reward : détecter quand une section passe à "complete"
+  const prevCompletedRef = useRef(completed)
+  const [reward, setReward] = useState(false)
+  const [badgeKey, setBadgeKey] = useState(0)
+  useEffect(() => {
+    if (completed > prevCompletedRef.current) {
+      setReward(true)
+      setBadgeKey(k => k + 1)
+      const t = setTimeout(() => setReward(false), 750)
+      prevCompletedRef.current = completed
+      return () => clearTimeout(t)
+    }
+    prevCompletedRef.current = completed
+  }, [completed])
+
+  const isDone = completed === total
+  const isNearDone = globalPct >= 80 && !isDone
 
   const qualityLabel =
-    completed === 0 && inProgress === 0 ? 'Démarrez la saisie' :
-    completed + inProgress <= 2 ? 'En cours de saisie…' :
-    completed <= 3 ? 'Données partielles' :
-    completed <= 5 ? 'Quasi complet' :
-    completed === 6 ? 'Complétez la dernière section' :
-    'Analyse complète'
+    completed === 0 && inProgress === 0 ? 'Démarrez votre analyse →' :
+    globalPct < 25  ? 'En route…' :
+    globalPct < 50  ? `${globalPct}% — continuez !` :
+    globalPct < 75  ? `${globalPct}% — à mi-chemin` :
+    globalPct < 100 ? `${globalPct}% — encore ${remaining} section${remaining > 1 ? 's' : ''} !` :
+    'Prêt à analyser ✓'
 
   const qualityColor =
     completed === 0 && inProgress === 0 ? 'text-th-text-3' :
-    completed + inProgress <= 2 ? 'text-amber-500/80' :
-    completed <= 4 ? 'text-blue-400/80' :
-    'text-emerald-400/90'
+    globalPct < 50  ? 'text-amber-400' :
+    globalPct < 80  ? 'text-blue-400' :
+    isDone          ? 'text-emerald-400' :
+    'text-emerald-400/80'
 
   const barColor =
-    completed + inProgress <= 2 ? 'bg-amber-500' :
-    completed <= 4 ? 'bg-blue-500' :
+    globalPct < 50  ? 'bg-amber-500' :
+    globalPct < 80  ? 'bg-blue-500' :
     'bg-emerald-500'
 
   return (
     <div className="px-3 pt-2 pb-1">
       <div className="flex items-center justify-between mb-1.5">
-        <span className={`text-[10px] font-semibold uppercase tracking-wider transition-colors duration-300 ${qualityColor}`}>
+        <span
+          key={qualityLabel}
+          className={`text-[10px] font-semibold transition-colors duration-300 ${qualityColor} ${isNearDone || isDone ? 'font-bold' : ''}`}
+        >
           {qualityLabel}
         </span>
-        <span className="text-[10px] text-th-text-3 tabular-nums">
-          {completed}<span className="text-zinc-800">/{total}</span>
+        <span
+          key={badgeKey}
+          className={`text-[10px] tabular-nums font-semibold ${reward ? 'badge-bounce text-emerald-400' : 'text-th-text-3'} transition-colors duration-300`}
+        >
+          {completed}<span className="opacity-40">/{total}</span>
         </span>
       </div>
       <div className="h-[3px] bg-th-surface2 rounded-full overflow-hidden">
         <div
-          className={`h-full ${barColor} rounded-full transition-all duration-500`}
+          className={`h-full ${barColor} rounded-full transition-all duration-500 ease-out ${reward ? 'progress-reward' : ''}`}
           style={{ width: `${globalPct}%` }}
         />
       </div>
+      {/* Milestones */}
+      {globalPct > 0 && (
+        <div className="flex justify-between mt-1 px-px">
+          {[25, 50, 75, 100].map(milestone => (
+            <div
+              key={milestone}
+              className={`w-0.5 h-0.5 rounded-full transition-colors duration-500 ${globalPct >= milestone ? barColor.replace('bg-', 'bg-') : 'bg-th-border'}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -708,6 +768,34 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
   const isColoc = p.locType === 'coloc'
   const isNu = p.locType === 'nu'
 
+  // ─── Validations en temps réel ────────────────────────────────────────────────
+  const validationErrors = useMemo(() => {
+    const coutTotal = p.prixAchat + (p.fraisNotaire ?? 0) + (p.travaux ?? 0)
+    return {
+      prixAchat: visitedSections.has('bien') && p.prixAchat <= 0
+        ? 'Prix requis pour lancer l\'analyse'
+        : undefined,
+      taux: visitedSections.has('financement') && p.taux > 8
+        ? 'Taux inhabituellement élevé — vérifiez'
+        : undefined,
+      tauxWarn: visitedSections.has('financement') && p.taux > 5 && p.taux <= 8
+        ? 'Taux supérieur à la moyenne du marché'
+        : undefined,
+      apport: visitedSections.has('financement') && p.apport > 0 && p.apport >= coutTotal
+        ? 'L\'apport couvre tout le coût — pas d\'emprunt nécessaire ?'
+        : undefined,
+      loyerNu: visitedSections.has('location') && p.locType === 'nu' && p.loyerNu <= 0
+        ? 'Loyer mensuel requis'
+        : undefined,
+      loyerMeuble: visitedSections.has('location') && p.locType === 'meuble' && p.loyerMeuble <= 0
+        ? 'Loyer mensuel requis'
+        : undefined,
+      loyerColoc: visitedSections.has('location') && p.locType === 'coloc' && p.loyerParChambre <= 0
+        ? 'Loyer par chambre requis'
+        : undefined,
+    }
+  }, [p, visitedSections])
+
   // adresse saisie affichée dans l'input
   const [adresseDisplay, setAdresseDisplay] = useState(
     p.adresse ?? (p.ville ? `${p.quartier ? p.quartier + ', ' : ''}${p.ville}` : '')
@@ -798,7 +886,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
               <Row2>
                 <div>
                   <Label>Prix d'achat</Label>
-                  <NumInput value={p.prixAchat} onChange={(v) => set('prixAchat', v)} suffix="€" step={1000} />
+                  <NumInput value={p.prixAchat} onChange={(v) => set('prixAchat', v)} suffix="€" step={1000} error={validationErrors.prixAchat} />
                   {/* Presets rapides */}
                   <div className="flex gap-1 mt-1.5 flex-wrap">
                     {[75, 100, 150, 200, 300, 400].map(k => (
@@ -1261,11 +1349,11 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
               <Row3>
                 <div>
                   <Label>Apport</Label>
-                  <NumInput value={p.apport} onChange={(v) => set('apport', v)} suffix="€" step={1000} />
+                  <NumInput value={p.apport} onChange={(v) => set('apport', v)} suffix="€" step={1000} warn={validationErrors.apport} />
                 </div>
                 <div>
                   <Label>Taux crédit</Label>
-                  <NumInput value={p.taux} onChange={(v) => set('taux', v)} suffix="%" step={0.05} />
+                  <NumInput value={p.taux} onChange={(v) => set('taux', v)} suffix="%" step={0.05} error={validationErrors.taux} warn={validationErrors.tauxWarn} />
                 </div>
                 <div>
                   <Label>Durée</Label>
@@ -1408,30 +1496,71 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
 
               {/* ── Suggestion loyer marché (si marketData disponible) ── */}
               {marketData && marketData.loyerEstimeTotal > 0 && !isImmeuble && !isSaisonnier && (() => {
-                const loyerActuel = isColoc ? p.loyerParChambre * p.nbChambres : isMeuble ? p.loyerMeuble : p.loyerNu
-                const loyerSuggere = Math.round(marketData.loyerEstimeTotal)
-                if (loyerActuel > 0) return null // Ne suggère que si le loyer est vide
+                const loyerActuel = isColoc
+                  ? p.loyerParChambre * p.nbChambres
+                  : isMeuble ? p.loyerMeuble : p.loyerNu
+                // Pour coloc : suggérer par chambre
+                const loyerSuggereTot = Math.round(marketData.loyerEstimeTotal)
+                const loyerSuggere = isColoc && p.nbChambres > 0
+                  ? Math.round(loyerSuggereTot / p.nbChambres)
+                  : loyerSuggereTot
+
+                // Delta vs marché (quand loyer saisi)
+                const delta = loyerActuel > 0
+                  ? Math.round(((loyerActuel - loyerSuggereTot) / loyerSuggereTot) * 100)
+                  : null
+
+                const isAbove = delta !== null && delta > 15
+                const isBelow = delta !== null && delta < -15
+
                 return (
-                  <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-sky-500/[0.06] border border-sky-500/20">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <svg className="w-3.5 h-3.5 text-sky-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="text-[11px] text-sky-300 truncate">
-                        Loyer marché estimé : <strong>{loyerSuggere.toLocaleString('fr-FR')} €/mois</strong>
-                        {p.surface > 0 && <span className="text-sky-400/70"> · {marketData.loyerEstimeM2.toFixed(1)} €/m²</span>}
-                      </span>
+                  <div className={`rounded-lg border px-3 py-2 transition-all ${
+                    loyerActuel === 0
+                      ? 'bg-sky-500/[0.06] border-sky-500/20'
+                      : isAbove
+                      ? 'bg-amber-500/[0.05] border-amber-500/20'
+                      : isBelow
+                      ? 'bg-blue-500/[0.05] border-blue-500/20'
+                      : 'bg-th-surface2 border-th-border'
+                  }`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <svg className={`w-3 h-3 shrink-0 ${isAbove ? 'text-amber-400' : isBelow ? 'text-blue-400' : 'text-sky-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        <div className="min-w-0">
+                          <span className={`text-[10px] font-semibold ${isAbove ? 'text-amber-400' : isBelow ? 'text-blue-400' : 'text-sky-400'}`}>
+                            Marché {p.ville || ''} :
+                          </span>
+                          <span className="text-[10px] text-th-text-1 font-bold tabular-nums ml-1">
+                            {loyerSuggereTot.toLocaleString('fr-FR')} €/mois
+                          </span>
+                          {p.surface > 0 && (
+                            <span className="text-[10px] text-th-text-3 ml-1">
+                              · {marketData.loyerEstimeM2.toFixed(1)} €/m²
+                            </span>
+                          )}
+                          {delta !== null && (
+                            <span className={`text-[10px] font-semibold ml-1.5 ${isAbove ? 'text-amber-400' : isBelow ? 'text-blue-400' : 'text-emerald-400'}`}>
+                              {delta > 0 ? '+' : ''}{delta}% vs marché
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {loyerActuel === 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isMeuble) set('loyerMeuble', loyerSuggere)
+                            else if (isNu) set('loyerNu', loyerSuggere)
+                            else if (isColoc) set('loyerParChambre', loyerSuggere)
+                          }}
+                          className="shrink-0 text-[10px] font-bold text-sky-400 bg-sky-500/10 border border-sky-500/25 px-2 py-1 rounded-md hover:bg-sky-500/20 active:scale-[0.97] transition-all cursor-pointer whitespace-nowrap"
+                        >
+                          Appliquer
+                        </button>
+                      )}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (isMeuble) set('loyerMeuble', loyerSuggere)
-                        else if (isNu) set('loyerNu', loyerSuggere)
-                      }}
-                      className="shrink-0 text-[10px] font-bold text-sky-400 bg-sky-500/10 border border-sky-500/25 px-2 py-0.5 rounded-md hover:bg-sky-500/20 transition-all ml-2"
-                    >
-                      Appliquer
-                    </button>
                   </div>
                 )
               })()}
@@ -1441,7 +1570,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
                 <Row2>
                   <div>
                     <Label>Loyer HC / mois</Label>
-                    <NumInput value={p.loyerNu} onChange={(v) => set('loyerNu', v)} suffix="€" />
+                    <NumInput value={p.loyerNu} onChange={(v) => set('loyerNu', v)} suffix="€" error={validationErrors.loyerNu} />
                   </div>
                   <div>
                     <Label>Charges récup. / mois</Label>
@@ -1454,7 +1583,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
               {isMeuble && (
                 <div>
                   <Label>Loyer charges comprises / mois</Label>
-                  <NumInput value={p.loyerMeuble} onChange={(v) => set('loyerMeuble', v)} suffix="€" />
+                  <NumInput value={p.loyerMeuble} onChange={(v) => set('loyerMeuble', v)} suffix="€" error={validationErrors.loyerMeuble} />
                 </div>
               )}
 
@@ -1477,7 +1606,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, loading, initi
                   </div>
                   <div>
                     <Label>Loyer par chambre / mois</Label>
-                    <NumInput value={p.loyerParChambre} onChange={(v) => set('loyerParChambre', v)} suffix="€" />
+                    <NumInput value={p.loyerParChambre} onChange={(v) => set('loyerParChambre', v)} suffix="€" error={validationErrors.loyerColoc} />
                   </div>
                   <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-emerald-500/[0.05] border border-emerald-500/15">
                     <span className="text-[11px] text-th-text-2">Loyer total</span>

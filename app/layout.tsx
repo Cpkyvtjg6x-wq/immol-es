@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
-import { Instrument_Serif } from 'next/font/google'
+import { Instrument_Serif, JetBrains_Mono } from 'next/font/google'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider } from '@/lib/auth-context'
 import { ThemeProvider } from '@/components/app/ThemeProvider'
@@ -11,6 +11,18 @@ const instrumentSerif = Instrument_Serif({
   weight: '400',
   style: ['normal', 'italic'],
   variable: '--font-instrument-serif',
+  display: 'swap',
+})
+
+/**
+ * JetBrains Mono chargé via next/font pour éviter le @import CSS bloquant.
+ * L'@import dans globals.css bloquait le parsing CSS en Safari, causant un
+ * délai avant l'application de la classe .dark → flash mode clair visible.
+ */
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-jetbrains-mono',
   display: 'swap',
 })
 
@@ -74,13 +86,19 @@ export default function RootLayout({
 }) {
   return (
     /*
-     * suppressHydrationWarning : next-themes injecte la classe `dark` ou
-     * rien côté client, ce qui provoquerait un mismatch sans ce flag.
-     * next-themes gère lui-même la classe — plus besoin du `dark` hardcodé.
+     * `dark` côté serveur : évite le FOUC Safari.
+     * Sans cette classe, le premier rendu utilise :root (mode clair, fond beige).
+     * next-themes injecte son script de thème APRÈS la première frame en Safari,
+     * ce qui cause un flash visible. En pré-rendant avec `dark`, la page est
+     * toujours sombre dès le premier pixel — next-themes confirme ensuite et
+     * ne change rien (defaultTheme="dark").
+     *
+     * suppressHydrationWarning : next-themes peut modifier la classe côté client
+     * (si l'utilisateur avait choisi le mode clair), React ignorerait le mismatch.
      */
     <html
       lang="fr"
-      className={`${GeistSans.variable} ${instrumentSerif.variable}`}
+      className={`dark ${GeistSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased min-h-screen">

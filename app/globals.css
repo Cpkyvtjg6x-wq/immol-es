@@ -1,7 +1,9 @@
 /* Geist chargé via next/font (GeistSans.variable = --font-geist-sans)       */
 /* Instrument Serif chargé via next/font (variable = --font-instrument-serif) */
-/* JetBrains Mono conservé pour les éléments mono (code, labels techniques)  */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+/* JetBrains Mono chargé via next/font (variable = --font-jetbrains-mono)    */
+/* ⚠️ L'ancien @import url('fonts.googleapis.com/JetBrains') a été supprimé.  */
+/* Il bloquait le parsing CSS en Safari (règle @import = chargement synchrone */
+/* avant toute autre règle), retardant l'application de .dark → FOUC visible. */
 
 @tailwind base;
 @tailwind components;
@@ -224,7 +226,7 @@ button, a, input, select, textarea {
 
 /* Mono : JetBrains Mono — labels techniques, code, badges chiffrés */
 .mono {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 .tabular {
@@ -784,11 +786,13 @@ button, a {
 
 /* ─── Section progressive reveal (calculateur) ───────────────── */
 
-/* 1 — wrapper : glisse + scale + blur */
+/* 1 — wrapper : glisse + scale
+   ⚠️ filter:blur() SUPPRIMÉ — cause un crash GPU en Safari (compositing layer
+   créé puis détruit pendant l'animation, bloque le thread de rendu WebKit).
+   opacity + transform seuls sont composités nativement et n'ont pas ce bug. */
 @keyframes sectionSlideIn {
-  0%   { opacity: 0; transform: translateY(22px) scale(0.96); filter: blur(6px); }
-  55%  { filter: blur(0px); }
-  100% { opacity: 1; transform: translateY(0)   scale(1);    filter: blur(0px); }
+  0%   { opacity: 0; transform: translateY(22px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0)   scale(1); }
 }
 
 /* 2 — card intérieure : éclat de bordure verte puis fade */

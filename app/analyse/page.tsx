@@ -221,6 +221,27 @@ export default function AnalysePage() {
   }, [lastParams, result])
 
   const handleSave = useCallback(() => setSaveModalOpen(true), [])
+
+  // ─── Raccourcis clavier ──────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().includes('MAC')
+      const meta = isMac ? e.metaKey : e.ctrlKey
+      if (!meta) return
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        if (!loading && lastParams && lastParams.prixAchat > 0) {
+          handleCalculate(lastParams)
+        }
+      } else if (e.key === 's') {
+        e.preventDefault()
+        if (result) handleSave()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [loading, lastParams, result, handleCalculate, handleSave])
+
   const handleDoSave = useCallback(async (name: string) => {
     if (!result || !score || !lastParams) return { error: 'Aucun résultat à sauvegarder' }
     return saveSimulation({ name, params: lastParams as Partial<InvestmentParams>, results: result, score })
@@ -378,6 +399,7 @@ export default function AnalysePage() {
                     loading={loading}
                     initialParams={initialParams}
                     result={result}
+                    marketData={marketData}
                   />
                 </div>
               </>
@@ -446,6 +468,64 @@ export default function AnalysePage() {
                   </svg>
                   Modifier
                 </button>
+              </div>
+            )}
+
+            {/* ── Sticky KPI bar (visible dès qu'il y a des résultats) ── */}
+            {showResults && result && (
+              <div className="sticky top-0 z-20 border-b border-th-border bg-th-bg/90 backdrop-blur-md px-5 py-2.5 flex items-center gap-3 flex-wrap">
+                {/* Rdt brut */}
+                <div className="flex items-center gap-2 bg-th-surface2 border border-th-border rounded-lg px-3 py-1.5">
+                  <span className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider">Rdt brut</span>
+                  <span className={`text-[13px] font-black tabular-nums ${result.rendBrut >= 7 ? 'text-emerald-400' : result.rendBrut >= 5 ? 'text-amber-400' : 'text-red-400'}`}>
+                    {result.rendBrut.toFixed(1)}%
+                  </span>
+                </div>
+                {/* Cashflow */}
+                <div className="flex items-center gap-2 bg-th-surface2 border border-th-border rounded-lg px-3 py-1.5">
+                  <span className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider">Cashflow</span>
+                  <span className={`text-[13px] font-black tabular-nums ${result.cashflowMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {result.cashflowMensuel >= 0 ? '+' : ''}{Math.round(result.cashflowMensuel).toLocaleString('fr-FR')} €/m
+                  </span>
+                </div>
+                {/* TRI */}
+                {result.tri > 0 && (
+                  <div className="flex items-center gap-2 bg-th-surface2 border border-th-border rounded-lg px-3 py-1.5">
+                    <span className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider">TRI</span>
+                    <span className={`text-[13px] font-black tabular-nums ${result.tri >= 8 ? 'text-emerald-400' : result.tri >= 5 ? 'text-amber-400' : 'text-red-400'}`}>
+                      {result.tri.toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+                {/* Effort mensuel */}
+                {result.effortEpargne > 0 && (
+                  <div className="flex items-center gap-2 bg-th-surface2 border border-th-border rounded-lg px-3 py-1.5">
+                    <span className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider">Effort</span>
+                    <span className="text-[13px] font-black tabular-nums text-amber-400">
+                      −{Math.round(result.effortEpargne).toLocaleString('fr-FR')} €/m
+                    </span>
+                  </div>
+                )}
+                {/* Indicateur live */}
+                {liveUpdating && (
+                  <div className="ml-auto flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                    <span className="text-[10px] text-th-text-3">Recalcul…</span>
+                  </div>
+                )}
+                {/* Raccourcis clavier hint */}
+                {!liveUpdating && (
+                  <div className="ml-auto hidden lg:flex items-center gap-3">
+                    <span className="text-[10px] text-th-text-3 flex items-center gap-1">
+                      <kbd className="px-1 py-0.5 rounded bg-th-surface3 border border-th-border text-[9px] font-mono">⌘↵</kbd>
+                      Recalculer
+                    </span>
+                    <span className="text-[10px] text-th-text-3 flex items-center gap-1">
+                      <kbd className="px-1 py-0.5 rounded bg-th-surface3 border border-th-border text-[9px] font-mono">⌘S</kbd>
+                      Sauvegarder
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 

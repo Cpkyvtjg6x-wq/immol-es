@@ -10,6 +10,7 @@ import { calculateRenovation, DpeClass, ProfileRevenu, DPE_COLORS, DPE_LABELS, D
 import { formatCurrency } from '@/lib/utils'
 import { IconBuildingOffice, IconBuildingLibrary, IconScale, IconBriefcase, IconHome, IconLightBulb } from '@/components/ui/icons'
 import { TravauxEstimateur } from '@/components/app/TravauxEstimateur'
+import type { LocalMarketData } from '@/lib/types'
 
 interface Props {
   onCalculate: (params: InvestmentParams) => Promise<void>
@@ -17,6 +18,7 @@ interface Props {
   loading: boolean
   initialParams?: InvestmentParams
   result?: InvestmentResult | null
+  marketData?: LocalMarketData | null
 }
 
 // ─── UI primitives ─────────────────────────────────────────────────────────────
@@ -25,6 +27,7 @@ type SectionStatus = 'idle' | 'in_progress' | 'complete'
 
 function SectionBubble({
   num, title, open, onToggle, pct, status, summary, badge, children, domRef, onNext, onFinish,
+  revealed = true, isNew = false,
 }: {
   num: string
   title: string
@@ -38,7 +41,11 @@ function SectionBubble({
   domRef?: (el: HTMLDivElement | null) => void
   onNext?: () => void
   onFinish?: () => void
+  revealed?: boolean
+  isNew?: boolean
 }) {
+  // Section non encore révélée → rien à rendre
+  if (!revealed) return null
   const ringColor =
     status === 'complete' ? '#10b981' :
     status === 'in_progress' ? '#f59e0b' :
@@ -64,6 +71,7 @@ function SectionBubble({
       : 'bg-th-surface2 border-th-border-med text-th-text-2'
 
   return (
+    <div className={isNew ? 'section-reveal' : ''}>
     <div
       ref={domRef}
       className={`rounded-2xl border transition-colors duration-250 ${cardBorder}`}
@@ -177,6 +185,7 @@ function SectionBubble({
         </div>
       </div>
     </div>
+    </div>
   )
 }
 
@@ -192,17 +201,29 @@ function NumInput({
   value: number; onChange?: (v: number) => void; suffix?: string
   placeholder?: string; min?: number; step?: number; readOnly?: boolean
 }) {
+  const [focused, setFocused] = useState(false)
+
+  // Affichage : formaté avec séparateur de milliers hors focus, brut en focus
+  const displayValue = focused
+    ? (value ? String(value) : '')
+    : (value ? value.toLocaleString('fr-FR') : '')
+
   return (
     <div className="relative flex items-center">
       <input
-        type="number"
-        value={value || ''}
+        type="text"
+        inputMode="decimal"
+        value={displayValue}
         readOnly={readOnly}
-        onChange={(e) => onChange?.(parseFloat(e.target.value) || 0)}
-        min={min}
-        step={step}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onChange={(e) => {
+          // Accepte virgule ou point comme séparateur décimal, ignore les espaces
+          const raw = e.target.value.replace(/\s/g, '').replace(',', '.')
+          onChange?.(parseFloat(raw) || 0)
+        }}
         placeholder={placeholder ?? '0'}
-        className={`w-full bg-th-surface2 border border-th-border rounded-lg text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/40 transition-all pl-3 ${suffix ? 'pr-9' : 'pr-3'} py-2 tabular-nums appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${readOnly ? 'opacity-50 cursor-default' : ''}`}
+        className={`w-full bg-th-surface2 border border-th-border rounded-lg text-sm text-th-text-1 placeholder:text-th-text-3 focus:outline-none focus:border-emerald-500/40 transition-all pl-3 ${suffix ? 'pr-9' : 'pr-3'} py-2 tabular-nums ${readOnly ? 'opacity-50 cursor-default' : ''}`}
       />
       {suffix && (
         <span className="absolute right-3 text-[11px] text-th-text-2 pointer-events-none">{suffix}</span>
@@ -358,11 +379,20 @@ type SectionId = typeof SECTION_IDS[number]
 
 // ─── Main form ─────────────────────────────────────────────────────────────────
 
-export function CalculateurForm({ onCalculate, onChange, loading, initialParams, result }: Props) {
+export function CalculateurForm({ onCalculate, onChange, loading, initialParams, result, marketData }: Props) {
   const [p, setP] = useState<InvestmentParams>(initialParams ?? DEFAULT_PARAMS)
   const [activeSection, setActiveSection] = useState<string | null>('bien')
   const [visitedSections, setVisitedSections] = useState<Set<string>>(new Set(['bien']))
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  // ─── Reveal progressif des sections ──────────────────────────────────────────
+  // Si des params existent déjà (localStorage / edit) → tout afficher d'emblée
+  const [revealedSections, setRevealedSections] = useState<Set<SectionId>>(() => {
+    if ((initialParams?.prixAchat ?? 0) > 0) return new Set(SECTION_IDS)
+    return new Set(['bien'] as SectionId[])
+  })
+  // Quelle section vient juste d'être révélée (pour l'animation CSS)
+  const [justRevealed, setJustRevealed] = useState<Set<string>>(new Set())
 
   // ─── État section Travaux ──────────────────────────────────────────────────
   const [travauxEsthetiques, setTravauxEsthetiques] = useState(0)
@@ -436,6 +466,19 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
       const nextId = SECTION_IDS[idx + 1]
       setActiveSection(nextId)
       setVisitedSections(prev => new Set(Array.from(prev).concat(nextId)))
+      // Révéler la prochaine section si elle n'était pas encore visible
+      if (!revealedSections.has(nextId)) {
+        setRevealedSections(prev => new Set(Array.from(prev).concat(nextId)))
+        setJustRevealed(prev => new Set(Array.from(prev).concat(nextId)))
+        // Retirer du justRevealed après la fin de l'animation (380ms)
+        setTimeout(() => {
+          setJustRevealed(prev => {
+            const n = new Set(prev)
+            n.delete(nextId)
+            return n
+          })
+        }, 450)
+      }
     }
   }
 
@@ -614,6 +657,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           onToggle={() => openSection('bien')}
           onNext={() => goToNext('bien')}
           domRef={el => { sectionRefs.current['bien'] = el }}
+          revealed={revealedSections.has('bien')}
+          isNew={justRevealed.has('bien')}
           {...sectionInfos.bien}
         >
             <div className="px-4 pt-4 pb-4 space-y-4">
@@ -682,10 +727,44 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                 <div>
                   <Label>Prix d'achat</Label>
                   <NumInput value={p.prixAchat} onChange={(v) => set('prixAchat', v)} suffix="€" step={1000} />
+                  {/* Presets rapides */}
+                  <div className="flex gap-1 mt-1.5 flex-wrap">
+                    {[75, 100, 150, 200, 300, 400].map(k => (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => set('prixAchat', k * 1000)}
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${
+                          p.prixAchat === k * 1000
+                            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                            : 'bg-th-surface2 border-th-border text-th-text-3 hover:text-th-text-1 hover:border-th-border-med'
+                        }`}
+                      >
+                        {k}k
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <Label>Surface</Label>
                   <NumInput value={p.surface} onChange={(v) => set('surface', v)} suffix="m²" />
+                  {/* Presets surface */}
+                  <div className="flex gap-1 mt-1.5 flex-wrap">
+                    {[20, 35, 50, 70].map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => set('surface', s)}
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${
+                          p.surface === s
+                            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                            : 'bg-th-surface2 border-th-border text-th-text-3 hover:text-th-text-1 hover:border-th-border-med'
+                        }`}
+                      >
+                        {s}m²
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </Row2>
 
@@ -813,6 +892,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           onNext={() => goToNext('travaux')}
           badge={['E','F','G'].includes(p.dpe) ? 'DPE urgent' : undefined}
           domRef={el => { sectionRefs.current['travaux'] = el }}
+          revealed={revealedSections.has('travaux')}
+          isNew={justRevealed.has('travaux')}
           {...sectionInfos.travaux}
         >
             <div className="px-4 pt-4 pb-4 space-y-4">
@@ -1085,6 +1166,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           onToggle={() => openSection('financement')}
           onNext={() => goToNext('financement')}
           domRef={el => { sectionRefs.current['financement'] = el }}
+          revealed={revealedSections.has('financement')}
+          isNew={justRevealed.has('financement')}
           {...sectionInfos.financement}
         >
             <div className="px-4 pt-4 pb-4 space-y-4">
@@ -1198,6 +1281,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           onToggle={() => openSection('location')}
           onNext={() => goToNext('location')}
           domRef={el => { sectionRefs.current['location'] = el }}
+          revealed={revealedSections.has('location')}
+          isNew={justRevealed.has('location')}
           {...sectionInfos.location}
         >
             <div className="px-4 pt-4 pb-4 space-y-4">
@@ -1219,6 +1304,36 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   />
                 </div>
               )}
+
+              {/* ── Suggestion loyer marché (si marketData disponible) ── */}
+              {marketData && marketData.loyerEstimeTotal > 0 && !isImmeuble && !isSaisonnier && (() => {
+                const loyerActuel = isColoc ? p.loyerParChambre * p.nbChambres : isMeuble ? p.loyerMeuble : p.loyerNu
+                const loyerSuggere = Math.round(marketData.loyerEstimeTotal)
+                if (loyerActuel > 0) return null // Ne suggère que si le loyer est vide
+                return (
+                  <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-sky-500/[0.06] border border-sky-500/20">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <svg className="w-3.5 h-3.5 text-sky-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-[11px] text-sky-300 truncate">
+                        Loyer marché estimé : <strong>{loyerSuggere.toLocaleString('fr-FR')} €/mois</strong>
+                        {p.surface > 0 && <span className="text-sky-400/70"> · {marketData.loyerEstimeM2.toFixed(1)} €/m²</span>}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isMeuble) set('loyerMeuble', loyerSuggere)
+                        else if (isNu) set('loyerNu', loyerSuggere)
+                      }}
+                      className="shrink-0 text-[10px] font-bold text-sky-400 bg-sky-500/10 border border-sky-500/25 px-2 py-0.5 rounded-md hover:bg-sky-500/20 transition-all ml-2"
+                    >
+                      Appliquer
+                    </button>
+                  </div>
+                )
+              })()}
 
               {/* ── NU ─────────────────────────────────────────────── */}
               {isNu && (
@@ -1701,6 +1816,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           onToggle={() => openSection('charges')}
           onNext={() => goToNext('charges')}
           domRef={el => { sectionRefs.current['charges'] = el }}
+          revealed={revealedSections.has('charges')}
+          isNew={justRevealed.has('charges')}
           {...sectionInfos.charges}
         >
             <div className="px-4 pt-4 pb-4 space-y-3">
@@ -1887,6 +2004,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           onNext={() => goToNext('fiscalite')}
           badge="Précision max"
           domRef={el => { sectionRefs.current['fiscalite'] = el }}
+          revealed={revealedSections.has('fiscalite')}
+          isNew={justRevealed.has('fiscalite')}
           {...sectionInfos.fiscalite}
         >
             <div className="px-4 pt-4 pb-4 space-y-4">
@@ -2182,6 +2301,8 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           onToggle={() => openSection('revente')}
           onFinish={() => setActiveSection(null)}
           domRef={el => { sectionRefs.current['revente'] = el }}
+          revealed={revealedSections.has('revente')}
+          isNew={justRevealed.has('revente')}
           {...sectionInfos.revente}
         >
             <div className="px-4 pt-4 pb-4 space-y-4">

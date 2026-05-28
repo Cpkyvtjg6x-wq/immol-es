@@ -494,7 +494,7 @@ export function calculerFraisNotaire(prixAchat: number, etat: 'ancien' | 'neuf')
 export const DEFAULT_PARAMS: InvestmentParams = {
   // Bien
   prixAchat: 0,
-  surface: 40,
+  surface: 0,
   ville: '',
   adresse: '',
   quartier: '',
@@ -506,9 +506,9 @@ export const DEFAULT_PARAMS: InvestmentParams = {
   dpe: 'D',
 
   // Financement
-  apport: 30000,
-  taux: 3.5,
-  duree: 20,
+  apport: 0,
+  taux: 0,
+  duree: 0,
   assuranceTaux: 0.1,
   loanType: 'amortissable',
   fraisNotaire: 0,
@@ -556,14 +556,14 @@ export const DEFAULT_PARAMS: InvestmentParams = {
   venteReinjectPct: 100,
 
   // Charges
-  taxeFonciere: 800,
-  chargesCopro: 1200,
-  assurancePno: 200,
+  taxeFonciere: 0,
+  chargesCopro: 0,
+  assurancePno: 0,
   fraisGestionPct: 0,
   provisionPct: 5,
   fraisComptable: 0,
   gliPct: 0,
-  cfe: 600,
+  cfe: 0,
 
   // Fiscalité
   tmi: 30,

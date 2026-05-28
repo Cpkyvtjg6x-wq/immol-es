@@ -752,3 +752,28 @@ button, a {
   transition-delay: 0.1s;
 }
 .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+/* ─── Section progressive reveal (calculateur) ───────────────── */
+@keyframes sectionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-reveal {
+  animation: sectionReveal 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Input number — hide spinners ──────────────────────────────
+   (appliqué sur type=number inline dans le formulaire avancé)   */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] { -moz-appearance: textfield; }

@@ -227,6 +227,18 @@ export default function AnalysePage() {
 
   const handleSave = useCallback(() => setSaveModalOpen(true), [])
 
+  const handleFormReset = useCallback(() => {
+    setResult(null)
+    setScore(null)
+    setInsights(null)
+    setFiscalResults(null)
+    setBestFiscal(null)
+    setLastParams(null)
+    setShowResults(false)
+    setResultsVisible(false)
+    setMarketData(null)
+  }, [])
+
   // ─── Raccourcis clavier ──────────────────────────────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -401,6 +413,7 @@ export default function AnalysePage() {
                     key={formKey}
                     onCalculate={handleCalculate}
                     onChange={handleChange}
+                    onReset={handleFormReset}
                     loading={loading}
                     initialParams={initialParams}
                     result={result}

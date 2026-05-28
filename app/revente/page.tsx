@@ -885,7 +885,7 @@ export default function ReventePage() {
 
               <Link
                 href="/analyse"
-                className="flex items-center justify-center gap-2 w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-xl text-sm transition-all"
+                className="flex items-center justify-center gap-2 w-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold py-3.5 rounded-xl text-sm transition-all"
               >
                 Analyser un nouveau bien →
               </Link>

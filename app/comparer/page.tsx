@@ -337,7 +337,7 @@ export default function ComparerPage() {
           </div>
           <Link
             href="/analyse"
-            className="flex items-center gap-2 text-sm font-semibold bg-emerald-500 text-zinc-950 px-4 py-2.5 rounded-xl hover:bg-emerald-400 transition-all hover:scale-[1.02]"
+            className="flex items-center gap-2 text-sm font-semibold bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 px-4 py-2.5 rounded-xl hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all hover:scale-[1.02]"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -370,7 +370,7 @@ export default function ComparerPage() {
               <p className="text-sm text-th-text-2 mb-6">Analysez et sauvegardez au moins 2 biens pour les comparer.</p>
               <Link
                 href="/analyse"
-                className="inline-flex items-center gap-2 text-sm font-semibold bg-emerald-500 text-zinc-950 px-5 py-2.5 rounded-xl hover:bg-emerald-400 transition-all"
+                className="inline-flex items-center gap-2 text-sm font-semibold bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 px-5 py-2.5 rounded-xl hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all"
               >
                 Analyser un bien
               </Link>

@@ -179,7 +179,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
             <button
               onClick={() => profile && setStep(1)}
               disabled={!profile}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-zinc-950 font-bold py-3.5 rounded-xl text-sm transition-all"
+              className="w-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 disabled:opacity-40 font-bold py-3.5 rounded-xl text-sm transition-all"
             >
               Continuer →
             </button>
@@ -252,7 +252,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
               </button>
               <button
                 onClick={() => setStep(2)}
-                className="flex-2 flex-1 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3 rounded-xl text-sm transition-all"
+                className="flex-2 flex-1 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-bold py-3 rounded-xl text-sm transition-all"
               >
                 Voir l&apos;analyse complète →
               </button>
@@ -294,7 +294,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
 
             <button
               onClick={handleFinish}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black py-4 rounded-xl text-sm transition-all hover:scale-[1.01] active:scale-[0.99]"
+              className="w-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-bold py-4 rounded-xl text-sm transition-all hover:scale-[1.01] active:scale-[0.99]"
             >
               Sauvegarder et créer votre premier bien réel →
             </button>

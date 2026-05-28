@@ -52,7 +52,7 @@ export default function DashboardError({
         <div className="flex flex-col gap-2">
           <button
             onClick={reset}
-            className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3 rounded-xl text-sm transition-all"
+            className="w-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold py-3 rounded-xl text-sm transition-all"
           >
             Réessayer
           </button>

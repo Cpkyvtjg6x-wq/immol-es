@@ -230,7 +230,7 @@ function BtnGroup({
             value === o.value
               ? o.color === 'amber'
                 ? 'bg-amber-500 text-zinc-950'
-                : 'bg-emerald-500 text-zinc-950'
+                : 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
               : 'bg-th-surface2 border border-th-border text-th-text-2 hover:text-th-text-1 hover:bg-th-surface3'
           }`}
         >
@@ -1902,7 +1902,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       onClick={() => set('tmi', t)}
                       className={`py-2 text-[11px] font-bold rounded-lg transition-all ${
                         p.tmi === t
-                          ? 'bg-emerald-500 text-zinc-950'
+                          ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
                           : 'bg-th-surface2 border border-th-border text-th-text-2 hover:text-th-text-1'
                       }`}
                     >
@@ -2063,7 +2063,7 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                       onClick={() => set('profilFis', o.value)}
                       className={`py-2 px-2 text-[11px] font-semibold rounded-lg transition-all text-center ${
                         p.profilFis === o.value
-                          ? 'bg-emerald-500 text-zinc-950'
+                          ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
                           : 'bg-th-surface2 border border-th-border text-th-text-2 hover:text-th-text-1 hover:bg-th-surface3'
                       }`}
                     >
@@ -2258,12 +2258,12 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
           <button
             type="submit"
             disabled={loading || p.prixAchat <= 0}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-500 text-zinc-950 text-[13px] font-black rounded-xl hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[13px] font-bold rounded-xl hover:bg-emerald-500/20 hover:border-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
             style={{ letterSpacing: '-0.01em' }}
           >
             {loading ? (
               <>
-                <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
                 Calcul en cours…
               </>
             ) : (

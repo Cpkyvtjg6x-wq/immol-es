@@ -255,7 +255,7 @@ export default function ProfilePage() {
                   </p>
                   <Link
                     href="/#pricing"
-                    className="flex items-center justify-center gap-2 w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3 rounded-xl text-sm transition-all"
+                    className="flex items-center justify-center gap-2 w-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold py-3 rounded-xl text-sm transition-all"
                   >
                     Passer à Pro — 19€/mois
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

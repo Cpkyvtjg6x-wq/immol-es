@@ -929,7 +929,7 @@ export default function RapportBancairePage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => router.push('/#pricing')}
-                className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3 rounded-xl text-sm transition-all">
+                className="flex-1 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold py-3 rounded-xl text-sm transition-all">
                 Passer à Pro — 14j gratuits
               </button>
               <button onClick={() => router.back()}
@@ -967,8 +967,8 @@ export default function RapportBancairePage() {
               disabled={!canGenerate || generating}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                 canGenerate && !generating
-                  ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400'
-                  : 'bg-th-surface3 text-th-text-3 cursor-not-allowed'
+                  ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40'
+                  : 'bg-th-surface3 text-th-text-3 cursor-not-allowed border border-transparent'
               }`}
             >
               {generating ? (
@@ -1653,8 +1653,8 @@ export default function RapportBancairePage() {
                 disabled={!canGenerate || generating}
                 className={`w-full py-3 rounded-xl text-sm font-bold transition-all ${
                   canGenerate && !generating
-                    ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/20'
-                    : 'bg-th-surface3 text-th-text-3 cursor-not-allowed'
+                    ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40'
+                    : 'bg-th-surface3 text-th-text-3 cursor-not-allowed border border-transparent'
                 }`}
               >
                 {generating ? 'Génération en cours…' : !canGenerate ? 'Remplissez le formulaire' : '↓ Générer le dossier PDF'}

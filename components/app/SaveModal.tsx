@@ -95,7 +95,7 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
             <div className="space-y-2">
               <button
                 onClick={() => router.push('/auth/signup')}
-                className="w-full py-2.5 rounded-xl font-semibold text-sm bg-emerald-500 text-zinc-950 hover:bg-emerald-400 transition-colors"
+                className="w-full py-2.5 rounded-xl font-semibold text-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all"
               >
                 Créer un compte gratuit
               </button>
@@ -171,7 +171,7 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 py-2 text-sm font-semibold bg-emerald-500 text-zinc-950 rounded-xl hover:bg-emerald-400 transition-colors disabled:opacity-50"
+                className="flex-1 py-2 text-sm font-semibold bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 rounded-xl hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all disabled:opacity-50"
               >
                 {saving ? 'Sauvegarde…' : 'Sauvegarder'}
               </button>

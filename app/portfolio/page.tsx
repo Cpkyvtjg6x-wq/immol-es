@@ -35,7 +35,7 @@ function EmptyPortfolio() {
       </p>
       <Link
         href="/analyse"
-        className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-5 py-2.5 rounded-xl text-sm transition-all"
+        className="bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold px-5 py-2.5 rounded-xl text-sm transition-all"
       >
         Analyser mon premier bien →
       </Link>
@@ -521,7 +521,7 @@ export default function PortfolioPage() {
           </div>
           <Link
             href="/analyse"
-            className="shrink-0 flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-4 py-2 rounded-xl text-sm transition-all"
+            className="shrink-0 flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold px-4 py-2 rounded-xl text-sm transition-all"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

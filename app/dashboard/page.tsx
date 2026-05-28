@@ -794,7 +794,7 @@ export default function DashboardPage() {
                       title: 'Analyser un bien',
                       desc: 'Calculateur complet avec tous les paramètres, régimes fiscaux et projection',
                       cta: 'Lancer',
-                      ctaClass: 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400',
+                      ctaClass: 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40',
                       href: '/analyse',
                     },
                     {

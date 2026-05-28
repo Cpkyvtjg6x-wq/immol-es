@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/components/app/ThemeProvider'
 import {
   BarChart,
   Bar,
@@ -201,8 +201,8 @@ export default function DashboardPage() {
   const [search, setSearch] = useState('')
   const [filterTab, setFilterTab] = useState<'tous' | 'favoris' | 'top' | 'positif'>('tous')
   const [sortBy, setSortBy] = useState<'date' | 'score' | 'rendement' | 'cashflow'>('date')
-  const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === 'dark'
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
 
   /* Chart colors adapt to theme */
   const chartGrid = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'

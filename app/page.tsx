@@ -545,7 +545,7 @@ function Section1Analyse() {
               Prix, surface, loyer estimé, ville. IMMORA calcule instantanément rendement brut, net, cashflow mensuel et score d&apos;opportunité — avec les données du marché local.
             </p>
             <p className="text-[13.5px] text-zinc-600 leading-[1.65]">
-              Les données DVF, MeilleursAgents et INSEE de 18 villes françaises sont intégrées nativement. Aucune recherche manuelle, aucun export préalable.
+              Les données DVF, MeilleursAgents et INSEE couvrent toute la France, intégrées nativement. Aucune recherche manuelle, aucun export préalable.
             </p>
             <SectionLink num="1.0" label="Analyse" href="/dashboard" />
           </div>
@@ -1472,7 +1472,7 @@ function FaqSection() {
   const [open, setOpen] = useState<number | null>(0)
   const faqs = [
     { q: 'Faut-il être expert en fiscalité immobilière ?', a: 'Non. L\'outil est conçu pour vous donner une réponse claire sans connaissance préalable. L\'IA traduit chaque chiffre en recommandation lisible.' },
-    { q: 'D\'où viennent les données de marché ?', a: 'Sources publiques (DVF, MeilleursAgents, Notaires.fr, INSEE) mises à jour mensuellement. 18 villes et 44 quartiers couverts.' },
+    { q: 'D\'où viennent les données de marché ?', a: 'Sources publiques (DVF, MeilleursAgents, Notaires.fr, INSEE) mises à jour mensuellement. Couverture nationale.' },
     { q: 'Mes données sont-elles confidentielles ?', a: 'Oui. Simulations chiffrées AES-256, stockées en Europe (Supabase Frankfurt). Jamais partagées avec des tiers. Conforme RGPD.' },
     { q: "L'analyse tient-elle compte de ma situation personnelle ?", a: 'Oui : TMI, situation matrimoniale, biens existants, autres revenus locatifs. Plus les informations sont précises, plus la recommandation est juste.' },
     { q: 'Puis-je résilier à tout moment ?', a: 'Oui, en un clic depuis votre compte. Sans engagement, sans pénalité. Remboursement au prorata.' },

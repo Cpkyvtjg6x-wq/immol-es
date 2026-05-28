@@ -14,6 +14,7 @@ import { useSimulations } from '@/lib/hooks/useSimulations'
 import { SaveModal } from '@/components/app/SaveModal'
 import { AppShell } from '@/components/app/AppShell'
 import { ExportButtons } from '@/components/app/ExportButtons'
+import { QuickAnalyse } from '@/components/app/QuickAnalyse'
 import type { LocalMarketData } from '@/lib/types'
 
 
@@ -126,6 +127,14 @@ export default function AnalysePage() {
   const [showResults, setShowResults]     = useState(false)
   const [resultsVisible, setResultsVisible] = useState(false)
   const [saveModalOpen, setSaveModalOpen] = useState(false)
+
+  // Mode Express / Expert
+  const [mode, setMode] = useState<'express' | 'expert'>(() => {
+    if (typeof window === 'undefined') return 'express'
+    const sp = new URLSearchParams(window.location.search)
+    // Coming from extension → go straight to expert (params pre-filled)
+    return sp.get('source') === 'extension' ? 'expert' : 'express'
+  })
 
   // Panel persistant — ouvert par défaut
   const [panelOpen, setPanelOpen] = useState(true)
@@ -281,6 +290,22 @@ export default function AnalysePage() {
     return saveSimulation({ name, params: lastParams as Partial<InvestmentParams>, results: result, score })
   }, [result, score, lastParams, saveSimulation])
 
+  // ─── Mode Express → Expert: bascule avec transfert des params ───────────────
+  const handleSwitchToExpert = useCallback((params: InvestmentParams) => {
+    setInitialParams(params)
+    setFormKey(k => k + 1)
+    setMode('expert')
+    setPanelOpen(true)
+  }, [])
+
+  // ─── Résultat live condensé pour QuickAnalyse ─────────────────────────────
+  const liveResultForQuick = result && score ? {
+    rendBrut: result.rendBrut,
+    cashflowMensuel: result.cashflowMensuel,
+    rendNetNet: bestFiscal?.yield ?? 0,
+    score: score.global,
+  } : null
+
   // Loyer affiché dans la barre résumé
   const displayLoyer = lastParams
     ? lastParams.locType === 'meuble' || lastParams.locType === 'saisonnier'
@@ -396,7 +421,7 @@ export default function AnalysePage() {
 
           {/* ── Panel formulaire ─────────────────────────────────────────── */}
           <aside
-            className="shrink-0 border-r border-th-border flex flex-col bg-th-surface2 overflow-hidden"
+            className="shrink-0 border-r border-th-border flex flex-col bg-black overflow-hidden"
             style={{
               width: panelOpen ? '560px' : '44px',
               transition: 'width 280ms cubic-bezier(0.32, 0.72, 0, 1)',
@@ -404,18 +429,65 @@ export default function AnalysePage() {
           >
             {panelOpen ? (
               /* ── Panel ouvert ── */
-              <div className="flex-1 overflow-hidden">
-                <CalculateurForm
-                  key={formKey}
-                  onCalculate={handleCalculate}
-                  onChange={handleChange}
-                  onReset={handleFormReset}
-                  onCollapse={() => setPanelOpen(false)}
-                  loading={loading}
-                  initialParams={initialParams}
-                  result={result}
-                  marketData={marketData}
-                />
+              <div className="flex-1 overflow-hidden flex flex-col">
+
+                {/* ── Mode toggle pill ── */}
+                <div className="shrink-0 px-4 pt-3 pb-3 border-b border-th-border bg-black">
+                  <div className="flex bg-th-surface2 rounded-xl p-1 gap-0.5">
+                    <button
+                      onClick={() => setMode('express')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                        mode === 'express'
+                          ? 'bg-th-surface3 text-th-text-1 shadow-sm'
+                          : 'text-th-text-3 hover:text-th-text-2 hover:bg-th-surface2/60'
+                      }`}
+                    >
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Express
+                    </button>
+                    <button
+                      onClick={() => setMode('expert')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                        mode === 'expert'
+                          ? 'bg-th-surface3 text-th-text-1 shadow-sm'
+                          : 'text-th-text-3 hover:text-th-text-2 hover:bg-th-surface2/60'
+                      }`}
+                    >
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                      </svg>
+                      Expert
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── Contenu selon le mode ── */}
+                <div className="flex-1 overflow-hidden">
+                  {mode === 'express' ? (
+                    <QuickAnalyse
+                      onChange={handleChange}
+                      onSwitchExpert={handleSwitchToExpert}
+                      initialParams={initialParams}
+                      liveResult={liveResultForQuick}
+                      liveUpdating={liveUpdating}
+                    />
+                  ) : (
+                    <CalculateurForm
+                      key={formKey}
+                      onCalculate={handleCalculate}
+                      onChange={handleChange}
+                      onReset={handleFormReset}
+                      onCollapse={() => setPanelOpen(false)}
+                      loading={loading}
+                      initialParams={initialParams}
+                      result={result}
+                      marketData={marketData}
+                    />
+                  )}
+                </div>
+
               </div>
             ) : (
               /* ── Panel réduit — strip vertical ── */
@@ -494,7 +566,9 @@ export default function AnalysePage() {
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
                   <span className="text-[11px] text-th-text-3 italic pointer-events-auto" style={{ opacity: 1 }}>
-                    Remplissez le formulaire — vos résultats apparaîtront ici
+                    {mode === 'express'
+                      ? 'Saisissez prix + loyer en mode Express — les résultats s\'affichent instantanément'
+                      : 'Remplissez le formulaire — vos résultats apparaîtront ici'}
                   </span>
                 </div>
 

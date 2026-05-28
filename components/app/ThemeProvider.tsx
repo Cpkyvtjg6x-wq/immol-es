@@ -1,31 +1,60 @@
 'use client'
 
-import { ThemeProvider as NextThemeProvider } from 'next-themes'
+import { createContext, useContext, useEffect, useState } from 'react'
 
 /**
- * Stratégie anti-FOUC définitive (Safari + Chrome).
+ * Thème custom — sans next-themes.
  *
- * value={{ dark: '', light: 'light' }}
- *   → dark  : aucune classe sur <html>. Le :root CSS = dark par défaut.
- *              next-themes ne touche rien → zéro flash même avant hydration.
- *   → light : classe .light ajoutée sur <html>. Les variables .light{ }
- *              surchargent :root avec les tokens mode clair.
- *
- * defaultTheme="dark" → si aucune préférence dans localStorage, dark.
- * enableSystem=false  → ignore prefers-color-scheme (design dark-first).
- * disableTransitionOnChange → empêche l'animation CSS lors du toggle manuel.
+ * Stratégie zéro-flash :
+ *  • CSS : :root = dark (défaut), .light = mode clair
+ *  • layout.tsx <head> script : lit localStorage et pose .light si besoin
+ *    → premier pixel déjà dans le bon thème, sans aucune attente JS
+ *  • Ce provider lit l'état réel du DOM pour initialiser React
+ *    → pas de remove→add, pas de flash
+ *  • Toggle : ajoute/retire .light uniquement → aucun état intermédiaire
  */
+
+type Theme = 'dark' | 'light'
+
+interface ThemeContextValue {
+  theme: Theme
+  resolvedTheme: Theme
+  setTheme: (t: Theme) => void
+}
+
+const ThemeContext = createContext<ThemeContextValue>({
+  theme: 'dark',
+  resolvedTheme: 'dark',
+  setTheme: () => {},
+})
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Initialisation depuis le DOM — déjà correct grâce au script <head>
+  const [theme, setThemeState] = useState<Theme>('dark')
+
+  useEffect(() => {
+    // Lit l'état réel du DOM (posé par le script bloquant de layout.tsx)
+    const current = document.documentElement.classList.contains('light') ? 'light' : 'dark'
+    setThemeState(current)
+  }, [])
+
+  const setTheme = (t: Theme) => {
+    setThemeState(t)
+    try { localStorage.setItem('theme', t) } catch {}
+    if (t === 'light') {
+      document.documentElement.classList.add('light')
+    } else {
+      document.documentElement.classList.remove('light')
+    }
+  }
+
   return (
-    <NextThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      themes={['dark', 'light']}
-      value={{ dark: '', light: 'light' }}
-      enableSystem={false}
-      disableTransitionOnChange
-    >
+    <ThemeContext.Provider value={{ theme, resolvedTheme: theme, setTheme }}>
       {children}
-    </NextThemeProvider>
+    </ThemeContext.Provider>
   )
+}
+
+export function useTheme() {
+  return useContext(ThemeContext)
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/components/app/ThemeProvider'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations } from '@/lib/hooks/useSimulations'
@@ -39,8 +39,8 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
   const { simulations } = useSimulations(user?.id ?? null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tagsExpanded, setTagsExpanded] = useState(false)
-  const { resolvedTheme, setTheme } = useTheme()
-  const isDark = resolvedTheme === 'dark'
+  const { theme, setTheme } = useTheme()
+  const isDark = theme === 'dark'
 
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ||

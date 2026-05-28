@@ -54,10 +54,19 @@ function SectionBubble({
     'rgba(255,255,255,0.08)'
 
   const cardBorder =
-    open ? 'border-th-border-med bg-th-surface2' :
-    status === 'complete' ? 'border-emerald-500/25 bg-emerald-500/[0.02]' :
-    status === 'in_progress' ? 'border-amber-500/20 bg-amber-500/[0.015]' :
-    'border-th-border bg-th-surface'
+    open ? 'border-white/[0.10] bg-[#111113]' :
+    status === 'complete' ? 'border-emerald-500/20 bg-[#0d1a14]' :
+    status === 'in_progress' ? 'border-amber-500/15 bg-[#18140a]' :
+    'border-white/[0.06] bg-[#0c0c0e]'
+
+  const cardShadow =
+    open
+      ? '0 0 0 1px rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.06) inset'
+      : status === 'complete'
+      ? '0 2px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(16,185,129,0.12), 0 1px 0 rgba(255,255,255,0.05) inset'
+      : status === 'in_progress'
+      ? '0 2px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,158,11,0.10), 0 1px 0 rgba(255,255,255,0.05) inset'
+      : '0 2px 8px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04) inset'
 
   const titleColor =
     open ? 'text-th-text-1' :
@@ -79,8 +88,15 @@ function SectionBubble({
       style={{ scrollMarginTop: '8px' }}
     >
     <div
-      className={`rounded-2xl border ${cardBorder} ${isNew ? 'section-reveal-card' : ''}`}
-      style={{ transition: 'border-color 400ms cubic-bezier(0.16,1,0.3,1), background-color 400ms cubic-bezier(0.16,1,0.3,1)' }}
+      className={`rounded-2xl border ${cardBorder} ${isNew ? 'section-reveal-card' : ''} group/card`}
+      style={{
+        boxShadow: cardShadow,
+        transition: 'border-color 400ms cubic-bezier(0.16,1,0.3,1), background-color 400ms cubic-bezier(0.16,1,0.3,1), box-shadow 400ms cubic-bezier(0.16,1,0.3,1), transform 250ms cubic-bezier(0.16,1,0.3,1)',
+      }}
+      onMouseEnter={e => {
+        if (!open) (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)'
+      }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)' }}
     >
       {/* ── Header — cliquable sur toute la largeur ── */}
       <button
@@ -820,11 +836,11 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, lo
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
 
       {/* ─── Progression globale — sticky, toujours visible ──────────────── */}
-      <div className="shrink-0 border-b border-th-border bg-th-surface2">
+      <div className="shrink-0 border-b border-white/[0.06] bg-black/80 backdrop-blur-sm">
         <FormProgress sectionInfos={sectionInfos} onCollapse={onCollapse} />
       </div>
 
-      <div className="flex-1 overflow-y-auto py-2 px-3 space-y-2">
+      <div className="flex-1 overflow-y-auto py-3 px-3 space-y-2">
 
         {/* ──────────────────────────────────────────────────────────────────── */}
         {/* SECTION 1 — LE BIEN                                                 */}
@@ -2669,7 +2685,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, lo
       </div>
 
       {/* ─── Footer contextuel ─────────────────────────────────────────────────── */}
-      <div className="shrink-0 px-4 py-1.5 border-t border-th-border bg-th-surface2/90 backdrop-blur-xl">
+      <div className="shrink-0 px-4 py-1.5 border-t border-white/[0.06] bg-black/80 backdrop-blur-xl">
         {result ? (
           /* Résultats existants — mise à jour auto + réinitialiser */
           <div className="flex items-center justify-between gap-3">

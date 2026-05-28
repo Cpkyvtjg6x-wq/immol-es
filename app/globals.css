@@ -231,7 +231,7 @@ button, a, input, select, textarea {
 
 /* Mono : JetBrains Mono — labels techniques, code, badges chiffrés */
 .mono {
-  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 .tabular {

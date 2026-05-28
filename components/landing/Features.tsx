@@ -46,7 +46,7 @@ const features = [
     ),
     badge: 'Marché',
     title: 'Données par quartier',
-    description: '18 villes françaises, 44 quartiers, prix au m² actualisés, rendements moyens du marché. Comparez votre deal aux standards du secteur.',
+    description: 'Prix au m² actualisés, rendements moyens du marché, couverture nationale. Comparez votre deal aux standards du secteur.',
     color: 'blue',
   },
   {

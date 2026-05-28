@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
-import { Instrument_Serif, JetBrains_Mono } from 'next/font/google'
+import { Instrument_Serif } from 'next/font/google'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider } from '@/lib/auth-context'
 import { ThemeProvider } from '@/components/app/ThemeProvider'
@@ -11,18 +11,6 @@ const instrumentSerif = Instrument_Serif({
   weight: '400',
   style: ['normal', 'italic'],
   variable: '--font-instrument-serif',
-  display: 'swap',
-})
-
-/**
- * JetBrains Mono chargé via next/font pour éviter le @import CSS bloquant.
- * L'@import dans globals.css bloquait le parsing CSS en Safari, causant un
- * délai avant l'application de la classe .dark → flash mode clair visible.
- */
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-jetbrains-mono',
   display: 'swap',
 })
 
@@ -86,19 +74,29 @@ export default function RootLayout({
 }) {
   return (
     /*
-     * Stratégie anti-FOUC : :root = dark (dans globals.css).
-     * Sans aucune classe sur <html>, le navigateur charge les variables :root
-     * qui sont les tokens sombres. Pas de flash possible — pas de classe à attendre.
-     * Pour le mode clair, next-themes ajoute `.light` (ThemeProvider value prop).
-     *
-     * suppressHydrationWarning : next-themes peut modifier la classe côté client
-     * si l'utilisateur est en mode clair (ajoute .light) — React accepte le mismatch.
+     * Anti-FOUC : globals.css définit :root = dark (tokens sombres par défaut).
+     * Sans classe sur <html>, le navigateur charge déjà le dark mode via :root.
+     * next-themes ajoute "dark" (aucune règle CSS → :root dark reste) ou
+     * "light" (règle .light active → tokens clairs). Zéro flash possible.
+     * suppressHydrationWarning : next-themes modifie la classe côté client.
      */
     <html
       lang="fr"
-      className={`${GeistSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
+      className={`${GeistSans.variable} ${instrumentSerif.variable}`}
       suppressHydrationWarning
     >
+      {/*
+       * Script anti-FOUC — s'exécute de façon SYNCHRONE avant tout rendu.
+       * Placé dans <head> côté serveur → présent dans le HTML initial,
+       * bloque le navigateur le temps de lire localStorage et d'appliquer
+       * la classe. Même principe que Vercel, Linear, Notion, etc.
+       * Notre CSS : :root = dark (défaut), .light = mode clair.
+       * → Pour dark : rien à faire (:root suffit).
+       * → Pour light : ajouter .light avant le premier pixel rendu.
+       */}
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light')}catch(e){}})()` }} />
+      </head>
       <body className="antialiased min-h-screen">
         <ThemeProvider>
           <AuthProvider>

@@ -75,7 +75,8 @@ function SectionBubble({
     <div className={isNew ? 'section-reveal' : ''}>
     <div
       ref={domRef}
-      className={`rounded-2xl border transition-colors duration-250 ${cardBorder} ${isNew ? 'section-reveal-card' : ''}`}
+      className={`rounded-2xl border ${cardBorder} ${isNew ? 'section-reveal-card' : ''}`}
+      style={{ transition: 'border-color 400ms cubic-bezier(0.16,1,0.3,1), background-color 400ms cubic-bezier(0.16,1,0.3,1)' }}
     >
       {/* ── Header — cliquable sur toute la largeur ── */}
       <button
@@ -84,7 +85,10 @@ function SectionBubble({
         className="w-full flex items-center gap-3.5 px-4 py-[14px] text-left cursor-pointer select-none"
       >
         {/* Badge numéro / check */}
-        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 border transition-all duration-250 ${numStyle} ${isNew ? 'section-badge-new' : ''}`}>
+        <div
+          className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 border ${numStyle} ${isNew ? 'section-badge-new' : ''}`}
+          style={{ transition: 'background-color 400ms cubic-bezier(0.16,1,0.3,1), border-color 400ms cubic-bezier(0.16,1,0.3,1), color 400ms cubic-bezier(0.16,1,0.3,1)' }}
+        >
           {status === 'complete' && !open ? (
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -132,7 +136,8 @@ function SectionBubble({
             </div>
           </div>
           <svg
-            className={`w-4 h-4 text-th-text-3 transition-transform duration-300 shrink-0 ${open ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-th-text-3 shrink-0 ${open ? 'rotate-180' : ''}`}
+            style={{ transition: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1)' }}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -145,11 +150,20 @@ function SectionBubble({
         style={{
           display: 'grid',
           gridTemplateRows: open ? '1fr' : '0fr',
-          transition: 'grid-template-rows 300ms cubic-bezier(0.4,0,0.2,1)',
+          transition: 'grid-template-rows 500ms cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         <div className="overflow-hidden">
-          <div className="border-t border-th-border pt-1">
+          <div
+            className="border-t border-th-border pt-1"
+            style={{
+              opacity: open ? 1 : 0,
+              transform: open ? 'translateY(0)' : 'translateY(-6px)',
+              transition: open
+                ? 'opacity 320ms ease 120ms, transform 480ms cubic-bezier(0.16,1,0.3,1) 60ms'
+                : 'opacity 150ms ease, transform 180ms ease',
+            }}
+          >
             {children}
             {/* Bouton Continuer */}
             {onNext && (

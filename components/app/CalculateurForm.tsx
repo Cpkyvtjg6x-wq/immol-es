@@ -389,10 +389,21 @@ function FormProgress({ sectionInfos }: { sectionInfos: Record<string, { status:
 const SECTION_IDS = ['bien', 'travaux', 'financement', 'location', 'charges', 'fiscalite', 'revente'] as const
 type SectionId = typeof SECTION_IDS[number]
 
+// ─── Estimation CFE (cotisation minimale LMNP — barèmes 2024) ─────────────────
+function estimerCFE(loyerMensuel: number, vacance = 0.5): number {
+  const revenuAnnuel = loyerMensuel * (12 - vacance)
+  if (revenuAnnuel <= 10_000) return 350
+  if (revenuAnnuel <= 32_600) return 600
+  if (revenuAnnuel <= 100_000) return 900
+  return 1_200
+}
+
 // ─── Main form ─────────────────────────────────────────────────────────────────
 
 export function CalculateurForm({ onCalculate, onChange, loading, initialParams, result, marketData }: Props) {
   const [p, setP] = useState<InvestmentParams>(initialParams ?? DEFAULT_PARAMS)
+  // true = valeur CFE posée automatiquement, false = saisie manuelle
+  const [cfeIsEstimated, setCfeIsEstimated] = useState(false)
   const [activeSection, setActiveSection] = useState<string | null>('bien')
   const [visitedSections, setVisitedSections] = useState<Set<string>>(new Set(['bien']))
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -456,6 +467,22 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
       setP((prev) => ({ ...prev, fraisNotaire: auto }))
     }
   }, [p.prixAchat, p.etat, p.fraisNotaireAuto])
+
+  // ─── Auto-recalcul CFE quand le loyer change (si valeur estimée) ──────────
+  useEffect(() => {
+    if (!cfeIsEstimated) return
+    const isMeubleLike = ['meuble', 'coloc', 'saisonnier'].includes(p.locType)
+    if (!isMeubleLike) return
+    const loyerRef = p.locType === 'coloc'
+      ? p.loyerParChambre * p.nbChambres
+      : p.locType === 'saisonnier'
+      ? Math.round((p.prixNuit ?? 0) * (p.tauxOccupation ?? 65) / 100 * 365 / 12)
+      : p.loyerMeuble
+    if (loyerRef <= 0) return
+    const nouveau = estimerCFE(loyerRef, p.vacance)
+    if (nouveau !== p.cfe) setP(prev => ({ ...prev, cfe: nouveau }))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.loyerMeuble, p.loyerParChambre, p.nbChambres, p.prixNuit, p.tauxOccupation, p.vacance, cfeIsEstimated])
 
   // Notify parent on every param change (for live calculation)
   useEffect(() => {
@@ -1306,7 +1333,36 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
                   <BtnGroup
                     cols={2}
                     value={p.locType}
-                    onChange={(v) => set('locType', v as InvestmentParams['locType'])}
+                    onChange={(v) => {
+                      const newType = v as InvestmentParams['locType']
+                      setP(prev => {
+                        const next: InvestmentParams = { ...prev, locType: newType }
+                        // ── Transfert loyer entre modes ──────────────────────
+                        // meublé → nu : pré-remplir loyerNu si vide (nu ≈ -15%)
+                        if (newType === 'nu' && prev.locType === 'meuble' && prev.loyerMeuble > 0 && prev.loyerNu === 0) {
+                          next.loyerNu = Math.round(prev.loyerMeuble * 0.85 / 10) * 10
+                        }
+                        // nu → meublé : pré-remplir loyerMeuble si vide (meublé ≈ +15%)
+                        if (newType === 'meuble' && prev.locType === 'nu' && prev.loyerNu > 0 && prev.loyerMeuble === 0) {
+                          next.loyerMeuble = Math.round(prev.loyerNu * 1.15 / 10) * 10
+                        }
+                        // ── Auto-estimation CFE ──────────────────────────────
+                        const needsCfe = ['meuble', 'coloc', 'saisonnier'].includes(newType)
+                        if (needsCfe && (prev.cfe === 0 || cfeIsEstimated)) {
+                          const loyerRef = newType === 'coloc'
+                            ? prev.loyerParChambre * prev.nbChambres
+                            : newType === 'saisonnier'
+                            ? Math.round((prev.prixNuit ?? 0) * (prev.tauxOccupation ?? 65) / 100 * 365 / 12)
+                            : next.loyerMeuble || prev.loyerMeuble
+                          next.cfe = estimerCFE(loyerRef, prev.vacance)
+                          setCfeIsEstimated(true)
+                        }
+                        if (!needsCfe) {
+                          setCfeIsEstimated(false)
+                        }
+                        return next
+                      })
+                    }}
                     options={[
                       { value: 'nu', label: 'Nu' },
                       { value: 'meuble', label: 'Meublé' },
@@ -1949,8 +2005,27 @@ export function CalculateurForm({ onCalculate, onChange, loading, initialParams,
               {!isNu && (
                 <Row2>
                   <div>
-                    <Label>CFE</Label>
-                    <NumInput value={p.cfe} onChange={(v) => set('cfe', v)} suffix="€/an" />
+                    <div className="flex items-center justify-between mb-1">
+                      <Label>CFE</Label>
+                      {cfeIsEstimated && (
+                        <span className="text-[9px] font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-1.5 py-0.5 rounded-full">
+                          estimé
+                        </span>
+                      )}
+                    </div>
+                    <NumInput
+                      value={p.cfe}
+                      onChange={(v) => {
+                        setCfeIsEstimated(false)
+                        set('cfe', v)
+                      }}
+                      suffix="€/an"
+                    />
+                    {cfeIsEstimated && (
+                      <p className="text-[10px] text-th-text-3 mt-1">
+                        Barème cotisation minimale LMNP · à affiner selon votre commune
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label>Frais comptable</Label>

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { Instrument_Serif } from 'next/font/google'
-import Script from 'next/script'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider } from '@/lib/auth-context'
 import { ThemeProvider } from '@/components/app/ThemeProvider'
@@ -85,15 +84,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased min-h-screen">
-        {/* Script anti-FOUC : s'exécute avant React, pose la classe dark
-            depuis localStorage avant le premier rendu visible */}
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){}})();`,
-          }}
-        />
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>

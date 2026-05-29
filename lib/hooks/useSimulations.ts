@@ -83,11 +83,15 @@ export function useSimulations(userId: string | null) {
     params,
     results,
     score,
+    status,
+    acquiredAt,
   }: {
     name: string
     params: Partial<InvestmentParams>
     results: InvestmentResult
     score: ScoreResult
+    status?: SimulationStatus
+    acquiredAt?: string | null
   }) => {
     if (!userId) return { error: 'Non connecte' }
 
@@ -100,6 +104,8 @@ export function useSimulations(userId: string | null) {
         results,
         score: score.global,
         tags: [],
+        status: status ?? 'simule',
+        acquired_at: status === 'possede' ? (acquiredAt ?? null) : null,
       })
 
       if (!error) await fetchSimulations()

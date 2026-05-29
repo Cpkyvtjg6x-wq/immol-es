@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { AppShell } from '@/components/app/AppShell'
 import { MarkOwnedModal } from '@/components/app/MarkOwnedModal'
+import { AddOwnedModal } from '@/components/app/AddOwnedModal'
 import { useToast } from '@/components/ui/Toast'
 import { IconLightBulb, IconCheckCircle } from '@/components/ui/icons'
 
@@ -476,7 +477,7 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
-  const { simulations, loading, setStatus } = useSimulations(user?.id ?? null)
+  const { simulations, loading, setStatus, saveSimulation } = useSimulations(user?.id ?? null)
   const toast = useToast()
 
   const ownedCount = simulations.filter((s) => s.status === 'possede').length
@@ -492,6 +493,7 @@ export default function PortfolioPage() {
   }, [scopeInit, loading, simulations.length, ownedCount])
 
   const [ownModalSim, setOwnModalSim] = useState<SavedSimulation | null>(null)
+  const [addOpen, setAddOpen] = useState(false)
 
   const view = useMemo(() => {
     if (scope === 'possede') return simulations.filter((s) => s.status === 'possede')
@@ -558,15 +560,23 @@ export default function PortfolioPage() {
               </p>
             )}
           </div>
-          <Link
-            href="/analyse"
-            className="shrink-0 flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold px-4 py-2 rounded-xl text-sm transition-all"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            Ajouter un bien
-          </Link>
+          <div className="shrink-0 flex items-center gap-2">
+            <Link
+              href="/analyse"
+              className="hidden sm:flex items-center gap-1.5 text-th-text-2 hover:text-th-text-1 font-semibold px-3 py-2 rounded-xl text-sm transition-all"
+            >
+              Analyse complète
+            </Link>
+            <button
+              onClick={() => setAddOpen(true)}
+              className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold px-4 py-2 rounded-xl text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Ajouter un bien
+            </button>
+          </div>
         </div>
 
         {simulations.length === 0 ? (
@@ -605,9 +615,21 @@ export default function PortfolioPage() {
                 </p>
                 <p className="text-xs text-th-text-2 max-w-sm mx-auto mb-5">
                   {scope === 'possede'
-                    ? 'Quand vous acquérez un bien, marquez-le comme détenu (icône bâtiment) pour suivre votre patrimoine réel ici.'
+                    ? 'Ajoutez un bien que vous possédez déjà, ou marquez une étude existante comme détenue (icône bâtiment).'
                     : 'Analysez un nouveau bien pour démarrer une étude.'}
                 </p>
+                {scope === 'possede' && (
+                  <button
+                    onClick={() => setAddOpen(true)}
+                    className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm px-5 py-2.5 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] mb-3"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Ajouter un bien détenu
+                  </button>
+                )}
+                <br />
                 <button onClick={() => setScope('tous')} className="text-xs font-semibold text-emerald-500 hover:underline">
                   Voir tous les biens →
                 </button>
@@ -730,6 +752,26 @@ export default function PortfolioPage() {
             toast.success(status === 'possede' ? 'Bien ajouté à votre patrimoine ✓' : 'Bien repassé en étude')
           }
           setOwnModalSim(null)
+        }}
+      />
+
+      <AddOwnedModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSubmit={async (payload) => {
+          const r = await saveSimulation({
+            name: payload.name,
+            params: payload.params,
+            results: payload.results,
+            score: payload.score,
+            status: 'possede',
+            acquiredAt: payload.acquiredAt,
+          })
+          if (r?.error) toast.error(r.error)
+          else {
+            toast.success('Bien ajouté à votre patrimoine ✓')
+            setScope('possede')
+          }
         }}
       />
     </AppShell>

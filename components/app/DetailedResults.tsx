@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { InvestmentResult, FiscalRegime, InvestmentParams } from '@/lib/types'
 import { formatCurrency, formatPct } from '@/lib/utils'
 import { IconLightBulb, IconCheckCircle, IconExclamationTriangle } from '@/components/ui/icons'
@@ -65,11 +66,21 @@ export function DetailedResults({ result, fiscalResults, params, onApplyRenovati
       </div>
 
       <div className="p-5">
-        {tab === 'cashflow'   && <CashflowTab result={result} />}
-        {tab === 'fiscal'     && <FiscalTab fiscalResults={fiscalResults} />}
-        {tab === 'revente'    && <ReventeTab result={result} />}
-        {tab === 'amort'      && <AmortTab result={result} />}
-        {tab === 'projection' && <ProjectionTab result={result} />}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {tab === 'cashflow'   && <CashflowTab result={result} />}
+            {tab === 'fiscal'     && <FiscalTab fiscalResults={fiscalResults} />}
+            {tab === 'revente'    && <ReventeTab result={result} />}
+            {tab === 'amort'      && <AmortTab result={result} />}
+            {tab === 'projection' && <ProjectionTab result={result} />}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect, useRef, useLayoutEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/app/AppShell'
@@ -561,6 +562,14 @@ export default function BibliotequePage() {
                 {/* Bandeau stats */}
                 <StatsBanner sims={filtered} />
 
+                <AnimatePresence mode="wait">
+                <motion.div
+                  key={viewMode}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                >
                 {viewMode === 'grid' && (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 }}>
                     {filtered.map(s => <SimCard key={s.id} sim={s} allTags={allTags} onUpdate={updateTags} onDelete={deleteSimulation} onClick={openSim} onCreateTag={() => setShowCreateModal(true)} />)}
@@ -584,6 +593,8 @@ export default function BibliotequePage() {
                 {viewMode === 'kanban' && (
                   <KanbanView sims={filtered} allTags={allTags} onUpdate={updateTags} onDelete={deleteSimulation} onClick={openSim} onCreateTag={() => setShowCreateModal(true)} />
                 )}
+                </motion.div>
+                </AnimatePresence>
               </>
             )}
           </div>

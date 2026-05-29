@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AppShell } from '@/components/app/AppShell'
@@ -511,7 +512,16 @@ export default function SettingsPage() {
           </nav>
 
           {/* Contenu */}
-          <div className="flex-1 min-w-0 space-y-6">
+          <div className="flex-1 min-w-0">
+            <AnimatePresence mode="wait">
+            <motion.div
+              key={section}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-6"
+            >
             {/* ── Compte ── */}
             {section === 'compte' && (
               <>
@@ -803,6 +813,8 @@ export default function SettingsPage() {
                 </button>
               </div>
             )}
+            </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { InvestmentResult, FiscalRegime, InvestmentParams, ScoreResult, AIInsight } from '@/lib/types'
 import type { LocalMarketData } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
@@ -884,6 +885,14 @@ export function ResultTabs({
 
       {/* ── Tab content ─────────────────────────────────────────────────── */}
       <div className={tab === 'fiscalite' ? '' : 'px-6 py-6 max-w-4xl'}>
+        <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        >
 
         {tab === 'resume' && (
           <ResumeTab
@@ -913,6 +922,8 @@ export function ResultTabs({
           <FinancementTab result={result} params={params} />
         )}
 
+        </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   )

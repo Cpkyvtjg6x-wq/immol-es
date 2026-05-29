@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { CalculateurForm } from '@/components/app/CalculateurForm'
 import { ResultTabs } from '@/components/app/ResultTabs'
@@ -515,6 +516,7 @@ export default function AnalysePage() {
 
                 {/* ── Contenu selon le mode ── */}
                 <div className="flex-1 overflow-hidden">
+                  <motion.div key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }} className="h-full">
                   {mode === 'express' ? (
                     <QuickAnalyse
                       onChange={handleChange}
@@ -535,6 +537,7 @@ export default function AnalysePage() {
                       marketData={marketData}
                     />
                   )}
+                  </motion.div>
                 </div>
 
               </div>

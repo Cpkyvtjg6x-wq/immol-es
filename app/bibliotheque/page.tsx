@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef, useLayoutEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
@@ -178,18 +179,80 @@ function CreateTagModal({ onClose, onCreate }: { onClose: () => void; onCreate: 
 /* ─── Tag Picker ─────────────────────────────────────── */
 function TagPicker({ sim, allTags, onUpdate, onCreateTag }: { sim: SavedSimulation; allTags: TagDef[]; onUpdate: (id: string, tags: string[]) => void; onCreateTag: () => void }) {
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState<{ left: number; top: number; placement: 'up' | 'down' }>({ left: 0, top: 0, placement: 'up' })
+
+  useEffect(() => setMounted(true), [])
+
+  const MENU_W = 190
+  const MENU_MAX_H = 280
+
+  // Positionne le menu en coordonnées viewport (fixed) — échappe à overflow:hidden
+  const place = useCallback(() => {
+    const b = btnRef.current?.getBoundingClientRect()
+    if (!b) return
+    const spaceBelow = window.innerHeight - b.bottom
+    const placement: 'up' | 'down' = spaceBelow < MENU_MAX_H && b.top > spaceBelow ? 'up' : 'down'
+    let left = b.right - MENU_W
+    left = Math.max(8, Math.min(left, window.innerWidth - MENU_W - 8))
+    const top = placement === 'down' ? b.bottom + 6 : b.top - 6
+    setCoords({ left, top, placement })
+  }, [])
+
+  useLayoutEffect(() => {
+    if (open) place()
+  }, [open, place])
+
+  // Ferme au clic extérieur, au scroll et au resize
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (btnRef.current?.contains(e.target as Node)) return
+      if (menuRef.current?.contains(e.target as Node)) return
+      setOpen(false)
+    }
+    const onScrollOrResize = () => setOpen(false)
+    document.addEventListener('mousedown', onDown)
+    window.addEventListener('scroll', onScrollOrResize, true)
+    window.addEventListener('resize', onScrollOrResize)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      window.removeEventListener('scroll', onScrollOrResize, true)
+      window.removeEventListener('resize', onScrollOrResize)
+    }
+  }, [open])
+
   const toggle = (tagId: string) => {
     const next = sim.tags.includes(tagId) ? sim.tags.filter(t => t !== tagId) : [...sim.tags, tagId]
     onUpdate(sim.id, next)
   }
+
   return (
     <div style={{ position: 'relative' }}>
-      <button onClick={e => { e.stopPropagation(); setOpen(o => !o) }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-3)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', borderRadius: 5 }}>
+      <button ref={btnRef} onClick={e => { e.stopPropagation(); setOpen(o => !o) }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-3)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', borderRadius: 5 }}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>
         {sim.tags.length === 0 && <span>Tag</span>}
       </button>
-      {open && (
-        <div style={{ position: 'absolute', bottom: '100%', left: 0, zIndex: 50, background: 'var(--c-surface2)', border: '0.5px solid var(--c-border)', borderRadius: 9, padding: 4, marginBottom: 4, minWidth: 175, boxShadow: '0 8px 24px rgba(0,0,0,.6)' }} onMouseLeave={() => setOpen(false)}>
+      {open && mounted && createPortal(
+        <div
+          ref={menuRef}
+          onClick={e => e.stopPropagation()}
+          style={{
+            position: 'fixed',
+            left: coords.left,
+            top: coords.top,
+            transform: coords.placement === 'up' ? 'translateY(-100%)' : 'none',
+            zIndex: 1000,
+            background: 'var(--c-surface2)',
+            border: '0.5px solid var(--c-border)',
+            borderRadius: 9,
+            padding: 4,
+            width: MENU_W,
+            boxShadow: '0 8px 24px rgba(0,0,0,.6)',
+          }}
+        >
           <div style={{ maxHeight: 220, overflowY: 'auto' }}>
             {allTags.map(t => (
               <button key={t.id} onClick={e => { e.stopPropagation(); toggle(t.id) }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '6px 10px', borderRadius: 6, background: sim.tags.includes(t.id) ? 'rgba(255,255,255,.06)' : 'none', border: 'none', cursor: 'pointer', color: 'var(--c-text-2)', fontSize: 12 }}>
@@ -205,7 +268,8 @@ function TagPicker({ sim, allTags, onUpdate, onCreateTag }: { sim: SavedSimulati
               Nouveau tag...
             </button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )

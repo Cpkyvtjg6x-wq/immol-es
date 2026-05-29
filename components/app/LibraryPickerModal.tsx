@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, type SavedSimulation } from '@/lib/hooks/useSimulations'
+import { DEFAULT_TAGS, loadCustomTags, resolveTag, type TagDef } from '@/lib/tags'
+import { TagChip } from '@/components/app/TagChip'
 
 function fmt(n: number) {
   return Math.round(n).toLocaleString('fr-FR')
@@ -39,12 +41,26 @@ export function LibraryPickerModal({ open, onClose, onSelect, title = 'Choisir u
   const { user } = useAuth()
   const { simulations, loading } = useSimulations(user?.id ?? null)
   const [search, setSearch] = useState('')
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
+
+  const customTags = useMemo(() => loadCustomTags(user?.id ?? null), [user?.id])
+  const allTags: TagDef[] = useMemo(() => [...DEFAULT_TAGS, ...customTags], [customTags])
+  // Tags réellement présents dans les biens (pour le filtre)
+  const usedTags = useMemo(() => {
+    const ids = new Set<string>()
+    simulations.forEach(s => s.tags?.forEach(t => ids.add(t)))
+    return allTags.filter(t => ids.has(t.id))
+  }, [simulations, allTags])
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return simulations
-    const q = search.toLowerCase()
-    return simulations.filter(s => s.name.toLowerCase().includes(q) || s.ville.toLowerCase().includes(q))
-  }, [simulations, search])
+    let list = simulations
+    if (tagFilter) list = list.filter(s => s.tags?.includes(tagFilter))
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(s => s.name.toLowerCase().includes(q) || s.ville.toLowerCase().includes(q))
+    }
+    return list
+  }, [simulations, search, tagFilter])
 
   return (
     <AnimatePresence>
@@ -92,6 +108,37 @@ export function LibraryPickerModal({ open, onClose, onSelect, title = 'Choisir u
                   className="w-full bg-th-input-bg border border-th-input-border rounded-lg text-sm text-th-text-1 placeholder:text-th-text-3 pl-9 pr-3 py-2.5 focus:outline-none focus:border-emerald-500/40 transition-all"
                 />
               </div>
+
+              {usedTags.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap mt-3">
+                  <button
+                    onClick={() => setTagFilter(null)}
+                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-colors ${
+                      tagFilter === null ? 'bg-th-surface2 border-th-border-med text-th-text-1' : 'border-th-border text-th-text-3 hover:text-th-text-1'
+                    }`}
+                  >
+                    Tous
+                  </button>
+                  {usedTags.map(t => {
+                    const active = tagFilter === t.id
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => setTagFilter(active ? null : t.id)}
+                        className="text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all flex items-center gap-1.5"
+                        style={{
+                          background: active ? `${t.color}22` : 'transparent',
+                          borderColor: active ? t.color : 'var(--c-border)',
+                          color: active ? t.color : 'var(--c-text-3)',
+                        }}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: t.color }} />
+                        {t.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Body */}
@@ -125,12 +172,7 @@ export function LibraryPickerModal({ open, onClose, onSelect, title = 'Choisir u
                       >
                         <div className="flex items-start justify-between gap-2 mb-3">
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-sm font-bold text-th-text-1 truncate">{sim.name}</p>
-                              {sim.status === 'possede' && (
-                                <span className="text-[8px] font-bold text-emerald-500 bg-emerald-500/12 border border-emerald-500/25 px-1 py-0.5 rounded shrink-0">DÉTENU</span>
-                              )}
-                            </div>
+                            <p className="text-sm font-bold text-th-text-1 truncate">{sim.name}</p>
                             <p className="text-[11px] text-th-text-3 truncate">{sim.ville || '—'} · {fmt(sim.prixAchat)} €</p>
                           </div>
                           <ScoreRing score={score} />
@@ -145,6 +187,14 @@ export function LibraryPickerModal({ open, onClose, onSelect, title = 'Choisir u
                             <p className={`text-xs font-bold tabular-nums ${cfPos ? 'text-emerald-500' : 'text-red-400'}`}>{cfPos ? '+' : ''}{fmt(sim.cashflowMensuel)} €</p>
                           </div>
                         </div>
+                        {sim.tags && sim.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2.5">
+                            {sim.tags.map(tid => {
+                              const t = resolveTag(tid, customTags)
+                              return t ? <TagChip key={tid} tag={t} size="xs" /> : null
+                            })}
+                          </div>
+                        )}
                       </motion.button>
                     )
                   })}

@@ -26,6 +26,8 @@ import { AppShell } from '@/components/app/AppShell'
 import { IconCheckCircle } from '@/components/ui/icons'
 import { OnboardingWizard } from '@/components/app/OnboardingWizard'
 import { MarkOwnedModal } from '@/components/app/MarkOwnedModal'
+import { TagChip } from '@/components/app/TagChip'
+import { loadCustomTags, resolveTag } from '@/lib/tags'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
@@ -319,6 +321,7 @@ export default function DashboardPage() {
   }, [])
 
   /* Compteurs par statut (sur l'ensemble) */
+  const customTags = useMemo(() => loadCustomTags(user?.id ?? null), [user?.id])
   const ownedCount = useMemo(() => simulations.filter((s) => s.status === 'possede').length, [simulations])
   const studyCount = simulations.length - ownedCount
 
@@ -952,11 +955,10 @@ export default function DashboardPage() {
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2 mb-0.5">
                                     <p className="text-sm font-semibold text-th-text-1 truncate">{sim.name}</p>
-                                    {sim.status === 'possede' && (
-                                      <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/12 border border-emerald-500/25 px-1.5 py-0.5 rounded-md shrink-0">
-                                        <Building2 className="w-2.5 h-2.5" /> Détenu
-                                      </span>
-                                    )}
+                                    {sim.tags?.map((tid) => {
+                                      const t = resolveTag(tid, customTags)
+                                      return t ? <TagChip key={tid} tag={t} size="xs" /> : null
+                                    })}
                                     {sim.is_favorite && (
                                       <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />

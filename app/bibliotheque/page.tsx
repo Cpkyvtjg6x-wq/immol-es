@@ -6,34 +6,11 @@ import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
+import { DEFAULT_TAGS, TAG_COLOR_PALETTE as COLOR_PALETTE, type CustomTag, type TagDef } from '@/lib/tags'
 
 /* ─── Types ─────────────────────────────────────────── */
-interface CustomTag {
-  id: string
-  label: string
-  color: string
-  custom: true
-}
-
-const DEFAULT_TAGS = [
-  { id: 'visit',  label: 'A visiter',     color: '#60a5fa', custom: false as const },
-  { id: 'heart',  label: 'Coup de coeur', color: '#fb7185', custom: false as const },
-  { id: 'offer',  label: 'Sous offre',    color: '#fbbf24', custom: false as const },
-  { id: 'signed', label: 'Signe',         color: '#4ade80', custom: false as const },
-  { id: 'owned',  label: 'Possede',       color: '#c4b5fd', custom: false as const },
-  { id: 'refuse', label: 'Refuse',        color: 'var(--c-text-3)', custom: false as const },
-]
-
-type TagDef = typeof DEFAULT_TAGS[number] | CustomTag
 type SortKey = 'score' | 'rendementNet' | 'cashflowMensuel' | 'created_at' | 'prixAchat'
 type ViewMode = 'grid' | 'list' | 'kanban'
-
-const COLOR_PALETTE = [
-  '#60a5fa','#38bdf8','#818cf8','#a78bfa',
-  '#fb7185','#f472b6','#e879f9','#f87171',
-  '#fbbf24','#fb923c','#facc15','#a3e635',
-  '#4ade80','#34d399','#2dd4bf','#94a3b8',
-]
 
 /* ─── Hook custom tags ───────────────────────────────── */
 function useCustomTags(userId: string | null) {

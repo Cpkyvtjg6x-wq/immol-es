@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
+import { loadCustomTags, resolveTag, type CustomTag } from '@/lib/tags'
+import { TagChip } from '@/components/app/TagChip'
 import { AppShell } from '@/components/app/AppShell'
 import { MarkOwnedModal } from '@/components/app/MarkOwnedModal'
 import { AddOwnedModal } from '@/components/app/AddOwnedModal'
@@ -89,7 +91,7 @@ function BuildingMini({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   )
 }
 
-function ComparaisonBiens({ simulations, onMarkOwned }: { simulations: SavedSimulation[]; onMarkOwned?: (sim: SavedSimulation) => void }) {
+function ComparaisonBiens({ simulations, onMarkOwned, customTags = [] }: { simulations: SavedSimulation[]; onMarkOwned?: (sim: SavedSimulation) => void; customTags?: CustomTag[] }) {
   const [sortKey, setSortKey] = useState<SortKey>('score')
   const [desc, setDesc] = useState(true)
 
@@ -155,11 +157,10 @@ function ComparaisonBiens({ simulations, onMarkOwned }: { simulations: SavedSimu
               <div className="min-w-0 group/row">
                 <div className="flex items-center gap-2">
                   <p className="text-[13px] font-semibold text-th-text-1 truncate leading-snug">{sim.name}</p>
-                  {sim.status === 'possede' && (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/12 border border-emerald-500/25 px-1.5 py-0.5 rounded-md shrink-0">
-                      <BuildingMini className="w-2.5 h-2.5" /> Détenu
-                    </span>
-                  )}
+                  {sim.tags?.map(tid => {
+                    const t = resolveTag(tid, customTags)
+                    return t ? <TagChip key={tid} tag={t} size="xs" /> : null
+                  })}
                   {onMarkOwned && (
                     <button
                       onClick={() => onMarkOwned(sim)}
@@ -479,6 +480,7 @@ export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
   const { simulations, loading, setStatus, saveSimulation } = useSimulations(user?.id ?? null)
   const toast = useToast()
+  const customTags = useMemo(() => loadCustomTags(user?.id ?? null), [user?.id])
 
   const ownedCount = simulations.filter((s) => s.status === 'possede').length
   const studyCount = simulations.length - ownedCount
@@ -721,7 +723,7 @@ export default function PortfolioPage() {
             {/* ── Section 2 : Comparaison des biens ── */}
             <section>
               <SectionTitle sub="Triez par n'importe quelle métrique · survolez pour marquer un bien détenu">Classement & comparaison</SectionTitle>
-              <ComparaisonBiens simulations={view} onMarkOwned={setOwnModalSim} />
+              <ComparaisonBiens simulations={view} onMarkOwned={setOwnModalSim} customTags={customTags} />
             </section>
 
             {/* ── Sections 3 & 4 : côte à côte ── */}

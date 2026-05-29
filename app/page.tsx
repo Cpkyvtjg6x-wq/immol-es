@@ -90,7 +90,7 @@ function Hr() {
 }
 
 /* Label numéroté Linear — "1.0  Analyse →" */
-function SectionLink({ num, label, href = '/analyse' }: { num: string; label: string; href?: string }) {
+function SectionLink({ num, label, href = '/dashboard' }: { num: string; label: string; href?: string }) {
   return (
     <a
       href={href}
@@ -254,11 +254,10 @@ export default function LandingPage() {
   // Prefetch proactif dès le chargement de la landing — les bundles seront
   // déjà en cache au moment du clic, navigation quasi-instantanée.
   useEffect(() => {
-    router.prefetch('/analyse')
     router.prefetch('/auth/login')
     router.prefetch('/dashboard')
   }, [router])
-  const go = () => router.push('/analyse')
+  const go = () => router.push('/dashboard')
   const login = () => router.push('/auth/login')
 
   return (

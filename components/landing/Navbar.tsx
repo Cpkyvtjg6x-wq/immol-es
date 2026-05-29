@@ -106,7 +106,7 @@ export function Navbar() {
           </Link>
 
           <Link
-            href="/analyse"
+            href="/dashboard"
             className="group flex items-center gap-1.5 text-[13.5px] font-medium text-[#09090b] bg-white px-4 py-[7px] rounded-lg hover:bg-zinc-100 hover:-translate-y-px hover:shadow-[0_4px_20px_-4px_rgba(255,255,255,0.18)] transition-all duration-200"
           >
             Commencer

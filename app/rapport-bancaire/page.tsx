@@ -881,10 +881,10 @@ export default function RapportBancairePage() {
   useEffect(() => {
     if (!result || !fiscal || !score) return
     if (profile.revenusNetsProFoyer > 0) {
-      const r = calculateBankRatios(params, result, profile, fiscal, score)
+      const r = calculateBankRatios(params, result, profile, fiscal, score, methode)
       setRatios(r)
     }
-  }, [profile, result, fiscal, score, params])
+  }, [profile, result, fiscal, score, params, methode])
 
   function updateProfile(key: keyof BankReportProfile, value: unknown) {
     setProfile(prev => ({ ...prev, [key]: value }))
@@ -900,7 +900,7 @@ export default function RapportBancairePage() {
     if (!result || !fiscal || !score) return
     setGenerating(true)
     try {
-      const ratiosFinal = calculateBankRatios(params, result, profile, fiscal, score)
+      const ratiosFinal = calculateBankRatios(params, result, profile, fiscal, score, methode)
       await generateBankPDF(params, result, fiscal, score, profile, ratiosFinal)
     } finally {
       setGenerating(false)
@@ -1544,49 +1544,64 @@ export default function RapportBancairePage() {
 
               {/* Score de bancabilité */}
               {scoreBancabilite && (
-                <div className="bg-th-surface border border-th-border rounded-2xl p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest">Score bancabilité</div>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ease: [0.16, 1, 0.3, 1] }}
+                  className="bg-th-surface border border-th-border rounded-2xl p-5"
+                >
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest">Score de bancabilité</div>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
                       scoreBancabilite.color === 'emerald' ? 'bg-emerald-500/[0.14] text-emerald-400'
                       : scoreBancabilite.color === 'amber' ? 'bg-amber-500/[0.14] text-amber-400'
                       : 'bg-red-500/[0.14] text-red-400'
                     }`}>{scoreBancabilite.label}</span>
                   </div>
-                  {/* Jauge */}
-                  <div className="mb-3">
-                    <div className="flex items-baseline gap-2 mb-1.5">
-                      <span className={`text-3xl font-black ${
-                        scoreBancabilite.color === 'emerald' ? 'text-emerald-400'
-                        : scoreBancabilite.color === 'amber' ? 'text-amber-400' : 'text-red-400'
-                      }`}>{scoreBancabilite.total}</span>
-                      <span className="text-sm text-th-text-2">/100</span>
-                    </div>
-                    <div className="w-full bg-th-surface3 rounded-full h-2">
-                      <div className={`h-2 rounded-full transition-all ${
+
+                  <div className="flex items-baseline gap-1.5 mb-2">
+                    <span className={`text-[40px] leading-none font-black tabular-nums ${
+                      scoreBancabilite.color === 'emerald' ? 'text-emerald-400'
+                      : scoreBancabilite.color === 'amber' ? 'text-amber-400' : 'text-red-400'
+                    }`} style={{ letterSpacing: '-0.04em' }}>{scoreBancabilite.total}</span>
+                    <span className="text-sm font-semibold text-th-text-3">/100</span>
+                  </div>
+                  <div className="w-full bg-th-surface3 rounded-full h-2 overflow-hidden mb-4">
+                    <motion.div
+                      className={`h-2 rounded-full ${
                         scoreBancabilite.color === 'emerald' ? 'bg-emerald-500'
                         : scoreBancabilite.color === 'amber' ? 'bg-amber-400' : 'bg-red-500'
-                      }`} style={{ width: `${scoreBancabilite.total}%` }} />
-                    </div>
+                      }`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${scoreBancabilite.total}%` }}
+                      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                    />
                   </div>
-                  {/* Détail des critères */}
-                  <div className="space-y-1.5">
-                    {scoreBancabilite.details.map(d => (
-                      <div key={d.label} className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <div className="text-[10px] text-th-text-2">{d.label}</div>
-                          <div className="w-full bg-th-surface3 rounded-full h-1 mt-0.5">
-                            <div className={`h-1 rounded-full transition-all ${d.pts === d.max ? 'bg-emerald-500' : d.pts >= d.max * 0.5 ? 'bg-amber-400' : 'bg-red-500'}`}
-                              style={{ width: `${(d.pts / d.max) * 100}%` }} />
+
+                  <div className="space-y-2.5">
+                    {scoreBancabilite.details.map((d, idx) => {
+                      const ratio = d.max > 0 ? d.pts / d.max : 0
+                      const col = ratio === 1 ? 'text-emerald-400' : ratio >= 0.5 ? 'text-amber-400' : 'text-red-400'
+                      const barCol = ratio === 1 ? 'bg-emerald-500' : ratio >= 0.5 ? 'bg-amber-400' : 'bg-red-500'
+                      return (
+                        <div key={d.label}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10.5px] text-th-text-2">{d.label}</span>
+                            <span className={`text-[10px] font-bold tabular-nums ${col}`}>{d.pts}/{d.max}</span>
+                          </div>
+                          <div className="w-full bg-th-surface3 rounded-full h-1 overflow-hidden">
+                            <motion.div
+                              className={`h-1 rounded-full ${barCol}`}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${ratio * 100}%` }}
+                              transition={{ duration: 0.7, delay: 0.1 + idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                            />
                           </div>
                         </div>
-                        <div className={`text-[10px] font-bold tabular-nums w-8 text-right ${d.pts === d.max ? 'text-emerald-400' : d.pts >= d.max * 0.5 ? 'text-amber-400' : 'text-red-400'}`}>
-                          {d.pts}/{d.max}
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* Ratios bancaires */}

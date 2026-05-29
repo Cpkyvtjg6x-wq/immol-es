@@ -426,6 +426,9 @@ export interface BankReportProfile {
 
 /** Ratios bancaires calculés automatiquement */
 export interface BankRatios {
+  // Méthode de calcul retenue pour le taux d'endettement
+  methode: 'globale' | 'differentielle'
+
   // Taux d'endettement
   tauxEndettementAvant: number     // % avant le projet
   tauxEndettementApres: number     // % après le projet

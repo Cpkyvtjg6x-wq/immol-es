@@ -43,6 +43,7 @@ export function calculateBankRatios(
   profile: BankReportProfile,
   fiscal: FiscalResult | null,
   _score: ScoreResult | null,
+  methode: 'globale' | 'differentielle' = 'globale',
 ): BankRatios {
 
   const mensualite = result.mensualiteTotale
@@ -70,15 +71,24 @@ export function calculateBankRatios(
   // ── Taux d'endettement APRÈS projet ────────────────────────────────────────
   // Revenus HCSF : salaires + 70 % autres loyers existants + 70 % nouveau loyer
   const revenusAvecNouveauxLoyers = revenusFoyer + autresLoyersIntegres + loyerIntegreBanque
-  // Charges HCSF : loyer actuel de la RP (locataire) OU mensualité RP (propriétaire)
-  // + autres crédits en cours + nouvelle mensualité d'investissement
-  // Le loyer actuel est TOUJOURS compté car la banque ne suppose pas que l'investisseur
-  // quitte sa résidence principale pour se logement dans le bien locatif.
+
+  // Taux d'endettement selon la MÉTHODE choisie :
+  //  - globale       : mensualité entière en charge, 70 % du loyer ajouté aux revenus
+  //  - différentielle: seul l'effort net (mensualité − 70 % loyer) compte en charge,
+  //                    le loyer n'est pas ajouté aux revenus (il est déjà netté)
+  const chargeProjet = methode === 'differentielle'
+    ? Math.max(0, mensualite - loyerIntegreBanque)
+    : mensualite
+  const revenusApresMethode = methode === 'differentielle'
+    ? revenusFoyer + autresLoyersIntegres
+    : revenusAvecNouveauxLoyers
+  // Le loyer actuel est TOUJOURS compté (la banque ne suppose pas que l'investisseur
+  // quitte sa résidence principale pour habiter le bien locatif).
   const chargesApresProjet =
-    profile.loyerActuel + profile.autresCreditsMensualites + mensualite
+    profile.loyerActuel + profile.autresCreditsMensualites + chargeProjet
   const tauxEndettementApres =
-    revenusAvecNouveauxLoyers > 0
-      ? Math.round((chargesApresProjet / revenusAvecNouveauxLoyers) * 1000) / 10
+    revenusApresMethode > 0
+      ? Math.round((chargesApresProjet / revenusApresMethode) * 1000) / 10
       : 0
 
   // ── Taux de couverture loyer / mensualité ───────────────────────────────────
@@ -187,9 +197,12 @@ export function calculateBankRatios(
   const mensualiteTotaleStress = mensualiteStress + assurStress
   const deltaStress = mensualiteTotaleStress - mensualite
   const cashflowStress = result.cashflowMensuel - deltaStress
+  const chargeProjetStress = methode === 'differentielle'
+    ? Math.max(0, mensualiteTotaleStress - loyerIntegreBanque)
+    : mensualiteTotaleStress
   const tauxEndettementStress =
-    revenusAvecNouveauxLoyers > 0
-      ? Math.round(((profile.loyerActuel + profile.autresCreditsMensualites + mensualiteTotaleStress) / revenusAvecNouveauxLoyers) * 1000) / 10
+    revenusApresMethode > 0
+      ? Math.round(((profile.loyerActuel + profile.autresCreditsMensualites + chargeProjetStress) / revenusApresMethode) * 1000) / 10
       : 0
 
   // Stress -10 % sur le loyer
@@ -317,6 +330,7 @@ export function calculateBankRatios(
   }
 
   return {
+    methode,
     tauxEndettementAvant,
     tauxEndettementApres,
     limiteHCSF: 35,

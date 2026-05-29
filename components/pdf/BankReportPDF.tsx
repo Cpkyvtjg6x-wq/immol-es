@@ -474,7 +474,7 @@ function BankPage({ params, result, profile, ratios, today, totalPages }: BankRe
         <Kpi
           label="Taux d'endettement après projet"
           value={fP(ratios.tauxEndettementApres)}
-          sub={`Avant : ${fP(ratios.tauxEndettementAvant)} · Limite HCSF : 35 %`}
+          sub={`Méthode ${ratios.methode === 'differentielle' ? 'différentielle' : 'globale'} · Limite HCSF : 35 %`}
           accent={endC(ratios.tauxEndettementApres)}
         />
         <Kpi
@@ -502,15 +502,21 @@ function BankPage({ params, result, profile, ratios, today, totalPages }: BankRe
       {/* Method */}
       <Sec title="Norme bancaire HCSF 2026" />
       <View style={[s.card, { marginBottom: 12, padding: 11 }]}>
-        <Text style={{ fontSize: 9, color: T.mid, lineHeight: 1.6 }}>
-          {'Taux d\'endettement calculé selon la règle HCSF : '}
-          <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>toutes charges / revenus de référence max. 35 %</Text>
-          {`, assurance incluse. Les loyers futurs sont intégrés à `}
-          <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>70 %</Text>
-          {` dans les revenus (méthode prudentielle). Loyer retenu : `}
-          <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>{fE(ratios.loyerIntegreBanque)}/mois</Text>
-          {` (= ${fE(result.loyer)} × 70 %).`}
-        </Text>
+        {ratios.methode === 'differentielle' ? (
+          <Text style={{ fontSize: 9, color: T.mid, lineHeight: 1.6 }}>
+            {'Taux d\'endettement calculé selon la '}
+            <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>méthode différentielle</Text>
+            {' : seul l\'effort net (mensualité - 70 % du loyer) est compté comme charge, le loyer n\'étant pas réintégré aux revenus. Recevable pour un investisseur locatif, ce taux doit rester sous 35 % (assurance incluse). '}
+            <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>{`Effort net retenu : ${fE(Math.max(0, result.mensualiteTotale - ratios.loyerIntegreBanque))}/mois`}</Text>
+            {` (= ${fE(result.mensualiteTotale)} - ${fE(ratios.loyerIntegreBanque)}).`}
+          </Text>
+        ) : (
+          <Text style={{ fontSize: 9, color: T.mid, lineHeight: 1.6 }}>
+            {'Taux d\'endettement calculé selon la '}
+            <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>méthode globale (toutes charges / revenus de référence), plafond 35 % maximum</Text>
+            {`, assurance incluse. Les loyers futurs sont intégrés à 70 % dans les revenus (méthode prudentielle). Loyer retenu : ${fE(ratios.loyerIntegreBanque)}/mois (= ${fE(result.loyer)} × 70 %).`}
+          </Text>
+        )}
       </View>
 
       {/* Capacité d'emprunt & conformité */}

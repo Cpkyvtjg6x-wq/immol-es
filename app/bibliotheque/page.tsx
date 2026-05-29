@@ -213,14 +213,19 @@ function TagPicker({ sim, allTags, onUpdate, onCreateTag }: { sim: SavedSimulati
       if (menuRef.current?.contains(e.target as Node)) return
       setOpen(false)
     }
-    const onScrollOrResize = () => setOpen(false)
+    // Ferme sur scroll de la PAGE, mais pas quand on scrolle dans le menu lui-même
+    const onScroll = (e: Event) => {
+      if (menuRef.current?.contains(e.target as Node)) return
+      setOpen(false)
+    }
+    const onResize = () => setOpen(false)
     document.addEventListener('mousedown', onDown)
-    window.addEventListener('scroll', onScrollOrResize, true)
-    window.addEventListener('resize', onScrollOrResize)
+    window.addEventListener('scroll', onScroll, true)
+    window.addEventListener('resize', onResize)
     return () => {
       document.removeEventListener('mousedown', onDown)
-      window.removeEventListener('scroll', onScrollOrResize, true)
-      window.removeEventListener('resize', onScrollOrResize)
+      window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', onResize)
     }
   }, [open])
 

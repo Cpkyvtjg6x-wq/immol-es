@@ -4,7 +4,9 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/app/AppShell'
+import { LibraryPickerModal } from '@/components/app/LibraryPickerModal'
 import { useAuth } from '@/lib/hooks/useAuth'
+import type { SavedSimulation } from '@/lib/hooks/useSimulations'
 import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
@@ -854,27 +856,35 @@ export default function RapportBancairePage() {
     setCheckedDocs(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  // Charger les params depuis localStorage
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  // Charge un jeu de paramètres (depuis sessionStorage ou la bibliothèque)
+  function loadParams(p: InvestmentParams) {
+    setParams(p)
+    const res = calculateInvestment(p)
+    const fis = calculateFiscal({ tmi: p.tmi, prixAchat: p.prixAchat, travaux: p.travaux ?? 0, prixRevient: res.prixRevient, locType: p.locType, lmpEnabled: p.lmpEnabled, sciIS: p.sciIS, sarlFamille: p.sarlFamille, structure: p.structure }, res)
+    const sc = calculateScore(res, fis, null)
+    setResult(res)
+    setFiscal(fis)
+    setScore(sc)
+    setHasData(true)
+    setProfile(prev => ({
+      ...prev,
+      modeAcquisition: p.structure === 'sci-is' ? 'sci-is' : p.structure === 'sarl-famille' ? 'sarl-famille' : p.structure === 'sci-ir' ? 'sci-ir' : 'nom-propre'
+    }))
+  }
+
+  function importFromLibrary(sim: SavedSimulation) {
+    loadParams({ ...DEFAULT_PARAMS, ...sim.params })
+  }
+
+  // Charger les params depuis sessionStorage au montage
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(LS_KEY)
-      if (raw) {
-        const p: InvestmentParams = JSON.parse(raw)
-        setParams(p)
-        const res = calculateInvestment(p)
-        const fis = calculateFiscal({ tmi: p.tmi, prixAchat: p.prixAchat, travaux: p.travaux ?? 0, prixRevient: res.prixRevient, locType: p.locType, lmpEnabled: p.lmpEnabled, sciIS: p.sciIS, sarlFamille: p.sarlFamille, structure: p.structure }, res)
-        const sc = calculateScore(res, fis, null)
-        setResult(res)
-        setFiscal(fis)
-        setScore(sc)
-        setHasData(true)
-        // Pré-remplir la structure depuis les params
-        setProfile(prev => ({
-          ...prev,
-          modeAcquisition: p.structure === 'sci-is' ? 'sci-is' : p.structure === 'sarl-famille' ? 'sarl-famille' : p.structure === 'sci-ir' ? 'sci-ir' : 'nom-propre'
-        }))
-      }
+      if (raw) loadParams(JSON.parse(raw) as InvestmentParams)
     } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Recalculer les ratios dès que le profil change
@@ -975,6 +985,14 @@ export default function RapportBancairePage() {
                 <p className="text-[10px] text-th-text-2">Pro · Génération automatique</p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPickerOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-th-border text-th-text-2 hover:text-th-text-1 hover:border-th-border-med text-xs font-semibold transition-all"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+              Importer depuis la bibliothèque
+            </button>
             <button
               onClick={handleGenerate}
               disabled={!canGenerate || generating}
@@ -998,6 +1016,7 @@ export default function RapportBancairePage() {
                 </>
               )}
             </button>
+            </div>
           </div>
         </div>
 
@@ -1734,6 +1753,13 @@ export default function RapportBancairePage() {
           </div>
         </div>
       </div>
+
+      <LibraryPickerModal
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={importFromLibrary}
+        title="Importer un bien de la bibliothèque"
+      />
     </AppShell>
   )
 }

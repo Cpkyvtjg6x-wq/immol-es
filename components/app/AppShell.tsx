@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTheme } from '@/components/app/ThemeProvider'
@@ -462,9 +463,16 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
         </div>
       </aside>
 
-      {/* Main content — .content-area scope les overrides WCAG couleurs */}
+      {/* Main content — sidebar fixe, seul le contenu transitionne (pattern premium) */}
       <div className="content-area lg:pl-56 flex-1 min-h-screen pt-14 lg:pt-0">
-        {children}
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {children}
+        </motion.div>
       </div>
     </div>
   )

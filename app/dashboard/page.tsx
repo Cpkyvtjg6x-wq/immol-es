@@ -642,7 +642,7 @@ export default function DashboardPage() {
               </motion.div>
 
               {/* ── À faire ensuite + Carte risque·rendement ── */}
-              <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:items-start">
 
                 {/* À faire ensuite */}
                 <div

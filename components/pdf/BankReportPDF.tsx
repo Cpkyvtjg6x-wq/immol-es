@@ -32,7 +32,7 @@ const T = {
 }
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
-const fE = (n: number) => Math.round(n).toLocaleString('fr-FR') + ' €'
+const fE = (n: number) => Math.round(n).toLocaleString('fr-FR').replace(/\s/g, ' ') + ' €'
 const fP = (n: number, dec = 1) => n.toFixed(dec) + ' %'
 const safe = (s: string | number | undefined | null, fb = '—') =>
   s === null || s === undefined || s === '' ? fb : String(s)
@@ -58,11 +58,11 @@ const PAGE_STYLE = {
 const HDR_ROW = {
   flexDirection: 'row' as const, justifyContent: 'space-between' as const, alignItems: 'center' as const,
   marginBottom: 14, paddingBottom: 10,
-  borderBottomWidth: 2, borderBottomColor: T.green, borderBottomStyle: 'solid' as const,
+  borderBottomWidth: 2, borderBottomColor: T.dark, borderBottomStyle: 'solid' as const,
 }
 const SEC_STYLE = {
   fontFamily: 'Helvetica-Bold' as const, fontSize: 6.5,
-  textTransform: 'uppercase' as const, letterSpacing: 1.5, color: T.green,
+  textTransform: 'uppercase' as const, letterSpacing: 1.5, color: T.dark,
   marginTop: 13, marginBottom: 5, paddingBottom: 3,
   borderBottomWidth: 1, borderBottomColor: T.border, borderBottomStyle: 'solid' as const,
 }
@@ -153,7 +153,7 @@ function Bdg({ text, good }: { text: string; good: boolean }) {
       alignSelf: 'flex-start' as const, marginTop: 6,
     }}>
       <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold' as const, color: good ? T.greenDark : T.red }}>
-        {good ? '✓ ' : '⚠ '}{text}
+        {good ? '• ' : '• '}{text}
       </Text>
     </View>
   )
@@ -162,7 +162,8 @@ function Bdg({ text, good }: { text: string; good: boolean }) {
 function InfoBox({ text }: { text: string }) {
   return (
     <View style={{
-      backgroundColor: T.greenBg, borderWidth: 1, borderColor: T.greenBorder, borderStyle: 'solid' as const,
+      backgroundColor: T.bg, borderWidth: 1, borderColor: T.border, borderStyle: 'solid' as const,
+      borderLeftWidth: 3, borderLeftColor: T.dark, borderLeftStyle: 'solid' as const,
       borderRadius: 6, padding: 12, marginTop: 8,
     }}>
       <Text style={{ fontSize: 9, color: '#1e293b', lineHeight: 1.65 }}>{text}</Text>
@@ -404,7 +405,7 @@ function ProfilePage({ params, result, profile, ratios, today, totalPages }: Ban
 // ════════════════════════════════════════════════════════════════════════════════
 function ProjectPage({ params, result, profile, today, totalPages }: BankReportPDFProps) {
   const prixM2 = params.surface > 0 ? Math.round(params.prixAchat / params.surface) : 0
-  const dpeWarn = params.dpe === 'F' || params.dpe === 'G' ? ' ⚠ Passoire thermique' : params.dpe === 'A' || params.dpe === 'B' ? ' ✓ Excellent' : ''
+  const dpeWarn = params.dpe === 'F' || params.dpe === 'G' ? ' — Passoire thermique' : params.dpe === 'A' || params.dpe === 'B' ? ' — Excellent' : ''
 
   return (
     <Page size="A4" style={s.page}>
@@ -503,7 +504,7 @@ function BankPage({ params, result, profile, ratios, today, totalPages }: BankRe
       <View style={[s.card, { marginBottom: 12, padding: 11 }]}>
         <Text style={{ fontSize: 9, color: T.mid, lineHeight: 1.6 }}>
           {'Taux d\'endettement calculé selon la règle HCSF : '}
-          <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>toutes charges / revenus de référence ≤ 35 %</Text>
+          <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>toutes charges / revenus de référence max. 35 %</Text>
           {`, assurance incluse. Les loyers futurs sont intégrés à `}
           <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>70 %</Text>
           {` dans les revenus (méthode prudentielle). Loyer retenu : `}
@@ -590,9 +591,9 @@ function RentabilityPage({ params, result, today, totalPages }: BankReportPDFPro
 
           <Sec title="Comparatif avec le marché" />
           <Row label="Rendement brut du projet" value={fP(result.rendBrut)} color={rbC(result.rendBrut)} />
-          <Row label="Référence bonne rentabilité FR" value="≥ 6 %" />
+          <Row label="Référence bonne rentabilité FR" value="min. 6 %" />
           <Row label="Rendement net du projet" value={fP(result.rendNet)} color={rnC(result.rendNet)} />
-          <Row label="Référence marché FR" value="≥ 4 % net" />
+          <Row label="Référence marché FR" value="min. 4 % net" />
           <Bdg text={result.rendBrut >= 5 ? 'Au-dessus du marché' : result.rendBrut >= 4 ? 'Dans la moyenne' : 'En dessous du marché'} good={result.rendBrut >= 5} />
         </View>
 
@@ -639,7 +640,7 @@ function FiscalPage({ params, fiscal, today, totalPages }: BankReportPDFProps) {
           {bestRegime ? (
             <>
               <View style={{ backgroundColor: T.greenBg, borderWidth: 1, borderColor: T.greenBorder, borderStyle: 'solid', borderRadius: 8, padding: 14, marginBottom: 10 }}>
-                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: T.greenDark, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>✦ Meilleur régime identifié</Text>
+                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: T.greenDark, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>• Meilleur régime identifié</Text>
                 <Text style={{ fontSize: 17, fontFamily: 'Helvetica-Bold', color: T.dark, marginBottom: 10 }}>{bestRegime.name}</Text>
                 <View style={{ flexDirection: 'row', gap: 12 }}>
                   <View>
@@ -679,7 +680,7 @@ function FiscalPage({ params, fiscal, today, totalPages }: BankReportPDFProps) {
             }}>
               <View>
                 <Text style={{ fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: T.dark }}>
-                  {r.name}{r === bestRegime ? <Text style={{ fontSize: 8, color: T.green }}>{' '}✦ Optimal</Text> : null}
+                  {r.name}{r === bestRegime ? <Text style={{ fontSize: 8, color: T.green }}>{' '}· Optimal</Text> : null}
                 </Text>
                 <Text style={{ fontSize: 8, color: T.mid, marginTop: 2 }}>
                   CF net : {(r.cfNet >= 0 ? '+' : '') + fE(r.cfNet)}/mois
@@ -732,7 +733,7 @@ function SynthesisPage({ profile, ratios, today, totalPages }: BankReportPDFProp
           <Sec title="Points forts du dossier" />
           {ratios.pointsForts.length > 0 ? ratios.pointsForts.map((p, i) => (
             <View key={i} style={{ flexDirection: 'row', gap: 7, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: T.greenBg, borderBottomStyle: 'solid' }}>
-              <Text style={{ fontSize: 10, color: T.green, flexShrink: 0 }}>✓</Text>
+              <Text style={{ fontSize: 10, color: T.green, flexShrink: 0 }}>•</Text>
               <Text style={{ fontSize: 9, color: '#1e293b', lineHeight: 1.5, flex: 1 }}>{p}</Text>
             </View>
           )) : <Text style={{ fontSize: 9, color: T.mid }}>Complétez le profil pour générer l'analyse.</Text>}
@@ -743,12 +744,12 @@ function SynthesisPage({ profile, ratios, today, totalPages }: BankReportPDFProp
           <Sec title="Points de vigilance" />
           {ratios.pointsVigilance.length > 0 ? ratios.pointsVigilance.map((p, i) => (
             <View key={i} style={{ flexDirection: 'row', gap: 7, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: T.amberBg, borderBottomStyle: 'solid' }}>
-              <Text style={{ fontSize: 10, color: T.amber, flexShrink: 0 }}>⚠</Text>
+              <Text style={{ fontSize: 10, color: T.amber, flexShrink: 0 }}>•</Text>
               <Text style={{ fontSize: 9, color: '#1e293b', lineHeight: 1.5, flex: 1 }}>{p}</Text>
             </View>
           )) : (
             <View style={{ flexDirection: 'row', gap: 7, paddingVertical: 6 }}>
-              <Text style={{ fontSize: 10, color: T.green, flexShrink: 0 }}>✓</Text>
+              <Text style={{ fontSize: 10, color: T.green, flexShrink: 0 }}>•</Text>
               <Text style={{ fontSize: 9, color: T.mid }}>Aucun point de vigilance détecté.</Text>
             </View>
           )}
@@ -843,17 +844,17 @@ function LegalPage({ profile, today, totalPages }: BankReportPDFProps) {
             <>
               <View style={[s.card, { marginBottom: 7, padding: 10 }]}>
                 <Text style={{ fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: T.dark, marginBottom: 3 }}>Flux entrants SCI</Text>
-                <Text style={{ fontSize: 9, color: T.mid, lineHeight: 1.5 }}>Loyers locatifs → couvrent mensualité + charges courantes de la SCI</Text>
+                <Text style={{ fontSize: 9, color: T.mid, lineHeight: 1.5 }}>Loyers locatifs — couvrent mensualité + charges courantes de la SCI</Text>
               </View>
               <View style={[s.card, { padding: 10 }]}>
                 <Text style={{ fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: T.dark, marginBottom: 3 }}>Remontée Holding</Text>
-                <Text style={{ fontSize: 9, color: T.mid, lineHeight: 1.5 }}>Bénéfices SCI → dividendes Holding (régime mère-fille, 95 % exonéré) → trésorerie pour nouveaux investissements</Text>
+                <Text style={{ fontSize: 9, color: T.mid, lineHeight: 1.5 }}>Bénéfices SCI — dividendes Holding (régime mère-fille, 95 % exonéré) — trésorerie pour nouveaux investissements</Text>
               </View>
             </>
           ) : (
             <View style={[s.card, { padding: 10 }]}>
               <Text style={{ fontSize: 9, color: T.mid, lineHeight: 1.6 }}>
-                {`Loyers encaissés par la ${profile.modeAcquisition === 'sci-ir' ? 'SCI' : profile.modeAcquisition === 'sarl-famille' ? 'SARL' : 'société'} → paiement des charges et de la mensualité bancaire → résultat distribué ou conservé selon la stratégie patrimoniale des associés.`}
+                {`Loyers encaissés par la ${profile.modeAcquisition === 'sci-ir' ? 'SCI' : profile.modeAcquisition === 'sarl-famille' ? 'SARL' : 'société'} — paiement des charges et de la mensualité bancaire — résultat distribué ou conservé selon la stratégie patrimoniale des associés.`}
               </Text>
             </View>
           )}

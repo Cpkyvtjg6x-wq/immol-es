@@ -50,7 +50,7 @@ const HDR_BAR = {
   justifyContent: 'space-between' as const,
   alignItems: 'flex-end' as const,
   borderBottomWidth: 2,
-  borderBottomColor: T.green,
+  borderBottomColor: T.dark,
   borderBottomStyle: 'solid' as const,
   paddingBottom: 10,
   marginBottom: 18,
@@ -61,7 +61,7 @@ const SEC_LABEL = {
   fontFamily: 'Helvetica-Bold' as const,
   textTransform: 'uppercase' as const,
   letterSpacing: 0.8,
-  color: T.greenDark,
+  color: T.dark,
   borderBottomWidth: 1,
   borderBottomColor: T.border,
   borderBottomStyle: 'solid' as const,
@@ -98,7 +98,7 @@ const FOOT_STYLE = {
 }
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
-const fE  = (n: number) => Math.round(n).toLocaleString('fr-FR') + ' €'
+const fE  = (n: number) => Math.round(n).toLocaleString('fr-FR').replace(/\s/g, ' ') + ' €'
 const fP  = (n: number) => n.toFixed(2) + ' %'
 const fP1 = (n: number) => n.toFixed(1) + ' %'
 
@@ -108,7 +108,7 @@ function Foot({ page, total, today }: { page: number; total: number; today: stri
   return (
     <View style={FOOT_STYLE} fixed>
       <Text style={{ fontSize: 7, color: T.light }}>
-        Immolyse · Rapport confidentiel · Ne constitue pas un conseil financier
+        IMMORA · Rapport confidentiel · Ne constitue pas un conseil financier
       </Text>
       <Text style={{ fontSize: 7, color: T.light }}>{today} · {page} / {total}</Text>
     </View>
@@ -120,7 +120,7 @@ function Hdr({ title, subtitle }: { title: string; subtitle?: string }) {
     <View style={HDR_BAR}>
       <View>
         <Text style={{ fontSize: 18, fontFamily: 'Helvetica-Bold' as const, color: T.dark, letterSpacing: -0.3 }}>
-          Immo<Text style={{ color: T.green }}>lyse</Text>
+          IMMO<Text style={{ color: T.green }}>RA</Text>
         </Text>
         {subtitle ? <Text style={{ fontSize: 8, color: T.light, marginTop: 1 }}>{subtitle}</Text> : null}
       </View>
@@ -255,7 +255,7 @@ function Page1({
           {bestRegime && (
             <View style={{ backgroundColor: T.white, borderWidth: 1, borderColor: T.border, borderLeftWidth: 3, borderLeftColor: netNetC, borderStyle: 'solid' as const, borderRadius: 5, padding: 8, flexDirection: 'row' as const, justifyContent: 'space-between' as const, alignItems: 'center' as const }}>
               <View>
-                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold' as const, color: T.green, letterSpacing: 0.5, marginBottom: 2 }}>✦ APRÈS IMPÔTS — {bestRegime.name.toUpperCase()}</Text>
+                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold' as const, color: T.green, letterSpacing: 0.5, marginBottom: 2 }}>• APRÈS IMPÔTS — {bestRegime.name.toUpperCase()}</Text>
                 <Text style={{ fontSize: 8, color: T.mid }}>CF net : <Text style={{ fontFamily: 'Helvetica-Bold' as const, color: T.dark }}>{fE(cfNetNetNum)}/mois</Text></Text>
               </View>
               <Text style={{ fontSize: 17, fontFamily: 'Helvetica-Bold' as const, color: netNetC }}>{fP1(rendNetNetNum)}</Text>
@@ -270,7 +270,7 @@ function Page1({
           <Sec label="Le bien" />
           <View style={{ flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: 0 }}>
             <View style={{ width: '50%' }}><Field label="Type" value={typeBien || '—'} /></View>
-            <View style={{ width: '50%' }}><Field label="DPE" value={dpe + (dpe === 'F' || dpe === 'G' ? ' ⚠' : '')} /></View>
+            <View style={{ width: '50%' }}><Field label="DPE" value={dpe + (dpe === 'F' || dpe === 'G' ? ' (passoire)' : '')} /></View>
             <View style={{ width: '50%' }}><Field label="Prix d'achat" value={fE(prixAchat)} /></View>
             <View style={{ width: '50%' }}><Field label="Frais notaire" value={fE(fraisNotaire)} /></View>
             <View style={{ width: '50%' }}><Field label="Travaux" value={fE(travaux)} /></View>
@@ -385,7 +385,7 @@ function Page2({
 
       {bestRegime && (
         <View style={{ backgroundColor: T.greenBg, borderWidth: 1, borderColor: T.greenBorder, borderStyle: 'solid' as const, borderRadius: 6, padding: 10, marginBottom: 10, flexDirection: 'row' as const, alignItems: 'center' as const, gap: 14 }}>
-          <Text style={{ fontSize: 22, color: T.green }}>★</Text>
+          <Text style={{ fontSize: 22, color: T.green }}>•</Text>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' as const, color: T.greenDark }}>Régime optimal : {bestRegime.name}</Text>
             <Text style={{ fontSize: 8, color: T.greenDark, marginTop: 2 }}>
@@ -418,7 +418,7 @@ function Page2({
             const cfC2 = r.cfNet >= 100 ? T.greenDark : r.cfNet >= 0 ? T.amber : T.red
             return (
               <View key={i} style={{ flexDirection: 'row' as const, backgroundColor: isBest ? T.greenBg : (i % 2 === 0 ? T.white : T.bg), borderBottomWidth: i < activeRegimes.length - 1 ? 1 : 0, borderBottomColor: T.border, borderBottomStyle: 'solid' as const, borderLeftWidth: isBest ? 3 : 0, borderLeftColor: T.green, borderLeftStyle: 'solid' as const }}>
-                <Text style={{ flex: 1.6, fontSize: 8, fontFamily: isBest ? 'Helvetica-Bold' as const : 'Helvetica' as const, color: isBest ? T.greenDark : T.dark, padding: 6 }}>{r.name}{isBest ? ' ★' : ''}</Text>
+                <Text style={{ flex: 1.6, fontSize: 8, fontFamily: isBest ? 'Helvetica-Bold' as const : 'Helvetica' as const, color: isBest ? T.greenDark : T.dark, padding: 6 }}>{r.name}{isBest ? ' •' : ''}</Text>
                 <Text style={{ flex: 1, fontSize: 8, color: T.mid, padding: 6 }}>{fE(r.revImposable)}</Text>
                 <Text style={{ flex: 1, fontSize: 8, color: T.red, padding: 6 }}>{fE(r.impot)}</Text>
                 <Text style={{ flex: 1, fontSize: 8, color: T.mid, padding: 6 }}>{fE(r.ps)}</Text>
@@ -456,7 +456,7 @@ function Page2({
               )}
               {score?.details?.slice(0, 5).map((d, i) => (
                 <View key={i} style={{ flexDirection: 'row' as const, alignItems: 'center' as const, gap: 6, marginBottom: 5 }}>
-                  <Text style={{ fontSize: 8, color: d.good ? T.greenDark : T.red }}>{d.good ? '✓' : '✗'}</Text>
+                  <Text style={{ fontSize: 8, color: d.good ? T.greenDark : T.red }}>{d.good ? '•' : '×'}</Text>
                   <Text style={{ flex: 1, fontSize: 8, color: T.mid }}>{d.label}</Text>
                   <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold' as const, color: d.good ? T.greenDark : T.red }}>{d.pts}/{d.max}</Text>
                 </View>
@@ -669,7 +669,7 @@ export interface SimulationPDFProps {
 
 export default function SimulationPDF(props: SimulationPDFProps) {
   return (
-    <Document title="Rapport Immolyse" author="Immolyse">
+    <Document title="Rapport IMMORA" author="IMMORA">
       <Page1 {...props} />
       <Page2 {...props} />
       <Page3 {...props} />

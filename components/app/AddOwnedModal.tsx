@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useMemo, useState } from 'react'
+import { motion, AnimatePresence, useAnimationControls } from 'framer-motion'
 import { DEFAULT_PARAMS, calculateInvestment } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
@@ -84,6 +84,15 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
   })
 
   const set = <K extends keyof InvestmentParams>(k: K, v: InvestmentParams[K]) => setF((p) => ({ ...p, [k]: v }))
+
+  /* entrée + shake si clic à côté (le formulaire ne se ferme pas par mégarde) */
+  const controls = useAnimationControls()
+  useEffect(() => {
+    if (open) controls.start({ opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 28 } })
+  }, [open, controls])
+  function shake() {
+    controls.start({ x: [0, -9, 9, -6, 6, -3, 0], transition: { duration: 0.45, ease: 'easeInOut' } })
+  }
 
   const params = useMemo<InvestmentParams>(() => ({ ...DEFAULT_PARAMS, ...f }), [f])
 
@@ -174,14 +183,13 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={close}
+          onClick={shake}
         >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 14 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: 10 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            animate={controls}
+            exit={{ opacity: 0, scale: 0.97, y: 10, transition: { duration: 0.18 } }}
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-lg rounded-2xl border border-th-border bg-th-surface shadow-card-th overflow-hidden flex flex-col max-h-[90vh]"
           >
@@ -206,8 +214,20 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
               <div className="flex items-center gap-1.5">
                 {STEPS.map((s, i) => (
                   <div key={s} className="flex-1">
-                    <div className={`h-1 rounded-full transition-colors ${i <= step ? 'bg-emerald-500' : 'bg-th-surface3'}`} />
-                    <p className={`text-[10px] mt-1.5 transition-colors ${i === step ? 'text-th-text-1 font-semibold' : 'text-th-text-3'}`}>{s}</p>
+                    <div className="h-1 rounded-full bg-th-surface3 overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full bg-emerald-500"
+                        initial={false}
+                        animate={{ width: i <= step ? '100%' : '0%' }}
+                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                      />
+                    </div>
+                    <motion.p
+                      animate={{ color: i === step ? 'var(--c-text-1)' : 'var(--c-text-3)', opacity: i === step ? 1 : 0.7 }}
+                      className={`text-[10px] mt-1.5 ${i === step ? 'font-semibold' : ''}`}
+                    >
+                      {s}
+                    </motion.p>
                   </div>
                 ))}
               </div>
@@ -369,11 +389,18 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                           { label: 'Rendement brut', val: `${computed.res.rendementBrut.toFixed(1)} %`, color: '#10b981' },
                           { label: 'Rendement net', val: `${computed.res.rendementNet.toFixed(1)} %`, color: '#10b981' },
                           { label: 'Cashflow', val: `${computed.res.cashflowMensuel >= 0 ? '+' : ''}${Math.round(computed.res.cashflowMensuel)} €`, color: computed.res.cashflowMensuel >= 0 ? '#10b981' : '#ef4444' },
-                        ].map((k) => (
-                          <div key={k.label} className="rounded-xl bg-th-surface2 border border-th-border p-3 text-center">
+                        ].map((k, i) => (
+                          <motion.div
+                            key={k.label}
+                            initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ delay: i * 0.08, type: 'spring', stiffness: 300, damping: 22 }}
+                            whileHover={{ y: -3 }}
+                            className="rounded-xl bg-th-surface2 border border-th-border p-3 text-center"
+                          >
                             <p className="text-[9px] font-semibold text-th-text-3 uppercase tracking-wider mb-1">{k.label}</p>
                             <p className="text-base font-black tabular-nums" style={{ color: k.color }}>{k.val}</p>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
                       <div className="rounded-xl bg-th-surface2 border border-th-border p-3 flex items-center justify-between">

@@ -2684,49 +2684,24 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, lo
 
       </div>
 
-      {/* ─── Footer contextuel ─────────────────────────────────────────────────── */}
+      {/* ─── Footer — live indicator + reset ─────────────────────────────────── */}
       <div className="shrink-0 px-4 py-1.5 border-t border-white/[0.06] bg-black/80 backdrop-blur-xl">
-        {result ? (
-          /* Résultats existants — mise à jour auto + réinitialiser */
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 shrink-0" />
-              <span className="text-[11px] text-th-text-3 truncate">Mise à jour automatique</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="shrink-0 flex items-center gap-1 text-[11px] text-th-text-3 hover:text-red-400 transition-colors active:scale-[0.97] cursor-pointer"
-            >
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Réinitialiser
-            </button>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 shrink-0" />
+            <span className="text-[11px] text-th-text-3 truncate">Mise à jour automatique</span>
           </div>
-        ) : (
-          /* Aucun résultat — CTA primaire */
           <button
-            type="submit"
-            disabled={loading || p.prixAchat <= 0}
-            className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[13px] font-bold rounded-xl hover:bg-emerald-500/20 hover:border-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-            style={{ letterSpacing: '-0.01em' }}
+            type="button"
+            onClick={handleReset}
+            className="shrink-0 flex items-center gap-1 text-[11px] text-th-text-3 hover:text-red-400 transition-colors active:scale-[0.97] cursor-pointer"
           >
-            {loading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
-                Calcul en cours…
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Lancer l'analyse
-              </>
-            )}
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Réinitialiser
           </button>
-        )}
+        </div>
       </div>
     </form>
   )

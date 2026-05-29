@@ -457,7 +457,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
                 <p className="text-[10px] text-th-sidebar-text-1 ml-1">Notifications</p>
               </div>
               <Link
-                href="/profile"
+                href="/settings"
                 className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-all group"
               >
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-[11px] font-bold text-white uppercase shrink-0">
@@ -465,11 +465,25 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-white leading-tight truncate capitalize">{firstName}</p>
-                  <p className="text-[10px] text-th-sidebar-text-2 leading-tight truncate group-hover:text-th-sidebar-text-1 transition-colors">Mon profil</p>
+                  <p className="text-[10px] text-th-sidebar-text-2 leading-tight truncate group-hover:text-th-sidebar-text-1 transition-colors">Mon compte</p>
                 </div>
                 <svg className="w-3 h-3 text-th-sidebar-text-2 group-hover:text-th-sidebar-text-2 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
+              </Link>
+              <Link
+                href="/settings"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all ${
+                  pathname.startsWith('/settings')
+                    ? 'bg-white/[0.08] text-white'
+                    : 'text-th-sidebar-text-1 hover:text-white hover:bg-white/[0.04]'
+                }`}
+              >
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Paramètres
               </Link>
               <button
                 onClick={signOut}

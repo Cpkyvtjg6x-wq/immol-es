@@ -15,6 +15,7 @@ import { SaveModal } from '@/components/app/SaveModal'
 import { AppShell } from '@/components/app/AppShell'
 import { ExportButtons } from '@/components/app/ExportButtons'
 import { QuickAnalyse } from '@/components/app/QuickAnalyse'
+import { readLocalSettings } from '@/lib/settings'
 import type { LocalMarketData } from '@/lib/types'
 
 
@@ -72,6 +73,10 @@ export default function AnalysePage() {
     const urlTaxe     = sp.get('taxe')
     const urlPieces   = sp.get('pieces')
 
+    // Valeurs par défaut personnelles de l'utilisateur (Paramètres → Calculateur)
+    const userDefaults = readLocalSettings().calculatorDefaults
+    const base: InvestmentParams = { ...DEFAULT_PARAMS, ...userDefaults }
+
     if (urlSource === 'extension' && urlPrix) {
       const prix    = parseInt(urlPrix, 10)
       const surface = urlSurface ? parseInt(urlSurface, 10) : DEFAULT_PARAMS.surface
@@ -84,7 +89,7 @@ export default function AnalysePage() {
       const travaux      = urlTravaux  ? parseInt(urlTravaux, 10)  : 0
       const nbPieces     = urlPieces   ? parseInt(urlPieces, 10)   : DEFAULT_PARAMS.nbChambres
       return {
-        ...DEFAULT_PARAMS,
+        ...base,
         prixAchat: prix, surface,
         ville:     urlVille ?? DEFAULT_PARAMS.ville,
         dpe:       (urlDpe as InvestmentParams['dpe']) ?? DEFAULT_PARAMS.dpe,
@@ -93,7 +98,7 @@ export default function AnalysePage() {
         fraisNotaireAuto: false,
         loyerMeuble:  locType === 'meuble' ? loyer : DEFAULT_PARAMS.loyerMeuble,
         loyerNu:      locType === 'nu'     ? loyer : DEFAULT_PARAMS.loyerNu,
-        tmi:          urlTmi ? parseInt(urlTmi, 10) : DEFAULT_PARAMS.tmi,
+        tmi:          urlTmi ? parseInt(urlTmi, 10) : base.tmi,
         chargesCopro,
         taxeFonciere,
         travaux,
@@ -110,7 +115,7 @@ export default function AnalysePage() {
         return { ...DEFAULT_PARAMS, ...JSON.parse(raw) }
       }
     } catch { /* ignore */ }
-    return DEFAULT_PARAMS
+    return base
   })
 
   const [result, setResult]               = useState<InvestmentResult | null>(null)
@@ -132,7 +137,9 @@ export default function AnalysePage() {
     if (typeof window === 'undefined') return 'express'
     const sp = new URLSearchParams(window.location.search)
     // Coming from extension → go straight to expert (params pre-filled)
-    return sp.get('source') === 'extension' ? 'expert' : 'express'
+    if (sp.get('source') === 'extension') return 'expert'
+    // Sinon : mode préféré de l'utilisateur (Paramètres → Préférences)
+    return readLocalSettings().preferences.defaultAnalysisMode ?? 'express'
   })
 
   // Panel persistant — ouvert par défaut

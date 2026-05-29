@@ -510,7 +510,13 @@ export default function BibliotequePage() {
     })
   }, [simulations, tagFilter, search, sortKey])
 
-  const openSim = useCallback(() => { router.push('/analyse') }, [router])
+  const openSim = useCallback((id: string) => {
+    const sim = simulations.find(s => s.id === id)
+    if (sim?.params && Object.keys(sim.params).length > 0) {
+      try { sessionStorage.setItem('immolyse_load_params', JSON.stringify(sim.params)) } catch {}
+    }
+    router.push('/analyse')
+  }, [router, simulations])
 
   const SORT_OPTIONS: { key: SortKey; label: string }[] = [
     { key: 'score', label: 'Score' },

@@ -55,6 +55,8 @@ export default function AnalysePage() {
   const router = useRouter()
 
   const [formKey, setFormKey] = useState(0)   // force remount du form lors d'un apply scénario
+  // true si l'écran est ouvert depuis une simulation sauvegardée → on force le mode Expert
+  const loadedFromSimRef = useRef(false)
   const [initialParams, setInitialParams] = useState<InvestmentParams>(() => {
     if (typeof window === 'undefined') return DEFAULT_PARAMS
     const sp = new URLSearchParams(window.location.search)
@@ -107,11 +109,13 @@ export default function AnalysePage() {
         cfe:          locType === 'meuble' ? 500 : 0,
       }
     }
-    // Simulation chargée depuis le dashboard (one-shot via sessionStorage)
+    // Simulation chargée depuis le dashboard / bibliothèque / portfolio (one-shot via sessionStorage)
     try {
       const raw = sessionStorage.getItem('immolyse_load_params')
       if (raw) {
-        sessionStorage.removeItem('immolyse_load_params')
+        // On NE supprime PAS ici (l'initialiseur peut être invoqué 2× en StrictMode) ;
+        // le nettoyage se fait dans un useEffect après le montage.
+        loadedFromSimRef.current = true
         return { ...DEFAULT_PARAMS, ...JSON.parse(raw) }
       }
     } catch { /* ignore */ }
@@ -136,8 +140,8 @@ export default function AnalysePage() {
   const [mode, setMode] = useState<'express' | 'expert'>(() => {
     if (typeof window === 'undefined') return 'express'
     const sp = new URLSearchParams(window.location.search)
-    // Coming from extension → go straight to expert (params pre-filled)
-    if (sp.get('source') === 'extension') return 'expert'
+    // Ouverture depuis une simulation sauvegardée ou l'extension → Expert (tout pré-rempli)
+    if (loadedFromSimRef.current || sp.get('source') === 'extension') return 'expert'
     // Sinon : mode préféré de l'utilisateur (Paramètres → Préférences)
     return readLocalSettings().preferences.defaultAnalysisMode ?? 'express'
   })
@@ -150,6 +154,12 @@ export default function AnalysePage() {
   const lastFiscalRef = useRef<FiscalResult | null>(null)
   const lastResultRef = useRef<InvestmentResult | null>(null)
   const { user } = useAuth()
+
+  // Nettoyage de la clé de chargement (one-shot) après le montage —
+  // robuste au double-rendu StrictMode (l'initialiseur l'a déjà lue).
+  useEffect(() => {
+    try { sessionStorage.removeItem('immolyse_load_params') } catch {}
+  }, [])
 
   useEffect(() => {
     if (showResults) {

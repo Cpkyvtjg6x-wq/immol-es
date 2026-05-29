@@ -16,6 +16,19 @@ function calcMensualite(montant: number, tauxAnnuel: number, dureeAns: number): 
   return (montant * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
 }
 
+/** Capital empruntable pour une mensualité donnée (inverse de calcMensualite). */
+function capitalFromMensualite(mensualite: number, tauxAnnuel: number, dureeAns: number): number {
+  if (mensualite <= 0) return 0
+  const n = dureeAns * 12
+  if (tauxAnnuel <= 0) return mensualite * n
+  const r = tauxAnnuel / 100 / 12
+  return (mensualite * (1 - Math.pow(1 + r, -n))) / r
+}
+
+// Taux d'usure de référence (indicatif) — prêts ≥ 20 ans. À recouper avec la
+// publication trimestrielle de la Banque de France.
+const TAUX_USURE_REF = 6.5
+
 /**
  * Calcule tous les ratios bancaires attendus par un analyste crédit.
  *
@@ -95,6 +108,71 @@ export function calculateBankRatios(
   const sautCharges = Math.round(mensualite - loyerIntegreBanque)
 
   // ══════════════════════════════════════════════════════════════════════════
+  // CAPACITÉ D'EMPRUNT, APPORT, COÛT DU CRÉDIT, ÂGE & SÉCURITÉ
+  // ══════════════════════════════════════════════════════════════════════════
+  const taux  = params.taux ?? 0
+  const duree = params.duree ?? 20
+
+  // Capacité d'emprunt à 35 % (loyers du projet intégrés à 70 %)
+  const mensualiteMax = Math.max(
+    0,
+    0.35 * revenusAvecNouveauxLoyers - profile.loyerActuel - profile.autresCreditsMensualites,
+  )
+  const margeMensuelle = Math.round(mensualiteMax - mensualite)
+  // Capital indicatif : on intègre l'assurance dans le taux pour rester prudent
+  const capitalMax = Math.round(
+    capitalFromMensualite(mensualiteMax, taux + (params.assuranceTaux ?? 0), duree),
+  )
+
+  // Apport & frais d'acquisition
+  const fraisNotaireCalc = Math.max(
+    0,
+    result.prixRevient - params.prixAchat - (params.travaux ?? 0) - result.fraisBancairesTotal,
+  )
+  const fraisAcquisition = Math.round(fraisNotaireCalc + result.fraisBancairesTotal)
+  const apportPct = result.prixRevient > 0
+    ? Math.round((params.apport / result.prixRevient) * 1000) / 10
+    : 0
+  const apportCouvreFrais = params.apport >= fraisAcquisition
+
+  // TAEG indicatif (taux nominal + assurance + étalement des frais bancaires)
+  const fraisSpread = (result.montantEmprunte > 0 && duree > 0)
+    ? (result.fraisBancairesTotal / result.montantEmprunte / duree) * 100
+    : 0
+  const taeg = Math.round((taux + (params.assuranceTaux ?? 0) + fraisSpread) * 100) / 100
+  const usureOk = taeg <= TAUX_USURE_REF
+
+  // Âge en fin de prêt (si date de naissance fournie)
+  let ageFinPret: number | null = null
+  let ageAssuranceOk: boolean | null = null
+  if (profile.dateNaissance) {
+    const naiss = new Date(profile.dateNaissance)
+    if (!isNaN(naiss.getTime())) {
+      const ageNow = (Date.now() - naiss.getTime()) / (365.25 * 864e5)
+      ageFinPret = Math.round(ageNow + duree)
+      ageAssuranceOk = ageFinPret <= 80
+    }
+  }
+
+  // Durée vs plafond HCSF (25 ans, 27 si travaux ≥ 10 % du coût total)
+  const travauxPct = result.prixRevient > 0 ? ((params.travaux ?? 0) / result.prixRevient) * 100 : 0
+  const dureeMax = travauxPct >= 10 ? 27 : 25
+  const dureeHcsfOk = duree <= dureeMax
+
+  // Épargne de précaution post-acquisition (en mois de mensualité couverts)
+  const epargneResiduelle = Math.max(0, profile.epargneTotale - params.apport)
+  const epargnePrecautionMois = mensualite > 0 ? Math.round(epargneResiduelle / mensualite) : 0
+
+  // Garantie
+  const garantieLabels: Record<string, string> = {
+    caution: 'Caution (Crédit Logement)',
+    hypotheque: 'Hypothèque',
+    ppd: 'Privilège de prêteur de deniers',
+  }
+  const typeGarantieLabel = garantieLabels[profile.typeGarantie ?? 'caution']
+  const coutGarantie = Math.round(result.montantEmprunte * ((params.fraisGarantiePct ?? 0) / 100))
+
+  // ══════════════════════════════════════════════════════════════════════════
   // STRESS TESTS
   // ══════════════════════════════════════════════════════════════════════════
 
@@ -111,7 +189,7 @@ export function calculateBankRatios(
   const cashflowStress = result.cashflowMensuel - deltaStress
   const tauxEndettementStress =
     revenusAvecNouveauxLoyers > 0
-      ? Math.round(((profile.autresCreditsMensualites + mensualiteTotaleStress) / revenusAvecNouveauxLoyers) * 1000) / 10
+      ? Math.round(((profile.loyerActuel + profile.autresCreditsMensualites + mensualiteTotaleStress) / revenusAvecNouveauxLoyers) * 1000) / 10
       : 0
 
   // Stress -10 % sur le loyer
@@ -195,6 +273,38 @@ export function calculateBankRatios(
     pointsForts.push(`Le projet résiste à une hausse de +1 % des taux (endettement à ${tauxEndettementStress} %).`)
   }
 
+  // Apport / frais d'acquisition
+  if (!apportCouvreFrais) {
+    pointsVigilance.push(`Apport de ${Math.round(params.apport).toLocaleString('fr-FR')} € inférieur aux frais d'acquisition (${fraisAcquisition.toLocaleString('fr-FR')} €) — la banque finance alors plus que le bien, ce qui réduit ses garanties.`)
+  } else if (apportPct >= 10) {
+    pointsForts.push(`Apport de ${apportPct} % du coût total — couvre les frais d'acquisition, gage de sérieux apprécié des banques.`)
+  }
+
+  // Durée HCSF
+  if (!dureeHcsfOk) {
+    pointsVigilance.push(`Durée de ${duree} ans supérieure au plafond HCSF de ${dureeMax} ans — à ramener dans la limite réglementaire.`)
+  }
+
+  // Âge en fin de prêt
+  if (ageAssuranceOk === false && ageFinPret !== null) {
+    pointsVigilance.push(`Âge en fin de prêt de ${ageFinPret} ans — au-delà de la limite d'assurance emprunteur usuelle (75–80 ans). Prévoir une délégation d'assurance adaptée.`)
+  }
+
+  // TAEG / usure
+  if (!usureOk) {
+    pointsVigilance.push(`TAEG indicatif de ${taeg.toFixed(2)} % proche ou au-dessus du taux d'usure de référence (${TAUX_USURE_REF} %) — vérifier le taux d'usure du trimestre en cours.`)
+  }
+
+  // Capacité résiduelle & épargne de précaution
+  if (margeMensuelle > 150) {
+    pointsForts.push(`Capacité d'endettement résiduelle de ${margeMensuelle.toLocaleString('fr-FR')} €/mois à 35 % — marge confortable pour un futur projet.`)
+  }
+  if (epargnePrecautionMois >= 6) {
+    pointsForts.push(`Épargne de précaution couvrant ${epargnePrecautionMois} mois de mensualités après acquisition — matelas de sécurité solide.`)
+  } else if (epargnePrecautionMois < 3) {
+    pointsVigilance.push(`Épargne de précaution faible (${epargnePrecautionMois} mois de mensualités) après acquisition — constituer un matelas de sécurité.`)
+  }
+
   // Recommandation finale
   let recommandationBanquier: string
   const nbVigilance = pointsVigilance.length
@@ -215,6 +325,24 @@ export function calculateBankRatios(
     resteAVivre: Math.round(resteAVivre),
     resteAVivreCible,
     sautCharges,
+    capaciteEmprunt: {
+      mensualiteMax: Math.round(mensualiteMax),
+      margeMensuelle,
+      capitalMax,
+    },
+    apportPct,
+    fraisAcquisition,
+    apportCouvreFrais,
+    taeg,
+    tauxUsureRef: TAUX_USURE_REF,
+    usureOk,
+    ageFinPret,
+    ageAssuranceOk,
+    dureeMax,
+    dureeHcsfOk,
+    epargnePrecautionMois,
+    typeGarantieLabel,
+    coutGarantie,
     stressTaux1Pct: {
       nouvelleMensualite: Math.round(mensualiteTotaleStress),
       deltaVsMensualiteBase: Math.round(deltaStress),

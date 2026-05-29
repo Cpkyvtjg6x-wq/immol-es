@@ -376,9 +376,13 @@ export interface SimulationRecord {
 export interface BankReportProfile {
   // Identité
   nomPrenom: string
+  dateNaissance?: string           // "AAAA-MM-JJ" — pour l'âge en fin de prêt
   situationFamiliale: 'celibataire' | 'marie' | 'pacse' | 'divorce' | 'veuf'
   nbParts: number                  // parts fiscales du foyer
   nbEnfants: number
+
+  // Garantie du prêt
+  typeGarantie?: 'caution' | 'hypotheque' | 'ppd'
 
   // Situation professionnelle
   profession: string
@@ -435,8 +439,38 @@ export interface BankRatios {
   resteAVivre: number              // €/mois après toutes charges
   resteAVivreCible: number         // objectif cible (800–1200€ selon profil)
 
-  // Saut de charges
-  sautCharges: number              // delta mensuel entre situation avant/après
+  // Effort d'épargne mensuel (ex « saut de charges »)
+  sautCharges: number              // mensualité − loyer pondéré 70 %
+
+  // Capacité d'emprunt (règle des 35 %)
+  capaciteEmprunt: {
+    mensualiteMax: number          // mensualité max pour ce prêt à 35 %
+    margeMensuelle: number         // marge restante vs mensualité réelle
+    capitalMax: number             // capital empruntable max (indicatif)
+  }
+
+  // Apport & frais
+  apportPct: number                // apport / coût total ×100
+  fraisAcquisition: number         // notaire + garantie + dossier
+  apportCouvreFrais: boolean
+
+  // Coût du crédit (TAEG indicatif & usure)
+  taeg: number                     // TAEG indicatif (taux + assurance + frais)
+  tauxUsureRef: number             // taux d'usure de référence (indicatif)
+  usureOk: boolean
+
+  // Âge & durée
+  ageFinPret: number | null        // âge de l'emprunteur en fin de prêt
+  ageAssuranceOk: boolean | null   // ≤ 80 ans en fin de prêt
+  dureeMax: number                 // plafond HCSF (25 ou 27 ans)
+  dureeHcsfOk: boolean
+
+  // Sécurité financière
+  epargnePrecautionMois: number    // épargne résiduelle / mensualité
+
+  // Garantie
+  typeGarantieLabel: string
+  coutGarantie: number
 
   // Stress tests
   stressTaux1Pct: {

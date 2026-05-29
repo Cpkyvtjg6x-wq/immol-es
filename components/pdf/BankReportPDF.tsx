@@ -492,9 +492,9 @@ function BankPage({ params, result, profile, ratios, today, totalPages }: BankRe
           accent={ravC(ratios.resteAVivre, ratios.resteAVivreCible)}
         />
         <Kpi
-          label="Saut de charges mensuel"
+          label="Effort d'épargne mensuel"
           value={(ratios.sautCharges > 0 ? '+' : '') + fE(ratios.sautCharges)}
-          sub={ratios.sautCharges <= 0 ? 'Situation allégée après projet' : 'Effort net mensuel'}
+          sub={ratios.sautCharges <= 0 ? 'Projet autofinancé — aucun effort' : 'Mensualité − loyer pondéré 70 %'}
           accent={ratios.sautCharges <= 0 ? T.green : ratios.sautCharges <= 200 ? T.amber : T.red}
         />
       </View>
@@ -511,6 +511,46 @@ function BankPage({ params, result, profile, ratios, today, totalPages }: BankRe
           <Text style={{ fontFamily: 'Helvetica-Bold', color: T.dark }}>{fE(ratios.loyerIntegreBanque)}/mois</Text>
           {` (= ${fE(result.loyer)} × 70 %).`}
         </Text>
+      </View>
+
+      {/* Capacité d'emprunt & conformité */}
+      <View style={{ flexDirection: 'row', gap: 22 }}>
+        <View style={{ flex: 1 }}>
+          <Sec title="Capacité d'emprunt & apport" />
+          <Row label="Capacité d'emprunt à 35 %" value={fE(ratios.capaciteEmprunt.mensualiteMax) + '/mois'} note="mensualité maximale" />
+          <Row
+            label="Marge restante"
+            value={(ratios.capaciteEmprunt.margeMensuelle >= 0 ? '+' : '') + fE(ratios.capaciteEmprunt.margeMensuelle) + '/mois'}
+            color={ratios.capaciteEmprunt.margeMensuelle >= 0 ? T.green : T.red}
+          />
+          <Row label="Capital empruntable max" value={fE(ratios.capaciteEmprunt.capitalMax)} note="indicatif, à la durée du prêt" />
+          <Row label="Apport / coût total" value={fP(ratios.apportPct)} color={ratios.apportPct >= 10 ? T.green : T.amber} />
+          <Row
+            label="Couverture des frais d'acquisition"
+            value={ratios.apportCouvreFrais ? 'Oui' : 'Non'}
+            note={`frais : ${fE(ratios.fraisAcquisition)}`}
+            color={ratios.apportCouvreFrais ? T.green : T.red}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Sec title="Coût du crédit & conformité" />
+          <Row label="TAEG indicatif" value={fP(ratios.taeg, 2)} note="taux + assurance + frais" />
+          <Row label="Taux d'usure de référence" value={fP(ratios.tauxUsureRef, 2)} note="indicatif — publié chaque trimestre" color={ratios.usureOk ? T.green : T.red} />
+          <Row
+            label="Âge en fin de prêt"
+            value={ratios.ageFinPret !== null ? `${ratios.ageFinPret} ans` : '—'}
+            note={ratios.ageFinPret !== null ? 'limite assurance ~80 ans' : 'renseigner la date de naissance'}
+            color={ratios.ageAssuranceOk === false ? T.red : T.dark}
+          />
+          <Row
+            label="Durée du prêt"
+            value={`${params.duree} ans`}
+            note={`plafond HCSF : ${ratios.dureeMax} ans`}
+            color={ratios.dureeHcsfOk ? T.green : T.red}
+          />
+          <Row label="Épargne de précaution" value={`${ratios.epargnePrecautionMois} mois`} note="mensualités couvertes" color={ratios.epargnePrecautionMois >= 6 ? T.green : ratios.epargnePrecautionMois >= 3 ? T.amber : T.red} />
+          <Row label="Garantie" value={ratios.typeGarantieLabel} note={`coût estimé : ${fE(ratios.coutGarantie)}`} />
+        </View>
       </View>
 
       {/* Stress tests */}

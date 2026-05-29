@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
@@ -16,14 +17,24 @@ const LS_KEY = 'immolyse_last_params' // sessionStorage uniquement
 const fE = (n: number) => Math.round(n).toLocaleString('fr-FR') + ' €'
 const fP = (n: number, dec = 1) => n.toFixed(dec) + ' %'
 
+/**
+ * Barre de ratio.
+ *  - danger = true  → « bas = bon » (taux d'endettement, effort) : rouge si élevé.
+ *  - danger = false → « haut = bon » (couverture, reste à vivre) : vert si élevé.
+ */
 function RatioBar({ value, max, danger }: { value: number; max: number; danger?: boolean }) {
-  const pct = Math.min(100, (value / max) * 100)
+  const pct = Math.max(0, Math.min(100, (value / max) * 100))
   const color = danger
     ? pct >= 100 ? 'bg-red-500' : pct >= 85 ? 'bg-amber-400' : 'bg-emerald-500'
-    : pct <= 70 ? 'bg-emerald-500' : pct <= 85 ? 'bg-amber-400' : 'bg-red-500'
+    : pct >= 65 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-400' : 'bg-red-500'
   return (
-    <div className="w-full bg-th-surface3 rounded-full h-1.5 mt-1">
-      <div className={`h-1.5 rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+    <div className="w-full bg-th-surface3 rounded-full h-1.5 mt-1 overflow-hidden">
+      <motion.div
+        className={`h-1.5 rounded-full ${color}`}
+        initial={{ width: 0 }}
+        animate={{ width: `${pct}%` }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      />
     </div>
   )
 }
@@ -1353,139 +1364,121 @@ export default function RapportBancairePage() {
                   </div>
                 ) : (
                   <>
-                    {/* ── Toggle méthode ── */}
-                    <div className="flex gap-1 p-1 bg-black/20 rounded-xl mb-5">
-                      {(['differentielle', 'globale'] as const).map(m => (
-                        <button key={m} onClick={() => setMethode(m)}
-                          className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
-                            methode === m
-                              ? m === 'differentielle'
-                                ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
-                                : 'bg-th-surface2 text-th-text-1 border border-th-border'
-                              : 'text-th-text-2 hover:text-th-text-1'
-                          }`}>
-                          {m === 'differentielle' ? '✦ Méthode différentielle' : 'Méthode globale'}
-                          {m === montageOpt.methodeRecommandee && m === 'differentielle' && (
-                            <span className="ml-1.5 text-[9px] bg-violet-500/30 text-violet-300 px-1.5 py-0.5 rounded">Recommandée</span>
-                          )}
-                        </button>
-                      ))}
+                    {/* ── Étape 1 : méthode de calcul (2 cartes cliquables) ── */}
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="w-4 h-4 rounded-full bg-violet-500/20 text-violet-300 text-[9px] font-bold flex items-center justify-center">1</span>
+                      <span className="text-[11px] font-semibold text-th-text-1">Méthode de calcul du taux d'endettement</span>
+                    </div>
+                    <p className="text-[10.5px] text-th-text-2 mb-3 leading-relaxed">
+                      Deux méthodes existent. Choisissez celle qui sera <span className="text-th-text-1 font-semibold">mise en avant dans le PDF</span> — la banque reste libre de sa propre méthode, mais la différentielle est un argument recevable pour un investisseur.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      {([
+                        { key: 'globale' as const, label: 'Globale', taux: montageOpt.endettGlobal, desc: 'Mensualité entière en charge, 70 % du loyer ajouté aux revenus. Méthode par défaut des banques.' },
+                        { key: 'differentielle' as const, label: 'Différentielle', taux: montageOpt.endettDiff, desc: 'Seul l\'effort net (mensualité − 70 % du loyer) compte comme charge. Plus favorable.' },
+                      ]).map((c, i) => {
+                        const selected = methode === c.key
+                        const reco = montageOpt.methodeRecommandee === c.key && montageOpt.endettDiff !== montageOpt.endettGlobal
+                        const col = c.taux <= 30 ? 'text-emerald-400' : c.taux <= 35 ? 'text-amber-400' : 'text-red-400'
+                        return (
+                          <motion.button
+                            key={c.key}
+                            onClick={() => setMethode(c.key)}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                            whileHover={{ y: -2 }}
+                            className={`text-left rounded-xl p-4 border transition-colors ${
+                              selected ? 'bg-violet-500/[0.12] border-violet-500/40' : 'bg-th-surface border-th-border hover:border-th-border-med'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] uppercase tracking-widest text-th-text-2">{c.label}</span>
+                              {reco && <span className="text-[8px] bg-violet-500/25 text-violet-300 px-1.5 py-0.5 rounded font-bold">RECO</span>}
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className={`text-2xl font-black ${col}`}>{c.taux.toFixed(1)}<span className="text-sm font-bold"> %</span></span>
+                              <span className={`text-[8px] px-1.5 py-0.5 rounded font-semibold ${c.taux <= 35 ? 'text-emerald-400 bg-emerald-500/[0.14]' : 'text-red-400 bg-red-500/[0.14]'}`}>{c.taux <= 35 ? 'sous 35 %' : 'hors 35 %'}</span>
+                            </div>
+                            <p className="text-[9.5px] text-th-text-3 mt-2 leading-relaxed">{c.desc}</p>
+                            <div className={`mt-2.5 flex items-center gap-1.5 text-[9px] font-semibold ${selected ? 'text-violet-300' : 'text-th-text-3'}`}>
+                              <span className={`w-2.5 h-2.5 rounded-full border ${selected ? 'border-violet-400 bg-violet-400' : 'border-th-border-med'}`} />
+                              {selected ? 'Retenue pour le PDF' : 'Choisir'}
+                            </div>
+                          </motion.button>
+                        )
+                      })}
                     </div>
 
-                    {/* ── Comparaison côte à côte ── */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      {/* Montage actuel */}
-                      <div className="bg-th-surface border border-th-border rounded-xl p-4">
-                        <div className="text-[10px] text-th-text-2 uppercase tracking-widest mb-3">Situation actuelle</div>
-                        <div className="space-y-3">
-                          <div>
-                            <div className="text-[10px] text-th-text-3 mb-0.5">Taux d'endettement</div>
-                            {(() => {
-                              const val = methode === 'differentielle' ? montageOpt.endettDiff : montageOpt.endettGlobal
-                              const col = val <= 30 ? 'text-emerald-400' : val <= 35 ? 'text-amber-400' : 'text-red-400'
-                              return (
-                                <div className="flex items-baseline gap-1.5">
-                                  <span className={`text-2xl font-black ${col}`}>{val.toFixed(1)}<span className="text-sm font-bold"> %</span></span>
-                                  {val > 35 && <span className="text-[9px] text-red-400 bg-red-500/[0.14] px-1.5 py-0.5 rounded">Hors HCSF</span>}
-                                  {val <= 35 && <span className="text-[9px] text-emerald-400 bg-emerald-500/[0.14] px-1.5 py-0.5 rounded">✓ OK</span>}
-                                </div>
-                              )
-                            })()}
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-th-text-3 mb-0.5">Mensualité</div>
-                            <div className="text-sm font-bold text-th-text-1">{fE(result?.mensualiteTotale ?? 0)}<span className="text-th-text-2 font-normal">/mois</span></div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-th-text-3 mb-0.5">Durée</div>
-                            <div className="text-sm font-bold text-th-text-1">{params.duree} ans</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Montage optimisé */}
-                      <div className={`border rounded-xl p-4 ${
-                        montageOpt.endettOpt <= 30 ? 'bg-emerald-500/[0.07] border-emerald-500/25'
-                        : montageOpt.endettOpt <= 35 ? 'bg-amber-500/[0.07] border-amber-500/25'
-                        : 'bg-red-500/[0.06] border-red-500/20'
-                      }`}>
-                        <div className="text-[10px] text-th-text-2 uppercase tracking-widest mb-3">Montage optimisé</div>
-                        <div className="space-y-3">
-                          <div>
-                            <div className="text-[10px] text-th-text-3 mb-0.5">Taux d'endettement</div>
-                            {(() => {
-                              const val = montageOpt.endettOpt
-                              const col = val <= 30 ? 'text-emerald-400' : val <= 35 ? 'text-amber-400' : 'text-red-400'
-                              return (
-                                <div className="flex items-baseline gap-1.5">
-                                  <span className={`text-2xl font-black ${col}`}>{val.toFixed(1)}<span className="text-sm font-bold"> %</span></span>
-                                  {val <= 35 && <span className="text-[9px] text-emerald-400 bg-emerald-500/[0.14] px-1.5 py-0.5 rounded">✓ HCSF</span>}
-                                  {val > 35 && <span className="text-[9px] text-red-400 bg-red-500/[0.14] px-1.5 py-0.5 rounded">Hors HCSF</span>}
-                                </div>
-                              )
-                            })()}
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-th-text-3 mb-0.5">Mensualité</div>
-                            <div className="text-sm font-bold text-th-text-1">
-                              {fE(montageOpt.mensualiteOpt)}<span className="text-th-text-2 font-normal">/mois</span>
-                              {montageOpt.gainsMensuels > 0 && (
-                                <span className="ml-1.5 text-[10px] text-emerald-400">−{fE(montageOpt.gainsMensuels)}</span>
-                              )}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-th-text-3 mb-0.5">Durée</div>
-                            <div className="text-sm font-bold text-th-text-1">
-                              {montageOpt.dureeOpt} ans
-                              {montageOpt.dureeOpt > params.duree && (
-                                <span className="ml-1.5 text-[10px] text-violet-400">+{montageOpt.dureeOpt - params.duree} ans</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* ── Méthode différentielle recommandée ── */}
-                    {montageOpt.methodeRecommandee === 'differentielle' && montageOpt.endettDiff < montageOpt.endettGlobal && (
-                      <div className="flex items-start gap-3 bg-violet-500/[0.08] border border-violet-500/20 rounded-xl px-4 py-3 mb-3">
-                        <div className="w-6 h-6 rounded-lg bg-violet-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                          <svg className="w-3.5 h-3.5 text-violet-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="text-xs font-semibold text-violet-300 mb-0.5">Méthode différentielle disponible</div>
-                          <div className="text-[11px] text-th-text-2">
-                            Légalement applicable à tout investisseur locatif — elle réduit votre taux de{' '}
-                            <span className="text-th-text-1 font-semibold">{(montageOpt.endettGlobal - montageOpt.endettDiff).toFixed(1)} pts</span>
-                            {montageOpt.endettDiff <= 35 && montageOpt.endettGlobal > 35 && (
-                              <span className="text-violet-300"> et fait passer le dossier sous 35 %</span>
-                            )}.
-                          </div>
-                        </div>
+                    {/* Gain de la différentielle */}
+                    {montageOpt.endettDiff < montageOpt.endettGlobal && (
+                      <div className="flex items-center gap-2 text-[10.5px] text-violet-300 bg-violet-500/[0.07] border border-violet-500/15 rounded-lg px-3 py-2 mb-4">
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        <span>La différentielle réduit le taux de <span className="font-bold text-th-text-1">{(montageOpt.endettGlobal - montageOpt.endettDiff).toFixed(1)} pts</span>{montageOpt.endettDiff <= 35 && montageOpt.endettGlobal > 35 ? ' et fait passer le dossier sous le seuil HCSF.' : '.'}</span>
                       </div>
                     )}
 
-                    {/* ── Alerte apport complémentaire ── */}
+                    {/* ── Étape 2 : optimisation de la durée ── */}
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="w-4 h-4 rounded-full bg-violet-500/20 text-violet-300 text-[9px] font-bold flex items-center justify-center">2</span>
+                      <span className="text-[11px] font-semibold text-th-text-1">Optimisation de la durée</span>
+                    </div>
+                    {montageOpt.dureeOpt > params.duree ? (
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="rounded-xl p-3.5 bg-th-surface border border-th-border">
+                          <div className="text-[9px] uppercase tracking-widest text-th-text-3 mb-2">Durée actuelle</div>
+                          <div className="text-lg font-black text-th-text-1">{params.duree} ans</div>
+                          <div className="text-[11px] text-th-text-2 mt-1">{fE(result?.mensualiteTotale ?? 0)}/mois</div>
+                        </div>
+                        <div className="rounded-xl p-3.5 bg-emerald-500/[0.07] border border-emerald-500/25">
+                          <div className="text-[9px] uppercase tracking-widest text-emerald-400/80 mb-2">Durée optimisée</div>
+                          <div className="text-lg font-black text-emerald-400">{montageOpt.dureeOpt} ans <span className="text-[10px] text-violet-400 font-bold">+{montageOpt.dureeOpt - params.duree}</span></div>
+                          <div className="text-[11px] text-th-text-1 mt-1">{fE(montageOpt.mensualiteOpt)}/mois {montageOpt.gainsMensuels > 0 && <span className="text-emerald-400 font-semibold">−{fE(montageOpt.gainsMensuels)}</span>}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-[10.5px] text-emerald-400 bg-emerald-500/[0.07] border border-emerald-500/20 rounded-lg px-3 py-2.5 mb-4">
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        <span>Durée déjà optimale à <span className="font-bold">{params.duree} ans</span> — mensualité minimale, rien à allonger.</span>
+                      </div>
+                    )}
+
+                    {/* ── Micro-alerte apport complémentaire ── */}
                     {montageOpt.apportComplementaire && montageOpt.apportComplementaire > 0 && (
-                      <div className="flex items-start gap-3 bg-amber-500/[0.08] border border-amber-500/20 rounded-xl px-4 py-3 mb-3">
-                        <div className="w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                          <svg className="w-3.5 h-3.5 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="text-xs font-semibold text-amber-300 mb-0.5">Taux toujours au-dessus de 35 %</div>
-                          <div className="text-[11px] text-th-text-2">
-                            Un apport complémentaire de{' '}
-                            <span className="text-th-text-1 font-semibold">{fE(montageOpt.apportComplementaire)}</span>
-                            {' '}suffirait à passer sous le seuil HCSF à 25 ans.
-                          </div>
+                      <div className="flex items-start gap-3 bg-amber-500/[0.08] border border-amber-500/20 rounded-xl px-4 py-3 mb-4">
+                        <svg className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <div className="text-[11px] text-th-text-2">
+                          <span className="font-semibold text-amber-300">Toujours au-dessus de 35 %.</span> Un apport complémentaire de <span className="text-th-text-1 font-semibold">{fE(montageOpt.apportComplementaire)}</span> ferait passer le dossier sous le seuil HCSF à 25 ans.
                         </div>
                       </div>
                     )}
+
+                    {/* ── Lien avec la structure d'acquisition ── */}
+                    <div className="flex items-start gap-2.5 text-[10.5px] text-th-text-2 bg-th-surface border border-th-border rounded-lg px-3 py-2.5 mb-4">
+                      <svg className="w-3.5 h-3.5 text-th-text-3 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span>Structure retenue : <span className="text-th-text-1 font-semibold">{structureLabel(profile.modeAcquisition)}</span>. Son impact fiscal, les garanties et les documents associés figurent dans les pages dédiées du PDF.</span>
+                    </div>
+
+                    {/* ── Récap : ce qui sera repris dans le PDF ── */}
+                    <div className="rounded-xl bg-violet-500/[0.06] border border-violet-500/15 px-4 py-3 mb-4">
+                      <div className="text-[9px] font-bold text-violet-300 uppercase tracking-widest mb-2">Repris dans le dossier PDF</div>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <div className="text-[9px] text-th-text-3 mb-0.5">Méthode</div>
+                          <div className="text-[11px] font-bold text-th-text-1">{methode === 'differentielle' ? 'Différentielle' : 'Globale'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] text-th-text-3 mb-0.5">Taux retenu</div>
+                          <div className="text-[11px] font-bold text-th-text-1">{(methode === 'differentielle' ? montageOpt.endettDiff : montageOpt.endettGlobal).toFixed(1)} %</div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] text-th-text-3 mb-0.5">Durée</div>
+                          <div className="text-[11px] font-bold text-th-text-1">{montageOpt.dureeOpt} ans</div>
+                        </div>
+                      </div>
+                    </div>
 
                     {/* ── Argumentaire banque ── */}
                     {montageOpt.points.length > 0 && (
@@ -1493,10 +1486,16 @@ export default function RapportBancairePage() {
                         <div className="text-[10px] font-bold text-th-text-2 uppercase tracking-widest mb-2">Arguments à présenter à la banque</div>
                         <div className="space-y-1.5">
                           {montageOpt.points.map((pt, i) => (
-                            <div key={i} className="flex items-start gap-2.5 bg-th-surface border border-th-border rounded-lg px-3 py-2.5">
-                              <span className="text-emerald-400 text-[11px] mt-0.5 shrink-0">→</span>
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.1 + i * 0.05 }}
+                              className="flex items-start gap-2.5 bg-th-surface border border-th-border rounded-lg px-3 py-2.5"
+                            >
+                              <svg className="w-3 h-3 text-emerald-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
                               <span className="text-[11px] text-th-text-1 leading-relaxed">{pt}</span>
-                            </div>
+                            </motion.div>
                           ))}
                         </div>
                       </div>
@@ -1627,7 +1626,7 @@ export default function RapportBancairePage() {
                       value: ratios ? (ratios.sautCharges > 0 ? '+' : '') + fE(ratios.sautCharges) + '/mois' : '—',
                       sub: ratios && ratios.sautCharges <= 0 ? 'Situation allégée' : 'Effort mensuel net',
                       color: sautColor,
-                      barValue: ratios ? Math.abs(ratios.sautCharges) : 0,
+                      barValue: ratios ? Math.max(0, ratios.sautCharges) : 0,
                       barMax: 500,
                       danger: true,
                     },

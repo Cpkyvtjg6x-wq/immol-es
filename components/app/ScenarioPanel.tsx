@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { InvestmentParams, InvestmentResult } from '@/lib/types'
 import { calculateInvestment } from '@/lib/calculator'
 import { formatCurrency } from '@/lib/utils'
@@ -176,6 +176,46 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
     return fromUrl ? { ...defaultState, ...fromUrl } : defaultState
   })
 
+  // Ref qui mémorise les valeurs "base" précédentes pour distinguer
+  // les curseurs non touchés (à sync) des curseurs modifiés par l'utilisateur (à garder).
+  const prevBaseRef = useRef({
+    prixAchat: baseParams.prixAchat,
+    loyer:     loyerBase,
+    taux:      baseParams.taux,
+    apportPct: apportBase,
+    duree:     baseParams.duree,
+    travaux:   baseParams.travaux || 0,
+  })
+
+  // Synchronise les curseurs avec baseParams à chaque changement du formulaire.
+  // Règle : si un curseur == ancienne valeur base → l'utilisateur n'a pas touché → on suit le formulaire.
+  //         si un curseur != ancienne valeur base → l'utilisateur a bougé le curseur → on garde sa valeur.
+  useEffect(() => {
+    const prev = prevBaseRef.current
+    const newBase = {
+      prixAchat: baseParams.prixAchat,
+      loyer:     loyerBase,
+      taux:      baseParams.taux,
+      apportPct: apportBase,
+      duree:     baseParams.duree,
+      travaux:   baseParams.travaux || 0,
+    }
+
+    setS(cur => {
+      const next = { ...cur }
+      if (cur.prixAchat === prev.prixAchat) next.prixAchat = newBase.prixAchat
+      if (cur.loyer     === prev.loyer)     next.loyer     = newBase.loyer
+      if (cur.taux      === prev.taux)      next.taux      = newBase.taux
+      if (cur.apportPct === prev.apportPct) next.apportPct = newBase.apportPct
+      if (cur.duree     === prev.duree)     next.duree     = newBase.duree
+      if (cur.travaux   === prev.travaux)   next.travaux   = newBase.travaux
+      return next
+    })
+
+    prevBaseRef.current = newBase
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseParams.prixAchat, loyerBase, baseParams.taux, apportBase, baseParams.duree, baseParams.travaux])
+
   // Recalcul synchrone
   const scenarioParams = buildScenarioParams(baseParams, s)
   const scenarioResult = calculateInvestment(scenarioParams)
@@ -232,7 +272,15 @@ export function ScenarioPanel({ baseParams, baseResult, onApplyScenario }: Scena
   const prixCible   = useMemo(() => ecart < 0 ? findBreakEvenPrice(baseParams, s) : null, [ecart, s, baseParams])
   const dureeCible  = useMemo(() => ecart < 0 ? findBreakEvenDuration(baseParams, s) : null, [ecart, s, baseParams])
 
-  const handleReset  = useCallback(() => setS(defaultState), []) // eslint-disable-line react-hooks/exhaustive-deps
+  const handleReset = useCallback(() => setS({
+    prixAchat: baseParams.prixAchat,
+    loyer:     loyerBase,
+    taux:      baseParams.taux,
+    apportPct: apportBase,
+    duree:     baseParams.duree,
+    travaux:   baseParams.travaux || 0,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [baseParams.prixAchat, loyerBase, baseParams.taux, apportBase, baseParams.duree, baseParams.travaux])
   const handleApply  = () => onApplyScenario(scenarioParams)
 
   const formatPrix = (n: number) =>

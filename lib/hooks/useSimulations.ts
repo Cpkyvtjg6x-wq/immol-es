@@ -103,7 +103,7 @@ export function useSimulations(userId: string | null) {
         params,
         results,
         score: score.global,
-        tags: [],
+        tags: status === 'possede' ? ['owned'] : [],
         status: status ?? 'simule',
         acquired_at: status === 'possede' ? (acquiredAt ?? null) : null,
       })
@@ -139,17 +139,21 @@ export function useSimulations(userId: string | null) {
   const setStatus = useCallback(async (id: string, status: SimulationStatus, acquiredAt?: string | null) => {
     try {
       const supabase = createBrowserSupabaseClient()
-      const patch: { status: SimulationStatus; acquired_at?: string | null } = { status }
-      if (status === 'possede') patch.acquired_at = acquiredAt ?? null
-      else patch.acquired_at = null
-      await supabase.from('simulations').update(patch).eq('id', id)
+      const current = simulations.find(s => s.id === id)
+      const baseTags = current?.tags ?? []
+      // Tag « Possède » (owned) synchronisé avec le statut
+      const tags = status === 'possede'
+        ? (baseTags.includes('owned') ? baseTags : [...baseTags, 'owned'])
+        : baseTags.filter(t => t !== 'owned')
+      const acquired_at = status === 'possede' ? (acquiredAt ?? null) : null
+      await supabase.from('simulations').update({ status, acquired_at, tags }).eq('id', id)
       setSimulations(prev =>
-        prev.map(s => (s.id === id ? { ...s, status, acquired_at: patch.acquired_at ?? null } : s))
+        prev.map(s => (s.id === id ? { ...s, status, acquired_at, tags } : s))
       )
     } catch (err) {
       console.error('[useSimulations] setStatus error:', err)
     }
-  }, [])
+  }, [simulations])
 
   const updateTags = useCallback(async (id: string, tags: string[]) => {
     try {

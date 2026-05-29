@@ -25,6 +25,7 @@ import {
 import { AppShell } from '@/components/app/AppShell'
 import { IconCheckCircle } from '@/components/ui/icons'
 import { OnboardingWizard } from '@/components/app/OnboardingWizard'
+import { MarkOwnedModal } from '@/components/app/MarkOwnedModal'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
@@ -228,7 +229,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const toast = useToast()
   const { user, loading: authLoading, isPro, tier } = useAuth()
-  const { simulations, loading: simsLoading, deleteSimulation, toggleFavorite } = useSimulations(
+  const { simulations, loading: simsLoading, deleteSimulation, toggleFavorite, setStatus } = useSimulations(
     user?.id ?? null
   )
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -236,6 +237,8 @@ export default function DashboardPage() {
   const [search, setSearch] = useState('')
   const [filterTab, setFilterTab] = useState<'tous' | 'favoris' | 'top' | 'positif'>('tous')
   const [sortBy, setSortBy] = useState<SortKey>('date')
+  const [scope, setScope] = useState<'tous' | 'possede' | 'simule'>('tous')
+  const [ownModalSim, setOwnModalSim] = useState<SavedSimulation | null>(null)
   const { theme } = useTheme()
   const isDark = theme === 'dark'
 
@@ -315,8 +318,28 @@ export default function DashboardPage() {
     }
   }, [])
 
+  /* Compteurs par statut (sur l'ensemble) */
+  const ownedCount = useMemo(() => simulations.filter((s) => s.status === 'possede').length, [simulations])
+  const studyCount = simulations.length - ownedCount
+
+  /* Au montage : si l'utilisateur détient des biens, on ouvre sur « Détenus » */
+  const [scopeInit, setScopeInit] = useState(false)
+  useEffect(() => {
+    if (!scopeInit && !simsLoading && simulations.length > 0) {
+      if (ownedCount > 0) setScope('possede')
+      setScopeInit(true)
+    }
+  }, [scopeInit, simsLoading, simulations.length, ownedCount])
+
+  /* Périmètre actif */
+  const scopedSims = useMemo(() => {
+    if (scope === 'possede') return simulations.filter((s) => s.status === 'possede')
+    if (scope === 'simule') return simulations.filter((s) => s.status === 'simule')
+    return simulations
+  }, [simulations, scope])
+
   const filteredSims = useMemo(() => {
-    let list = [...simulations]
+    let list = [...scopedSims]
     if (search.trim()) {
       const q = search.toLowerCase()
       list = list.filter((s) => s.name.toLowerCase().includes(q) || s.ville.toLowerCase().includes(q))
@@ -329,20 +352,22 @@ export default function DashboardPage() {
     else if (sortBy === 'cashflow') list.sort((a, b) => b.cashflowMensuel - a.cashflowMensuel)
     else if (sortBy === 'prix') list.sort((a, b) => b.prixAchat - a.prixAchat)
     return list
-  }, [simulations, search, filterTab, sortBy])
+  }, [scopedSims, search, filterTab, sortBy])
 
-  /* ── Portfolio metrics ── */
-  const totalCf = simulations.reduce((a, s) => a + s.cashflowMensuel, 0)
-  const totalInvested = simulations.reduce((a, s) => a + s.prixAchat, 0)
+  /* ── Métriques (sur le périmètre actif) ── */
+  const totalCf = scopedSims.reduce((a, s) => a + s.cashflowMensuel, 0)
+  const totalInvested = scopedSims.reduce((a, s) => a + s.prixAchat, 0)
   const avgScore =
-    simulations.length > 0 ? Math.round(simulations.reduce((a, s) => a + (s.score ?? 0), 0) / simulations.length) : 0
+    scopedSims.length > 0 ? Math.round(scopedSims.reduce((a, s) => a + (s.score ?? 0), 0) / scopedSims.length) : 0
   const avgRendNet =
-    simulations.length > 0 ? simulations.reduce((a, s) => a + s.rendementNet, 0) / simulations.length : 0
+    scopedSims.length > 0 ? scopedSims.reduce((a, s) => a + s.rendementNet, 0) / scopedSims.length : 0
 
-  const best = simulations.length > 0 ? [...simulations].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0] : null
-  const bestByNet = simulations.length > 0 ? [...simulations].sort((a, b) => b.rendementNet - a.rendementNet)[0] : null
-  const negatives = simulations.filter((s) => s.cashflowMensuel < 0)
+  const best = scopedSims.length > 0 ? [...scopedSims].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0] : null
+  const bestByNet = scopedSims.length > 0 ? [...scopedSims].sort((a, b) => b.rendementNet - a.rendementNet)[0] : null
+  const negatives = scopedSims.filter((s) => s.cashflowMensuel < 0)
   const worstNeg = negatives.length > 0 ? [...negatives].sort((a, b) => a.cashflowMensuel - b.cashflowMensuel)[0] : null
+
+  const scopeLabel = scope === 'possede' ? 'détenu' : scope === 'simule' ? 'étudié' : 'total'
 
   const simLimit = isPro ? SUBSCRIPTION_LIMITS[tier ?? 'pro'].simulations : SUBSCRIPTION_LIMITS.free.simulations
   const simLimitDisplay = simLimit === Infinity ? null : simLimit
@@ -351,7 +376,7 @@ export default function DashboardPage() {
      On trace la valeur de chaque bien (et non un cumul) pour un tracé vivant
      qui monte et descend, plutôt qu'une ligne quasi droite. */
   const series = useMemo(() => {
-    const byDate = [...simulations].sort(
+    const byDate = [...scopedSims].sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )
     return {
@@ -360,17 +385,17 @@ export default function DashboardPage() {
       rend: byDate.map((s) => s.rendementNet),
       score: byDate.map((s) => s.score ?? 0),
     }
-  }, [simulations])
+  }, [scopedSims])
 
   const newThisMonth = useMemo(() => {
     const monthAgo = Date.now() - 30 * 864e5
-    return simulations.filter((s) => new Date(s.created_at).getTime() >= monthAgo).length
-  }, [simulations])
+    return scopedSims.filter((s) => new Date(s.created_at).getTime() >= monthAgo).length
+  }, [scopedSims])
 
   /* Données scatter risque-rendement */
   const scatterData = useMemo(
     () =>
-      simulations.map((s) => ({
+      scopedSims.map((s) => ({
         x: Math.round(s.rendementNet * 100) / 100,
         y: Math.round(s.cashflowMensuel),
         z: s.prixAchat,
@@ -379,7 +404,7 @@ export default function DashboardPage() {
         ville: s.ville,
         id: s.id,
       })),
-    [simulations]
+    [scopedSims]
   )
 
   /* Nudges « À faire ensuite » */
@@ -541,6 +566,64 @@ export default function DashboardPage() {
           ) : (
             <motion.div variants={container} initial="hidden" animate="show" className="space-y-7">
 
+              {/* ── Sélecteur de périmètre ── */}
+              <motion.div variants={item} className="flex items-center gap-3 flex-wrap">
+                <div className="inline-flex items-center gap-1 bg-th-surface2 border border-th-border rounded-xl p-1">
+                  {([
+                    { id: 'tous', label: 'Tous', count: simulations.length },
+                    { id: 'possede', label: 'Détenus', count: ownedCount },
+                    { id: 'simule', label: 'Étudiés', count: studyCount },
+                  ] as const).map((o) => (
+                    <button
+                      key={o.id}
+                      onClick={() => setScope(o.id)}
+                      className={`relative px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                        scope === o.id ? 'text-th-text-1' : 'text-th-text-2 hover:text-th-text-1'
+                      }`}
+                    >
+                      {scope === o.id && (
+                        <motion.span
+                          layoutId="scope-pill"
+                          className="absolute inset-0 bg-th-surface rounded-lg shadow-card-th"
+                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <span className="relative flex items-center gap-1.5">
+                        {o.id === 'possede' && <Building2 className="w-3.5 h-3.5" />}
+                        {o.label}
+                        <span className="tabular-nums opacity-55">{o.count}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-th-text-3 hidden sm:block">
+                  {scope === 'possede' ? 'Votre patrimoine réel — cashflow encaissé, valeur détenue.' : scope === 'simule' ? 'Vos biens à l’étude — projections et scénarios.' : 'Détenus et études confondus.'}
+                </p>
+              </motion.div>
+
+              {scopedSims.length === 0 ? (
+                <motion.div
+                  variants={item}
+                  className="rounded-2xl px-6 py-12 text-center"
+                  style={{ background: glassBg, border: `1px solid ${glassBorder}`, backdropFilter: 'blur(14px)' }}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-th-surface2 border border-th-border flex items-center justify-center mx-auto mb-4 text-th-text-3">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm font-bold text-th-text-1 mb-1">
+                    {scope === 'possede' ? 'Aucun bien détenu pour l’instant' : 'Aucun bien à l’étude'}
+                  </p>
+                  <p className="text-xs text-th-text-2 max-w-sm mx-auto mb-5">
+                    {scope === 'possede'
+                      ? 'Quand vous acquérez un bien, marquez-le comme détenu depuis le tableau ou le portfolio pour suivre votre patrimoine réel.'
+                      : 'Lancez une analyse pour étudier un nouveau bien.'}
+                  </p>
+                  <button onClick={() => setScope('tous')} className="text-xs font-semibold text-emerald-500 hover:underline">
+                    Voir tous les biens →
+                  </button>
+                </motion.div>
+              ) : (
+              <>
               {/* ── Ligne de statut ── */}
               <motion.div
                 variants={item}
@@ -552,10 +635,13 @@ export default function DashboardPage() {
                   <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${totalCf >= 0 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                 </span>
                 <p className="text-sm text-th-text-1">
+                  <span className="text-th-text-2">
+                    {scope === 'possede' ? 'Patrimoine détenu — ' : scope === 'simule' ? 'Pipeline d’étude — ' : 'Vue d’ensemble — '}
+                  </span>
                   {totalCf >= 0 ? (
-                    <>Votre portefeuille <span className="font-bold text-emerald-500">s&apos;autofinance</span> — <span className="font-bold">+{Math.round(totalCf)} €/mois</span>, score moyen {avgScore}/100 sur {simulations.length} bien{simulations.length > 1 ? 's' : ''}.</>
+                    <>{scope === 'possede' ? <span className="font-bold text-emerald-500">autofinancé</span> : <span className="font-bold text-emerald-500">cashflow positif</span>}, <span className="font-bold">+{Math.round(totalCf)} €/mois</span>, score moyen {avgScore}/100 sur {scopedSims.length} bien{scopedSims.length > 1 ? 's' : ''}.</>
                   ) : (
-                    <>Effort d&apos;épargne de <span className="font-bold text-amber-500">{Math.round(totalCf)} €/mois</span> — score moyen {avgScore}/100{negatives.length > 0 ? `, ${negatives.length} bien${negatives.length > 1 ? 's' : ''} à optimiser` : ''}.</>
+                    <>effort de <span className="font-bold text-amber-500">{Math.round(totalCf)} €/mois</span>, score moyen {avgScore}/100{negatives.length > 0 ? `, ${negatives.length} bien${negatives.length > 1 ? 's' : ''} à optimiser` : ''}.</>
                   )}
                 </p>
               </motion.div>
@@ -564,7 +650,7 @@ export default function DashboardPage() {
               <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   {
-                    label: 'Patrimoine simulé',
+                    label: `Patrimoine ${scopeLabel}`,
                     value: totalInvested,
                     format: (v: number) => (v >= 1e6 ? `${(v / 1e6).toFixed(2)} M€` : formatCurrency(v)),
                     spark: series.prix,
@@ -759,9 +845,11 @@ export default function DashboardPage() {
               {/* ── Simulations ── */}
               <motion.div variants={item} ref={tableRef} style={{ scrollMarginTop: '20px' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-widest">Simulations</p>
+                  <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-widest">
+                    {scope === 'possede' ? 'Biens détenus' : scope === 'simule' ? 'Biens à l’étude' : 'Simulations'}
+                  </p>
                   <span className="text-[11px] text-th-text-3">
-                    {simulations.length} enregistr{simulations.length !== 1 ? 'ées' : 'ée'}
+                    {scopedSims.length} {scope === 'possede' ? (scopedSims.length > 1 ? 'détenus' : 'détenu') : scope === 'simule' ? (scopedSims.length > 1 ? 'à l’étude' : 'à l’étude') : `enregistr${scopedSims.length !== 1 ? 'ées' : 'ée'}`}
                   </span>
                 </div>
 
@@ -864,13 +952,20 @@ export default function DashboardPage() {
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2 mb-0.5">
                                     <p className="text-sm font-semibold text-th-text-1 truncate">{sim.name}</p>
+                                    {sim.status === 'possede' && (
+                                      <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/12 border border-emerald-500/25 px-1.5 py-0.5 rounded-md shrink-0">
+                                        <Building2 className="w-2.5 h-2.5" /> Détenu
+                                      </span>
+                                    )}
                                     {sim.is_favorite && (
                                       <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                       </svg>
                                     )}
                                   </div>
-                                  <p className="text-[11px] text-th-text-3">{sim.ville} · {formatDate(sim.created_at)}</p>
+                                  <p className="text-[11px] text-th-text-3">
+                                    {sim.ville} · {sim.status === 'possede' && sim.acquired_at ? `acquis le ${formatDate(sim.acquired_at)}` : formatDate(sim.created_at)}
+                                  </p>
                                 </div>
                                 <div>
                                   <p className="text-sm font-semibold text-th-text-1 tabular-nums">{formatPct(sim.rendementBrut)}</p>
@@ -902,6 +997,13 @@ export default function DashboardPage() {
                                   ) : <span className="text-xs text-th-text-3">—</span>}
                                 </div>
                                 <div className="flex items-center gap-1 justify-end opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setOwnModalSim(sim) }}
+                                    className={`w-7 h-7 rounded-lg hover:bg-th-surface3 flex items-center justify-center transition-colors ${sim.status === 'possede' ? 'text-emerald-500' : 'text-th-text-3 hover:text-emerald-500'}`}
+                                    title={sim.status === 'possede' ? 'Bien détenu' : 'Marquer comme détenu'}
+                                  >
+                                    <Building2 className="w-3.5 h-3.5" />
+                                  </button>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); loadSimulation(sim) }}
                                     className="w-7 h-7 rounded-lg hover:bg-th-surface3 flex items-center justify-center text-th-text-3 hover:text-emerald-500 transition-colors"
@@ -1069,9 +1171,25 @@ export default function DashboardPage() {
                 </motion.div>
               )}
 
+              </>
+              )}
+
             </motion.div>
           )}
         </div>
+
+        <MarkOwnedModal
+          open={!!ownModalSim}
+          sim={ownModalSim}
+          onClose={() => setOwnModalSim(null)}
+          onConfirm={(status, acquiredAt) => {
+            if (ownModalSim) {
+              setStatus(ownModalSim.id, status, acquiredAt)
+              toast.success(status === 'possede' ? 'Bien ajouté à votre patrimoine ✓' : 'Bien repassé en étude')
+            }
+            setOwnModalSim(null)
+          }}
+        />
       </div>
     </AppShell>
   )

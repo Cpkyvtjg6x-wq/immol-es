@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { InvestmentParams, InvestmentResult, ScoreResult } from '@/lib/types'
 
+export type SimulationStatus = 'simule' | 'possede'
+
 export interface SavedSimulation {
   id: string
   name: string
@@ -12,6 +14,8 @@ export interface SavedSimulation {
   score: number | null
   is_favorite: boolean
   tags: string[]
+  status: SimulationStatus
+  acquired_at: string | null
   created_at: string
   // derived display fields
   ville: string
@@ -51,6 +55,8 @@ export function useSimulations(userId: string | null) {
               score: (s.score as number) || null,
               is_favorite: (s.is_favorite as boolean) || false,
               tags: (s.tags as string[]) || [],
+              status: ((s.status as SimulationStatus) === 'possede' ? 'possede' : 'simule'),
+              acquired_at: (s.acquired_at as string) || null,
               created_at: s.created_at as string,
               ville: (params.ville as string) || '',
               prixAchat: (params.prixAchat as number) || 0,
@@ -124,6 +130,21 @@ export function useSimulations(userId: string | null) {
     }
   }, [fetchSimulations])
 
+  const setStatus = useCallback(async (id: string, status: SimulationStatus, acquiredAt?: string | null) => {
+    try {
+      const supabase = createBrowserSupabaseClient()
+      const patch: { status: SimulationStatus; acquired_at?: string | null } = { status }
+      if (status === 'possede') patch.acquired_at = acquiredAt ?? null
+      else patch.acquired_at = null
+      await supabase.from('simulations').update(patch).eq('id', id)
+      setSimulations(prev =>
+        prev.map(s => (s.id === id ? { ...s, status, acquired_at: patch.acquired_at ?? null } : s))
+      )
+    } catch (err) {
+      console.error('[useSimulations] setStatus error:', err)
+    }
+  }, [])
+
   const updateTags = useCallback(async (id: string, tags: string[]) => {
     try {
       const supabase = createBrowserSupabaseClient()
@@ -134,5 +155,5 @@ export function useSimulations(userId: string | null) {
     }
   }, [])
 
-  return { simulations, loading, saveSimulation, deleteSimulation, toggleFavorite, updateTags, refetch: fetchSimulations }
+  return { simulations, loading, saveSimulation, deleteSimulation, toggleFavorite, updateTags, setStatus, refetch: fetchSimulations }
 }

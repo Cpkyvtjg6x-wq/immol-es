@@ -1,10 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { AppShell } from '@/components/app/AppShell'
+import { MarkOwnedModal } from '@/components/app/MarkOwnedModal'
+import { useToast } from '@/components/ui/Toast'
 import { IconLightBulb, IconCheckCircle } from '@/components/ui/icons'
 
 // ─── Formatters ────────────────────────────────────────────────────────────────
@@ -78,7 +80,15 @@ function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: stri
 
 type SortKey = 'score' | 'rendementBrut' | 'cashflowMensuel' | 'prixAchat'
 
-function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
+function BuildingMini({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18M3 22h18M9 7h.01M15 7h.01M9 11h.01M15 11h.01" />
+    </svg>
+  )
+}
+
+function ComparaisonBiens({ simulations, onMarkOwned }: { simulations: SavedSimulation[]; onMarkOwned?: (sim: SavedSimulation) => void }) {
   const [sortKey, setSortKey] = useState<SortKey>('score')
   const [desc, setDesc] = useState(true)
 
@@ -141,12 +151,30 @@ function ComparaisonBiens({ simulations }: { simulations: SavedSimulation[] }) {
               </div>
 
               {/* Nom + ville + prix bar */}
-              <div className="min-w-0">
-                <p className="text-[13px] font-semibold text-th-text-1 truncate leading-snug">{sim.name}</p>
+              <div className="min-w-0 group/row">
+                <div className="flex items-center gap-2">
+                  <p className="text-[13px] font-semibold text-th-text-1 truncate leading-snug">{sim.name}</p>
+                  {sim.status === 'possede' && (
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/12 border border-emerald-500/25 px-1.5 py-0.5 rounded-md shrink-0">
+                      <BuildingMini className="w-2.5 h-2.5" /> Détenu
+                    </span>
+                  )}
+                  {onMarkOwned && (
+                    <button
+                      onClick={() => onMarkOwned(sim)}
+                      title={sim.status === 'possede' ? 'Bien détenu' : 'Marquer comme détenu'}
+                      className={`shrink-0 transition-colors ${sim.status === 'possede' ? 'text-emerald-500' : 'text-th-text-3 hover:text-emerald-500 opacity-0 group-hover/row:opacity-100'}`}
+                    >
+                      <BuildingMini />
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-0.5">
                   <p className="text-[11px] text-th-text-3 truncate">{sim.ville}</p>
                   <span className="text-th-text-3 text-[10px]">·</span>
-                  <p className="text-[11px] text-th-text-2 shrink-0">{fmt(sim.prixAchat)}</p>
+                  <p className="text-[11px] text-th-text-2 shrink-0">
+                    {sim.status === 'possede' && sim.acquired_at ? `acquis le ${new Date(sim.acquired_at).toLocaleDateString('fr-FR')}` : fmt(sim.prixAchat)}
+                  </p>
                 </div>
                 {/* Prix bar */}
                 <div className="h-0.5 bg-th-surface2 rounded-full mt-2 overflow-hidden">
@@ -448,31 +476,42 @@ function TimelineAcquisition({ simulations }: { simulations: SavedSimulation[] }
 
 export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
-  const { simulations, loading } = useSimulations(user?.id ?? null)
+  const { simulations, loading, setStatus } = useSimulations(user?.id ?? null)
+  const toast = useToast()
+
+  const ownedCount = simulations.filter((s) => s.status === 'possede').length
+  const studyCount = simulations.length - ownedCount
+
+  const [scope, setScope] = useState<'possede' | 'simule' | 'tous'>('tous')
+  const [scopeInit, setScopeInit] = useState(false)
+  useEffect(() => {
+    if (!scopeInit && !loading && simulations.length > 0) {
+      setScope(ownedCount > 0 ? 'possede' : 'tous')
+      setScopeInit(true)
+    }
+  }, [scopeInit, loading, simulations.length, ownedCount])
+
+  const [ownModalSim, setOwnModalSim] = useState<SavedSimulation | null>(null)
+
+  const view = useMemo(() => {
+    if (scope === 'possede') return simulations.filter((s) => s.status === 'possede')
+    if (scope === 'simule') return simulations.filter((s) => s.status === 'simule')
+    return simulations
+  }, [simulations, scope])
+
+  const scopeWord = scope === 'possede' ? 'détenu' : scope === 'simule' ? 'étudié' : 'simulé'
 
   const stats = useMemo(() => {
-    if (simulations.length === 0) return null
-    const totalPrix = simulations.reduce((a, s) => a + s.prixAchat, 0)
-    const totalCfMensuel = simulations.reduce((a, s) => a + s.cashflowMensuel, 0)
+    if (view.length === 0) return null
+    const totalPrix = view.reduce((a, s) => a + s.prixAchat, 0)
+    const totalCfMensuel = view.reduce((a, s) => a + s.cashflowMensuel, 0)
     const totalCfAnnuel = totalCfMensuel * 12
-    const avgScore = Math.round(
-      simulations.reduce((a, s) => a + (s.score ?? 50), 0) / simulations.length
-    )
-    // Rendement pondéré par valeur du bien
+    const avgScore = Math.round(view.reduce((a, s) => a + (s.score ?? 50), 0) / view.length)
     const rendPondere =
-      totalPrix > 0
-        ? simulations.reduce((a, s) => a + s.rendementBrut * s.prixAchat, 0) / totalPrix
-        : 0
-    // Effort d'épargne = somme des cashflows négatifs
-    const effortEpargne = simulations.reduce(
-      (a, s) => a + Math.max(0, -s.cashflowMensuel),
-      0
-    )
-    const totalMensualites = simulations.reduce(
-      (a, s) => a + (s.results?.mensualiteTotale ?? 0),
-      0
-    )
-    const bestBien = [...simulations].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0]
+      totalPrix > 0 ? view.reduce((a, s) => a + s.rendementBrut * s.prixAchat, 0) / totalPrix : 0
+    const effortEpargne = view.reduce((a, s) => a + Math.max(0, -s.cashflowMensuel), 0)
+    const totalMensualites = view.reduce((a, s) => a + (s.results?.mensualiteTotale ?? 0), 0)
+    const bestBien = [...view].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0]
 
     return {
       totalPrix,
@@ -483,9 +522,9 @@ export default function PortfolioPage() {
       effortEpargne,
       totalMensualites,
       bestBien,
-      count: simulations.length,
+      count: view.length,
     }
-  }, [simulations])
+  }, [view])
 
   if (authLoading || loading) {
     return (
@@ -515,7 +554,7 @@ export default function PortfolioPage() {
             </h1>
             {stats && (
               <p className="text-sm text-th-text-2 mt-1">
-                {stats.count} bien{stats.count > 1 ? 's' : ''} · Vue consolidée de votre patrimoine
+                {stats.count} bien{stats.count > 1 ? 's' : ''} · {scope === 'possede' ? 'Votre patrimoine détenu' : scope === 'simule' ? 'Vos biens à l’étude' : 'Vue consolidée'}
               </p>
             )}
           </div>
@@ -535,15 +574,56 @@ export default function PortfolioPage() {
         ) : (
           <div className="space-y-8">
 
+            {/* ── Sélecteur de périmètre ── */}
+            <div className="inline-flex items-center gap-1 bg-th-surface2 border border-th-border rounded-xl p-1">
+              {([
+                { id: 'possede', label: 'Mes biens', count: ownedCount },
+                { id: 'simule', label: 'Études', count: studyCount },
+                { id: 'tous', label: 'Tous', count: simulations.length },
+              ] as const).map((o) => (
+                <button
+                  key={o.id}
+                  onClick={() => setScope(o.id)}
+                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ${
+                    scope === o.id ? 'bg-th-surface text-th-text-1 shadow-card-th' : 'text-th-text-2 hover:text-th-text-1'
+                  }`}
+                >
+                  {o.id === 'possede' && <BuildingMini className="w-3.5 h-3.5" />}
+                  {o.label}
+                  <span className="tabular-nums opacity-55">{o.count}</span>
+                </button>
+              ))}
+            </div>
+
+            {view.length === 0 ? (
+              <div className="rounded-2xl border border-th-border bg-th-surface px-6 py-12 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-th-surface2 border border-th-border flex items-center justify-center mx-auto mb-4 text-th-text-3">
+                  <BuildingMini className="w-6 h-6" />
+                </div>
+                <p className="text-sm font-bold text-th-text-1 mb-1">
+                  {scope === 'possede' ? 'Aucun bien détenu pour l’instant' : 'Aucun bien à l’étude'}
+                </p>
+                <p className="text-xs text-th-text-2 max-w-sm mx-auto mb-5">
+                  {scope === 'possede'
+                    ? 'Quand vous acquérez un bien, marquez-le comme détenu (icône bâtiment) pour suivre votre patrimoine réel ici.'
+                    : 'Analysez un nouveau bien pour démarrer une étude.'}
+                </p>
+                <button onClick={() => setScope('tous')} className="text-xs font-semibold text-emerald-500 hover:underline">
+                  Voir tous les biens →
+                </button>
+              </div>
+            ) : (
+            <>
+
             {/* ── Section 1 : KPIs globaux ── */}
             {stats && (
               <section>
-                <SectionTitle sub="Agrégat de tous vos biens">Vue d'ensemble</SectionTitle>
+                <SectionTitle sub={scope === 'possede' ? 'Agrégat de vos biens détenus' : scope === 'simule' ? 'Agrégat de vos biens à l’étude' : 'Agrégat de tous vos biens'}>Vue d'ensemble</SectionTitle>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   <KpiCard
-                    label="Patrimoine brut"
+                    label={scope === 'possede' ? 'Patrimoine détenu' : 'Patrimoine brut'}
                     value={fmt(stats.totalPrix)}
-                    sub={`${stats.count} bien${stats.count > 1 ? 's' : ''} simulé${stats.count > 1 ? 's' : ''}`}
+                    sub={`${stats.count} bien${stats.count > 1 ? 's' : ''} ${scopeWord}${stats.count > 1 ? 's' : ''}`}
                   />
                   <KpiCard
                     label="Cashflow mensuel"
@@ -618,25 +698,40 @@ export default function PortfolioPage() {
 
             {/* ── Section 2 : Comparaison des biens ── */}
             <section>
-              <SectionTitle sub="Triez par n'importe quelle métrique">Classement & comparaison</SectionTitle>
-              <ComparaisonBiens simulations={simulations} />
+              <SectionTitle sub="Triez par n'importe quelle métrique · survolez pour marquer un bien détenu">Classement & comparaison</SectionTitle>
+              <ComparaisonBiens simulations={view} onMarkOwned={setOwnModalSim} />
             </section>
 
             {/* ── Sections 3 & 4 : côte à côte ── */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               <section>
-                <SectionTitle sub="Estimations globales du portefeuille">Consolidation fiscale</SectionTitle>
-                <ConsolidationFiscale simulations={simulations} />
+                <SectionTitle sub={scope === 'possede' ? 'Sur vos biens détenus' : 'Estimations globales du portefeuille'}>Consolidation fiscale</SectionTitle>
+                <ConsolidationFiscale simulations={view} />
               </section>
               <section>
                 <SectionTitle sub="Fin de prêt pour chaque bien">Timeline d'acquisition</SectionTitle>
-                <TimelineAcquisition simulations={simulations} />
+                <TimelineAcquisition simulations={view} />
               </section>
             </div>
 
+            </>
+            )}
           </div>
         )}
       </div>
+
+      <MarkOwnedModal
+        open={!!ownModalSim}
+        sim={ownModalSim}
+        onClose={() => setOwnModalSim(null)}
+        onConfirm={(status, acquiredAt) => {
+          if (ownModalSim) {
+            setStatus(ownModalSim.id, status, acquiredAt)
+            toast.success(status === 'possede' ? 'Bien ajouté à votre patrimoine ✓' : 'Bien repassé en étude')
+          }
+          setOwnModalSim(null)
+        }}
+      />
     </AppShell>
   )
 }

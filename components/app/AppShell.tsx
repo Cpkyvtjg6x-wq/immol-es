@@ -62,7 +62,6 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
     router.push('/')
   }
 
-  const recentSims = simulations.slice(0, 4)
   const isBibliotheque = pathname.startsWith('/bibliotheque')
 
   /* Tous les tags (fixes + custom) */
@@ -340,52 +339,6 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Simulations recentes — masquees sur bibliotheque */}
-          {recentSims.length > 0 && !isBibliotheque && (
-            <div className="mb-5">
-              <p className="px-3 mb-2 text-[10px] font-semibold text-th-sidebar-text-1 uppercase tracking-widest">Recentes</p>
-              <div className="space-y-0.5">
-                {recentSims.map((sim) => {
-                  const score = sim.score ?? 0
-                  const scoreColor = score >= 70 ? 'text-emerald-400' : score >= 45 ? 'text-amber-400' : 'text-red-400'
-                  const cfOk = sim.cashflowMensuel >= 0
-                  return (
-                    <button
-                      key={sim.id}
-                      onClick={() => router.push('/analyse')}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-all text-left group"
-                    >
-                      <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                        score >= 70 ? 'bg-emerald-500' : score >= 45 ? 'bg-amber-400' : 'bg-red-400'
-                      }`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-medium text-th-sidebar-text-1 truncate leading-tight">{sim.name}</p>
-                        <p className="text-[10px] text-th-sidebar-text-2 truncate">
-                          {sim.ville} {sim.rendementBrut.toFixed(1)}% brut
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className={`text-[11px] font-bold tabular-nums ${scoreColor}`}>{score}</p>
-                        <p className={`text-[10px] tabular-nums ${cfOk ? 'text-emerald-500' : 'text-red-400'}`}>
-                          {cfOk ? '+' : ''}{Math.round(sim.cashflowMensuel)}
-                        </p>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 mt-1 text-[10px] font-semibold text-th-sidebar-text-1 hover:text-white transition-colors"
-              >
-                Voir toutes les simulations
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
             </div>
           )}
 

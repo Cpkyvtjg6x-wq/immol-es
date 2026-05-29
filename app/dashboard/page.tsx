@@ -99,53 +99,47 @@ function CountUp({
   )
 }
 
-/* Sparkline au tracé animé */
-function Sparkline({
-  points,
+/* Mini-barres animées — une barre par bien. Reste lisible même avec peu de
+   données (contrairement à une courbe qui n'est qu'un segment à 2 points). */
+function MiniBars({
+  values,
   color = '#10b981',
-  width = 72,
-  height = 24,
-  delay = 0.25,
+  width = 50,
+  height = 16,
+  delay = 0.2,
 }: {
-  points: number[]
+  values: number[]
   color?: string
   width?: number
   height?: number
   delay?: number
 }) {
-  const pts = points.length >= 2 ? points : [points[0] ?? 0, points[0] ?? 0]
-  const min = Math.min(...pts)
-  const max = Math.max(...pts)
+  const vals = values.length ? values : [0]
+  const min = Math.min(...vals)
+  const max = Math.max(...vals)
   const range = max - min || 1
-  const step = width / (pts.length - 1)
-  const d = pts
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${(i * step).toFixed(1)} ${(height - ((p - min) / range) * (height - 5) - 2.5).toFixed(1)}`)
-    .join(' ')
-  const last = pts[pts.length - 1]
-  const lastX = width
-  const lastY = height - ((last - min) / range) * (height - 5) - 2.5
+  const n = vals.length
+  const gap = n > 1 ? 2 : 0
+  const bw = Math.max(2.5, (width - gap * (n - 1)) / n)
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible' }} aria-hidden>
-      <motion.path
-        d={d}
-        fill="none"
-        stroke={color}
-        strokeWidth={1.4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ duration: 1.1, ease: 'easeOut', delay }}
-      />
-      <motion.circle
-        cx={lastX}
-        cy={lastY}
-        r={1.9}
-        fill={color}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3, delay: delay + 1 }}
-      />
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden>
+      {vals.map((v, i) => {
+        const h = 2.5 + ((v - min) / range) * (height - 2.5)
+        const x = i * (bw + gap)
+        return (
+          <motion.rect
+            key={i}
+            x={x}
+            width={bw}
+            rx={1.2}
+            fill={color}
+            fillOpacity={i === n - 1 ? 1 : 0.4}
+            initial={{ height: 0, y: height }}
+            animate={{ height: h, y: height - h }}
+            transition={{ duration: 0.5, delay: delay + i * 0.06, ease: 'easeOut' }}
+          />
+        )
+      })}
     </svg>
   )
 }
@@ -638,7 +632,7 @@ export default function DashboardPage() {
                       {k.chip ? (
                         <span className="text-[11px] font-semibold" style={{ color: k.chipColor }}>{k.chip}</span>
                       ) : <span />}
-                      <Sparkline points={k.spark} color={k.chipColor} width={50} height={16} />
+                      <MiniBars values={k.spark} color={k.chipColor} width={52} height={18} />
                     </div>
                     <span className="absolute right-3 top-3 text-th-text-3 opacity-0 group-hover:opacity-100 transition-opacity">
                       <ArrowDownRight className="w-3.5 h-3.5" />

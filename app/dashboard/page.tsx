@@ -709,8 +709,8 @@ export default function DashboardPage() {
                       <CountUp
                         value={k.value}
                         format={k.format}
-                        className={`font-black tabular-nums leading-none ${k.accent ? 'text-emerald-500' : 'text-th-text-1'}`}
-                        style={{ fontSize: '26px', letterSpacing: '-0.04em' }}
+                        className={`text-2xl font-bold tabular-nums leading-none ${k.accent ? 'text-emerald-500' : 'text-th-text-1'}`}
+                        style={{ letterSpacing: '-0.04em' }}
                       />
                       {k.suffix && <span className="text-xs font-semibold text-th-text-3">{k.suffix}</span>}
                     </div>

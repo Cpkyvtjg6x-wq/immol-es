@@ -130,7 +130,7 @@ function Sparkline({
         d={d}
         fill="none"
         stroke={color}
-        strokeWidth={1.6}
+        strokeWidth={1.4}
         strokeLinecap="round"
         strokeLinejoin="round"
         initial={{ pathLength: 0, opacity: 0 }}
@@ -140,7 +140,7 @@ function Sparkline({
       <motion.circle
         cx={lastX}
         cy={lastY}
-        r={2.4}
+        r={1.9}
         fill={color}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -353,30 +353,19 @@ export default function DashboardPage() {
   const simLimit = isPro ? SUBSCRIPTION_LIMITS[tier ?? 'pro'].simulations : SUBSCRIPTION_LIMITS.free.simulations
   const simLimitDisplay = simLimit === Infinity ? null : simLimit
 
-  /* Séries temporelles (cumulées / glissantes) pour les sparklines */
+  /* Séries pour les sparklines — valeurs par bien (ordre chronologique).
+     On trace la valeur de chaque bien (et non un cumul) pour un tracé vivant
+     qui monte et descend, plutôt qu'une ligne quasi droite. */
   const series = useMemo(() => {
     const byDate = [...simulations].sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )
-    const cumPrix: number[] = []
-    const cumCf: number[] = []
-    const runRend: number[] = []
-    const runScore: number[] = []
-    let accP = 0
-    let accC = 0
-    let sumR = 0
-    let sumS = 0
-    byDate.forEach((s, i) => {
-      accP += s.prixAchat
-      accC += s.cashflowMensuel
-      sumR += s.rendementNet
-      sumS += s.score ?? 0
-      cumPrix.push(accP)
-      cumCf.push(accC)
-      runRend.push(sumR / (i + 1))
-      runScore.push(sumS / (i + 1))
-    })
-    return { cumPrix, cumCf, runRend, runScore }
+    return {
+      prix: byDate.map((s) => s.prixAchat),
+      cf: byDate.map((s) => s.cashflowMensuel),
+      rend: byDate.map((s) => s.rendementNet),
+      score: byDate.map((s) => s.score ?? 0),
+    }
   }, [simulations])
 
   const newThisMonth = useMemo(() => {
@@ -584,7 +573,7 @@ export default function DashboardPage() {
                     label: 'Patrimoine simulé',
                     value: totalInvested,
                     format: (v: number) => (v >= 1e6 ? `${(v / 1e6).toFixed(2)} M€` : formatCurrency(v)),
-                    spark: series.cumPrix,
+                    spark: series.prix,
                     chip: newThisMonth > 0 ? `+${newThisMonth} ce mois` : `${simulations.length} biens`,
                     chipColor: '#10b981',
                     sort: 'prix' as SortKey,
@@ -594,7 +583,7 @@ export default function DashboardPage() {
                     label: 'Cashflow mensuel',
                     value: totalCf,
                     format: (v: number) => `${v >= 0 ? '+' : ''}${Math.round(v)} €`,
-                    spark: series.cumCf,
+                    spark: series.cf,
                     chip: totalCf >= 0 ? 'Autofinancé' : 'Effort mensuel',
                     chipColor: totalCf >= 0 ? '#10b981' : '#f59e0b',
                     sort: 'cashflow' as SortKey,
@@ -604,7 +593,7 @@ export default function DashboardPage() {
                     label: 'Rendement net moyen',
                     value: avgRendNet,
                     format: (v: number) => `${v.toFixed(1)} %`,
-                    spark: series.runRend,
+                    spark: series.rend,
                     chip: bestByNet ? `top ${formatPct(bestByNet.rendementNet)}` : '',
                     chipColor: '#10b981',
                     sort: 'rendement' as SortKey,
@@ -615,7 +604,7 @@ export default function DashboardPage() {
                     value: avgScore,
                     format: (v: number) => `${Math.round(v)}`,
                     suffix: ' /100',
-                    spark: series.runScore,
+                    spark: series.score,
                     chip: avgScore >= 70 ? 'Excellent' : avgScore >= 50 ? 'Solide' : 'À optimiser',
                     chipColor: scoreColors(avgScore).color,
                     sort: 'score' as SortKey,
@@ -649,7 +638,7 @@ export default function DashboardPage() {
                       {k.chip ? (
                         <span className="text-[11px] font-semibold" style={{ color: k.chipColor }}>{k.chip}</span>
                       ) : <span />}
-                      <Sparkline points={k.spark} color={k.chipColor} />
+                      <Sparkline points={k.spark} color={k.chipColor} width={50} height={16} />
                     </div>
                     <span className="absolute right-3 top-3 text-th-text-3 opacity-0 group-hover:opacity-100 transition-opacity">
                       <ArrowDownRight className="w-3.5 h-3.5" />

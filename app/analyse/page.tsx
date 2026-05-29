@@ -7,7 +7,7 @@ import { ResultTabs } from '@/components/app/ResultTabs'
 import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
-import { InvestmentParams, InvestmentResult, ScoreResult, AIInsight, FiscalRegime } from '@/lib/types'
+import { InvestmentParams, InvestmentResult, ScoreResult, AIInsight, FiscalRegime, FiscalResult, MarketData } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
@@ -118,7 +118,6 @@ export default function AnalysePage() {
   const [insights, setInsights]           = useState<AIInsight[] | null>(null)
   const [fiscalResults, setFiscalResults] = useState<FiscalRegime[] | null>(null)
   const [bestFiscal, setBestFiscal]       = useState<{ yield: number; regime: string } | null>(null)
-  const [loading, setLoading]             = useState(false)
   const [liveUpdating, setLiveUpdating]   = useState(false)
   const [aiLoading, setAiLoading]         = useState(false)
   const [lastParams, setLastParams]       = useState<InvestmentParams | null>(null)
@@ -140,6 +139,9 @@ export default function AnalysePage() {
   const [panelOpen, setPanelOpen] = useState(true)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Dernière FiscalResult complète — utilisée pour recalculer le score quand market data arrive
+  const lastFiscalRef = useRef<FiscalResult | null>(null)
+  const lastResultRef = useRef<InvestmentResult | null>(null)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -148,6 +150,24 @@ export default function AnalysePage() {
       return () => clearTimeout(t)
     }
   }, [showResults])
+
+  // Recalcul du score quand les données marché arrivent
+  useEffect(() => {
+    if (!marketData || !lastResultRef.current || !lastFiscalRef.current) return
+    // Mapper LocalMarketData → MarketData (format attendu par calculateScore)
+    const liquScore = marketData.liquidite === 'forte' ? 75 : marketData.liquidite === 'faible' ? 35 : 55
+    const marketForScore: MarketData = {
+      region: marketData.ville,
+      prixM2: marketData.prixM2Median,
+      loyerM2: marketData.loyerEstimeM2,
+      tensionLoc: marketData.tensionScore,
+      attractRevente: liquScore,
+      dynEco: marketData.tensionScore > 70 ? 75 : marketData.tensionScore > 40 ? 55 : 35,
+      score: '', scoreClass: '', insight: '', conseils: '',
+    }
+    const updatedScore = calculateScore(lastResultRef.current, lastFiscalRef.current, marketForScore)
+    setScore(updatedScore)
+  }, [marketData])
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search)
@@ -193,6 +213,9 @@ export default function AnalysePage() {
     setResult(res)
     setScore(sc)
     setFiscalResults(fiscalResult.regimes)
+    // Stocker les références pour recalcul du score quand marketData arrive
+    lastFiscalRef.current = fiscalResult
+    lastResultRef.current = res
     setBestFiscal(best ? { yield: best.rendNetNet, regime: best.name } : null)
     setShowResults(true)
     if (!isLive) setResultsVisible(true)
@@ -210,12 +233,9 @@ export default function AnalysePage() {
     debounceRef.current = setTimeout(() => applyCalculation(params, true), 700)
   }, [applyCalculation])
 
-  const handleCalculate = useCallback(async (params: InvestmentParams) => {
+  const handleCalculate = useCallback((params: InvestmentParams) => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 300))
     applyCalculation(params, false)
-    setLoading(false)
   }, [applyCalculation])
 
   const handleGenerateAI = useCallback(async () => {
@@ -272,7 +292,7 @@ export default function AnalysePage() {
       if (!meta) return
       if (e.key === 'Enter') {
         e.preventDefault()
-        if (!loading && lastParams && lastParams.prixAchat > 0) {
+        if (lastParams && lastParams.prixAchat > 0) {
           handleCalculate(lastParams)
         }
       } else if (e.key === 's') {
@@ -282,7 +302,7 @@ export default function AnalysePage() {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [loading, lastParams, result, handleCalculate, handleSave])
+  }, [lastParams, result, handleCalculate, handleSave])
 
   const handleDoSave = useCallback(async (name: string) => {
     if (!result || !score || !lastParams) return { error: 'Aucun résultat à sauvegarder' }
@@ -493,7 +513,6 @@ export default function AnalysePage() {
                       onChange={handleChange}
                       onReset={handleFormReset}
                       onCollapse={() => setPanelOpen(false)}
-                      loading={loading}
                       initialParams={initialParams}
                       result={result}
                       marketData={marketData}
@@ -572,7 +591,7 @@ export default function AnalysePage() {
 
 
             {/* ── État vide — ghost preview ── */}
-            {!showResults && !loading && (
+            {!showResults && (
               <div className="p-6 space-y-5 select-none pointer-events-none" style={{ opacity: 0.45 }}>
 
                 {/* Prompt */}
@@ -647,19 +666,8 @@ export default function AnalysePage() {
               </div>
             )}
 
-            {/* ── Chargement ── */}
-            {loading && (
-              <div className="flex flex-col items-center justify-center min-h-full py-24 gap-4">
-                <div className="relative w-9 h-9">
-                  <div className="w-9 h-9 border border-th-border rounded-full" />
-                  <div className="absolute inset-0 w-9 h-9 border-t border-emerald-500 rounded-full animate-spin" />
-                </div>
-                <p className="text-sm text-th-text-3">Calcul des régimes fiscaux & TRI…</p>
-              </div>
-            )}
-
             {/* ── Résultats ── */}
-            {showResults && result && score && lastParams && !loading && (
+            {showResults && result && score && lastParams && (
               <div
                 className="transition-all duration-500"
                 style={{
@@ -684,20 +692,14 @@ export default function AnalysePage() {
                     setFormKey(k => k + 1)
                     applyCalculation(params, false)
                   }}
-                  onApplyRenovationScenario={(travaux, prixAchat) => {
-                    const updated = { ...lastParams!, travaux, prixAchat }
-                    setInitialParams(updated)
-                    setFormKey(k => k + 1)
-                    applyCalculation(updated, false)
-                  }}
                 />
 
                 {/* ── Scénario alternatif ── */}
                 <div className="px-6 pb-6 pt-2">
                   <div className="rounded-xl border border-th-border bg-th-surface2/60 px-4 py-3 flex items-center justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="text-[12px] font-semibold text-th-text-1">Tester un scénario alternatif</p>
-                      <p className="text-[11px] text-th-text-3 mt-0.5">Duplique ces paramètres dans le formulaire pour modifier et comparer</p>
+                      <p className="text-[12px] font-semibold text-th-text-1">Tester une variante</p>
+                      <p className="text-[11px] text-th-text-3 mt-0.5">Recharge ces paramètres dans le formulaire pour les modifier</p>
                     </div>
                     <button
                       type="button"
@@ -705,9 +707,9 @@ export default function AnalysePage() {
                       className="shrink-0 flex items-center gap-1.5 text-[11px] font-semibold text-th-text-2 hover:text-th-text-1 bg-th-surface border border-th-border hover:border-th-border-med px-3 py-1.5 rounded-lg transition-all active:scale-[0.97] cursor-pointer whitespace-nowrap"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                      Dupliquer & modifier
+                      Modifier les paramètres
                     </button>
                   </div>
                 </div>

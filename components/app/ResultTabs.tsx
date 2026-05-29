@@ -26,7 +26,6 @@ interface ResultTabsProps {
   isPro?: boolean
   onGenerateAI: () => void
   onApplyScenario: (params: InvestmentParams) => void
-  onApplyRenovationScenario: (travaux: number, prixAchat: number) => void
 }
 
 // ─── Données pédagogiques par régime ─────────────────────────────────────────
@@ -218,6 +217,7 @@ function FiscaliteTab({
   params: InvestmentParams
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [detailOpen, setDetailOpen] = useState(false)
 
   if (!fiscalResults || fiscalResults.length === 0) {
     return (
@@ -280,7 +280,7 @@ function FiscaliteTab({
           <div className="flex items-start gap-12">
 
             {/* Gauche */}
-            <div className="flex-1 min-w-0 space-y-6">
+            <div className="flex-1 min-w-0 space-y-4">
               <div>
                 <h2
                   className="text-[28px] font-black text-th-text-1 leading-tight"
@@ -289,26 +289,49 @@ function FiscaliteTab({
                   {best.name}
                 </h2>
                 {bestExpl && (
-                  <p className="text-[14px] text-th-text-1 mt-3 leading-relaxed max-w-xl">
-                    {bestExpl.detail}
+                  <p className="text-[13px] text-emerald-400/80 mt-2 leading-snug">
+                    {bestExpl.court}
                   </p>
                 )}
               </div>
 
-              {/* Étapes concrètes */}
+              {/* Accordéon — détail pédagogique */}
               {bestExpl && (
-                <div className="space-y-2.5">
-                  <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider">
-                    Comment mettre en place ce régime
-                  </p>
-                  {bestExpl.pratique.map((step, i) => (
-                    <div key={i} className="flex items-start gap-3 rounded-xl border border-th-border bg-th-surface2 px-4 py-3">
-                      <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5">
-                        <span className="text-[10px] font-black text-emerald-400">{i + 1}</span>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setDetailOpen(v => !v)}
+                    className="flex items-center gap-2 text-[11px] font-semibold text-th-text-2 hover:text-th-text-1 transition-colors"
+                  >
+                    <svg
+                      className={`w-3.5 h-3.5 transition-transform ${detailOpen ? 'rotate-90' : ''}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                    {detailOpen ? 'Masquer les détails' : 'Comment ça fonctionne ?'}
+                  </button>
+
+                  {detailOpen && (
+                    <div className="mt-3 space-y-3">
+                      <p className="text-[13px] text-th-text-1 leading-relaxed max-w-xl">
+                        {bestExpl.detail}
+                      </p>
+                      <div className="space-y-2">
+                        <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider">
+                          Mise en place
+                        </p>
+                        {bestExpl.pratique.map((step, i) => (
+                          <div key={i} className="flex items-start gap-3 rounded-xl border border-th-border bg-th-surface2 px-4 py-3">
+                            <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                              <span className="text-[10px] font-black text-emerald-400">{i + 1}</span>
+                            </div>
+                            <p className="text-[13px] text-th-text-1 leading-relaxed">{step}</p>
+                          </div>
+                        ))}
                       </div>
-                      <p className="text-[13px] text-th-text-1 leading-relaxed">{step}</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
@@ -819,13 +842,10 @@ export function ResultTabs({
   result, fiscalResults, params, score, bestFiscal,
   marketData, marketLoading,
   insights, aiLoading, isPro,
-  onGenerateAI, onApplyScenario, onApplyRenovationScenario,
+  onGenerateAI, onApplyScenario,
 }: ResultTabsProps) {
 
   const [tab, setTab] = useState<'resume' | 'fiscalite' | 'projections' | 'financement'>('resume')
-
-  // Suppress unused warning — kept for future use
-  void onApplyRenovationScenario
 
   const hasFiscal = fiscalResults && fiscalResults.filter((r) => !r.disabled).length > 0
   const fiscalCount = hasFiscal ? fiscalResults!.filter((r) => !r.disabled).length : undefined
@@ -841,21 +861,11 @@ export function ResultTabs({
     <div>
       {/* ── Tabs nav — sticky dans le scroll du parent ──────────────────── */}
       <div className="sticky top-0 z-10 bg-th-bg/95 backdrop-blur-xl border-b border-th-border">
-        {/* Titre + sous-titre */}
-        <div className="px-6 pt-4 flex items-end justify-between">
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-[15px] font-semibold text-th-text-1" style={{ letterSpacing: '-0.02em' }}>
-              Analyse complète
-            </h2>
-            {hasFiscal && (
-              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/[0.14] border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Fiscal inclus
-              </span>
-            )}
-          </div>
-          <p className="text-[12px] text-th-text-2 pb-0.5">
-            {result.ville} · {formatCurrency(result.prixRevient)}
-          </p>
+        {/* Titre */}
+        <div className="px-6 pt-4">
+          <h2 className="text-[15px] font-semibold text-th-text-1" style={{ letterSpacing: '-0.02em' }}>
+            Analyse complète
+          </h2>
         </div>
 
         {/* Tab buttons */}

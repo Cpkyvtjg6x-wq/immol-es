@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { InvestmentParams, InvestmentResult, ScoreResult } from '@/lib/types'
 import { formatCurrency, formatPct } from '@/lib/utils'
@@ -21,6 +21,15 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+
+  // Reset state chaque fois que la modale s'ouvre
+  useEffect(() => {
+    if (isOpen) {
+      setName('')
+      setSaved(false)
+      setError('')
+    }
+  }, [isOpen])
 
   const defaultName = result
     ? `${result.ville} — ${formatCurrency(result.prixRevient ?? 0)}`

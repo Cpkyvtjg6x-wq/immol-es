@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { InvestmentParams } from '@/lib/types'
 import { DEFAULT_PARAMS } from '@/lib/calculator'
 import { AddressInput } from '@/components/app/AddressInput'
@@ -153,11 +153,9 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
   const [tmi, setTmi] = useState(initialParams?.tmi ?? 30)
   const [adresseText, setAdresseText] = useState(initialParams?.adresse ?? '')
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
   const emit = useCallback((p: InvestmentParams) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => onChange(p), 300)
+    // Pas de debounce ici — handleChange dans le parent gère déjà 700ms
+    onChange(p)
   }, [onChange])
 
   const update = useCallback((patch: Partial<InvestmentParams>) => {
@@ -379,6 +377,14 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
               </span>
             </div>
 
+            {/* Disclaimer charges par défaut */}
+            <div className="flex items-center gap-1.5 px-1">
+              <svg className="w-3 h-3 text-zinc-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-[10px] text-zinc-700">Estimé avec charges par défaut — affinez en mode Expert</span>
+            </div>
+
             {/* CTA Expert */}
             <button
               type="button"
@@ -398,13 +404,16 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
 
         {/* Placeholder avant premier résultat */}
         {!hasResult && params.prixAchat === 0 && (
-          <div className="flex flex-col items-center justify-center py-8 px-4 rounded-2xl border border-dashed border-white/[0.06]">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/[0.12] flex items-center justify-center mb-3">
-              <svg className="w-5 h-5 text-emerald-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M12 7h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div className="flex flex-col items-center justify-center py-6 px-4 rounded-2xl border border-dashed border-white/[0.06] gap-3">
+            <div className="flex items-center gap-2 text-emerald-500/50">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
               </svg>
+              <span className="text-[11px] font-semibold uppercase tracking-widest">Prix d'achat requis</span>
             </div>
-            <p className="text-[13px] text-zinc-600 text-center">Entrez un prix d'achat pour voir les résultats apparaître en temps réel</p>
+            <p className="text-[12px] text-zinc-700 text-center leading-relaxed">
+              Saisissez le prix d'achat et le loyer pour obtenir rendement, cashflow et score instantanément.
+            </p>
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { InvestmentResult, FiscalRegime, InvestmentParams, ScoreResult } from '@/lib/types'
 
 interface Props {
@@ -11,13 +11,6 @@ interface Props {
   simName?: string
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const fE = (n: number) => Math.round(n).toLocaleString('fr-FR') + ' €'
-const fP = (n: number) => n.toFixed(2) + ' %'
-
-// ─── PDF Generation (html2canvas + jsPDF) ────────────────────────────────────
-
 // ─── PDF Generation (@react-pdf/renderer) ────────────────────────────────────
 
 async function generatePDF(
@@ -26,8 +19,6 @@ async function generatePDF(
   params: InvestmentParams | null,
   score: ScoreResult | null,
   simName: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _container: HTMLDivElement
 ) {
   const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
 
@@ -47,15 +38,15 @@ async function generatePDF(
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  const safeName = (simName || 'immolyse').replace(/[^a-z0-9]/gi, '_')
-  link.download = `Immolyse_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`
+  const safeName = (simName || 'immora').replace(/[^a-z0-9]/gi, '_')
+  link.download = `Immora_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
 
-// ─── Excel Export (inchangé) ──────────────────────────────────────────────────
+// ─── Excel Export ─────────────────────────────────────────────────────────────
 
 async function generateExcel(
   result: InvestmentResult,
@@ -67,7 +58,7 @@ async function generateExcel(
   const wb = XLSX.utils.book_new()
 
   const resumeData = [
-    ['Immolyse — Rapport de simulation', '', '', ''],
+    ['Immora — Rapport de simulation', '', '', ''],
     [simName, '', new Date().toLocaleDateString('fr-FR'), ''],
     ['', '', '', ''],
     ['INDICATEURS CLÉS', '', '', ''],
@@ -140,53 +131,68 @@ async function generateExcel(
     XLSX.utils.book_append_sheet(wb, ws4, 'Projection 20 ans')
   }
 
-  XLSX.writeFile(wb, `Immolyse_${(simName || 'immolyse').replace(/[^a-z0-9]/gi, '_')}.xlsx`)
+  XLSX.writeFile(wb, `Immora_${(simName || 'immora').replace(/[^a-z0-9]/gi, '_')}.xlsx`)
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 export function ExportButtons({ result, fiscalResults, params, score, simName = 'Simulation' }: Props) {
+  const [pdfLoading, setPdfLoading] = useState(false)
+  const [xlsxLoading, setXlsxLoading] = useState(false)
+
   const handlePDF = async () => {
-    await generatePDF(
-      result,
-      fiscalResults ?? null,
-      params ?? null,
-      score ?? null,
-      simName,
-      null as unknown as HTMLDivElement
-    )
+    if (pdfLoading) return
+    setPdfLoading(true)
+    try {
+      await generatePDF(result, fiscalResults ?? null, params ?? null, score ?? null, simName)
+    } finally {
+      setPdfLoading(false)
+    }
   }
 
   const handleExcel = async () => {
-    await generateExcel(result, fiscalResults ?? null, params ?? null, simName)
+    if (xlsxLoading) return
+    setXlsxLoading(true)
+    try {
+      await generateExcel(result, fiscalResults ?? null, params ?? null, simName)
+    } finally {
+      setXlsxLoading(false)
+    }
   }
 
   return (
-    <>
-
-      <div className="flex items-center gap-2">
-        {/* PDF */}
-        <button
-          onClick={handlePDF}
-          className="flex items-center gap-1.5 text-[12px] font-semibold text-th-text-1 bg-th-surface2 border border-th-border px-3 py-1.5 rounded-lg hover:bg-th-surface3 hover:border-th-border-med transition-all"
-        >
+    <div className="flex items-center gap-2">
+      {/* PDF */}
+      <button
+        onClick={handlePDF}
+        disabled={pdfLoading}
+        className="flex items-center gap-1.5 text-[12px] font-semibold text-th-text-1 bg-th-surface2 border border-th-border px-3 py-1.5 rounded-lg hover:bg-th-surface3 hover:border-th-border-med transition-all disabled:opacity-60 disabled:cursor-wait"
+      >
+        {pdfLoading ? (
+          <div className="w-3.5 h-3.5 border border-th-border border-t-red-400 rounded-full animate-spin" />
+        ) : (
           <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
-          PDF
-        </button>
+        )}
+        {pdfLoading ? 'PDF…' : 'PDF'}
+      </button>
 
-        {/* Excel */}
-        <button
-          onClick={handleExcel}
-          className="flex items-center gap-1.5 text-[12px] font-semibold text-th-text-1 bg-th-surface2 border border-th-border px-3 py-1.5 rounded-lg hover:bg-th-surface3 hover:border-th-border-med transition-all"
-        >
+      {/* Excel */}
+      <button
+        onClick={handleExcel}
+        disabled={xlsxLoading}
+        className="flex items-center gap-1.5 text-[12px] font-semibold text-th-text-1 bg-th-surface2 border border-th-border px-3 py-1.5 rounded-lg hover:bg-th-surface3 hover:border-th-border-med transition-all disabled:opacity-60 disabled:cursor-wait"
+      >
+        {xlsxLoading ? (
+          <div className="w-3.5 h-3.5 border border-th-border border-t-emerald-400 rounded-full animate-spin" />
+        ) : (
           <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          Excel
-        </button>
-      </div>
-    </>
+        )}
+        {xlsxLoading ? 'Excel…' : 'Excel'}
+      </button>
+    </div>
   )
 }

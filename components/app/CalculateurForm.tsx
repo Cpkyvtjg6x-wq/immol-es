@@ -13,11 +13,10 @@ import { TravauxEstimateur } from '@/components/app/TravauxEstimateur'
 import type { LocalMarketData } from '@/lib/types'
 
 interface Props {
-  onCalculate: (params: InvestmentParams) => Promise<void>
+  onCalculate: (params: InvestmentParams) => void
   onChange?: (params: InvestmentParams) => void
   onReset?: () => void
   onCollapse?: () => void
-  loading: boolean
   initialParams?: InvestmentParams
   result?: InvestmentResult | null
   marketData?: LocalMarketData | null
@@ -509,7 +508,7 @@ function estimerCFE(loyerMensuel: number, vacance = 0.5): number {
 
 // ─── Main form ─────────────────────────────────────────────────────────────────
 
-export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, loading, initialParams, result, marketData }: Props) {
+export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, initialParams, result, marketData }: Props) {
   const [p, setP] = useState<InvestmentParams>(initialParams ?? DEFAULT_PARAMS)
   // true = valeur CFE posée automatiquement, false = saisie manuelle
   const [cfeIsEstimated, setCfeIsEstimated] = useState(false)
@@ -593,10 +592,14 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, lo
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p.loyerMeuble, p.loyerParChambre, p.nbChambres, p.prixNuit, p.tauxOccupation, p.vacance, cfeIsEstimated])
 
+  // Stabilise onChange dans un ref pour éviter de l'inclure dans les dépendances
+  // (onChange est un useCallback stable dans le parent, mais le pattern ref est plus sûr)
+  const onChangeRef = useRef(onChange)
+  useEffect(() => { onChangeRef.current = onChange })
+
   // Notify parent on every param change (for live calculation)
   useEffect(() => {
-    onChange?.(p)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    onChangeRef.current?.(p)
   }, [p])
 
   const set = useCallback(<K extends keyof InvestmentParams>(key: K, val: InvestmentParams[K]) => {
@@ -724,11 +727,6 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, lo
     }
   }, [activeSection])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onCalculate(p)
-  }
-
   const handleReset = () => {
     setP(DEFAULT_PARAMS)
     setCfeIsEstimated(false)
@@ -833,7 +831,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, lo
   )
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+    <form onSubmit={(e) => e.preventDefault()} className="flex flex-col h-full">
 
       {/* ─── Progression globale — sticky, toujours visible ──────────────── */}
       <div className="shrink-0 border-b border-white/[0.06] bg-black/80 backdrop-blur-sm">

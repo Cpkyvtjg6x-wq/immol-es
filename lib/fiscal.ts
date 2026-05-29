@@ -46,10 +46,19 @@ export function calculateFiscal(
   const charges = result.totalCharges
   const mensualiteTotale = result.mensualiteTotale
 
-  // Estimation des intérêts annuels (1ère année)
-  const interetsAnnuels = result.mensualiteCredit > 0
-    ? Math.max(0, result.montantEmprunte * (result.mensualiteCredit / (result.montantEmprunte || 1)) * 12 * 0.7)
-    : 0
+  // Intérêts annuels exacts (année 1) : somme des 12 premières mensualités d'intérêts.
+  // Le tableau d'amortissement est toujours généré par le calculateur.
+  // Fallback conservateur si indisponible : 90% de la mensualité annuelle (prêt début de vie).
+  const interetsAnnuels = (() => {
+    if (result.montantEmprunte <= 0 || result.mensualiteCredit <= 0) return 0
+    if (result.tableauAmortissement && result.tableauAmortissement.length >= 12) {
+      return result.tableauAmortissement
+        .slice(0, 12)
+        .reduce((s, r) => s + r.interetsPaies, 0)
+    }
+    // Fallback : en début de prêt amortissable, ~90% de la mensualité = intérêts
+    return result.mensualiteCredit * 12 * 0.9
+  })()
 
   const amortTotal = calcAmortTotal(params)
   const prixRevient = params.prixRevient

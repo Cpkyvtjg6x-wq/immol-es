@@ -805,10 +805,10 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
   const structureToneColor = (pct?: number): string => {
     if (pct === undefined) return 'var(--c-text-3)'
     const d = bestPctOverall - pct
-    if (d <= 0.25) return '#10b981' // recommandé / équivalent
-    if (d <= 0.75) return '#f59e0b' // léger écart
-    if (d <= 1.5) return '#f97316'  // écart notable
-    return '#ef4444'                // nettement moins avantageux
+    if (d <= 0.05) return '#10b981' // le meilleur (ou strictement égal) → vert
+    if (d <= 0.6) return '#f59e0b'  // dès que c'est plus faible → ambre
+    if (d <= 1.5) return '#f97316'  // moins avantageux → orange
+    return '#ef4444'                // pas bon du tout → rouge
   }
   const isColoc = p.locType === 'coloc'
   const isNu = p.locType === 'nu'

@@ -794,6 +794,22 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
     }
     return out
   }, [result, p.tmi, p.prixAchat, p.travaux, p.locType, p.lmpEnabled])
+
+  // Structure recommandée (meilleur rendement net-net) + couleur graduée par écart
+  const recoStructureId = (() => {
+    const entries = Object.entries(structurePreviews)
+    if (entries.length === 0) return null
+    return entries.reduce((b, e) => (e[1].rendNetNet > b[1].rendNetNet ? e : b))[0]
+  })()
+  const bestPctOverall = recoStructureId ? structurePreviews[recoStructureId].rendNetNet : 0
+  const structureToneColor = (pct?: number): string => {
+    if (pct === undefined) return 'var(--c-text-3)'
+    const d = bestPctOverall - pct
+    if (d <= 0.25) return '#10b981' // recommandé / équivalent
+    if (d <= 0.75) return '#f59e0b' // léger écart
+    if (d <= 1.5) return '#f97316'  // écart notable
+    return '#ef4444'                // nettement moins avantageux
+  }
   const isColoc = p.locType === 'coloc'
   const isNu = p.locType === 'nu'
 
@@ -2396,21 +2412,9 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                   const disabled = id === 'sarl-famille' && isNu
                   const preview = structurePreviews[id]
                   const rendNN = preview?.rendNetNet ?? null
-                  const previewColor = rendNN === null
-                    ? ''
-                    : rendNN >= 4 ? 'text-emerald-400'
-                    : rendNN >= 2 ? 'text-amber-400'
-                    : 'text-red-400'
-                  const previewBorder = rendNN === null
-                    ? (active ? 'border-emerald-500/30' : 'border-th-border')
-                    : rendNN >= 4 ? (active ? 'border-emerald-500/40' : 'border-emerald-500/20')
-                    : rendNN >= 2 ? (active ? 'border-amber-500/40' : 'border-amber-500/20')
-                    : (active ? 'border-red-500/40' : 'border-red-500/20')
-                  const previewBg = rendNN === null
-                    ? (active ? 'bg-emerald-500/[0.08]' : 'bg-th-surface2')
-                    : rendNN >= 4 ? (active ? 'bg-emerald-500/[0.10]' : 'bg-emerald-500/[0.04]')
-                    : rendNN >= 2 ? (active ? 'bg-amber-500/[0.10]' : 'bg-amber-500/[0.04]')
-                    : (active ? 'bg-red-500/[0.10]' : 'bg-red-500/[0.04]')
+                  const isReco = !disabled && rendNN !== null && id === recoStructureId
+                  // Couleur RELATIVE : écart au meilleur (vert = recommandé, ambre/orange/rouge = de moins en moins conseillé)
+                  const tone = rendNN === null ? null : structureToneColor(rendNN)
 
                   return (
                     <button
@@ -2428,10 +2432,12 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                         }))
                       }}
                       className={`flex flex-col items-start gap-0.5 p-3 rounded-xl border transition-all text-left relative ${
-                        disabled
-                          ? 'opacity-30 cursor-not-allowed bg-th-surface border-th-border'
-                          : `${previewBg} ${previewBorder} hover:brightness-110`
+                        disabled ? 'opacity-30 cursor-not-allowed bg-th-surface border-th-border' : 'hover:brightness-110'
                       }`}
+                      style={disabled || !tone ? (active ? { borderColor: 'rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.08)' } : undefined) : {
+                        borderColor: `${tone}${active ? '66' : '33'}`,
+                        background: `${tone}${active ? '1f' : '12'}`,
+                      }}
                     >
                       {/* Indicateur actif */}
                       {active && (
@@ -2440,14 +2446,19 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                       <div className="w-6 h-6 rounded-md bg-th-surface2 flex items-center justify-center">
                         <Icon className="w-3.5 h-3.5 text-th-text-2" />
                       </div>
-                      <p className={`text-[12px] font-bold leading-tight mt-1 ${active ? 'text-th-text-1' : 'text-th-text-2'}`}>{label}</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <p className={`text-[12px] font-bold leading-tight ${active ? 'text-th-text-1' : 'text-th-text-2'}`}>{label}</p>
+                        {isReco && (
+                          <span className="text-[7px] font-bold px-1.5 py-0.5 rounded leading-none" style={{ color: '#10b981', background: 'rgba(16,185,129,0.16)' }}>RECO</span>
+                        )}
+                      </div>
                       <p className="text-[10px] text-th-text-2 leading-snug">{desc}</p>
 
                       {/* Preview rendement nette-nette */}
                       {preview && !disabled && (
                         <div className="mt-1.5 pt-1.5 border-t border-th-border w-full flex items-center justify-between gap-1">
                           <span className="text-[9px] text-th-text-3 uppercase tracking-wide">Meilleur régime</span>
-                          <span className={`text-[11px] font-black tabular-nums ${previewColor}`}>
+                          <span className="text-[11px] font-black tabular-nums" style={{ color: tone ?? 'var(--c-text-3)' }}>
                             {preview.rendNetNet.toFixed(2)}%
                           </span>
                         </div>

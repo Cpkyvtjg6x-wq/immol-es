@@ -68,7 +68,7 @@ function ScoreRing({ score, size = 38 }: { score: number; size?: number }) {
       <circle cx={c} cy={c} r={r} fill="none" stroke={col} strokeWidth={size * 0.079}
         strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
         transform={`rotate(-90 ${c} ${c})`}/>
-      <text x={c} y={c} textAnchor="middle" dominantBaseline="central"
+      <text x={c} y={c} dy="0.355em" textAnchor="middle"
         fontSize={size * 0.3} fontWeight="700" fill={col}>{score}</text>
     </svg>
   )

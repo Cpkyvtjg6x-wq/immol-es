@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTheme } from '@/components/app/ThemeProvider'
+import { BrandLogo } from '@/components/app/BrandLogo'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations } from '@/lib/hooks/useSimulations'
@@ -197,13 +198,8 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
 
         {/* Logo */}
         <div className="h-14 flex items-center px-4 shrink-0" style={{ borderBottom: '1px solid var(--c-sidebar-border)' }}>
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-5 h-5 rounded-[5px] bg-emerald-500 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0">
-              <svg className="w-3 h-3 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h14V10" />
-              </svg>
-            </div>
-            <span className="text-[13px] font-bold text-white tracking-[-0.04em]">IMMO<span className="text-emerald-400">RA</span></span>
+          <Link href="/" className="flex items-center group transition-opacity group-hover:opacity-80">
+            <BrandLogo size={24} textSize={17} />
           </Link>
         </div>
 

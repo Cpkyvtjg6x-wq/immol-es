@@ -32,6 +32,7 @@ function runCalculation(params: InvestmentParams) {
       lmpEnabled: params.lmpEnabled,
       sciIS: params.sciIS,
       sarlFamille: params.sarlFamille,
+      structure: params.structure,
     },
     res
   )

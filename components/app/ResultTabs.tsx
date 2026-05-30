@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { InvestmentResult, FiscalRegime, InvestmentParams, ScoreResult, AIInsight } from '@/lib/types'
 import type { LocalMarketData } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
+import { compareStructures } from '@/lib/fiscal'
 import { ScoreCard } from '@/components/app/ScoreCard'
 import { KpiGrid } from '@/components/app/KpiGrid'
 import { MarketContextBlock } from '@/components/app/MarketContextBlock'
@@ -213,9 +214,11 @@ function ResumeTab({
 function FiscaliteTab({
   fiscalResults,
   params,
+  result,
 }: {
   fiscalResults: FiscalRegime[] | null
   params: InvestmentParams
+  result: InvestmentResult
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
@@ -254,8 +257,81 @@ function FiscaliteTab({
 
   if (!best) return null
 
+  const locLabel = params.locType === 'meuble' ? 'meublée' : params.locType === 'nu' ? 'nue' : params.locType
+  const structures = compareStructures({
+    tmi: params.tmi, prixAchat: params.prixAchat, travaux: params.travaux ?? 0,
+    prixRevient: result.prixRevient, locType: params.locType,
+    lmpEnabled: params.lmpEnabled, sciIS: params.sciIS, sarlFamille: params.sarlFamille,
+    structure: params.structure,
+  }, result)
+  const recoStructure = structures.find((s) => s.compatible)
+
   return (
     <div>
+
+      {/* ════════════════════════════════════════════════════════════════════ */}
+      {/* ZONE 0 — Comparaison des structures d'acquisition                     */}
+      {/* ════════════════════════════════════════════════════════════════════ */}
+      <div className="border-b border-th-border px-8 py-8">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-[13px] font-bold text-th-text-1 uppercase tracking-widest">Structure d&apos;acquisition</h3>
+          <span className="text-[10px] text-th-text-3">location {locLabel} · TMI {params.tmi}%</span>
+        </div>
+        <p className="text-[11.5px] text-th-text-2 mb-5 max-w-2xl leading-relaxed">
+          La structure juridique détermine quels régimes fiscaux sont possibles. Voici le meilleur régime applicable dans chacune pour ce bien — c&apos;est la base de votre décision. L&apos;analyse détaillée plus bas porte sur votre structure sélectionnée.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {structures.map((s) => {
+            const isCurrent = s.structure === params.structure
+            const isReco = !!recoStructure && s.structure === recoStructure.structure
+            return (
+              <div
+                key={s.structure}
+                className={`rounded-xl p-4 border transition-colors ${
+                  !s.compatible ? 'border-th-border bg-th-surface2 opacity-55'
+                  : isCurrent ? 'border-emerald-500/40 bg-emerald-500/[0.07]'
+                  : 'border-th-border bg-th-surface2'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2 min-h-[18px]">
+                  <span className="text-[12px] font-bold text-th-text-1">{s.label}</span>
+                  {isReco && s.compatible
+                    ? <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded">RECO</span>
+                    : isCurrent ? <span className="text-[8px] font-bold text-th-text-2 bg-th-surface3 px-1.5 py-0.5 rounded">ACTUELLE</span> : null}
+                </div>
+                {s.compatible ? (
+                  <>
+                    <p className="text-2xl font-black tabular-nums text-th-text-1" style={{ letterSpacing: '-0.04em' }}>{s.rendNetNet.toFixed(1)}<span className="text-xs font-bold"> %</span></p>
+                    <p className="text-[10px] text-th-text-3 mb-2.5 truncate">rdt net-net · {s.bestRegime}</p>
+                    <div className="flex items-center justify-between text-[10px] border-t border-th-border pt-2">
+                      <span className="text-th-text-3">Impôt / an</span>
+                      <span className="font-semibold text-th-text-1 tabular-nums">{formatCurrency(s.impotAnnuel)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] mt-0.5">
+                      <span className="text-th-text-3">CF net / mois</span>
+                      <span className={`font-semibold tabular-nums ${s.cfNetMensuel >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{s.cfNetMensuel >= 0 ? '+' : ''}{formatCurrency(s.cfNetMensuel)}</span>
+                    </div>
+                    <p className="text-[9.5px] text-th-text-3 mt-2.5 leading-snug">{s.note}</p>
+                  </>
+                ) : (
+                  <p className="text-[10px] text-th-text-3 leading-snug">Incompatible avec une location {locLabel}.<br />{s.note}</p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        {recoStructure && (
+          <div className="mt-3 flex items-start gap-2 text-[11px] text-th-text-2 bg-emerald-500/[0.06] border border-emerald-500/15 rounded-lg px-3.5 py-2.5">
+            <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <span>
+              Pour ce bien, <span className="font-bold text-emerald-400">{recoStructure.label}</span> est en tête ({recoStructure.bestRegime}).{' '}
+              {params.structure !== recoStructure.structure
+                ? 'Changez la structure dans les paramètres (mode Expert) pour basculer l’analyse complète dessus.'
+                : 'C’est votre structure actuelle, détaillée ci-dessous.'}
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* ════════════════════════════════════════════════════════════════════ */}
       {/* ZONE A — Hero régime recommandé (pleine largeur, bulle avec contour) */}
@@ -911,7 +987,7 @@ export function ResultTabs({
         )}
 
         {tab === 'fiscalite' && (
-          <FiscaliteTab fiscalResults={fiscalResults} params={params} />
+          <FiscaliteTab fiscalResults={fiscalResults} params={params} result={result} />
         )}
 
         {tab === 'projections' && (

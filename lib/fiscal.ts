@@ -323,6 +323,66 @@ export const TMI_TRANCHES = [
   { min: 177106, max: Infinity, taux: 45 },
 ]
 
+// ─── Comparaison des structures d'acquisition ──────────────────────────────
+// Pour un même bien, calcule le meilleur régime applicable dans CHAQUE structure
+// (nom propre, SCI IR, SCI IS, SARL de famille) afin de comparer les structures
+// entre elles — la vraie décision fiscale de l'investisseur.
+
+export type AcquisitionStructure = 'nom-propre' | 'sci-ir' | 'sci-is' | 'sarl-famille'
+
+export interface StructureCompare {
+  structure: AcquisitionStructure
+  label: string
+  bestRegime: string        // nom du meilleur régime applicable
+  impotAnnuel: number       // impôt annuel estimé du meilleur régime
+  cfNetMensuel: number      // cashflow net d'impôt mensuel
+  rendNetNet: number        // rendement net-net (%)
+  compatible: boolean       // au moins un régime applicable avec le type de location
+  note: string              // avantage / point d'attention clé
+}
+
+const STRUCTURE_META: Record<AcquisitionStructure, { label: string; note: string }> = {
+  'nom-propre': {
+    label: 'Nom propre',
+    note: "Le plus simple, idéal pour démarrer. En meublé, le LMNP réel efface souvent l'impôt via l'amortissement.",
+  },
+  'sci-ir': {
+    label: "SCI à l'IR",
+    note: 'Location nue uniquement. Facilite la gestion à plusieurs et la transmission, mais pas d’amortissement.',
+  },
+  'sci-is': {
+    label: "SCI à l'IS",
+    note: 'Amortit le bien : idéale pour capitaliser. Revente plus lourdement taxée (réintégration des amortissements).',
+  },
+  'sarl-famille': {
+    label: 'SARL de famille',
+    note: 'Meublé uniquement, à l’IR avec amortissements. Cadre familial, gestion plus formelle.',
+  },
+}
+
+export function compareStructures(base: FiscalParams, result: InvestmentResult): StructureCompare[] {
+  const order: AcquisitionStructure[] = ['nom-propre', 'sci-ir', 'sci-is', 'sarl-famille']
+  const list = order.map((structure) => {
+    const fr = calculateFiscal({ ...base, structure }, result)
+    const enabled = fr.regimes.filter((r) => !r.disabled)
+    const best = enabled.length > 0
+      ? enabled.reduce((b, r) => (r.rendNetNet > b.rendNetNet ? r : b), enabled[0])
+      : null
+    return {
+      structure,
+      label: STRUCTURE_META[structure].label,
+      bestRegime: best?.name ?? 'Incompatible',
+      impotAnnuel: best?.impot ?? 0,
+      cfNetMensuel: best?.cfNet ?? 0,
+      rendNetNet: best?.rendNetNet ?? 0,
+      compatible: !!best,
+      note: STRUCTURE_META[structure].note,
+    }
+  })
+  // Compatibles d'abord, triés par rendement net-net décroissant
+  return list.sort((a, b) => Number(b.compatible) - Number(a.compatible) || b.rendNetNet - a.rendNetNet)
+}
+
 export function getTMI(revenuImposable: number): number {
   return [...TMI_TRANCHES].reverse().find((t) => revenuImposable > t.min)?.taux ?? 0
 }

@@ -7,8 +7,10 @@ import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { loadCustomTags, resolveTag, type CustomTag } from '@/lib/tags'
 import { TagChip } from '@/components/app/TagChip'
 import { AppShell } from '@/components/app/AppShell'
+import { motion } from 'framer-motion'
 import { MarkOwnedModal } from '@/components/app/MarkOwnedModal'
 import { AddOwnedModal } from '@/components/app/AddOwnedModal'
+import { CountUp } from '@/components/app/CountUp'
 import { useToast } from '@/components/ui/Toast'
 import { IconLightBulb, IconCheckCircle } from '@/components/ui/icons'
 
@@ -51,20 +53,27 @@ function EmptyPortfolio() {
 // ─── KPI Card ──────────────────────────────────────────────────────────────────
 
 function KpiCard({
-  label, value, sub, color, icon,
+  label, value, num, format, sub, color, icon, index = 0,
 }: {
-  label: string; value: string; sub?: string; color?: string; icon?: string
+  label: string; value?: string; num?: number; format?: (n: number) => string
+  sub?: string; color?: string; icon?: string; index?: number
 }) {
   return (
-    <div className="rounded-2xl border border-th-border bg-th-surface p-5 flex flex-col gap-3">
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.07, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      className="rounded-2xl border border-th-border bg-th-surface p-5 flex flex-col gap-3"
+    >
       <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">{label}</p>
       <div>
         <p className="text-2xl font-bold tabular-nums leading-none" style={{ letterSpacing: '-0.04em', color: color ?? 'var(--c-text-1)' }}>
-          {icon && <span className="mr-1">{icon}</span>}{value}
+          {icon && <span className="mr-1">{icon}</span>}
+          {num !== undefined && format ? <CountUp value={num} format={format} /> : value}
         </p>
         {sub && <p className="text-[11px] text-th-text-3 mt-1.5">{sub}</p>}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -180,9 +189,11 @@ function ComparaisonBiens({ simulations, onMarkOwned, customTags = [] }: { simul
                 </div>
                 {/* Prix bar */}
                 <div className="h-0.5 bg-th-surface2 rounded-full mt-2 overflow-hidden">
-                  <div
+                  <motion.div
                     className="h-full bg-th-surface3 rounded-full"
-                    style={{ width: `${prixPct}%` }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${prixPct}%` }}
+                    transition={{ duration: 0.7, delay: Math.min(i * 0.04, 0.3) + 0.15, ease: [0.16, 1, 0.3, 1] }}
                   />
                 </div>
               </div>
@@ -194,7 +205,7 @@ function ComparaisonBiens({ simulations, onMarkOwned, customTags = [] }: { simul
                   <p className="text-[10px] text-th-text-3">{fmtPct(sim.rendementNet)} net</p>
                 </div>
                 <div className="h-1 bg-th-surface2 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${rendPct}%` }} />
+                  <motion.div className="h-full bg-emerald-500 rounded-full" initial={{ width: 0 }} animate={{ width: `${rendPct}%` }} transition={{ duration: 0.7, delay: Math.min(i * 0.04, 0.3) + 0.2, ease: [0.16, 1, 0.3, 1] }} />
                 </div>
               </div>
 
@@ -645,31 +656,40 @@ export default function PortfolioPage() {
                 <SectionTitle sub={scope === 'possede' ? 'Agrégat de vos biens détenus' : scope === 'simule' ? 'Agrégat de vos biens à l’étude' : 'Agrégat de tous vos biens'}>Vue d'ensemble</SectionTitle>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   <KpiCard
+                    index={0}
                     label={scope === 'possede' ? 'Patrimoine détenu' : 'Patrimoine brut'}
-                    value={fmt(stats.totalPrix)}
+                    num={stats.totalPrix}
+                    format={(n) => fmt(n)}
                     sub={`${stats.count} bien${stats.count > 1 ? 's' : ''} ${scopeWord}${stats.count > 1 ? 's' : ''}`}
                   />
                   <KpiCard
+                    index={1}
                     label="Cashflow mensuel"
-                    value={`${stats.totalCfMensuel >= 0 ? '+' : ''}${Math.round(stats.totalCfMensuel)} €`}
+                    num={stats.totalCfMensuel}
+                    format={(n) => `${n >= 0 ? '+' : ''}${Math.round(n)} €`}
                     sub={`${stats.totalCfAnnuel >= 0 ? '+' : ''}${fmt(Math.abs(stats.totalCfAnnuel))} / an`}
                     color={stats.totalCfMensuel >= 0 ? '#10b981' : '#ef4444'}
                   />
                   <KpiCard
+                    index={2}
                     label="Rendement moyen"
-                    value={fmtPct(stats.rendPondere)}
+                    num={stats.rendPondere}
+                    format={(n) => fmtPct(n)}
                     sub="pondéré par valeur"
                     color="#a78bfa"
                   />
                   <KpiCard
+                    index={3}
                     label={stats.effortEpargne > 0 ? "Effort d'épargne" : "Autofinancé"}
                     value={stats.effortEpargne > 0 ? `${Math.round(stats.effortEpargne)} €/mois` : 'OK'}
                     sub={stats.effortEpargne > 0 ? 'mensuel (biens négatifs)' : 'Cashflow global positif'}
                     color={stats.effortEpargne > 0 ? '#f97316' : '#10b981'}
                   />
                   <KpiCard
+                    index={4}
                     label="Score de santé"
-                    value={`${stats.avgScore} / 100`}
+                    num={stats.avgScore}
+                    format={(n) => `${Math.round(n)} / 100`}
                     sub={
                       stats.avgScore >= 70 ? 'Excellent' :
                       stats.avgScore >= 45 ? 'Correct' : 'À optimiser'

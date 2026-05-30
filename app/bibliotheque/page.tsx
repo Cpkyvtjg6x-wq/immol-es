@@ -8,6 +8,7 @@ import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { DEFAULT_TAGS, TAG_COLOR_PALETTE as COLOR_PALETTE, type CustomTag, type TagDef } from '@/lib/tags'
+import { CountUp } from '@/components/app/CountUp'
 
 /* ─── Types ─────────────────────────────────────────── */
 type SortKey = 'score' | 'rendementNet' | 'cashflowMensuel' | 'created_at' | 'prixAchat'
@@ -80,20 +81,28 @@ function StatsBanner({ sims }: { sims: SavedSimulation[] }) {
   const totalCf = sims.reduce((a, s) => a + s.cashflowMensuel, 0)
   const bestRdt = Math.max(...sims.map(s => s.rendementNet))
   const bestSim = sims.find(s => s.rendementNet === bestRdt)
-  const stats = [
-    { label: 'Biens analyses', value: String(sims.length), sub: `${sims.filter(s => s.tags.length > 0).length} avec tag` },
-    { label: 'Score moyen', value: String(avgScore), sub: 'sur 100', color: scoreColor(avgScore) },
+  const stats: { label: string; value?: string; num?: number; format?: (n: number) => string; sub: string; color?: string }[] = [
+    { label: 'Biens analyses', num: sims.length, format: (n) => String(Math.round(n)), sub: `${sims.filter(s => s.tags.length > 0).length} avec tag` },
+    { label: 'Score moyen', num: avgScore, format: (n) => String(Math.round(n)), sub: 'sur 100', color: scoreColor(avgScore) },
     { label: 'Cashflow cumule', value: `${cfSign(totalCf)}${fmt(totalCf)} EUR`, sub: 'si tous loues', color: totalCf >= 0 ? '#4ade80' : '#f87171' },
     { label: 'Meilleur rdt', value: `${bestRdt.toFixed(1)}%`, sub: bestSim?.name || '', color: '#4ade80' },
   ]
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
-      {stats.map(s => (
-        <div key={s.label} style={{ background: 'var(--c-surface)', border: '0.5px solid var(--c-border)', borderRadius: 9, padding: '12px 14px' }}>
+      {stats.map((s, i) => (
+        <motion.div
+          key={s.label}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.07, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          style={{ background: 'var(--c-surface)', border: '0.5px solid var(--c-border)', borderRadius: 9, padding: '12px 14px' }}
+        >
           <p style={{ fontSize: 10, color: 'var(--c-text-3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>{s.label}</p>
-          <p style={{ fontSize: 20, fontWeight: 600, color: s.color || 'var(--c-text-1)', letterSpacing: '-.02em' }}>{s.value}</p>
+          <p style={{ fontSize: 20, fontWeight: 600, color: s.color || 'var(--c-text-1)', letterSpacing: '-.02em' }}>
+            {s.num !== undefined && s.format ? <CountUp value={s.num} format={s.format} /> : s.value}
+          </p>
           <p style={{ fontSize: 10, color: 'var(--c-text-3)', marginTop: 2 }}>{s.sub}</p>
-        </div>
+        </motion.div>
       ))}
     </div>
   )
@@ -305,11 +314,16 @@ function SimCard({ sim, allTags, onUpdate, onDelete, onClick, onCreateTag }: { s
               { label: 'Rendement', val: sub.rentabilite },
               { label: 'Cashflow',  val: sub.cashflow },
               { label: 'Fiscalite', val: sub.fiscalite },
-            ].map(row => (
+            ].map((row, ri) => (
               <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <span style={{ fontSize: 9, color: 'var(--c-text-3)', width: 52, flexShrink: 0, textTransform: 'uppercase', letterSpacing: '.04em' }}>{row.label}</span>
-                <div style={{ flex: 1, height: 3, background: 'var(--c-border)', borderRadius: 2 }}>
-                  <div style={{ width: `${row.val}%`, height: 3, background: scoreColor(row.val), borderRadius: 2, transition: 'width .4s ease' }} />
+                <div style={{ flex: 1, height: 3, background: 'var(--c-border)', borderRadius: 2, overflow: 'hidden' }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${row.val}%` }}
+                    transition={{ duration: 0.7, delay: 0.12 + ri * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                    style={{ height: 3, background: scoreColor(row.val), borderRadius: 2 }}
+                  />
                 </div>
                 <span style={{ fontSize: 9, fontWeight: 600, color: scoreColor(row.val), width: 20, textAlign: 'right' }}>{row.val}</span>
               </div>

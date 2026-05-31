@@ -25,6 +25,18 @@ function getAdminClient(): SupabaseClient {
   return _adminClient
 }
 
+/**
+ * Defaults du calculateur configurés par l'utilisateur dans /settings.
+ * Optionnels — si non définis, on utilise les valeurs marché standard.
+ */
+export interface UserCalcDefaults {
+  tmi?: number              // 0, 11, 30, 41, 45 (en %)
+  apportPct?: number        // 0.20 = 20%
+  locType?: 'meuble' | 'nu'
+  dureeCredit?: number      // 20 (en années)
+  tauxCredit?: number       // 3.5 (en %)
+}
+
 export interface ExtensionAuth {
   userId: string | null
   email: string | null
@@ -35,6 +47,8 @@ export interface ExtensionAuth {
   canExportPdf: boolean
   canBankReport: boolean
   canTrackPatrimoine: boolean
+  // Defaults du user (vide si anonyme)
+  calcDefaults: UserCalcDefaults
 }
 
 const ANON_AUTH: ExtensionAuth = {
@@ -46,6 +60,7 @@ const ANON_AUTH: ExtensionAuth = {
   canExportPdf: false,
   canBankReport: false,
   canTrackPatrimoine: false,
+  calcDefaults: {},
 }
 
 /**
@@ -71,12 +86,23 @@ export async function authenticateExtensionRequest(
 
     const { data: profile } = await admin
       .from('profiles')
-      .select('subscription_tier')
+      .select('subscription_tier, settings')
       .eq('id', user.id)
       .single()
 
     const tier = (profile?.subscription_tier ?? 'free') as SubscriptionTier
     const limits = SUBSCRIPTION_LIMITS[tier] ?? SUBSCRIPTION_LIMITS.free
+
+    // Extraction des defaults configurés par l'utilisateur (cf. /settings)
+    const settings = (profile?.settings ?? {}) as Record<string, unknown>
+    const cd = (settings.calculatorDefaults ?? {}) as Record<string, unknown>
+    const calcDefaults: UserCalcDefaults = {
+      tmi:          typeof cd.tmi === 'number' ? cd.tmi : undefined,
+      apportPct:    typeof cd.apportPct === 'number' ? cd.apportPct : undefined,
+      locType:      cd.locType === 'meuble' || cd.locType === 'nu' ? cd.locType : undefined,
+      dureeCredit:  typeof cd.dureeCredit === 'number' ? cd.dureeCredit : undefined,
+      tauxCredit:   typeof cd.tauxCredit === 'number' ? cd.tauxCredit : undefined,
+    }
 
     return {
       userId: user.id,
@@ -87,6 +113,7 @@ export async function authenticateExtensionRequest(
       canExportPdf: limits.exportPdf,
       canBankReport: limits.bankReport,
       canTrackPatrimoine: limits.patrimoine,
+      calcDefaults,
     }
   } catch (err) {
     console.error('[extension-auth] error:', err)

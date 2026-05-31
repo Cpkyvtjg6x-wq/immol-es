@@ -1,0 +1,831 @@
+/* ─── Immolyse Widget Overlay ─────────────────────────────────────────────── */
+
+#immora-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #fff;
+  pointer-events: auto;
+}
+
+/* ── Card ──────────────────────────────────────────────────────────────────── */
+#immora-card {
+  width: 300px;
+  background: #0e0e10;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(16,185,129,0.08),
+    0 24px 48px rgba(0,0,0,0.6),
+    0 8px 16px rgba(0,0,0,0.4);
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+  transform-origin: bottom right;
+}
+
+#immora-card.immo-collapsed {
+  width: auto;
+}
+
+#immora-card.immo-collapsed #immora-body {
+  display: none;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+#immora-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  user-select: none;
+}
+
+#immora-logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+#immora-logo-icon {
+  width: 22px;
+  height: 22px;
+  background: #10b981;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: #000;
+  flex-shrink: 0;
+}
+
+#immora-logo-text {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: #fff;
+}
+
+#immora-logo-text span {
+  color: #10b981;
+}
+
+#immora-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#immora-source-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+#immora-toggle {
+  width: 20px;
+  height: 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255,255,255,0.4);
+  font-size: 10px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+#immora-toggle:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+/* ── Loading state ─────────────────────────────────────────────────────────── */
+#immora-loading {
+  padding: 20px;
+  text-align: center;
+}
+
+.immo-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(16,185,129,0.15);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: immo-spin 0.8s linear infinite;
+  margin: 0 auto 8px;
+}
+
+@keyframes immo-spin {
+  to { transform: rotate(360deg); }
+}
+
+#immora-loading p {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin: 0;
+}
+
+/* ── Body ──────────────────────────────────────────────────────────────────── */
+#immora-body {
+  padding: 14px;
+}
+
+/* ── Score hero ────────────────────────────────────────────────────────────── */
+#immora-score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+#immora-score-main {
+  display: flex;
+  flex-direction: column;
+}
+
+#immora-score-number {
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+#immora-score-max {
+  font-size: 15px;
+  color: rgba(255,255,255,0.3);
+  font-weight: 400;
+}
+
+#immora-score-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 3px;
+}
+
+#immora-score-desc {
+  text-align: right;
+  max-width: 140px;
+}
+
+#immora-score-desc-main {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+#immora-score-desc-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 2px;
+}
+
+/* ── KPIs grid ─────────────────────────────────────────────────────────────── */
+#immora-kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.immo-kpi {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 9px 10px;
+}
+
+.immo-kpi-label {
+  font-size: 9px;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 3px;
+}
+
+.immo-kpi-value {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.immo-kpi-sub {
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 1px;
+}
+
+.immo-green  { color: #10b981; }
+.immo-amber  { color: #f59e0b; }
+.immo-red    { color: #ef4444; }
+.immo-white  { color: #ffffff; }
+
+/* ── Fiscal stripe ─────────────────────────────────────────────────────────── */
+#immora-fiscal {
+  background: rgba(16,185,129,0.05);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 10px;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+#immora-fiscal-left {
+  display: flex;
+  flex-direction: column;
+}
+
+#immora-fiscal-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #10b981;
+  margin-bottom: 2px;
+}
+
+#immora-fiscal-name {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 600;
+}
+
+#immora-fiscal-right {
+  text-align: right;
+}
+
+#immora-fiscal-rend {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #10b981;
+}
+
+#immora-fiscal-sub {
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+}
+
+/* ── Prix max / Négo section ───────────────────────────────────────────────── */
+#immora-nego {
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.025);
+}
+
+#immora-nego.immo-nego-good {
+  background: rgba(16,185,129,0.05);
+  border-color: rgba(16,185,129,0.2);
+}
+
+#immora-nego.immo-nego-warn {
+  background: rgba(245,158,11,0.05);
+  border-color: rgba(245,158,11,0.2);
+}
+
+#immora-nego-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+#immora-nego-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+}
+
+#immora-nego-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+
+.immo-tag-green {
+  color: #10b981;
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.25);
+}
+
+.immo-tag-amber {
+  color: #f59e0b;
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.25);
+}
+
+#immora-nego-price {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+#immora-nego-detail {
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.4;
+}
+
+#immora-nego-detail strong {
+  color: rgba(255,255,255,0.65);
+}
+
+#immora-nego-bar {
+  margin-top: 8px;
+  height: 3px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+#immora-nego-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: #f59e0b;
+  transition: width 0.4s ease;
+}
+
+/* ── Marché local ──────────────────────────────────────────────────────────── */
+#immora-marche {
+  border-radius: 10px;
+  padding: 9px 11px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#immora-marche.marche-opportunite  { border-color: rgba(16,185,129,0.3);  background: rgba(16,185,129,0.06); }
+#immora-marche.marche-attractif    { border-color: rgba(16,185,129,0.2);  background: rgba(16,185,129,0.04); }
+#immora-marche.marche-surevalue    { border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.04); }
+#immora-marche.marche-tres-surevalue { border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.04); }
+
+.immo-marche-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.immo-marche-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.35);
+}
+
+.immo-marche-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.3;
+}
+
+.immo-marche-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.immo-marche-badge.badge-opportunite  { color: #10b981; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
+.immo-marche-badge.badge-attractif    { color: #34d399; background: rgba(52,211,153,0.10); border: 1px solid rgba(52,211,153,0.2); }
+.immo-marche-badge.badge-correct      { color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+.immo-marche-badge.badge-surevalue    { color: #f59e0b; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); }
+.immo-marche-badge.badge-tres-surevalue { color: #ef4444; background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.2); }
+
+/* ── Photo analysis section ────────────────────────────────────────────────── */
+#immora-photo-section {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin: 0 -12px;
+  padding: 10px 12px;
+}
+
+.immo-photo-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  color: rgba(255,255,255,0.45);
+  font-size: 11px;
+}
+
+.immo-spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: immo-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes immo-spin {
+  to { transform: rotate(360deg); }
+}
+
+.immo-photo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.immo-photo-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.immo-photo-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.immo-photo-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.35);
+}
+
+.immo-photo-etat {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.65);
+}
+
+.immo-photo-total {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f59e0b;
+  letter-spacing: -0.02em;
+}
+
+.immo-photo-pct {
+  font-size: 9px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 1px;
+}
+
+.immo-photo-chevron {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  transition: transform 0.2s;
+}
+
+.immo-photo-chevron.open {
+  transform: rotate(180deg);
+}
+
+.immo-photo-detail {
+  margin-top: 8px;
+  display: none;
+}
+
+.immo-photo-detail.visible {
+  display: block;
+}
+
+.immo-photo-resume {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.5;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+.immo-photo-postes {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.immo-photo-poste {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.immo-photo-poste-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.immo-photo-poste-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.immo-photo-poste-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+}
+
+.immo-photo-poste-etat {
+  font-size: 9px;
+  color: rgba(255,255,255,0.35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.immo-photo-poste-cout {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.immo-photo-fourchette {
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  margin: 4px 0;
+}
+
+.immo-photo-confidence {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 4px;
+}
+
+.immo-tag-red {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Estimation notice ─────────────────────────────────────────────────────── */
+#immora-notice {
+  font-size: 9px;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+/* ── CTA Button ────────────────────────────────────────────────────────────── */
+#immora-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+#immora-cta:hover {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+
+#immora-cta:active {
+  transform: translateY(0);
+}
+
+/* ── Error state ───────────────────────────────────────────────────────────── */
+#immora-error {
+  padding: 14px;
+  text-align: center;
+}
+
+#immora-error p {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin: 0 0 10px;
+}
+
+#immora-retry {
+  font-size: 11px;
+  color: #10b981;
+  background: none;
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 6px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+#immora-retry:hover {
+  background: rgba(16,185,129,0.08);
+}
+
+/* ── Mini tab (collapsed) ──────────────────────────────────────────────────── */
+#immora-mini {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: #0e0e10;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  transition: all 0.15s;
+}
+
+#immora-mini:hover {
+  border-color: rgba(16,185,129,0.3);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(16,185,129,0.1);
+}
+
+#immora-mini-score {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+#immora-mini-text {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+
+#immora-mini-logo {
+  font-size: 10px;
+  font-weight: 800;
+  color: #10b981;
+  margin-left: 2px;
+}
+
+.immo-collapsed-state #immora-card {
+  display: none;
+}
+
+.immo-collapsed-state #immora-mini {
+  display: flex;
+}
+
+/* ── Bandeau d'upgrade Pro pour l'analyse photos (gating Free) ────────────── */
+.immo-photo-upgrade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin: 8px 12px 4px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(16, 185, 129, 0.05));
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 10px;
+}
+
+.immo-photo-upgrade-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.immo-photo-upgrade-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 2px;
+}
+
+.immo-photo-upgrade-text {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
+}
+
+.immo-photo-upgrade-cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  background: #10b981;
+  color: #0a0a0b;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.immo-photo-upgrade-cta:hover {
+  background: #34d399;
+}
+
+/* ── Bouton "Sauver dans la bibliothèque" (Pro/Agence) ────────────────────── */
+.immo-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 6px;
+  padding: 8px 10px;
+  background: rgba(16, 185, 129, 0.10);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.30);
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.immo-save-btn:hover {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.50);
+  color: #6ee7b7;
+}
+
+.immo-save-btn-locked {
+  background: rgba(245, 158, 11, 0.08);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.immo-save-btn-locked:hover {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+}
+
+.immo-save-loading {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.immo-save-ok {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #10b981 !important;
+  cursor: default;
+}

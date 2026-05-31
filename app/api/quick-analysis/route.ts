@@ -38,9 +38,9 @@ export async function POST(req: NextRequest) {
       prixAchat,
       surface,
       ville        = '',
-      dpe          = 'D',
-      locType      = 'meuble',
-      tmi          = 30,
+      dpe: dpeRaw,
+      locType: locTypeRaw,
+      tmi: tmiRaw,
       codePostal,
       // Enrichissements extraits de la description
       amenities,
@@ -54,6 +54,13 @@ export async function POST(req: NextRequest) {
       chargesCopro,
       taxeFonciere,
     } = body
+
+    // Defaults personnalisés par l'utilisateur (settings.calculatorDefaults).
+    // Priorité : body > settings user > valeurs marché standard.
+    const dpe     = dpeRaw     ?? 'D'
+    const locType = locTypeRaw ?? auth.calcDefaults.locType ?? 'meuble'
+    const tmi     = typeof tmiRaw === 'number' ? tmiRaw : (auth.calcDefaults.tmi ?? 30)
+    const apportPct = auth.calcDefaults.apportPct ?? 0.20
 
     // ── Validation ────────────────────────────────────────────────────────────
     if (!prixAchat || prixAchat < 10000) {
@@ -98,7 +105,7 @@ export async function POST(req: NextRequest) {
 
     // ── 5. Paramètres de calcul ───────────────────────────────────────────────
     const fraisNotaire = calculerFraisNotaire(prixAchat, 'ancien')
-    const apport = Math.round(prixAchat * 0.20)
+    const apport = Math.round(prixAchat * apportPct)
 
     // Estimation charges copro depuis la description ou référentiel
     const chargesCoproFinal = chargesCopro
@@ -238,6 +245,9 @@ export async function POST(req: NextRequest) {
       loyerSource,
       apportEstime: apport,
       fraisNotaire,
+      prixAchat,           // utile au widget pour calculer % apport
+      tmiUsed:      tmi,   // TMI effectivement utilisée (du user si Pro)
+      dpeUsed:      dpe,   // DPE effectivement utilisée
 
       // Contexte marché local (la nouveauté !)
       marcheContext,

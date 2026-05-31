@@ -1,0 +1,106 @@
+{
+  "manifest_version": 3,
+  "name": "IMMORA — Rentabilité immobilière",
+  "short_name": "IMMORA",
+  "version": "2.0.0",
+  "description": "Analysez instantanément la rentabilité de chaque annonce immobilière sur Seloger, Leboncoin, PAP, Bien'ici et Logic-Immo.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "IMMORA — Analyse immobilière"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.seloger.com/annonces/*",
+        "*://*.seloger.com/achat/*",
+        "*://*.seloger.com/location/*",
+        "*://*.seloger.com/detail/*"
+      ],
+      "js": ["content/shared.js", "content/seloger.js"],
+      "css": ["content/widget.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://www.leboncoin.fr/ad/*",
+        "*://leboncoin.fr/ad/*",
+        "*://www.leboncoin.fr/annonces/*",
+        "*://leboncoin.fr/annonces/*",
+        "*://www.leboncoin.fr/ventes_immobilieres/*",
+        "*://leboncoin.fr/ventes_immobilieres/*",
+        "*://www.leboncoin.fr/locations/*",
+        "*://leboncoin.fr/locations/*"
+      ],
+      "js": ["content/shared.js", "content/leboncoin.js"],
+      "css": ["content/widget.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://www.pap.fr/annonce/*",
+        "*://pap.fr/annonce/*"
+      ],
+      "js": ["content/shared.js", "content/pap.js"],
+      "css": ["content/widget.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://www.bienici.com/annonce/vente/*",
+        "*://bienici.com/annonce/vente/*",
+        "*://www.bienici.com/annonce/location/*",
+        "*://bienici.com/annonce/location/*"
+      ],
+      "js": ["content/shared.js", "content/bienici.js"],
+      "css": ["content/widget.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://www.logic-immo.com/detail-vente-*",
+        "*://logic-immo.com/detail-vente-*",
+        "*://www.logic-immo.com/detail-location-*",
+        "*://logic-immo.com/detail-location-*",
+        "*://www.logic-immo.com/annonce-immo/*",
+        "*://logic-immo.com/annonce-immo/*"
+      ],
+      "js": ["content/shared.js", "content/logicimmo.js"],
+      "css": ["content/widget.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "*://*.seloger.com/*",
+    "*://*.leboncoin.fr/*",
+    "*://*.pap.fr/*",
+    "*://*.bienici.com/*",
+    "*://*.logic-immo.com/*",
+    "https://immora.app/*"
+  ],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "cookies"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

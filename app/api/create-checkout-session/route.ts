@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export const runtime = 'nodejs'
@@ -18,14 +18,22 @@ export async function POST(req: NextRequest) {
     }
 
     // Récupérer l'utilisateur connecté via Supabase SSR
-    const cookieStore = await cookies()
+    // (@supabase/ssr 0.1.0 — API get/set/remove, pas getAll/setAll)
+    const cookieStore = cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() { return cookieStore.getAll() },
-          setAll() {},
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+          set(_name: string, _value: string, _options: CookieOptions) {
+            // No-op : on ne rafraîchit pas la session ici, lecture seule
+          },
+          remove(_name: string, _options: CookieOptions) {
+            // No-op
+          },
         },
       }
     )

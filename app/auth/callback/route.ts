@@ -4,18 +4,16 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 /**
  * Route OAuth callback — échange le code PKCE Supabase contre une session.
  *
- * Pattern correct pour Next.js 14 + @supabase/ssr :
- * Quand on retourne `NextResponse.redirect(url)`, on crée une nouvelle
- * Response qui N'HÉRITE PAS des cookies posés via `cookies()` de
- * `next/headers`. Il faut donc poser les cookies DIRECTEMENT sur la
- * NextResponse via `response.cookies.set(...)`.
+ * IMPORTANT : on utilise @supabase/ssr 0.1.0 qui expose l'ancienne API
+ * `get / set / remove` (pas `getAll / setAll`). Le piège : dans un
+ * Route Handler Next.js 14, on ne peut PAS poser des cookies via le
+ * `cookies()` de next/headers à destination d'un `NextResponse.redirect()`
+ * — la redirect crée une nouvelle Response qui n'hérite pas des cookies.
  *
- * C'est exactement ce que la doc officielle Supabase recommande :
- * https://supabase.com/docs/guides/auth/server-side/nextjs
- *
- * Bug précédent : on utilisait `cookieStore.set(...)` qui silencieusement
- * échouait, les cookies n'étaient jamais transmis → après OAuth, la
- * session côté serveur était vide → /api/* renvoyait 401 → boucle.
+ * Pattern correct : écrire les cookies directement sur la NextResponse
+ * de redirect via `response.cookies.set(...)`. C'est ce que fait `set`
+ * et `remove` ci-dessous. Le bug précédent (try/catch silencieux) cachait
+ * que les cookies n'étaient jamais transmis → boucle OAuth.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -26,29 +24,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/auth/login?error=oauth_failed`)
   }
 
-  // Réponse de redirect que l'on va éventuellement re-construire pour
-  // y attacher les cookies de session posés par Supabase.
-  let response = NextResponse.redirect(`${origin}${next}`)
+  // Réponse à laquelle on va attacher les cookies de session
+  const response = NextResponse.redirect(`${origin}${next}`)
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
+        get(name: string) {
+          return request.cookies.get(name)?.value
         },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          // 1) Reflète les cookies sur la request (pour les lectures suivantes
-          //    dans la même invocation)
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value)
-          })
-          // 2) Re-crée la response de redirect avec les bons cookies dessus
-          response = NextResponse.redirect(`${origin}${next}`)
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options)
-          })
+        set(name: string, value: string, options: CookieOptions) {
+          response.cookies.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          response.cookies.set({ name, value: '', ...options, maxAge: 0 })
         },
       },
     }
@@ -57,7 +48,10 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
-    console.error('[OAuth Callback] exchangeCodeForSession error:', error.message)
+    console.error(
+      '[OAuth Callback] exchangeCodeForSession error:',
+      JSON.stringify({ message: error.message, name: error.name, status: error.status }),
+    )
     return NextResponse.redirect(`${origin}/auth/login?error=oauth_failed`)
   }
 

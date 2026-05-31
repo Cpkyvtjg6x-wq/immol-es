@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { calculateInvestment } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
@@ -37,14 +37,18 @@ export async function POST(req: NextRequest) {
 
     // ── Gating tier (server-side, jamais faire confiance au client) ──────
     // L'IA coûte de l'argent (OpenAI) → bloquer les Free pour éviter abus.
-    const cookieStore = await cookies()
+    // @supabase/ssr 0.1.0 — API get/set/remove, pas getAll/setAll
+    const cookieStore = cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() { return cookieStore.getAll() },
-          setAll() {},
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+          set(_name: string, _value: string, _options: CookieOptions) {},
+          remove(_name: string, _options: CookieOptions) {},
         },
       }
     )

@@ -1,10 +1,8 @@
 /* ════════════════════════════════════════════════════════════════════════════
-   IMMORA — Widget v3 (premium SaaS look)
-   Palette : zinc-950 / emerald-500 / amber-400 / red-400
-   Transparences + aurora + blur (rappel landing immora.app)
+   IMMORA — Widget v4 (centré, premium, chiffres xxl)
    ════════════════════════════════════════════════════════════════════════════ */
 
-/* ── Reset minimal — pour ne pas être impacté par les CSS du portail ────── */
+/* ── Reset minimal ────────────────────────────────────────────────────────── */
 #immora-widget,
 #immora-widget * {
   box-sizing: border-box;
@@ -14,22 +12,20 @@
                'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
-/* ── Container global ────────────────────────────────────────────────────── */
+/* ── Container ────────────────────────────────────────────────────────────── */
 #immora-widget {
   position: fixed;
   bottom: 24px;
   right: 24px;
   z-index: 2147483646;
   pointer-events: none;
-  --immora-score-color: #10b981;
+  --score-color: #10b981;
 }
-
 #immora-widget > * { pointer-events: auto; }
 
-/* ── Mini badge (mode collapsed) ─────────────────────────────────────────── */
+/* ── Mini badge (collapsed) ──────────────────────────────────────────────── */
 #immora-mini {
   display: none;
   width: 60px;
@@ -39,51 +35,37 @@
   border: 1px solid rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
-  box-shadow:
-    0 10px 40px -10px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(16, 185, 129, 0.10),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.10);
   cursor: pointer;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
 }
-
-#immora-mini:hover {
-  transform: scale(1.06);
-  border-color: rgba(16, 185, 129, 0.40);
-}
+#immora-mini:hover { transform: scale(1.06); border-color: rgba(16, 185, 129, 0.40); }
 
 #immora-mini-score {
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
 }
-
 #immora-mini-text {
   font-size: 8px;
   color: rgba(255, 255, 255, 0.40);
   text-align: center;
   line-height: 1.2;
-  margin-top: 2px;
-  letter-spacing: 0.02em;
+  margin-top: 3px;
 }
+#immora-mini-text span { color: rgba(16, 185, 129, 0.85); font-weight: 700; }
 
-#immora-mini-text span {
-  color: rgba(16, 185, 129, 0.85);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-/* ── Card principale ─────────────────────────────────────────────────────── */
+/* ── Card principale ──────────────────────────────────────────────────────── */
 #immora-card {
   position: relative;
   width: 380px;
   max-height: calc(100vh - 48px);
-  border-radius: 16px;
-  background: rgba(9, 9, 11, 0.96);
+  border-radius: 18px;
+  background: rgba(9, 9, 11, 0.97);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
@@ -97,26 +79,24 @@
   line-height: 1.4;
   animation: immoraSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-
 @keyframes immoraSlideIn {
   from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 
-/* Aurora qui réagit au score (couleur via --immora-score-color) */
 .immora-aurora {
   position: absolute;
-  top: -120px;
-  right: -80px;
-  width: 280px;
+  top: -140px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 380px;
   height: 280px;
-  background: radial-gradient(circle at 50% 50%, var(--immora-score-color, #10b981) 0%, transparent 65%);
+  background: radial-gradient(circle, var(--score-color, #10b981) 0%, transparent 60%);
   opacity: 0.10;
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
 }
-
 #immora-card > *:not(.immora-aurora) { position: relative; z-index: 1; }
 
 #immora-body {
@@ -125,42 +105,36 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.10) transparent;
 }
-
 #immora-body::-webkit-scrollbar { width: 6px; }
-#immora-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.10);
-  border-radius: 3px;
-}
+#immora-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.10); border-radius: 3px; }
 
-/* ── Header ──────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   HEADER
+   ══════════════════════════════════════════════════════════════════════════ */
 #immora-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px 10px;
+  padding: 14px 16px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-
 #immora-logo { display: flex; align-items: center; gap: 8px; }
-
 #immora-logo-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.05));
   border: 1px solid rgba(16, 185, 129, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 #immora-logo-text {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: #fff;
 }
-
 #immora-logo-text span { color: #10b981; }
 
 #immora-header-right { display: flex; align-items: center; gap: 8px; }
@@ -168,130 +142,126 @@
 #immora-source-badge {
   font-size: 10px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.45);
-  padding: 3px 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.55);
+  padding: 4px 9px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 999px;
   letter-spacing: 0.02em;
   cursor: help;
 }
 
 #immora-toggle {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.50);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.55);
   cursor: pointer;
   transition: all 0.15s;
 }
-
 #immora-toggle:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
 
-/* ── Loading ─────────────────────────────────────────────────────────────── */
-#immora-loading { padding: 36px 20px; text-align: center; }
-
+/* ══════════════════════════════════════════════════════════════════════════
+   LOADING
+   ══════════════════════════════════════════════════════════════════════════ */
+#immora-loading { padding: 40px 20px; text-align: center; }
 #immora-loading p {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.45);
-  margin-top: 12px;
+  margin-top: 14px;
   letter-spacing: 0.02em;
 }
-
 .immo-spinner {
-  width: 22px;
-  height: 22px;
+  width: 24px; height: 24px;
   border: 2px solid rgba(255, 255, 255, 0.08);
   border-top-color: #10b981;
   border-radius: 50%;
   margin: 0 auto;
   animation: immoraSpin 0.8s linear infinite;
 }
-
 .immo-spinner-small {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 12px; height: 12px;
   border: 1.5px solid rgba(255, 255, 255, 0.10);
   border-top-color: #10b981;
   border-radius: 50%;
   vertical-align: middle;
   animation: immoraSpin 0.8s linear infinite;
 }
-
 @keyframes immoraSpin { to { transform: rotate(360deg); } }
 
-/* ── ① HERO — Score ring + verdict ───────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   ① HERO — Ring XXL centré + verdict centré
+   ══════════════════════════════════════════════════════════════════════════ */
 #immora-hero {
+  padding: 28px 16px 22px;
   display: flex;
-  align-items: center;          /* vertical center du ring + texte */
-  gap: 16px;
-  padding: 20px 18px 16px;
+  flex-direction: column;
+  align-items: center;     /* CENTRE HORIZONTAL */
+  text-align: center;
+  gap: 14px;
 }
 
 #immora-score-ring {
   position: relative;
-  width: 72px;
-  height: 72px;
-  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 #immora-score-ring svg { display: block; }
 
-#immora-score-ring-number {
+#immora-score-ring-content {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  gap: 0;
+}
+#immora-score-ring-number {
+  font-size: 42px;
   font-weight: 800;
-  letter-spacing: -0.02em;
   line-height: 1;
+  letter-spacing: -0.04em;
 }
-
-#immora-hero-text {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;      /* aligne verticalement au centre du ring */
+#immora-score-ring-max {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.04em;
+  margin-top: 2px;
 }
-
-#immora-verdict-emoji { font-size: 16px; line-height: 1; margin-bottom: 3px; }
 
 #immora-verdict-label {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.015em;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: #fff;
-  margin-bottom: 3px;
-  line-height: 1.2;
+  line-height: 1.1;
 }
-
 #immora-verdict-sub {
-  font-size: 11.5px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 1.4;
+  max-width: 280px;
 }
 
-/* ── Warnings (DPE F/G) ─────────────────────────────────────────────────── */
+/* ── Warnings (DPE F/G) — centrés ───────────────────────────────────────── */
 #immora-warnings {
-  padding: 0 16px 4px;
+  padding: 0 16px 6px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
 .immora-warning {
   display: flex;
   align-items: flex-start;
@@ -301,309 +271,308 @@
   font-weight: 500;
   line-height: 1.4;
   border-radius: 9px;
+  text-align: left;
 }
-
 .immora-warning svg { flex-shrink: 0; margin-top: 1px; }
-
 .immora-warning-critical {
   background: rgba(239, 68, 68, 0.10);
   color: #fca5a5;
   border: 1px solid rgba(239, 68, 68, 0.25);
 }
-
 .immora-warning-high {
   background: rgba(245, 158, 11, 0.10);
   color: #fcd34d;
   border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
-/* ── ② Sous-scores ───────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   ② SOUS-SCORES — Label gauche | Barre | Valeur droite (alignés)
+   ══════════════════════════════════════════════════════════════════════════ */
 #immora-subscores {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 14px;
-  padding: 8px 16px 16px;
+  padding: 4px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.immora-sub { display: flex; flex-direction: column; gap: 4px; }
+.immora-sub {
+  display: grid;
+  grid-template-columns: 90px 1fr 28px;
+  align-items: center;
+  gap: 12px;
+}
 
 .immora-sub-label {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-align: left;
 }
 
 .immora-sub-bar {
-  height: 4px;
+  display: block;
+  height: 6px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 2px;
+  border-radius: 999px;
   overflow: hidden;
+  width: 100%;
 }
 
 .immora-sub-fill {
+  display: block;
   height: 100%;
   width: 0%;
   background: #10b981;
-  border-radius: 2px;
+  border-radius: 999px;
   transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── ③ Offre conseillée (négo) ───────────────────────────────────────────── */
+.immora-sub-val {
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ③ OFFRE CONSEILLÉE — Tout centré, prix énorme
+   ══════════════════════════════════════════════════════════════════════════ */
 #immora-nego {
-  margin: 14px 16px 6px;
-  padding: 14px 14px 12px;
+  margin: 16px 16px 12px;
+  padding: 18px 16px;
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.07), rgba(245, 158, 11, 0.02));
-  border: 1px solid rgba(245, 158, 11, 0.18);
-  border-radius: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.20);
+  border-radius: 14px;
+  text-align: center;
   transition: background 0.3s, border-color 0.3s;
 }
-
 #immora-nego.immo-nego-good {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.07), rgba(16, 185, 129, 0.02));
-  border-color: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.28);
 }
-
 #immora-nego.immo-nego-warn {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.02));
-  border-color: rgba(239, 68, 68, 0.22);
-}
-
-#immora-nego-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.07), rgba(239, 68, 68, 0.02));
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
 #immora-nego-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10.5px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.65);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-#immora-nego-label svg { opacity: 0.7; }
-
-.immo-tag-green,
-.immo-tag-amber,
-.immo-tag-red {
   font-size: 10px;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 999px;
-  letter-spacing: 0.02em;
-}
-
-.immo-tag-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-.immo-tag-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-.immo-tag-red   { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-
-#immora-nego-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
 }
 
 #immora-nego-price {
-  font-size: 22px;
+  font-size: 30px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: #fff;
   line-height: 1;
+  margin-bottom: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+#immora-nego-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 #immora-nego-eco {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #10b981;
   letter-spacing: -0.01em;
 }
-
 #immora-nego.immo-nego-warn #immora-nego-eco { color: #f87171; }
 
+.immo-tag-green, .immo-tag-amber, .immo-tag-red {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+}
+.immo-tag-green { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+.immo-tag-amber { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+.immo-tag-red   { background: rgba(239, 68, 68, 0.18); color: #f87171; }
+
 #immora-nego-bar {
-  width: 100%;
+  width: 80%;
   height: 3px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 999px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin: 0 auto 10px;
 }
-
 #immora-nego-bar-fill {
   height: 100%;
   background: #f59e0b;
   border-radius: 999px;
   transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 0%;
 }
 
 #immora-nego-detail {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.55);
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
-#immora-nego-detail strong { color: rgba(255, 255, 255, 0.85); font-weight: 700; }
-
-/* ── ④ KPIs ─────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   ④ KPIs — grille 2×2, valeurs énormes centrées
+   ══════════════════════════════════════════════════════════════════════════ */
 #immora-kpis {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  padding: 6px 16px 10px;
+  gap: 8px;
+  padding: 0 16px 12px;
 }
 
 .immo-kpi {
-  padding: 8px 10px;
+  padding: 14px 10px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 9px;
+  border-radius: 12px;
+  text-align: center;     /* CENTRE TOUT */
 }
 
 .immo-kpi-label {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.45);
-  margin-bottom: 2px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
 }
 
 .immo-kpi-value {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  line-height: 1;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
 }
-
 .immo-kpi-value.immo-green { color: #34d399; }
 .immo-kpi-value.immo-amber { color: #fbbf24; }
 .immo-kpi-value.immo-red   { color: #f87171; }
 
-.immo-kpi-sub {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.30);
-  margin-top: 2px;
-  letter-spacing: 0.02em;
-}
-
-/* ── ⑤ Fiscalité ────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   ⑤ FISCAL — Centré, valeur xxl
+   ══════════════════════════════════════════════════════════════════════════ */
 #immora-fiscal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 6px 16px 8px;
-  padding: 11px 14px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  margin: 0 16px 12px;
+  padding: 16px;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 12px;
+  text-align: center;
 }
-
-#immora-fiscal-left { min-width: 0; flex: 1; }
 
 #immora-fiscal-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.40);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
 }
 
-#immora-fiscal-label svg { opacity: 0.6; }
-
 #immora-fiscal-name {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.01em;
+  margin-bottom: 8px;
 }
 
-#immora-fiscal-right { text-align: right; }
+#immora-fiscal-rend-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+}
 
 #immora-fiscal-rend {
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #34d399;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 #immora-fiscal-sub {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.35);
-  margin-top: 2px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02em;
 }
 
-/* ── ⑥ Marché local ─────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   ⑥ MARCHÉ — centré
+   ══════════════════════════════════════════════════════════════════════════ */
 #immora-marche {
   display: flex !important;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 6px 16px 8px;
-  padding: 11px 14px;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 16px 12px;
+  padding: 13px 14px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  border-radius: 12px;
+  text-align: left;
 }
-
-.immo-marche-left { min-width: 0; flex: 1; }
-
+.immo-marche-left { flex: 1; min-width: 0; }
 .immo-marche-label {
   font-size: 11px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
-
 .immo-marche-text { font-size: 10.5px; color: rgba(255, 255, 255, 0.50); }
 
 .immo-marche-badge {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
-  padding: 5px 9px;
+  padding: 6px 10px;
   border-radius: 999px;
   letter-spacing: -0.01em;
   flex-shrink: 0;
 }
-
-.badge-opportunite    { background: rgba(16, 185, 129, 0.20); color: #34d399; }
-.badge-attractif      { background: rgba(16, 185, 129, 0.13); color: #6ee7b7; }
-.badge-correct        { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.80); }
-.badge-surevalue      { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
-.badge-tres-surevalue { background: rgba(239, 68, 68, 0.18); color: #f87171; }
+.badge-opportunite    { background: rgba(16, 185, 129, 0.22); color: #34d399; }
+.badge-attractif      { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+.badge-correct        { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.85); }
+.badge-surevalue      { background: rgba(245, 158, 11, 0.20); color: #fbbf24; }
+.badge-tres-surevalue { background: rgba(239, 68, 68, 0.20); color: #f87171; }
 
 .marche-opportunite,
 .marche-attractif    { border-color: rgba(16, 185, 129, 0.20) !important; }
 .marche-surevalue    { border-color: rgba(245, 158, 11, 0.25) !important; }
 .marche-tres-surevalue { border-color: rgba(239, 68, 68, 0.25) !important; }
 
-/* ── ⑦ Photos ────────────────────────────────────────────────────────────── */
-#immora-photo-section { margin: 6px 16px 8px; }
+/* ══════════════════════════════════════════════════════════════════════════
+   ⑦ PHOTOS travaux
+   ══════════════════════════════════════════════════════════════════════════ */
+#immora-photo-section { margin: 0 16px 12px; }
 
 .immo-photo-loading {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.55);
 }
@@ -613,27 +582,24 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 11px 14px;
+  padding: 12px 14px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  border-radius: 12px;
 }
-
 .immo-photo-header:hover { background: rgba(255, 255, 255, 0.04); }
-
 .immo-photo-header-left { min-width: 0; flex: 1; }
 
 .immo-photo-label {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.40);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   display: block;
 }
-
-.immo-photo-etat { font-size: 12px; font-weight: 700; letter-spacing: -0.01em; }
+.immo-photo-etat { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
 
 .immo-photo-header-right {
   display: flex;
@@ -641,16 +607,13 @@
   gap: 8px;
   flex-shrink: 0;
 }
-
 .immo-photo-total {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1;
 }
-
 .immo-photo-pct { font-size: 9px; color: rgba(255, 255, 255, 0.40); letter-spacing: 0.04em; }
-
 .immo-photo-chevron {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.40);
@@ -659,21 +622,18 @@
 
 #immo-photo-detail {
   margin-top: 8px;
-  padding: 11px 14px;
+  padding: 12px 14px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  border-radius: 12px;
 }
-
 .immo-photo-resume {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.60);
   line-height: 1.5;
   margin-bottom: 10px;
 }
-
 .immo-photo-postes { display: flex; flex-direction: column; gap: 6px; }
-
 .immo-photo-poste {
   display: flex;
   align-items: center;
@@ -682,56 +642,37 @@
   padding: 6px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
-
 .immo-photo-poste:last-child { border-bottom: none; }
-
 .immo-photo-poste-left { min-width: 0; flex: 1; }
-
 .immo-photo-poste-name {
   font-size: 11px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
   display: block;
 }
-
 .immo-photo-poste-etat { font-size: 10px; color: rgba(255, 255, 255, 0.40); }
-
-.immo-photo-poste-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
+.immo-photo-poste-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .immo-photo-poste-cout {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-
-.immo-tag {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  letter-spacing: 0.02em;
-}
-
+.immo-tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.02em; }
 .immo-photo-fourchette {
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
   font-size: 10.5px;
   color: rgba(255, 255, 255, 0.45);
+  text-align: center;
 }
-
 .immo-photo-confidence {
   font-size: 9.5px;
   color: rgba(255, 255, 255, 0.30);
   margin-left: 4px;
 }
 
-/* Upgrade Pro pour analyse photos (Free) */
+/* Upgrade Pro pour analyse photos */
 .immo-photo-upgrade {
   display: flex;
   align-items: center;
@@ -739,166 +680,164 @@
   padding: 12px 14px;
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(16, 185, 129, 0.05));
   border: 1px solid rgba(245, 158, 11, 0.22);
-  border-radius: 10px;
+  border-radius: 12px;
 }
-
 .immo-photo-upgrade-left { flex: 1; min-width: 0; }
-
 .immo-photo-upgrade-label {
   font-size: 11px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.85);
   margin-bottom: 2px;
 }
-
 .immo-photo-upgrade-text {
   font-size: 10.5px;
   color: rgba(255, 255, 255, 0.50);
   line-height: 1.4;
 }
-
 .immo-photo-upgrade-cta {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 7px 11px;
+  padding: 8px 12px;
   background: #10b981;
   color: #0a0a0b;
   font-size: 11px;
   font-weight: 700;
-  border-radius: 7px;
+  border-radius: 8px;
   text-decoration: none;
   white-space: nowrap;
   transition: background 0.15s;
 }
-
 .immo-photo-upgrade-cta:hover { background: #34d399; }
 
-/* ── ⑧ Notice ────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   ⑧ NOTICE
+   ══════════════════════════════════════════════════════════════════════════ */
 #immora-notice {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.35);
   text-align: center;
-  margin: 4px 16px 10px;
+  margin: 4px 16px 12px;
   letter-spacing: 0.02em;
   line-height: 1.5;
 }
 
-/* ── ⑨ CTA + Save ──────────────────────────────────────────────────────── */
-#immora-cta-row { display: flex; gap: 6px; padding: 0 16px 14px; }
-
+/* ══════════════════════════════════════════════════════════════════════════
+   ⑨ CTA + Save
+   ══════════════════════════════════════════════════════════════════════════ */
+#immora-cta-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 16px;
+  align-items: stretch;
+}
 #immora-cta {
   flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 13px 16px;
   background: #10b981;
   color: #09090b;
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 12px;
   text-decoration: none;
   letter-spacing: -0.01em;
   transition: background 0.15s, transform 0.1s;
+  box-shadow: 0 4px 14px -4px rgba(16, 185, 129, 0.5);
 }
-
 #immora-cta:hover { background: #34d399; }
 #immora-cta:active { transform: scale(0.98); }
 
 .immo-save-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
-  padding: 10px 11px;
+  padding: 13px 13px;
   background: rgba(16, 185, 129, 0.10);
   color: #34d399;
   border: 1px solid rgba(16, 185, 129, 0.22);
-  border-radius: 9px;
-  font-size: 11.5px;
+  border-radius: 12px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
 }
-
 .immo-save-btn:hover {
   background: rgba(16, 185, 129, 0.18);
   border-color: rgba(16, 185, 129, 0.40);
   color: #6ee7b7;
 }
-
 .immo-save-btn-locked {
   background: rgba(245, 158, 11, 0.08);
   color: #fbbf24;
   border-color: rgba(245, 158, 11, 0.22);
 }
-
 .immo-save-btn-locked:hover {
   background: rgba(245, 158, 11, 0.15);
   color: #fcd34d;
 }
-
 .immo-save-loading { opacity: 0.55; cursor: wait; }
-
 .immo-save-ok {
   background: rgba(16, 185, 129, 0.25) !important;
   color: #10b981 !important;
   cursor: default;
 }
 
-/* ── Error ──────────────────────────────────────────────────────────────── */
-#immora-error { padding: 24px 20px; text-align: center; }
-
+/* ══════════════════════════════════════════════════════════════════════════
+   ERROR
+   ══════════════════════════════════════════════════════════════════════════ */
+#immora-error { padding: 32px 20px; text-align: center; }
 .immo-error-icon {
-  width: 36px;
-  height: 36px;
+  width: 44px; height: 44px;
   border-radius: 999px;
   background: rgba(239, 68, 68, 0.12);
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.28);
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 12px;
+  margin: 0 auto 14px;
 }
-
 #immora-error p {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.70);
   margin-bottom: 14px;
   line-height: 1.5;
 }
-
 #immora-retry {
   display: inline-block;
   background: rgba(255, 255, 255, 0.06);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.10);
-  padding: 7px 16px;
-  border-radius: 7px;
-  font-size: 11.5px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
 }
-
 #immora-retry:hover { background: rgba(255, 255, 255, 0.10); }
 
-/* ── États collapsed ────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   COLLAPSED
+   ══════════════════════════════════════════════════════════════════════════ */
 .immo-collapsed-state #immora-card { display: none; }
 .immo-collapsed-state #immora-mini { display: flex; }
 
-/* ── Tier-aware accents ────────────────────────────────────────────────── */
+/* ── Tier accents ───────────────────────────────────────────────────────── */
 .immora-card-tier-pro,
 .immora-card-tier-business {
-  border-color: rgba(16, 185, 129, 0.20);
+  border-color: rgba(16, 185, 129, 0.22);
   box-shadow:
     0 24px 80px -20px rgba(0, 0, 0, 0.70),
-    0 8px 30px -8px rgba(16, 185, 129, 0.15),
+    0 8px 30px -8px rgba(16, 185, 129, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 

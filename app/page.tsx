@@ -1373,12 +1373,22 @@ function TestimonialsSection() {
    PRICING
    ══════════════════════════════════════════════════════════════════════════ */
 function PricingSection({ onSignup }: { onSignup: () => void }) {
+  const router = useRouter()
   const [annual, setAnnual] = useState(true)
 
+  // 12.90 -> "12,90" · 12 -> "12"
+  const fmt = (n: number) => n.toFixed(2).replace('.', ',').replace(/,00$/, '')
+
+  const handleCta = (planId: string) => {
+    if (planId === 'free') { onSignup(); return }
+    const cycle = annual ? 'annual' : 'monthly'
+    router.push(`/checkout/start?plan=${planId}&cycle=${cycle}`)
+  }
+
   const plans = [
-    { name: 'Découverte', price: { m: 0, a: 0 }, desc: 'Pour découvrir l\'outil', features: ['Analyse express', '3 simulations sauvegardées', 'Export PDF (filigrane)', 'Données marché basiques'], cta: 'Commencer gratuitement', featured: false },
-    { name: 'Pro', price: { m: 29, a: 19 }, desc: 'Pour investir sérieusement', features: ['Simulations illimitées', '10 régimes fiscaux', 'Analyse IA avancée', 'Export PDF & Excel pro', 'Comparaison multi-biens', 'Support prioritaire'], cta: 'Essai 14 jours gratuit', featured: true },
-    { name: 'Agence', price: { m: 79, a: 59 }, desc: 'Pour les pros de l\'immobilier', features: ['Tout le plan Pro', 'Jusqu\'\u00e0 5 si\u00e8ges', 'Rapports white-label', 'Acc\u00e8s API', 'Onboarding d\u00e9di\u00e9'], cta: 'Contacter l\'\u00e9quipe', featured: false },
+    { id: 'free', name: 'Découverte', price: { m: 0, a: 0 }, desc: 'Pour découvrir l\'outil', features: ['Calculateur complet (Express + Expert)', 'Score d\'opportunité', '10 régimes fiscaux', '3 simulations sauvegardées', 'Données marché basiques'], cta: 'Commencer gratuitement', featured: false },
+    { id: 'pro', name: 'Pro', price: { m: 19.90, a: 12.90 }, desc: 'Pour investir sérieusement', features: ['Tout le plan Découverte', 'Simulations illimitées', 'Analyse IA (GPT-4) incluse', 'Export PDF & Excel pro', 'Dossier bancaire complet', 'Comparaison jusqu\'à 5 biens', 'Suivi de patrimoine'], cta: 'Essai 14 jours gratuit', featured: true },
+    { id: 'agency', name: 'Agence', price: { m: 59, a: 39 }, desc: 'Pour les pros de l\'immobilier', features: ['Tout le plan Pro', 'Rapports PDF avec votre logo', 'Comparaison illimit\u00e9e de biens', 'Support prioritaire 24h', 'Onboarding d\u00e9di\u00e9 (45 min)'], cta: 'Essai 14 jours gratuit', featured: false },
   ]
 
   return (
@@ -1431,17 +1441,17 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
                   {price === 0
                     ? <div style={{ fontSize: '42px', fontWeight: 700, letterSpacing: '-0.05em' }} className="text-white leading-none">Gratuit</div>
                     : <div className="flex items-baseline gap-1.5">
-                        <span style={{ fontSize: '42px', fontWeight: 700, letterSpacing: '-0.05em' }} className="text-white tabular leading-none">{price}</span>
+                        <span style={{ fontSize: '42px', fontWeight: 700, letterSpacing: '-0.05em' }} className="text-white tabular leading-none">{fmt(price)}</span>
                         <span className="text-zinc-500 text-[13px]">€<span className="text-zinc-600">/mois</span></span>
                       </div>
                   }
                   {annual && price > 0 && (
-                    <p className="mono text-[11px] text-zinc-600 mt-2">Facturé {price * 12}€/an</p>
+                    <p className="mono text-[11px] text-zinc-600 mt-2">Facturé {fmt(price * 12)}€/an</p>
                   )}
                 </div>
 
                 {/* CTA */}
-                <button onClick={onSignup}
+                <button onClick={() => handleCta(plan.id)}
                   className={`w-full text-[13.5px] font-semibold py-3 rounded-xl transition-all duration-200 mb-7 ${plan.featured ? 'bg-white text-[#09090b] hover:bg-zinc-100 hover:shadow-[0_0_30px_-4px_rgba(255,255,255,0.25)]' : 'bg-white/[0.05] text-white border border-white/[0.09] hover:bg-white/[0.09]'}`}>
                   {plan.cta}
                 </button>

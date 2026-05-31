@@ -4,11 +4,13 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { authenticateExtensionRequest } from '@/lib/extension-auth'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Expose-Headers': 'x-immora-tier',
 }
 
 export const runtime  = 'nodejs'
@@ -189,6 +191,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: 'Service vision non configuré (ANTHROPIC_API_KEY manquant)' },
       { status: 503, headers: CORS }
+    )
+  }
+
+  // ── Gating tier (server-side) ─────────────────────────────────────────────
+  // L'analyse photo Claude Haiku coûte de l'argent à chaque appel — on bloque
+  // les Free / anonymes pour éviter abus et fuite de coûts API.
+  const auth = await authenticateExtensionRequest(req.headers.get('authorization'))
+  if (!auth.canUseAI) {
+    return NextResponse.json(
+      {
+        error: "L'analyse photos IA est réservée au plan Pro",
+        upgrade_required: 'ai_insights',
+        tier: auth.tier,
+      },
+      { status: 402, headers: { ...CORS, 'x-immora-tier': auth.tier } },
     )
   }
 

@@ -9,13 +9,16 @@ import {
   getPositionnementMarche,
   type Amenities,
 } from '@/lib/marche-reference'
+import { authenticateExtensionRequest } from '@/lib/extension-auth'
 import type { InvestmentParams } from '@/lib/types'
 
 // CORS — l'extension Chrome appelle depuis une origine différente
+// On expose `x-immora-tier` pour que le widget puisse adapter son UI.
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Expose-Headers': 'x-immora-tier',
 }
 
 export async function OPTIONS() {
@@ -24,6 +27,11 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Authentification utilisateur (extension Chrome) ─────────────────────
+    // Free / anonyme : reçoit un score basique sans contexte marché complet.
+    // Pro / Agence : reçoit l'analyse complète + URL pré-remplie /analyse.
+    const auth = await authenticateExtensionRequest(req.headers.get('authorization'))
+
     const body = await req.json()
 
     const {
@@ -168,7 +176,9 @@ export async function POST(req: NextRequest) {
     const prixM2 = (surface && surface > 0) ? Math.round(prixAchat / surface) : null
 
     // ── 8. Contexte marché local ─────────────────────────────────────────────
-    const marcheContext = {
+    // Free : version simplifiée (juste loyer ref). Pro : complet avec
+    // positionnement, écart marché, prix m² réf, tension locative.
+    const marcheContext = auth.canFullMarketData ? {
       ville:          marcheRef.label ?? ville,
       source:         marcheRef.source,
       prixM2Ref:      marcheRef.prixM2,
@@ -182,7 +192,16 @@ export async function POST(req: NextRequest) {
         prixM2Bien:  posMarche.prixM2Bien,
         ecartMarche: posMarche.ecartPct,
       } : {}),
+    } : {
+      // Version Free : seulement le loyer marché ref (motive l'upgrade)
+      ville:      marcheRef.label ?? ville,
+      loyerM2Ref: locType === 'nu' ? marcheRef.loyerNu : marcheRef.loyerMeuble,
+      loyerSource,
+      gatedPro: true,
     }
+
+    // Header pour que le widget puisse adapter son UI
+    const respHeaders = { ...CORS, 'x-immora-tier': auth.tier }
 
     // ── 9. Réponse ────────────────────────────────────────────────────────────
     return NextResponse.json({
@@ -223,7 +242,7 @@ export async function POST(req: NextRequest) {
       // Contexte marché local (la nouveauté !)
       marcheContext,
 
-      // URL pré-remplie
+      // URL pré-remplie pour basculer sur le calculateur complet
       analyseUrl: buildAnalyseUrl(params, loyerEstimeFinal, {
         travaux:      body.travaux,
         chargesCopro: chargesCoproFinal,
@@ -231,7 +250,16 @@ export async function POST(req: NextRequest) {
         nbPieces:     body.nbPieces,
         codePostal:   body.codePostal,
       }),
-    }, { status: 200, headers: CORS })
+
+      // Tier de l'utilisateur pour adapter l'UI du widget
+      tier:     auth.tier,
+      // Capacités accessibles (utile pour afficher des CTA conditionnels)
+      features: {
+        ai:        auth.canUseAI,
+        marketFull: auth.canFullMarketData,
+        savePro:   !!auth.userId && (auth.tier === 'pro' || auth.tier === 'business'),
+      },
+    }, { status: 200, headers: respHeaders })
 
   } catch (err) {
     console.error('[quick-analysis]', err)

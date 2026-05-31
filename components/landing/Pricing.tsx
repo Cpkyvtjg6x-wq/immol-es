@@ -16,16 +16,18 @@ const plans = [
     description: 'Pour découvrir et tester',
     badge: null,
     features: [
-      'Calculateur complet illimité',
+      'Calculateur complet (Express + Expert)',
       'Score d\'opportunité',
+      'Fiscalité : 10 régimes analysés',
       '3 simulations sauvegardées',
       'Données marché basiques',
     ],
     missing: [
+      'Analyse IA (GPT-4)',
       'Export PDF & Excel pro',
-      'Dossier bancaire',
-      'Analyse IA',
+      'Dossier bancaire complet',
       'Comparaison multi-biens',
+      'Suivi de patrimoine',
     ],
     cta: 'Commencer gratuitement',
     ctaVariant: 'outline' as const,
@@ -33,7 +35,7 @@ const plans = [
   {
     id: 'pro',
     name: 'Pro',
-    price: { monthly: 29, annual: 19 },
+    price: { monthly: 19.90, annual: 12.90 },
     priceId: {
       monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY ?? null,
       annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL ?? null,
@@ -43,11 +45,11 @@ const plans = [
     features: [
       'Tout le plan Gratuit',
       'Simulations illimitées',
+      'Analyse IA (GPT-4) incluse',
       'Export PDF & Excel pro',
       'Dossier bancaire complet',
-      'Analyse IA (GPT-4) incluse',
-      'Comparaison multi-biens',
-      'Fiscalité : 10 régimes analysés',
+      'Comparaison jusqu\'à 5 biens',
+      'Suivi de patrimoine',
       'Données marché complètes',
     ],
     missing: [],
@@ -57,7 +59,7 @@ const plans = [
   {
     id: 'agency',
     name: 'Agence',
-    price: { monthly: 79, annual: 59 },
+    price: { monthly: 59, annual: 39 },
     priceId: {
       monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY ?? null,
       annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL ?? null,
@@ -66,15 +68,13 @@ const plans = [
     badge: null,
     features: [
       'Tout le plan Pro',
-      'Jusqu\'à 5 utilisateurs',
-      'Rapports avec votre logo',
-      'API access',
-      'Exports en masse',
-      'Onboarding dédié',
-      'SLA 99.9 %',
+      'Rapports PDF avec votre logo',
+      'Comparaison illimitée de biens',
+      'Support prioritaire 24h',
+      'Onboarding dédié (45 min)',
     ],
     missing: [],
-    cta: 'Contacter l\'équipe',
+    cta: 'Essai 14 jours gratuit',
     ctaVariant: 'secondary' as const,
   },
 ]
@@ -162,14 +162,18 @@ export function Pricing() {
                     <div className="text-4xl font-black text-white">Gratuit</div>
                   ) : (
                     <div className="flex items-end gap-1">
-                      <span className="text-4xl font-black text-white">{price}€</span>
+                      <span className="text-4xl font-black text-white">
+                        {price.toFixed(2).replace('.', ',').replace(/,00$/, '')}€
+                      </span>
                       <span className="text-zinc-500 text-sm mb-1">/mois</span>
                     </div>
                   )}
                   {annual && price > 0 && (
-                    <p className="text-xs text-zinc-500 mt-1">Facturé {price * 12}€/an</p>
+                    <p className="text-xs text-zinc-500 mt-1">
+                      Facturé {(price * 12).toFixed(2).replace('.', ',').replace(/,00$/, '')}€/an
+                    </p>
                   )}
-                  {plan.id !== 'free' && plan.id !== 'agency' && (
+                  {plan.id !== 'free' && (
                     <p className="text-xs text-emerald-500 mt-1 font-medium">✦ 14 jours gratuits, sans carte</p>
                   )}
                 </div>

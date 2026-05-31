@@ -41,6 +41,32 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient()
 
+  // ── Idempotence : on bloque les events déjà traités ─────────────────
+  // Stripe peut renvoyer le même event en cas de timeout/retry. Sans ce
+  // garde-fou : double email "Bienvenue", double update profile, etc.
+  // Le PK event_id garantit l'unicité ; un .insert qui foire en 23505
+  // = doublon → on répond 200 pour que Stripe arrête de retry.
+  const userIdMeta = extractUserId(event)
+  const customerMeta = extractCustomer(event)
+  const { error: insertErr } = await supabase.from('billing_events').insert({
+    event_id: event.id,
+    type: event.type,
+    livemode: event.livemode,
+    user_id: userIdMeta,
+    customer: customerMeta,
+    payload: event as unknown as Record<string, unknown>,
+  })
+  if (insertErr) {
+    // 23505 = unique_violation Postgres → event déjà traité
+    if (insertErr.code === '23505') {
+      console.log(`[Stripe Webhook] Event ${event.id} déjà traité, skip`)
+      return NextResponse.json({ received: true, deduped: true })
+    }
+    // Autre erreur (RLS, conn) : on log mais on continue — on préfère
+    // double-traiter plutôt que rater un paiement.
+    console.error('[Stripe Webhook] billing_events insert error:', insertErr)
+  }
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -148,6 +174,29 @@ async function handleSubscriptionDeleted(
 function getTierFromSession(session: Stripe.Checkout.Session): string {
   // Le tier peut être stocké dans les metadata de la session
   return session.metadata?.tier ?? 'pro'
+}
+
+/**
+ * Extrait l'userId depuis n'importe quel type d'event Stripe pertinent
+ * pour le ranger dans `billing_events`. On regarde dans les metadata
+ * (session checkout, subscription) et on retourne null si absent.
+ */
+function extractUserId(event: Stripe.Event): string | null {
+  const obj = event.data.object as Record<string, unknown>
+  const directMeta = (obj?.metadata as Record<string, string> | undefined)?.userId
+  if (directMeta) return directMeta
+  const subData = obj?.subscription_data as { metadata?: Record<string, string> } | undefined
+  return subData?.metadata?.userId ?? null
+}
+
+/**
+ * Extrait l'ID Stripe Customer depuis n'importe quel type d'event.
+ */
+function extractCustomer(event: Stripe.Event): string | null {
+  const obj = event.data.object as { customer?: string | { id?: string } }
+  if (!obj?.customer) return null
+  if (typeof obj.customer === 'string') return obj.customer
+  return obj.customer.id ?? null
 }
 
 function getTierFromSubscription(subscription: Stripe.Subscription): string {

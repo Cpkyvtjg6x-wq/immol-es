@@ -515,32 +515,62 @@ export interface UserProfile {
 export interface SubscriptionLimits {
   simulations: number
   aiInsights: boolean
-  export: boolean
+  exportPdf: boolean
+  exportExcel: boolean
+  bankReport: boolean
   comparaison: boolean
-  marketData: boolean
+  patrimoine: boolean
+  marketDataFull: boolean
+  whiteLabel: boolean
+  comparaisonMax: number
 }
 
+/**
+ * Source de verite unique pour le gating Free / Pro / Agence.
+ * Consommee par `useEntitlements()` cote client et par les routes API serveur.
+ */
 export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, SubscriptionLimits> = {
   free: {
-    // OWNER MODE — toutes les fonctionnalités déverrouillées pour les tests
-    simulations: Infinity,
-    aiInsights: true,
-    export: true,
-    comparaison: true,
-    marketData: true,
+    simulations: 3,
+    aiInsights: false,
+    exportPdf: false,
+    exportExcel: false,
+    bankReport: false,
+    comparaison: false,
+    patrimoine: false,
+    marketDataFull: false,
+    whiteLabel: false,
+    comparaisonMax: 0,
   },
   pro: {
-    simulations: 50,
+    simulations: Infinity,
     aiInsights: true,
-    export: true,
+    exportPdf: true,
+    exportExcel: true,
+    bankReport: true,
     comparaison: true,
-    marketData: true,
+    patrimoine: true,
+    marketDataFull: true,
+    whiteLabel: false,
+    comparaisonMax: 5,
   },
   business: {
     simulations: Infinity,
     aiInsights: true,
-    export: true,
+    exportPdf: true,
+    exportExcel: true,
+    bankReport: true,
     comparaison: true,
-    marketData: true,
+    patrimoine: true,
+    marketDataFull: true,
+    whiteLabel: true,
+    comparaisonMax: Infinity,
   },
 }
+
+/**
+ * Bypass dev (jamais active en prod) — permet de tester en Free
+ * sans bloquer le developpement local. Mettre NEXT_PUBLIC_BYPASS_LIMITS=true.
+ */
+export const ENTITLEMENT_BYPASS =
+  process.env.NEXT_PUBLIC_BYPASS_LIMITS === 'true'

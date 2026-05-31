@@ -767,10 +767,10 @@ export default function SettingsPage() {
                         Passez à Pro pour débloquer les exports PDF, le dossier bancaire et les simulations illimitées.
                       </p>
                       <Link
-                        href="/#pricing"
+                        href="/checkout/start?plan=pro&cycle=annual"
                         className="flex items-center justify-center gap-2 w-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold py-3 rounded-xl text-sm transition-all"
                       >
-                        Passer à Pro — 19€/mois
+                        Passer à Pro — 12,90€/mois
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>

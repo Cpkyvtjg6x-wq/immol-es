@@ -4,6 +4,7 @@ import { Instrument_Serif } from 'next/font/google'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider } from '@/lib/auth-context'
 import { ThemeProvider } from '@/components/app/ThemeProvider'
+import { UpgradeProvider } from '@/lib/upgrade-context'
 import './globals.css'
 
 const instrumentSerif = Instrument_Serif({
@@ -101,7 +102,9 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>
-              {children}
+              <UpgradeProvider>
+                {children}
+              </UpgradeProvider>
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>

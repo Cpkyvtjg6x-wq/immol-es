@@ -11,6 +11,9 @@ import { calculateScore } from '@/lib/score'
 import { InvestmentParams, InvestmentResult, ScoreResult, AIInsight, FiscalRegime, FiscalResult, MarketData } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { useEntitlements } from '@/lib/hooks/useEntitlements'
+import { useUpgrade } from '@/lib/upgrade-context'
+import { useSimulations } from '@/lib/hooks/useSimulations'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { SaveModal } from '@/components/app/SaveModal'
 import { AppShell } from '@/components/app/AppShell'
@@ -156,6 +159,9 @@ export default function AnalysePage() {
   const lastFiscalRef = useRef<FiscalResult | null>(null)
   const lastResultRef = useRef<InvestmentResult | null>(null)
   const { user } = useAuth()
+  const { simulations } = useSimulations(user?.id ?? null)
+  const { canUseAI, canSaveMore, simulationLimit, remainingSimulations, isFree } = useEntitlements(simulations.length)
+  const { prompt: promptUpgrade } = useUpgrade()
 
   // Nettoyage de la clé de chargement (one-shot) après le montage —
   // robuste au double-rendu StrictMode (l'initialiseur l'a déjà lue).
@@ -259,6 +265,8 @@ export default function AnalysePage() {
 
   const handleGenerateAI = useCallback(async () => {
     if (!lastParams || !result) return
+    // Gating client (le serveur a aussi sa garde — défense en profondeur)
+    if (!canUseAI) { promptUpgrade('ai_insights'); return }
     setAiLoading(true)
     try {
       const res = await fetch('/api/ai-analyse', {
@@ -266,13 +274,22 @@ export default function AnalysePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ params: lastParams, result }),
       })
+      // 402 = Payment Required → l'utilisateur n'a pas le bon tier
+      if (res.status === 402) {
+        promptUpgrade('ai_insights')
+        return
+      }
       const data = await res.json()
       if (data.insights) setInsights(data.insights)
     } catch { console.error('AI analyse failed') }
     finally { setAiLoading(false) }
-  }, [lastParams, result])
+  }, [lastParams, result, canUseAI, promptUpgrade])
 
-  const handleSave = useCallback(() => setSaveModalOpen(true), [])
+  const handleSave = useCallback(() => {
+    // Gating quota de sauvegardes (Free = 3 max)
+    if (!canSaveMore()) { promptUpgrade('save_limit'); return }
+    setSaveModalOpen(true)
+  }, [canSaveMore, promptUpgrade])
 
   const handleFormReset = useCallback(() => {
     setResult(null)
@@ -706,7 +723,7 @@ export default function AnalysePage() {
                   marketLoading={marketLoading}
                   insights={insights}
                   aiLoading={aiLoading}
-                  isPro={false}
+                  isPro={!isFree}
                   onGenerateAI={handleGenerateAI}
                   onApplyScenario={(params) => {
                     setInitialParams(params)

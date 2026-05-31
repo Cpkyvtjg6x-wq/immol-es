@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { calculateInvestment } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
 import { generateInsights } from '@/lib/ai'
 import { getCityData } from '@/lib/market-data'
+import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '@/lib/types'
 import type { InvestmentParams, FiscalParams } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -29,6 +32,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Service IA non configuré' },
         { status: 503 }
+      )
+    }
+
+    // ── Gating tier (server-side, jamais faire confiance au client) ──────
+    // L'IA coûte de l'argent (OpenAI) → bloquer les Free pour éviter abus.
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll() },
+          setAll() {},
+        },
+      }
+    )
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentification requise', upgrade_required: 'ai_insights' },
+        { status: 401 }
+      )
+    }
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', user.id)
+      .single()
+    const tier = (profile?.subscription_tier ?? 'free') as SubscriptionTier
+    if (!SUBSCRIPTION_LIMITS[tier]?.aiInsights) {
+      return NextResponse.json(
+        {
+          error: "L'analyse IA est réservée au plan Pro",
+          upgrade_required: 'ai_insights',
+        },
+        { status: 402 } // 402 Payment Required — sémantique correcte
       )
     }
 

@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { useEntitlements } from '@/lib/hooks/useEntitlements'
+import { useUpgrade } from '@/lib/upgrade-context'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { loadCustomTags, resolveTag, type CustomTag } from '@/lib/tags'
 import { TagChip } from '@/components/app/TagChip'
@@ -491,6 +493,8 @@ export default function PortfolioPage() {
   const { user, loading: authLoading } = useAuth()
   const { simulations, loading, setStatus, saveSimulation } = useSimulations(user?.id ?? null)
   const toast = useToast()
+  const { canTrackPatrimoine } = useEntitlements(simulations.length)
+  const { prompt: promptUpgrade } = useUpgrade()
   const customTags = useMemo(() => loadCustomTags(user?.id ?? null), [user?.id])
 
   const ownedCount = simulations.filter((s) => s.status === 'possede').length
@@ -581,7 +585,7 @@ export default function PortfolioPage() {
               Analyse complète
             </Link>
             <button
-              onClick={() => setAddOpen(true)}
+              onClick={() => { if (!canTrackPatrimoine) { promptUpgrade('patrimoine'); return } setAddOpen(true) }}
               className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 font-semibold px-4 py-2 rounded-xl text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -633,7 +637,7 @@ export default function PortfolioPage() {
                 </p>
                 {scope === 'possede' && (
                   <button
-                    onClick={() => setAddOpen(true)}
+                    onClick={() => { if (!canTrackPatrimoine) { promptUpgrade('patrimoine'); return } setAddOpen(true) }}
                     className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm px-5 py-2.5 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] mb-3"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -743,7 +747,14 @@ export default function PortfolioPage() {
             {/* ── Section 2 : Comparaison des biens ── */}
             <section>
               <SectionTitle sub="Triez par n'importe quelle métrique · survolez pour marquer un bien détenu">Classement & comparaison</SectionTitle>
-              <ComparaisonBiens simulations={view} onMarkOwned={setOwnModalSim} customTags={customTags} />
+              <ComparaisonBiens
+                simulations={view}
+                onMarkOwned={(sim) => {
+                  if (!canTrackPatrimoine) { promptUpgrade('patrimoine'); return }
+                  setOwnModalSim(sim)
+                }}
+                customTags={customTags}
+              />
             </section>
 
             {/* ── Sections 3 & 4 : côte à côte ── */}

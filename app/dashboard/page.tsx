@@ -30,6 +30,8 @@ import { TagChip } from '@/components/app/TagChip'
 import { loadCustomTags, resolveTag } from '@/lib/tags'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { useEntitlements } from '@/lib/hooks/useEntitlements'
+import { useUpgrade } from '@/lib/upgrade-context'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { formatCurrency, formatPct, formatDate } from '@/lib/utils'
@@ -234,6 +236,8 @@ export default function DashboardPage() {
   const { simulations, loading: simsLoading, deleteSimulation, toggleFavorite, setStatus } = useSimulations(
     user?.id ?? null
   )
+  const { canTrackPatrimoine, canCompare, canBankReport } = useEntitlements(simulations.length)
+  const { prompt: promptUpgrade } = useUpgrade()
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [checkoutBanner, setCheckoutBanner] = useState(false)
   const [search, setSearch] = useState('')
@@ -264,6 +268,7 @@ export default function DashboardPage() {
   }
 
   function openBankReport(sim: SavedSimulation) {
+    if (!canBankReport) { promptUpgrade('bank_report'); return }
     if (sim.params && Object.keys(sim.params).length > 0) {
       sessionStorage.setItem('immolyse_last_params', JSON.stringify(sim.params))
     }
@@ -427,7 +432,10 @@ export default function DashboardPage() {
         tone: 'info',
         title: 'Comparez vos meilleurs biens',
         desc: bestByNet ? `${bestByNet.name} mène à ${formatPct(bestByNet.rendementNet)} net` : 'Décidez sur des données objectives',
-        onClick: () => router.push('/comparer'),
+        onClick: () => {
+          if (!canCompare) { promptUpgrade('comparaison'); return }
+          router.push('/comparer')
+        },
       })
     }
     if (best) {
@@ -1000,9 +1008,13 @@ export default function DashboardPage() {
                                 </div>
                                 <div className="flex items-center gap-1 justify-end opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); setOwnModalSim(sim) }}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      if (!canTrackPatrimoine) { promptUpgrade('patrimoine'); return }
+                                      setOwnModalSim(sim)
+                                    }}
                                     className={`w-7 h-7 rounded-lg hover:bg-th-surface3 flex items-center justify-center transition-colors ${sim.status === 'possede' ? 'text-emerald-500' : 'text-th-text-3 hover:text-emerald-500'}`}
-                                    title={sim.status === 'possede' ? 'Bien détenu' : 'Marquer comme détenu'}
+                                    title={canTrackPatrimoine ? (sim.status === 'possede' ? 'Bien détenu' : 'Marquer comme détenu') : 'Patrimoine réservé au plan Pro'}
                                   >
                                     <Building2 className="w-3.5 h-3.5" />
                                   </button>
@@ -1111,15 +1123,21 @@ export default function DashboardPage() {
                 <p className="text-[10px] font-semibold text-th-text-2 uppercase tracking-widest mb-4">Actions rapides</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
-                    { Icon: Building2, title: 'Analyser un bien', desc: 'Calculateur complet : paramètres, régimes fiscaux et projection', cta: 'Lancer', href: '/analyse', accent: true },
-                    { Icon: ArrowLeftRight, title: 'Comparer des biens', desc: 'Mettez plusieurs biens côte à côte pour décider objectivement', cta: 'Comparer', href: '/comparer', accent: false },
-                    { Icon: FileText, title: 'Dossier bancaire', desc: 'Export PDF professionnel pour votre dossier de financement', cta: isPro ? 'Exporter' : 'Pro requis', href: '/rapport-bancaire', accent: false },
+                    { Icon: Building2, title: 'Analyser un bien', desc: 'Calculateur complet : paramètres, régimes fiscaux et projection', cta: 'Lancer', href: '/analyse', accent: true, locked: false, gate: null as null | 'comparaison' | 'bank_report' },
+                    { Icon: ArrowLeftRight, title: 'Comparer des biens', desc: 'Mettez plusieurs biens côte à côte pour décider objectivement', cta: canCompare ? 'Comparer' : 'Pro requis', href: '/comparer', accent: false, locked: !canCompare, gate: 'comparaison' as const },
+                    { Icon: FileText, title: 'Dossier bancaire', desc: 'Export PDF professionnel pour votre dossier de financement', cta: canBankReport ? 'Exporter' : 'Pro requis', href: '/rapport-bancaire', accent: false, locked: !canBankReport, gate: 'bank_report' as const },
                   ].map((it) => {
                     const Icon = it.Icon
                     return (
                       <motion.div key={it.title} whileHover={{ y: -4 }} transition={{ type: 'spring', stiffness: 380, damping: 26 }}>
                         <Link
-                          href={it.href}
+                          href={it.locked ? '#' : it.href}
+                          onClick={(e) => {
+                            if (it.locked && it.gate) {
+                              e.preventDefault()
+                              promptUpgrade(it.gate)
+                            }
+                          }}
                           className="block rounded-2xl p-5 h-full"
                           style={{ background: glassBg, border: `1px solid ${it.accent ? 'rgba(16,185,129,0.28)' : glassBorder}`, backdropFilter: 'blur(14px)' }}
                         >
@@ -1128,7 +1146,7 @@ export default function DashboardPage() {
                           </div>
                           <p className="text-sm font-semibold text-th-text-1">{it.title}</p>
                           <p className="text-xs text-th-text-2 mt-1 leading-relaxed">{it.desc}</p>
-                          <span className={`inline-flex items-center gap-1 mt-4 text-xs font-semibold ${it.accent ? 'text-emerald-500' : 'text-th-text-1'}`}>
+                          <span className={`inline-flex items-center gap-1 mt-4 text-xs font-semibold ${it.accent ? 'text-emerald-500' : it.locked ? 'text-amber-400' : 'text-th-text-1'}`}>
                             {it.cta} <ArrowRight className="w-3.5 h-3.5" />
                           </span>
                         </Link>

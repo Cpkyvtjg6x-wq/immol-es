@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AppShell } from '@/components/app/AppShell'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import { useSimulations, SavedSimulation } from '@/lib/hooks/useSimulations'
 import { formatCurrency, formatPct } from '@/lib/utils'
 import { IconStar, IconLightBulb } from '@/components/ui/icons'
@@ -285,6 +286,7 @@ export default function ComparerPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const { simulations, loading: simsLoading } = useSimulations(user?.id ?? null)
+  const { canCompare } = useEntitlements()
 
   const [selected, setSelected] = useState<(SavedSimulation | null)[]>([null, null, null])
 
@@ -320,6 +322,48 @@ export default function ComparerPage() {
   }
 
   const activeCount = selected.filter(Boolean).length
+
+  // Gating Free : afficher un mur Pro plutôt qu'une page vide ou cassée
+  if (!canCompare) {
+    return (
+      <AppShell>
+        <div className="min-h-screen bg-th-bg text-th-text-1 flex items-center justify-center p-6">
+          <div className="max-w-md text-center space-y-5">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center">
+              <svg className="w-7 h-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h8M8 12h8M8 17h5m4-10v10m-7-10v10" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold">Comparaison multi-biens</h1>
+            <p className="text-sm text-th-text-2">
+              Mettez jusqu&apos;à 5 simulations côte à côte (rentabilité, cashflow, financement, revente) pour
+              identifier le meilleur investissement objectivement.
+            </p>
+            <p className="text-xs text-amber-400 font-semibold uppercase tracking-wider">
+              Fonctionnalité réservée au plan Pro
+            </p>
+            <div className="flex flex-col gap-2 pt-2">
+              <Link
+                href="/checkout/start?plan=pro&cycle=annual"
+                className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3 px-4 rounded-xl text-sm transition-all"
+              >
+                Essai 14 jours gratuit
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <Link
+                href="/dashboard"
+                className="text-xs text-th-text-2 hover:text-th-text-1 underline underline-offset-2"
+              >
+                Revenir au dashboard
+              </Link>
+            </div>
+          </div>
+        </div>
+      </AppShell>
+    )
+  }
 
   return (
     <AppShell>

@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 import { InvestmentResult, FiscalRegime, InvestmentParams, ScoreResult } from '@/lib/types'
+import { useEntitlements } from '@/lib/hooks/useEntitlements'
+import { useUpgrade } from '@/lib/upgrade-context'
 
 interface Props {
   result: InvestmentResult
@@ -139,9 +141,12 @@ async function generateExcel(
 export function ExportButtons({ result, fiscalResults, params, score, simName = 'Simulation' }: Props) {
   const [pdfLoading, setPdfLoading] = useState(false)
   const [xlsxLoading, setXlsxLoading] = useState(false)
+  const { canExportPdf, canExportExcel } = useEntitlements()
+  const { prompt } = useUpgrade()
 
   const handlePDF = async () => {
     if (pdfLoading) return
+    if (!canExportPdf) { prompt('export_pdf'); return }
     setPdfLoading(true)
     try {
       await generatePDF(result, fiscalResults ?? null, params ?? null, score ?? null, simName)
@@ -152,6 +157,7 @@ export function ExportButtons({ result, fiscalResults, params, score, simName = 
 
   const handleExcel = async () => {
     if (xlsxLoading) return
+    if (!canExportExcel) { prompt('export_excel'); return }
     setXlsxLoading(true)
     try {
       await generateExcel(result, fiscalResults ?? null, params ?? null, simName)
@@ -160,13 +166,21 @@ export function ExportButtons({ result, fiscalResults, params, score, simName = 
     }
   }
 
+  // Icône cadenas affichée en superposition discrète pour les Free
+  const Lock = () => (
+    <svg className="w-3 h-3 absolute -top-1 -right-1 text-amber-400 bg-th-surface rounded-full p-[1px]" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 016 0v3H9z" />
+    </svg>
+  )
+
   return (
     <div className="flex items-center gap-2">
       {/* PDF */}
       <button
         onClick={handlePDF}
         disabled={pdfLoading}
-        className="flex items-center gap-1.5 text-[12px] font-semibold text-th-text-1 bg-th-surface2 border border-th-border px-3 py-1.5 rounded-lg hover:bg-th-surface3 hover:border-th-border-med transition-all disabled:opacity-60 disabled:cursor-wait"
+        title={canExportPdf ? 'Exporter en PDF' : 'PDF complet réservé au plan Pro — cliquez pour en savoir plus'}
+        className="relative flex items-center gap-1.5 text-[12px] font-semibold text-th-text-1 bg-th-surface2 border border-th-border px-3 py-1.5 rounded-lg hover:bg-th-surface3 hover:border-th-border-med transition-all disabled:opacity-60 disabled:cursor-wait"
       >
         {pdfLoading ? (
           <div className="w-3.5 h-3.5 border border-th-border border-t-red-400 rounded-full animate-spin" />
@@ -176,13 +190,15 @@ export function ExportButtons({ result, fiscalResults, params, score, simName = 
           </svg>
         )}
         {pdfLoading ? 'PDF…' : 'PDF'}
+        {!canExportPdf && <Lock />}
       </button>
 
       {/* Excel */}
       <button
         onClick={handleExcel}
         disabled={xlsxLoading}
-        className="flex items-center gap-1.5 text-[12px] font-semibold text-th-text-1 bg-th-surface2 border border-th-border px-3 py-1.5 rounded-lg hover:bg-th-surface3 hover:border-th-border-med transition-all disabled:opacity-60 disabled:cursor-wait"
+        title={canExportExcel ? 'Exporter en Excel' : 'Export Excel réservé au plan Pro — cliquez pour en savoir plus'}
+        className="relative flex items-center gap-1.5 text-[12px] font-semibold text-th-text-1 bg-th-surface2 border border-th-border px-3 py-1.5 rounded-lg hover:bg-th-surface3 hover:border-th-border-med transition-all disabled:opacity-60 disabled:cursor-wait"
       >
         {xlsxLoading ? (
           <div className="w-3.5 h-3.5 border border-th-border border-t-emerald-400 rounded-full animate-spin" />
@@ -192,6 +208,7 @@ export function ExportButtons({ result, fiscalResults, params, score, simName = 
           </svg>
         )}
         {xlsxLoading ? 'Excel…' : 'Excel'}
+        {!canExportExcel && <Lock />}
       </button>
     </div>
   )

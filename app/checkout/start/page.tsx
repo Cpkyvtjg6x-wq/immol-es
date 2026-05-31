@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
@@ -20,6 +20,22 @@ import { createBrowserSupabaseClient } from '@/lib/supabase'
  * conservant l'intention (?redirect=checkout&plan=…&cycle=…).
  */
 export default function CheckoutStartPage() {
+  // Next.js 14 exige un <Suspense> autour de useSearchParams() pour permettre
+  // le prerender statique. On wrap le composant qui le consomme.
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
+          <div className="w-12 h-12 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
+        </div>
+      }
+    >
+      <CheckoutStartInner />
+    </Suspense>
+  )
+}
+
+function CheckoutStartInner() {
   const router = useRouter()
   const params = useSearchParams()
   const [error, setError] = useState<string | null>(null)

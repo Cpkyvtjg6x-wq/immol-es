@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 /**
  * Route de bascule signup → Stripe Checkout.
@@ -71,36 +70,28 @@ function CheckoutStartInner() {
       return
     }
 
+    // URL de retour vers ici en conservant le plan/cycle choisis
+    const nextUrl = `/checkout/start?plan=${plan}&cycle=${cycle}`
+
     void (async () => {
-      // URL de retour vers ici en conservant le plan/cycle choisis
-      const nextUrl = `/checkout/start?plan=${plan}&cycle=${cycle}`
-
       try {
-        // 1) Check session côté client (rapide, pas de round-trip serveur)
-        const supabase = createBrowserSupabaseClient()
-        const { data: { user } } = await supabase.auth.getUser()
-
-        if (!user) {
-          setStatus('Redirection vers l\'inscription…')
-          // Pas de compte / pas connecté → envoyer vers signup (un user qui
-          // clique "Essai 14 jours" n'a quasi-jamais déjà un compte).
-          // /auth/signup gère `?next=` et chaînera sur /checkout/start après.
-          router.replace(`/auth/signup?next=${encodeURIComponent(nextUrl)}`)
-          return
-        }
-
+        // IMPORTANT : on ne checke PAS la session côté client ici.
+        // Après un OAuth callback, le client Supabase browser ne voit pas
+        // tout de suite les cookies fraîchement posés par /auth/callback
+        // côté serveur → boucle infinie signup ↔ /checkout/start.
+        // On appelle directement l'API qui lit les cookies SSR correctement,
+        // et on traite 401 comme "pas connecté" → redirige vers signup.
         setStatus('Création de la session de paiement…')
         const res = await fetch('/api/create-checkout-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ priceId, planName: plan }),
+          credentials: 'same-origin',
         })
 
-        // 2) Désync client/serveur : le client voit une session, le serveur
-        //    n'a pas le cookie → on renvoie sur login en conservant l'intention.
         if (res.status === 401) {
-          setStatus('Reconnexion nécessaire…')
-          router.replace(`/auth/login?next=${encodeURIComponent(nextUrl)}`)
+          setStatus('Redirection vers l\'inscription…')
+          router.replace(`/auth/signup?next=${encodeURIComponent(nextUrl)}`)
           return
         }
 

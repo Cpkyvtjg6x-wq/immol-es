@@ -104,7 +104,11 @@ function CheckoutStartInner() {
         if (!data.url) throw new Error('Réponse Stripe invalide (pas d\'URL)')
 
         setStatus('Redirection vers Stripe…')
-        window.location.href = data.url
+        // location.replace au lieu de .href : Stripe REMPLACE /checkout/start
+        // dans l'historique du navigateur. Quand l'utilisateur clique "back"
+        // depuis Stripe, il atterrit directement sur la landing au lieu de
+        // /checkout/start qui re-fire l'API et le piège dans une boucle.
+        window.location.replace(data.url)
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Erreur inconnue'
         setError(msg)

@@ -48,12 +48,21 @@ export async function POST(req: NextRequest) {
       metadata: {
         userId: user.id,
         planName: planName ?? 'pro',
+        // Le webhook lit metadata.tier (cf. getTierFromSession) — mapping
+        // plan UI → tier DB : 'pro' → 'pro', 'agency' → 'business'.
+        tier: planName === 'agency' ? 'business' : 'pro',
       },
       subscription_data: {
         trial_period_days: 14,
-        metadata: { userId: user.id },
+        metadata: {
+          userId: user.id,
+          tier: planName === 'agency' ? 'business' : 'pro',
+        },
       },
-      success_url: `${appUrl}/dashboard?checkout=success&plan=${planName ?? 'pro'}`,
+      // Stripe substitue automatiquement {CHECKOUT_SESSION_ID} par l'ID réel.
+      // La page /checkout/success retrouve la session côté serveur pour afficher
+      // les détails (fin d'essai, plan, etc.).
+      success_url: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${planName ?? 'pro'}`,
       cancel_url: `${appUrl}/#pricing`,
     })
 

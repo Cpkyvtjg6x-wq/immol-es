@@ -62,10 +62,10 @@ export default function ContactPage() {
             <div className="bg-th-surface border border-th-border rounded-xl p-5">
               <div className="text-xs text-th-text-2 uppercase tracking-wider mb-3">Tarif Agence</div>
               <div className="flex items-end gap-1 mb-1">
-                <span className="text-3xl font-black text-th-text-1">79€</span>
+                <span className="text-3xl font-black text-th-text-1">59€</span>
                 <span className="text-th-text-2 text-sm mb-0.5">/mois</span>
               </div>
-              <div className="text-xs text-emerald-500 font-medium">ou 59€/mois facturé annuellement</div>
+              <div className="text-xs text-emerald-500 font-medium">ou 39€/mois facturé annuellement</div>
             </div>
           </div>
 

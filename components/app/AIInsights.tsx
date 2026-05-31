@@ -51,9 +51,12 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
               Optimisation fiscale, analyse de risques et recommandations personnalisées avec le plan Pro.
             </p>
           </div>
-          <button className="text-sm font-semibold bg-amber-500/[0.14] text-amber-400 border border-amber-500/20 px-4 py-2 rounded-xl hover:bg-amber-500/20 transition-colors">
-            Passer à Pro — 29€/mois
-          </button>
+          <a
+            href="/checkout/start?plan=pro&cycle=annual"
+            className="text-sm font-semibold bg-amber-500/[0.14] text-amber-400 border border-amber-500/20 px-4 py-2 rounded-xl hover:bg-amber-500/20 transition-colors"
+          >
+            Passer à Pro — 12,90€/mois
+          </a>
         </div>
       </div>
     )

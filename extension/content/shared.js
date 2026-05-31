@@ -838,6 +838,13 @@ function immoraInit({ isDetailPage, extractData, source, maxRetries = 5, retryDe
         immoraShowPhotoUpgrade()
         return null
       }
+      // 503 = ANTHROPIC_API_KEY manquant sur le serveur → on cache silencieusement
+      // (problème de config infra, pas la faute de l'utilisateur)
+      if (r.status === 503) {
+        immoraHidePhotoLoading()
+        console.warn('[IMMORA photos] serveur non configuré (503)')
+        return null
+      }
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
       return r.json()
     })

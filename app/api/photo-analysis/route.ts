@@ -187,16 +187,10 @@ function parseAIResponse(text: string): PhotoAnalysisResult | null {
 // ── POST ──────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(
-      { error: 'Service vision non configuré (ANTHROPIC_API_KEY manquant)' },
-      { status: 503, headers: CORS }
-    )
-  }
-
   // ── Gating tier (server-side) ─────────────────────────────────────────────
-  // L'analyse photo Claude Haiku coûte de l'argent à chaque appel — on bloque
-  // les Free / anonymes pour éviter abus et fuite de coûts API.
+  // On check l'auth EN PREMIER pour que les Free voient le CTA upgrade (402)
+  // au lieu d'une erreur de config serveur (503) si ANTHROPIC_API_KEY manque.
+  // L'analyse photo Claude Haiku coûte de l'argent → on bloque les Free/anon.
   const auth = await authenticateExtensionRequest(req.headers.get('authorization'))
   if (!auth.canUseAI) {
     return NextResponse.json(
@@ -206,6 +200,14 @@ export async function POST(req: NextRequest) {
         tier: auth.tier,
       },
       { status: 402, headers: { ...CORS, 'x-immora-tier': auth.tier } },
+    )
+  }
+
+  // Auth OK + tier Pro/Agence → on vérifie la config serveur
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      { error: 'Service vision non configuré (ANTHROPIC_API_KEY manquant)' },
+      { status: 503, headers: CORS }
     )
   }
 

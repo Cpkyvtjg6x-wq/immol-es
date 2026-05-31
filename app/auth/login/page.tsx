@@ -9,13 +9,21 @@ import { createBrowserSupabaseClient } from '@/lib/supabase'
 
 // ── Sous-composant isolé pour useSearchParams (requis par Next.js 14) ─────────
 // useSearchParams() doit être dans un <Suspense> — on l'isole ici.
-function OAuthErrorBanner({ onError }: { onError: (msg: string) => void }) {
+function UrlParamsReader({
+  onError,
+  onNext,
+}: {
+  onError: (msg: string) => void
+  onNext: (path: string) => void
+}) {
   const searchParams = useSearchParams()
   useEffect(() => {
     if (searchParams.get('error') === 'oauth_failed') {
       onError('La connexion Google a échoué. Réessayez ou utilisez email + mot de passe.')
     }
-  }, [searchParams, onError])
+    const next = searchParams.get('next')
+    if (next && next.startsWith('/')) onNext(next)
+  }, [searchParams, onError, onNext])
   return null
 }
 
@@ -26,6 +34,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [nextPath, setNextPath] = useState<string>('/dashboard')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,7 +48,7 @@ export default function LoginPage() {
       setError('Email ou mot de passe incorrect.')
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      router.push(nextPath)
     }
   }
 
@@ -49,16 +58,16 @@ export default function LoginPage() {
       provider: 'google',
       options: {
         // Pointe sur /auth/callback pour l'échange PKCE côté serveur (Safari)
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     })
   }
 
   return (
     <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
-      {/* Lit ?error= dans l'URL sans bloquer le prerender */}
+      {/* Lit ?error= et ?next= dans l'URL sans bloquer le prerender */}
       <Suspense fallback={null}>
-        <OAuthErrorBanner onError={setError} />
+        <UrlParamsReader onError={setError} onNext={setNextPath} />
       </Suspense>
 
       {/* Background gradient */}

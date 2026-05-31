@@ -89,47 +89,24 @@ export function Pricing() {
       router.push('/auth/signup')
       return
     }
-    if (plan.id === 'agency') {
-      router.push('/contact')
-      return
-    }
 
-    const priceId = annual ? plan.priceId.annual : plan.priceId.monthly
+    const cycle = annual ? 'annual' : 'monthly'
 
     // Vérifier si l'utilisateur est connecté
     const supabase = createBrowserSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      // Pas connecté → inscription puis checkout
-      router.push(`/auth/signup?redirect=checkout&plan=${plan.id}`)
+      // Pas connecté → inscription en conservant l'intention de paiement.
+      // /auth/signup gère ?next= et déclenche /checkout/start après confirmation email.
+      const next = `/checkout/start?plan=${plan.id}&cycle=${cycle}`
+      router.push(`/auth/signup?next=${encodeURIComponent(next)}`)
       return
     }
 
-    if (!priceId) {
-      // Prix Stripe non configuré — fallback vers contact
-      router.push('/contact')
-      return
-    }
-
+    // Connecté → on passe par /checkout/start (qui valide le price + crée la session).
     setLoadingPlan(plan.id)
-    try {
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, planName: plan.id }),
-      })
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        console.error('Checkout error:', data.error)
-      }
-    } catch (err) {
-      console.error('Checkout fetch error:', err)
-    } finally {
-      setLoadingPlan(null)
-    }
+    router.push(`/checkout/start?plan=${plan.id}&cycle=${cycle}`)
   }
 
   return (

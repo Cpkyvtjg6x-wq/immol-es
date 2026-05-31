@@ -154,14 +154,16 @@ function getTierFromSubscription(subscription: Stripe.Subscription): string {
   const priceId = subscription.items.data[0]?.price?.id
   if (!priceId) return 'pro'
 
+  // Les price IDs sont publics (préfixe NEXT_PUBLIC_) pour être lisibles par le client (Pricing.tsx).
+  // Côté serveur, on lit les mêmes variables.
   const agencyPrices = [
-    process.env.STRIPE_PRICE_AGENCY_MONTHLY,
-    process.env.STRIPE_PRICE_AGENCY_ANNUAL,
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY,
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL,
   ].filter(Boolean) as string[]
 
   const proPrices = [
-    process.env.STRIPE_PRICE_PRO_MONTHLY,
-    process.env.STRIPE_PRICE_PRO_ANNUAL,
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY,
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL,
   ].filter(Boolean) as string[]
 
   if (agencyPrices.includes(priceId)) return 'business'

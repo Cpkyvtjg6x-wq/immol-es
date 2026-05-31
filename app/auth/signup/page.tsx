@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
@@ -14,6 +14,23 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  // Destination post-auth (ex : `/checkout/start?plan=pro&cycle=annual`)
+  const [nextPath, setNextPath] = useState<string>('/dashboard')
+
+  // Lit ?next=, ou ?redirect=checkout&plan=&cycle= (compat ancienne Pricing).
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search)
+    const explicitNext = sp.get('next')
+    if (explicitNext && explicitNext.startsWith('/')) {
+      setNextPath(explicitNext)
+      return
+    }
+    if (sp.get('redirect') === 'checkout') {
+      const plan = sp.get('plan') ?? 'pro'
+      const cycle = sp.get('cycle') ?? 'annual'
+      setNextPath(`/checkout/start?plan=${encodeURIComponent(plan)}&cycle=${encodeURIComponent(cycle)}`)
+    }
+  }, [])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,22 +44,34 @@ export default function SignupPage() {
     }
 
     const supabase = createBrowserSupabaseClient()
-    const { error: authError } = await supabase.auth.signUp({
+    const { data, error: authError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
         data: { full_name: form.name },
+        // Si la confirmation email est activée côté Supabase, l'utilisateur
+        // arrive sur /auth/callback?next=… puis sur la destination voulue.
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     })
 
     if (authError) {
       setError(authError.message)
       setLoading(false)
-    } else {
-      // Déclencher l'email de bienvenue (fire & forget)
-      fetch('/api/send-welcome-email', { method: 'POST' }).catch(() => null)
-      setSuccess(true)
+      return
     }
+
+    // Déclencher l'email de bienvenue (fire & forget)
+    fetch('/api/send-welcome-email', { method: 'POST' }).catch(() => null)
+
+    // Si la confirmation email est désactivée, Supabase crée une session immédiate
+    // → on saute l'écran "vérifiez votre email" et on file directement à destination.
+    if (data?.session) {
+      router.push(nextPath)
+      return
+    }
+
+    setSuccess(true)
   }
 
   const handleGoogleLogin = async () => {
@@ -50,7 +79,7 @@ export default function SignupPage() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       },
     })
   }

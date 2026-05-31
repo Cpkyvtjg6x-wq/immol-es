@@ -229,12 +229,20 @@
 /* ── ① HERO — Score ring + verdict ───────────────────────────────────────── */
 #immora-hero {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 16px 14px;
+  align-items: center;          /* vertical center du ring + texte */
+  gap: 16px;
+  padding: 20px 18px 16px;
 }
 
-#immora-score-ring { position: relative; width: 68px; height: 68px; flex-shrink: 0; }
+#immora-score-ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 #immora-score-ring svg { display: block; }
 
@@ -250,22 +258,63 @@
   line-height: 1;
 }
 
-#immora-hero-text { flex: 1; min-width: 0; }
+#immora-hero-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;      /* aligne verticalement au centre du ring */
+}
 
-#immora-verdict-emoji { font-size: 14px; line-height: 1; margin-bottom: 2px; }
+#immora-verdict-emoji { font-size: 16px; line-height: 1; margin-bottom: 3px; }
 
 #immora-verdict-label {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   color: #fff;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
+  line-height: 1.2;
 }
 
 #immora-verdict-sub {
-  font-size: 11px;
+  font-size: 11.5px;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 500;
+  line-height: 1.3;
+}
+
+/* ── Warnings (DPE F/G) ─────────────────────────────────────────────────── */
+#immora-warnings {
+  padding: 0 16px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.immora-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  border-radius: 9px;
+}
+
+.immora-warning svg { flex-shrink: 0; margin-top: 1px; }
+
+.immora-warning-critical {
+  background: rgba(239, 68, 68, 0.10);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.immora-warning-high {
+  background: rgba(245, 158, 11, 0.10);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 /* ── ② Sous-scores ───────────────────────────────────────────────────────── */

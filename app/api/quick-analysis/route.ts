@@ -67,8 +67,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Prix manquant ou invalide' }, { status: 400, headers: CORS })
     }
 
-    // ── 1. Données marché local ────────────────────────────────────────────────
-    const marcheRef = getMarcheRef(ville, codePostal)
+    // ── 1. Données marché local (ajustées par quartier) ───────────────────────
+    // On concatène le quartier extrait + l'adresse + le titre pour maximiser
+    // les chances de matching sur les alias (ex: "Hauts de Massane" dans le
+    // titre suffit à appliquer le coefficient QPV −30%).
+    const quartierSearch = [body.quartier, body.adresse, body.titre, body.description]
+      .filter(Boolean).join(' ')
+    const marcheRef = getMarcheRef(ville, codePostal, quartierSearch || null)
 
     // ── 2. Estimation du loyer marché (source par ordre de priorité) ──────────
     // Priorité 1: loyer actuel mentionné dans l'annonce (le plus fiable)
@@ -107,6 +112,12 @@ export async function POST(req: NextRequest) {
     const fraisNotaire = calculerFraisNotaire(prixAchat, 'ancien')
     const apport = Math.round(prixAchat * apportPct)
 
+    // ⚠️ BUG MAJEUR FIX : DEFAULT_PARAMS a taux=0 et duree=0 → mensualité crédit
+    // calculée à 0 → cashflow artificiellement positif. On force les valeurs
+    // marché standard (3.5% sur 20 ans) sauf si le user Pro a configuré les siennes.
+    const taux  = auth.calcDefaults.tauxCredit  ?? 3.5
+    const duree = auth.calcDefaults.dureeCredit ?? 20
+
     // Estimation charges copro depuis la description ou référentiel
     const chargesCoproFinal = chargesCopro
       ?? estimerChargesCopro(surface ?? 50, etat, chauffage)
@@ -115,7 +126,30 @@ export async function POST(req: NextRequest) {
     const taxeFonciereFinal = taxeFonciere
       ?? estimerTaxeFonciere(prixAchat)
 
-    const travauxFinal: number = typeof body.travaux === 'number' && body.travaux > 0 ? body.travaux : 0
+    // ── Travaux énergétiques obligatoires si DPE F/G ───────────────────────
+    // Loi Climat & Résilience 2021 : G interdit à la location depuis 2025,
+    // F interdit dès 2028. Le bien DOIT être rénové pour être loué légalement.
+    // On estime un coût plancher d'isolation + chauffage (10 à 25k€ selon surface).
+    const dpeUpper = String(dpe).toUpperCase()
+    const surfaceForWorks = surface && surface > 5 ? surface : 50
+    let dpeWorksCost = 0
+    let dpeWarning: string | null = null
+    if (dpeUpper === 'G') {
+      // G = location interdite depuis 1er janv. 2025
+      dpeWorksCost = Math.round(surfaceForWorks * 450)   // ~450€/m² isolation+chauffage
+      dpeWarning = 'DPE G — location interdite depuis 2025. Travaux énergétiques nécessaires (env. ' + dpeWorksCost.toLocaleString('fr-FR') + '€).'
+    } else if (dpeUpper === 'F') {
+      // F = location interdite à partir de 2028
+      dpeWorksCost = Math.round(surfaceForWorks * 320)
+      dpeWarning = 'DPE F — location interdite dès 2028. Travaux à prévoir (env. ' + dpeWorksCost.toLocaleString('fr-FR') + '€).'
+    } else if (dpeUpper === 'E') {
+      // E = interdit en 2034 → marge, mais à signaler
+      dpeWorksCost = Math.round(surfaceForWorks * 180)
+    }
+
+    // Travaux totaux = travaux saisis dans l'annonce + travaux énergétiques DPE
+    const travauxBody: number = typeof body.travaux === 'number' && body.travaux > 0 ? body.travaux : 0
+    const travauxFinal: number = travauxBody + dpeWorksCost
 
     // ── Hypothèses réalistes pour l'extraction automatique ───────────────────
     // Le calculateur (DEFAULT_PARAMS) part à 0 sur la gestion, la GLI et le
@@ -154,6 +188,9 @@ export async function POST(req: NextRequest) {
       taxeFonciere: taxeFonciereFinal,
       assurancePno: Math.round(prixAchat * 0.001),
       cfe:          locType === 'meuble' ? 500 : 0,
+      // ⚠️ Crédit : sans ces valeurs DEFAULT_PARAMS met 0/0 → mensualité=0 → bug
+      taux,
+      duree,
       // Hypothèses réalistes (vs. 0 par défaut)
       gliPct,
       vacance,
@@ -295,6 +332,9 @@ export async function POST(req: NextRequest) {
         marketFull: auth.canFullMarketData,
         savePro:   !!auth.userId && (auth.tier === 'pro' || auth.tier === 'business'),
       },
+      // Avertissements forts (DPE F/G = bien invendable en location)
+      warnings: dpeWarning ? [{ severity: dpeUpper === 'G' ? 'critical' : 'high', message: dpeWarning, kind: 'dpe' }] : [],
+      dpeWorksCost,
     }, { status: 200, headers: respHeaders })
 
   } catch (err) {

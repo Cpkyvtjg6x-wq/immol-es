@@ -270,9 +270,11 @@ function immoraRenderResults(r) {
       fill.style.transition = 'width 900ms cubic-bezier(0.16,1,0.3,1)'
       fill.style.width = val + '%'
     })
-    // Ajoute le pourcentage en hover via title
     el.title = `${val}/100`
   })
+
+  // ── Bandeau d'avertissement DPE F/G (location interdite) ────────────────
+  immoraRenderWarnings(r.warnings ?? [])
 
   // KPIs
   const rb = document.getElementById('immo-rend-brut')
@@ -831,6 +833,12 @@ function immoraExtractEnrichissement(baseData) {
     if (l > 100 && l < 20000) loyerActuel = l
   }
 
+  // Titre + description envoyés au backend pour le matching quartier
+  // (alias quartiers Mosson / Hauts de Massane / Antigone / etc.)
+  const titre = document.querySelector('h1')?.textContent?.trim().slice(0, 200) || ''
+  const adresseEl = document.querySelector('[itemprop="address"], [class*="address" i], address')
+  const adresse = adresseEl?.textContent?.trim().slice(0, 200) || ''
+
   return {
     ...baseData,
     ...(cp         ? { codePostal: cp }         : {}),
@@ -841,6 +849,9 @@ function immoraExtractEnrichissement(baseData) {
     ...(chargesCopro ? { chargesCopro }         : {}),
     ...(taxeFonciere ? { taxeFonciere }         : {}),
     ...(loyerActuel  ? { loyerActuel }          : {}),
+    ...(titre        ? { titre }                : {}),
+    ...(adresse      ? { adresse }              : {}),
+    ...(desc         ? { description: desc.slice(0, 2000) } : {}),
     amenities,
   }
 }
@@ -1093,6 +1104,32 @@ function immoraShowPhotoLoading(nbPhotos) {
 function immoraHidePhotoLoading() {
   const el = document.getElementById('immora-photo-section')
   if (el) el.style.display = 'none'
+}
+
+// Bandeau d'avertissement (DPE F/G, autres severities)
+function immoraRenderWarnings(warnings) {
+  // Supprime un éventuel ancien bandeau
+  const existing = document.getElementById('immora-warnings')
+  if (existing) existing.remove()
+  if (!warnings || warnings.length === 0) return
+
+  const hero = document.getElementById('immora-hero')
+  if (!hero) return
+
+  const wrap = document.createElement('div')
+  wrap.id = 'immora-warnings'
+  wrap.innerHTML = warnings.map((w) => {
+    const isCritical = w.severity === 'critical'
+    return `<div class="immora-warning ${isCritical ? 'immora-warning-critical' : 'immora-warning-high'}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.85-2.77L13.85 4.78a2 2 0 00-3.7 0L3.15 16.23A2 2 0 005 19z"/>
+      </svg>
+      <span>${w.message}</span>
+    </div>`
+  }).join('')
+
+  // Insère juste après le hero (avant les sous-scores)
+  hero.parentNode.insertBefore(wrap, hero.nextSibling)
 }
 
 // CTA upgrade Pro quand l'analyse photos est gated (free → 402)

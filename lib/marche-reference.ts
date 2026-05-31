@@ -138,7 +138,7 @@ const VILLES: Record<string, MarcheData> = {
 }
 
 // ── Normalisation du nom de ville ─────────────────────────────────────────────
-function normaliserVille(ville: string): string {
+export function normaliserVille(ville: string): string {
   return ville
     .toLowerCase()
     .normalize('NFD')
@@ -149,30 +149,51 @@ function normaliserVille(ville: string): string {
 }
 
 // ── Lookup principal ──────────────────────────────────────────────────────────
-export function getMarcheRef(ville: string, codePostal?: string | null): MarcheResult {
+/**
+ * Récupère la référence marché pour une localisation.
+ *
+ * `quartierTexte` permet d'appliquer un ajustement intra-ville (Mosson −30%,
+ * Centre Antigone +20%, etc.). Ce texte peut être un nom de quartier extrait
+ * de l'annonce, l'adresse, ou même la description complète : on cherche les
+ * alias dedans (cf. lib/quartiers.ts).
+ */
+export function getMarcheRef(
+  ville: string,
+  codePostal?: string | null,
+  quartierTexte?: string | null,
+): MarcheResult {
   const DEFAULT: MarcheData = { prixM2: 3000, loyerMeuble: 12, loyerNu: 10, tension: 'moyenne' }
+  let baseResult: MarcheResult
 
   // 1. Code postal Paris exact
   if (codePostal && /^75\d{3}$/.test(codePostal) && PARIS_PAR_CP[codePostal]) {
-    return { ...PARIS_PAR_CP[codePostal], source: 'cp', villeNorm: 'paris', cpDetecte: codePostal }
+    baseResult = { ...PARIS_PAR_CP[codePostal], source: 'cp', villeNorm: 'paris', cpDetecte: codePostal }
+    return applyQuartierAdjustment(baseResult, ville, quartierTexte)
   }
 
   // 2. CP Île-de-France hors Paris → mapping partiel
   if (codePostal) {
     const dept = codePostal.slice(0, 2)
     const idfRef = IDF_PAR_DEPT[dept]
-    if (idfRef) return { ...idfRef, source: 'cp', villeNorm: normaliserVille(ville), cpDetecte: codePostal }
+    if (idfRef) {
+      baseResult = { ...idfRef, source: 'cp', villeNorm: normaliserVille(ville), cpDetecte: codePostal }
+      return applyQuartierAdjustment(baseResult, ville, quartierTexte)
+    }
   }
 
   // 3. Ville exacte
   if (ville) {
     const norm = normaliserVille(ville)
-    if (VILLES[norm]) return { ...VILLES[norm], source: 'exact', villeNorm: norm }
+    if (VILLES[norm]) {
+      baseResult = { ...VILLES[norm], source: 'exact', villeNorm: norm }
+      return applyQuartierAdjustment(baseResult, ville, quartierTexte)
+    }
 
     // Recherche partielle (Paris 11ème → paris)
     for (const [key, data] of Object.entries(VILLES)) {
       if (norm.startsWith(key) || key.startsWith(norm)) {
-        return { ...data, source: 'ville', villeNorm: key }
+        baseResult = { ...data, source: 'ville', villeNorm: key }
+        return applyQuartierAdjustment(baseResult, ville, quartierTexte)
       }
     }
 
@@ -182,9 +203,13 @@ export function getMarcheRef(ville: string, codePostal?: string | null): MarcheR
       if (arrMatch) {
         const n = parseInt(arrMatch[1])
         const cp = `750${String(n).padStart(2, '0')}`
-        if (PARIS_PAR_CP[cp]) return { ...PARIS_PAR_CP[cp], source: 'cp', villeNorm: 'paris', cpDetecte: cp }
+        if (PARIS_PAR_CP[cp]) {
+          baseResult = { ...PARIS_PAR_CP[cp], source: 'cp', villeNorm: 'paris', cpDetecte: cp }
+          return applyQuartierAdjustment(baseResult, ville, quartierTexte)
+        }
       }
-      return { ...VILLES['paris']!, source: 'ville', villeNorm: 'paris' }
+      baseResult = { ...VILLES['paris']!, source: 'ville', villeNorm: 'paris' }
+      return applyQuartierAdjustment(baseResult, ville, quartierTexte)
     }
   }
 
@@ -192,10 +217,35 @@ export function getMarcheRef(ville: string, codePostal?: string | null): MarcheR
   if (codePostal && codePostal.length >= 2) {
     const dept = codePostal.slice(0, 2)
     const deptRef = DEPT_FALLBACK[dept]
-    if (deptRef) return { ...deptRef, source: 'cp', villeNorm: normaliserVille(ville || ''), cpDetecte: codePostal }
+    if (deptRef) {
+      baseResult = { ...deptRef, source: 'cp', villeNorm: normaliserVille(ville || ''), cpDetecte: codePostal }
+      return applyQuartierAdjustment(baseResult, ville, quartierTexte)
+    }
   }
 
   return { ...DEFAULT, source: 'default', villeNorm: normaliserVille(ville || 'inconnue') }
+}
+
+// Helper : applique le coefficient quartier sur une ref marché de base.
+// Import dynamique pour éviter le cycle de dépendance avec lib/quartiers.
+function applyQuartierAdjustment(
+  base: MarcheResult,
+  ville: string,
+  quartierTexte: string | null | undefined,
+): MarcheResult {
+  if (!quartierTexte) return base
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getQuartierAdjustment } = require('./quartiers') as typeof import('./quartiers')
+  const adj = getQuartierAdjustment(ville, quartierTexte)
+  if (!adj) return base
+  return {
+    ...base,
+    prixM2:      Math.round(base.prixM2 * adj.coefPrix),
+    loyerMeuble: Math.round(base.loyerMeuble * adj.coefLoyer * 10) / 10,
+    loyerNu:     Math.round(base.loyerNu    * adj.coefLoyer * 10) / 10,
+    tension:     adj.tension ?? base.tension,
+    label:       (base.label ? base.label + ' — ' : '') + adj.label,
+  }
 }
 
 // ── Île-de-France par département ────────────────────────────────────────────

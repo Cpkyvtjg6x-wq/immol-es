@@ -72,16 +72,20 @@ function CheckoutStartInner() {
     }
 
     void (async () => {
+      // URL de retour vers ici en conservant le plan/cycle choisis
+      const nextUrl = `/checkout/start?plan=${plan}&cycle=${cycle}`
+
       try {
-        // Vérifie d'abord que l'utilisateur est connecté
+        // 1) Check session côté client (rapide, pas de round-trip serveur)
         const supabase = createBrowserSupabaseClient()
         const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
-          setStatus('Redirection vers la connexion…')
-          // Conserve l'intention dans l'URL — la page login renverra ici
-          const next = `/checkout/start?plan=${plan}&cycle=${cycle}`
-          router.replace(`/auth/login?next=${encodeURIComponent(next)}`)
+          setStatus('Redirection vers l\'inscription…')
+          // Pas de compte / pas connecté → envoyer vers signup (un user qui
+          // clique "Essai 14 jours" n'a quasi-jamais déjà un compte).
+          // /auth/signup gère `?next=` et chaînera sur /checkout/start après.
+          router.replace(`/auth/signup?next=${encodeURIComponent(nextUrl)}`)
           return
         }
 
@@ -91,6 +95,14 @@ function CheckoutStartInner() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ priceId, planName: plan }),
         })
+
+        // 2) Désync client/serveur : le client voit une session, le serveur
+        //    n'a pas le cookie → on renvoie sur login en conservant l'intention.
+        if (res.status === 401) {
+          setStatus('Reconnexion nécessaire…')
+          router.replace(`/auth/login?next=${encodeURIComponent(nextUrl)}`)
+          return
+        }
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({ error: 'erreur réseau' }))

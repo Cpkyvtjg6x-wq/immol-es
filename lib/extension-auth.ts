@@ -35,6 +35,11 @@ export interface UserCalcDefaults {
   locType?: 'meuble' | 'nu'
   dureeCredit?: number      // 20 (en années)
   tauxCredit?: number       // 3.5 (en %)
+  // Hypothèses de frais récurrents (extension)
+  gliPct?: number           // 2.5 = garantie loyer impayé
+  vacance?: number          // en mois de loyer/an
+  fraisComptable?: number   // €/an pour LMNP
+  fraisGestionPct?: number  // 0 = gestion perso, 8 = agence
 }
 
 export interface ExtensionAuth {
@@ -97,11 +102,15 @@ export async function authenticateExtensionRequest(
     const settings = (profile?.settings ?? {}) as Record<string, unknown>
     const cd = (settings.calculatorDefaults ?? {}) as Record<string, unknown>
     const calcDefaults: UserCalcDefaults = {
-      tmi:          typeof cd.tmi === 'number' ? cd.tmi : undefined,
-      apportPct:    typeof cd.apportPct === 'number' ? cd.apportPct : undefined,
-      locType:      cd.locType === 'meuble' || cd.locType === 'nu' ? cd.locType : undefined,
-      dureeCredit:  typeof cd.dureeCredit === 'number' ? cd.dureeCredit : undefined,
-      tauxCredit:   typeof cd.tauxCredit === 'number' ? cd.tauxCredit : undefined,
+      tmi:             typeof cd.tmi === 'number' ? cd.tmi : undefined,
+      apportPct:       typeof cd.apportPct === 'number' ? cd.apportPct : undefined,
+      locType:         cd.locType === 'meuble' || cd.locType === 'nu' ? cd.locType : undefined,
+      dureeCredit:     typeof cd.dureeCredit === 'number' ? cd.dureeCredit : undefined,
+      tauxCredit:      typeof cd.tauxCredit === 'number' ? cd.tauxCredit : undefined,
+      gliPct:          typeof cd.gliPct === 'number' ? cd.gliPct : undefined,
+      vacance:         typeof cd.vacance === 'number' ? cd.vacance : undefined,
+      fraisComptable:  typeof cd.fraisComptable === 'number' ? cd.fraisComptable : undefined,
+      fraisGestionPct: typeof cd.fraisGestionPct === 'number' ? cd.fraisGestionPct : undefined,
     }
 
     return {

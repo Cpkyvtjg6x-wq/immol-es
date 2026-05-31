@@ -117,6 +117,25 @@ export async function POST(req: NextRequest) {
 
     const travauxFinal: number = typeof body.travaux === 'number' && body.travaux > 0 ? body.travaux : 0
 
+    // ── Hypothèses réalistes pour l'extraction automatique ───────────────────
+    // Le calculateur (DEFAULT_PARAMS) part à 0 sur la gestion, la GLI et le
+    // comptable parce qu'il vise le mode Expert où le user saisit. Pour
+    // l'extension, on doit prendre des valeurs MARCHÉ réalistes, sinon le
+    // score est artificiellement gonflé.
+    //
+    // Choix des valeurs (références marché FR 2025) :
+    //   gliPct      : 2.5% du loyer (couverture standard impayés)
+    //   vacance     : 1 mois (moyenne FR, plus prudent que les 0,5 mois actuels)
+    //   comptable   : 700€/an si LMNP/meublé (obligatoire avec un compte CGA)
+    //   provision   : 5% du loyer (DEFAULT_PARAMS, on garde)
+    //   gestion     : 0% (assume gestion personnelle ; sera explicite dans la notice)
+    //
+    // Pour les Pro avec settings perso, on respecte LEUR choix.
+    const gliPct = locType === 'saisonnier' ? 0 : (auth.calcDefaults.gliPct ?? 2.5)
+    const vacance = auth.calcDefaults.vacance ?? 1.0
+    const fraisComptable = locType === 'meuble' ? (auth.calcDefaults.fraisComptable ?? 700) : 0
+    const fraisGestionPct = auth.calcDefaults.fraisGestionPct ?? 0
+
     const params: InvestmentParams = {
       ...DEFAULT_PARAMS,
       prixAchat,
@@ -135,6 +154,11 @@ export async function POST(req: NextRequest) {
       taxeFonciere: taxeFonciereFinal,
       assurancePno: Math.round(prixAchat * 0.001),
       cfe:          locType === 'meuble' ? 500 : 0,
+      // Hypothèses réalistes (vs. 0 par défaut)
+      gliPct,
+      vacance,
+      fraisComptable,
+      fraisGestionPct,
     }
 
     // ── 6. Calculs ────────────────────────────────────────────────────────────
@@ -220,10 +244,12 @@ export async function POST(req: NextRequest) {
       mensualite:      Math.round(result.mensualiteTotale),
       prixRevient:     Math.round(result.prixRevient),
 
-      // Score
+      // Score global + sous-scores (utilisés par le widget pour les jauges)
       score:      Math.round(score.global),
       scoreLbl:   score.label,
       scoreColor: score.color,
+      scoreSummary: score.summary,
+      subScores: score.subScores,
 
       // Fiscal
       bestRegime: bestRegime ? {

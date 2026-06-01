@@ -523,6 +523,7 @@ export interface SubscriptionLimits {
   marketDataFull: boolean
   whiteLabel: boolean
   comparaisonMax: number
+  gestionLocative: boolean
 }
 
 /**
@@ -541,6 +542,7 @@ export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, SubscriptionLimits> =
     marketDataFull: false,
     whiteLabel: false,
     comparaisonMax: 0,
+    gestionLocative: false,
   },
   pro: {
     simulations: Infinity,
@@ -553,6 +555,7 @@ export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, SubscriptionLimits> =
     marketDataFull: true,
     whiteLabel: false,
     comparaisonMax: 5,
+    gestionLocative: true,
   },
   business: {
     simulations: Infinity,
@@ -565,6 +568,7 @@ export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, SubscriptionLimits> =
     marketDataFull: true,
     whiteLabel: true,
     comparaisonMax: Infinity,
+    gestionLocative: true,
   },
 }
 

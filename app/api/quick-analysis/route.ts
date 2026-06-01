@@ -83,21 +83,41 @@ export async function POST(req: NextRequest) {
     let loyerEstimeFinal: number
     let loyerSource: 'annonce' | 'fourni' | 'marche' | 'fallback'
 
+    // Estimation marché (quartier-ajustée) — calculée dès qu'on a la surface.
+    // Sert à la fois de source n°3 ET de garde-fou anti-extraction-aberrante.
+    const loyerMarcheEstime = surface && surface > 5
+      ? estimerLoyerMarche(surface, locType, marcheRef, amenities, etage, etat, nbPieces)
+      : null
+
     if (loyerActuel && loyerActuel > 100) {
       loyerEstimeFinal = loyerActuel
       loyerSource = 'annonce'
     } else if (loyerEstime && loyerEstime > 100) {
       loyerEstimeFinal = loyerEstime
       loyerSource = 'fourni'
-    } else if (surface && surface > 5) {
-      loyerEstimeFinal = estimerLoyerMarche(
-        surface, locType, marcheRef, amenities, etage, etat, nbPieces
-      )
+    } else if (loyerMarcheEstime !== null) {
+      loyerEstimeFinal = loyerMarcheEstime
       loyerSource = 'marche'
     } else {
       // Fallback sur rendement cible si pas de surface
       loyerEstimeFinal = Math.round(prixAchat * (locType === 'meuble' ? 0.05 : 0.04) / 12)
       loyerSource = 'fallback'
+    }
+
+    // ── Garde-fou réalisme du loyer ────────────────────────────────────────────
+    // Un loyer "extrait de l'annonce" peut être faux : regex qui capte un €/m²,
+    // une charge, un loyer de référence d'encadrement, ou un mauvais nombre.
+    // S'il s'écarte trop de l'estimation marché quartier-ajustée, on le juge non
+    // fiable et on retombe sur le marché. Évite les rendements aberrants (ex.:
+    // 11% brut sur un bien QPV dont le "loyer" capté était en réalité surévalué).
+    let loyerSuspect = false
+    if ((loyerSource === 'annonce' || loyerSource === 'fourni') && loyerMarcheEstime && loyerMarcheEstime > 0) {
+      const ratio = loyerEstimeFinal / loyerMarcheEstime
+      if (ratio > 1.7 || ratio < 0.55) {
+        loyerSuspect = true
+        loyerEstimeFinal = loyerMarcheEstime
+        loyerSource = 'marche'
+      }
     }
 
     // ── 3. Ajustements aménités ────────────────────────────────────────────────
@@ -212,6 +232,16 @@ export async function POST(req: NextRequest) {
 
     const score = calculateScore(result, fiscalResult, null)
 
+    // ── Sous-score Marché réel ─────────────────────────────────────────────────
+    // calculateScore reçoit market=null ici (pas de MarketData complet) → il met
+    // 50 par défaut, ce qui affiche une jauge "Marché 50" constante et trompeuse.
+    // On calcule un vrai sous-score à partir du positionnement prix du bien (vs
+    // médiane locale) et de la tension locative, pour que la jauge colle au réel.
+    score.subScores.marche = computeMarcheSubscore(
+      posMarche?.positionnement ?? null,
+      marcheRef.tension,
+    )
+
     const enabledRegimes = fiscalResult.regimes.filter(r => !r.disabled)
     const bestRegime = enabledRegimes.length > 0
       ? enabledRegimes.reduce((b, r) => r.rendNetNet > b.rendNetNet ? r : b, enabledRegimes[0])
@@ -306,6 +336,7 @@ export async function POST(req: NextRequest) {
       // Données estimées
       loyerEstime:  loyerEstimeFinal,
       loyerSource,
+      loyerSuspect,        // true si un loyer annonce aberrant a été corrigé au marché
       apportEstime: apport,
       fraisNotaire,
       prixAchat,           // utile au widget pour calculer % apport
@@ -344,6 +375,26 @@ export async function POST(req: NextRequest) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Sous-score Marché (0–95) à partir du positionnement prix vs marché local et
+// de la tension locative. Remplace le "50 constant" quand on n'a pas de
+// MarketData complet (cas de l'extension). Plus le bien est sous le prix médian
+// et plus la zone est tendue, meilleur est le score.
+function computeMarcheSubscore(
+  positionnement: string | null,
+  tension?: 'forte' | 'moyenne' | 'faible',
+): number {
+  const base: Record<string, number> = {
+    'opportunite':    88,
+    'attractif':      76,
+    'correct':        60,
+    'surevalue':      42,
+    'tres-surevalue': 26,
+  }
+  let s = positionnement ? (base[positionnement] ?? 55) : 55
+  s += tension === 'forte' ? 8 : tension === 'faible' ? -12 : 0
+  return Math.max(12, Math.min(95, Math.round(s)))
+}
 
 function estimerChargesCopro(surface: number, etat?: string | null, chauffage?: string | null): number {
   // Charges selon état et type de chauffage

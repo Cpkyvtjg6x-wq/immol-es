@@ -57,25 +57,50 @@ function immoraCreateWidget(source) {
       <!-- ═══ BODY ═══ -->
       <div id="immora-body" style="display:none">
 
-        <!-- ① HERO — Score xxl + verdict (TOUT CENTRÉ) -->
+        <!-- ① VERDICT — ring compact à gauche + verdict à droite -->
         <div id="immora-hero">
           <div id="immora-score-ring">
-            <svg viewBox="0 0 100 100" width="120" height="120">
-              <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.06)" stroke-width="6" fill="none"/>
-              <circle id="immora-score-ring-fill" cx="50" cy="50" r="44" stroke="#10b981" stroke-width="6" fill="none"
+            <svg viewBox="0 0 100 100" width="64" height="64">
+              <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.07)" stroke-width="9" fill="none"/>
+              <circle id="immora-score-ring-fill" cx="50" cy="50" r="44" stroke="#10b981" stroke-width="9" fill="none"
                 stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="276.46"
                 transform="rotate(-90 50 50)"/>
             </svg>
             <div id="immora-score-ring-content">
               <div id="immora-score-ring-number">—</div>
-              <div id="immora-score-ring-max">/100</div>
             </div>
           </div>
-          <div id="immora-verdict-label">Analyse…</div>
-          <div id="immora-verdict-sub">—</div>
+          <div id="immora-verdict">
+            <div id="immora-verdict-label">Analyse…</div>
+            <div id="immora-verdict-sub">—</div>
+          </div>
         </div>
 
-        <!-- ② SOUS-SCORES (label | barre | valeur — alignés sur 1 ligne) -->
+        <!-- ② MÉTRIQUES CLÉS — 2 cartes primaires (net + cashflow) -->
+        <div id="immora-metrics">
+          <div class="immo-metric" id="immo-metric-net">
+            <div class="immo-metric-label">Rendement net</div>
+            <div class="immo-metric-value" id="immo-rend-net">—</div>
+          </div>
+          <div class="immo-metric" id="immo-metric-cf">
+            <div class="immo-metric-label">Cashflow / mois</div>
+            <div class="immo-metric-value" id="immo-cashflow">—</div>
+          </div>
+        </div>
+        <!-- métriques secondaires — strip compact -->
+        <div id="immora-metrics-sec">
+          <div class="immo-metric-sec">
+            <span class="immo-metric-sec-label">Rendement brut</span>
+            <span class="immo-metric-sec-val" id="immo-rend-brut">—</span>
+          </div>
+          <div class="immo-metric-sec-divider"></div>
+          <div class="immo-metric-sec">
+            <span class="immo-metric-sec-label">Mensualité crédit</span>
+            <span class="immo-metric-sec-val" id="immo-mensualite">—</span>
+          </div>
+        </div>
+
+        <!-- ③ SOUS-SCORES (label | barre | valeur — alignés sur 1 ligne) -->
         <div id="immora-subscores">
           <div class="immora-sub" data-sub="rentabilite">
             <span class="immora-sub-label">Rentabilité</span>
@@ -99,49 +124,34 @@ function immoraCreateWidget(source) {
           </div>
         </div>
 
-        <!-- ③ OFFRE CONSEILLÉE (centré, prix xxl) -->
+        <!-- ④ OFFRE CONSEILLÉE — rangée compacte (label+détail | prix+tag) -->
         <div id="immora-nego">
-          <div id="immora-nego-label">Offre conseillée</div>
-          <div id="immora-nego-price">—</div>
-          <div id="immora-nego-row">
-            <div id="immora-nego-eco">—</div>
-            <div id="immora-nego-tag" class="immo-tag-amber">—</div>
+          <div class="immo-nego-left">
+            <div class="immo-nego-label">Offre conseillée</div>
+            <div id="immora-nego-detail" class="immo-nego-detail">—</div>
           </div>
-          <div id="immora-nego-bar"><div id="immora-nego-bar-fill"></div></div>
-          <div id="immora-nego-detail">—</div>
-        </div>
-
-        <!-- ④ KPIs financiers — grille 2×2, valeurs xxl centrées -->
-        <div id="immora-kpis">
-          <div class="immo-kpi">
-            <div class="immo-kpi-label">Rendement brut</div>
-            <div class="immo-kpi-value" id="immo-rend-brut">—</div>
-          </div>
-          <div class="immo-kpi">
-            <div class="immo-kpi-label">Rendement net</div>
-            <div class="immo-kpi-value" id="immo-rend-net">—</div>
-          </div>
-          <div class="immo-kpi">
-            <div class="immo-kpi-label">Cashflow / mois</div>
-            <div class="immo-kpi-value" id="immo-cashflow">—</div>
-          </div>
-          <div class="immo-kpi">
-            <div class="immo-kpi-label">Mensualité</div>
-            <div class="immo-kpi-value" id="immo-mensualite">—</div>
+          <div class="immo-nego-right">
+            <div id="immora-nego-price" class="immo-nego-price">—</div>
+            <div class="immo-nego-row">
+              <span id="immora-nego-eco" class="immo-nego-eco">—</span>
+              <span id="immora-nego-tag" class="immo-tag-amber">—</span>
+            </div>
           </div>
         </div>
 
-        <!-- ⑤ FISCAL (label centré, valeur xxl centrée en dessous) -->
+        <!-- ⑤ FISCAL — rangée compacte, accent indigo -->
         <div id="immora-fiscal">
-          <div id="immora-fiscal-label">Meilleur régime fiscal</div>
-          <div id="immora-fiscal-name">—</div>
-          <div id="immora-fiscal-rend-row">
-            <span id="immora-fiscal-rend">—</span>
-            <span id="immora-fiscal-sub">de rentabilité nette-nette</span>
+          <div class="immo-fiscal-left">
+            <div class="immo-fiscal-label">Meilleur régime fiscal</div>
+            <div id="immora-fiscal-name" class="immo-fiscal-name">—</div>
+          </div>
+          <div class="immo-fiscal-right">
+            <span id="immora-fiscal-rend" class="immo-fiscal-rend">—</span>
+            <span class="immo-fiscal-sub">net-net</span>
           </div>
         </div>
 
-        <!-- ⑥ MARCHÉ — bloc centré -->
+        <!-- ⑥ MARCHÉ -->
         <div id="immora-marche" style="display:none"></div>
 
         <!-- ⑦ PHOTOS travaux -->
@@ -212,31 +222,49 @@ function immoraRenderResults(r) {
   const miniScore = document.getElementById('immora-mini-score')
   if (miniScore) { miniScore.textContent = score; miniScore.style.color = scoreColor }
 
-  // ── Verdict centré ─────────────────────────────────────────────────────
+  // ── Verdict — cohérent avec le CASHFLOW, pas seulement le score ──────────
+  // Un fort rendement brut peut donner un score élevé tout en ayant un cashflow
+  // négatif : on ne dit alors PAS "Excellent deal" (ce qui jurait avec le −45€
+  // rouge affiché juste à côté), mais "Très bon rendement · cashflow quasi
+  // neutre". La couleur du verdict suit cette nuance (vert / ambre / rouge).
   const verdictLabel = document.getElementById('immora-verdict-label')
   const verdictSub = document.getElementById('immora-verdict-sub')
   if (verdictLabel && verdictSub) {
     const cf = Math.round(r.cashflowMensuel ?? 0)
+    const brut = (r.rendBrut ?? 0).toFixed(1)
     const cfStr = (cf >= 0 ? '+' : '') + cf + ' €/mois'
-    let label, sub
+    let label, sub, vColor
     if (score >= 78) {
-      label = 'Excellent deal'
-      sub = `Cashflow ${cfStr} · ${(r.rendBrut ?? 0).toFixed(1)}% brut`
+      if (cf >= 30) {
+        label = 'Excellent deal'; vColor = '#10b981'
+        sub = `Cashflow ${cfStr} · ${brut}% brut`
+      } else if (cf >= -120) {
+        label = 'Très bon rendement'; vColor = '#10b981'
+        sub = `${brut}% brut · cashflow quasi neutre (${cfStr})`
+      } else {
+        label = 'Fort rendement, effort'; vColor = '#f59e0b'
+        sub = `${brut}% brut mais cashflow ${cfStr}`
+      }
     } else if (score >= 58) {
-      label = 'Bon deal'
-      sub = `Cashflow ${cfStr} · à creuser`
+      if (cf >= 0) {
+        label = 'Bon deal'; vColor = '#10b981'
+        sub = `Cashflow ${cfStr} · ${brut}% brut`
+      } else {
+        label = 'Bon deal'; vColor = '#34d399'
+        sub = `${brut}% brut · effort ${cfStr}`
+      }
     } else if (score >= 40) {
-      label = 'Projet correct'
-      sub = `À négocier${r.negoPct ? ` de ${r.negoPct}%` : ''} · ${cfStr}`
+      label = 'Projet correct'; vColor = '#f59e0b'
+      sub = `À négocier${r.negoPct ? ` −${r.negoPct}%` : ''} · ${cfStr}`
     } else if (score >= 22) {
-      label = 'Rentabilité limitée'
+      label = 'Rentabilité limitée'; vColor = '#f59e0b'
       sub = `Effort d'épargne ${cfStr}`
     } else {
-      label = 'Très surévalué'
+      label = 'Très surévalué'; vColor = '#ef4444'
       sub = `${cfStr} — pari sur la valorisation`
     }
     verdictLabel.textContent = label
-    verdictLabel.style.color = scoreColor
+    verdictLabel.style.color = vColor
     verdictSub.textContent = sub
   }
 
@@ -264,27 +292,32 @@ function immoraRenderResults(r) {
   // Warnings DPE F/G
   immoraRenderWarnings(r.warnings ?? [])
 
-  // KPIs
+  // ── Métriques clés — primaires (rendement net + cashflow), grandes & colorées
+  const setMetric = (cardId, valId, text, tone) => {
+    const val  = document.getElementById(valId)
+    const card = document.getElementById(cardId)
+    if (val)  val.textContent = text
+    if (card) card.className = 'immo-metric immo-metric-' + tone
+  }
+  const rnVal = (r.rendNet ?? 0)
+  setMetric('immo-metric-net', 'immo-rend-net', rnVal.toFixed(2) + '%',
+    rnVal >= 3.5 ? 'green' : rnVal >= 2 ? 'amber' : 'red')
+  const cfVal = Math.round(r.cashflowMensuel ?? 0)
+  // −45€ = quasi neutre → ambre (pas rouge alarmant), cohérent avec le verdict
+  setMetric('immo-metric-cf', 'immo-cashflow', (cfVal >= 0 ? '+' : '') + cfVal + ' €',
+    cfVal >= 50 ? 'green' : cfVal >= -100 ? 'amber' : 'red')
+
+  // ── Métriques secondaires — brut + mensualité (strip compact) ───────────
   const rb = document.getElementById('immo-rend-brut')
   if (rb) {
-    rb.textContent = (r.rendBrut ?? 0).toFixed(2) + '%'
-    rb.className = 'immo-kpi-value ' + (r.rendBrut >= 5 ? 'immo-green' : r.rendBrut >= 3 ? 'immo-amber' : 'immo-red')
-  }
-  const rn = document.getElementById('immo-rend-net')
-  if (rn) {
-    rn.textContent = (r.rendNet ?? 0).toFixed(2) + '%'
-    rn.className = 'immo-kpi-value ' + (r.rendNet >= 3.5 ? 'immo-green' : r.rendNet >= 2 ? 'immo-amber' : 'immo-red')
-  }
-  const cf = document.getElementById('immo-cashflow')
-  if (cf) {
-    const cfVal = Math.round(r.cashflowMensuel ?? 0)
-    cf.textContent = (cfVal >= 0 ? '+' : '') + cfVal + ' €'
-    cf.className = 'immo-kpi-value ' + (cfVal >= 100 ? 'immo-green' : cfVal >= 0 ? 'immo-amber' : 'immo-red')
+    const rbVal = (r.rendBrut ?? 0)
+    rb.textContent = rbVal.toFixed(2) + '%'
+    rb.className = 'immo-metric-sec-val ' + (rbVal >= 5 ? 'immo-green' : rbVal >= 3.5 ? 'immo-amber' : 'immo-red')
   }
   const mens = document.getElementById('immo-mensualite')
   if (mens) mens.textContent = Math.round(r.mensualite ?? 0) + ' €'
 
-  // Négociation / Prix max — affichage centré
+  // ── Offre conseillée — rangée compacte (plus le bloc-prix géant d'avant) ──
   if (r.prixMax) {
     const fmt    = v => v.toLocaleString('fr-FR') + ' €'
     const negoEl   = document.getElementById('immora-nego')
@@ -292,29 +325,25 @@ function immoraRenderResults(r) {
     const priceEl  = document.getElementById('immora-nego-price')
     const ecoEl    = document.getElementById('immora-nego-eco')
     const detailEl = document.getElementById('immora-nego-detail')
-    const barFill  = document.getElementById('immora-nego-bar-fill')
     const pct    = r.negoPct ?? 0
     const ecoStr = fmt(r.economie ?? 0)
     const m2Str  = r.prixM2 ? `${r.prixM2.toLocaleString('fr-FR')} €/m²` : ''
 
     if (priceEl) priceEl.textContent = fmt(r.prixMax)
-    if (ecoEl)   ecoEl.textContent = `−${ecoStr}`
+    if (ecoEl)   ecoEl.textContent = r.economie > 0 ? `−${ecoStr}` : 'prix juste'
 
     if (pct <= 3) {
       if (negoEl)   negoEl.className = 'immo-nego-good'
       if (tagEl)    { tagEl.className = 'immo-tag-green'; tagEl.textContent = `−${pct}%` }
-      if (detailEl) detailEl.innerHTML = `Prix attractif${m2Str ? ' · ' + m2Str : ''}`
-      if (barFill)  { barFill.style.width = '15%'; barFill.style.background = '#10b981' }
+      if (detailEl) detailEl.textContent = `Prix attractif${m2Str ? ' · ' + m2Str : ''}`
     } else if (pct <= 6) {
       if (negoEl)   negoEl.className = ''
       if (tagEl)    { tagEl.className = 'immo-tag-amber'; tagEl.textContent = `−${pct}%` }
-      if (detailEl) detailEl.innerHTML = `Marge standard${m2Str ? ' · ' + m2Str : ''}`
-      if (barFill)  { barFill.style.width = `${Math.min(pct * 10, 60)}%`; barFill.style.background = '#f59e0b' }
+      if (detailEl) detailEl.textContent = `Marge de négo standard${m2Str ? ' · ' + m2Str : ''}`
     } else {
       if (negoEl)   negoEl.className = 'immo-nego-warn'
       if (tagEl)    { tagEl.className = 'immo-tag-red'; tagEl.textContent = `−${pct}%` }
-      if (detailEl) detailEl.innerHTML = `Bien surévalué${m2Str ? ' · ' + m2Str : ''}`
-      if (barFill)  { barFill.style.width = Math.min(pct * 8, 100) + '%'; barFill.style.background = '#ef4444' }
+      if (detailEl) detailEl.textContent = `Bien surévalué${m2Str ? ' · ' + m2Str : ''}`
     }
   }
 
@@ -1246,32 +1275,39 @@ function immoraUpdateScoreAfterTravaux(updated, initial) {
   const scoreDiff = Math.round(updated.score) - Math.round(initial.score)
   if (Math.abs(scoreDiff) < 2) return // pas de diff notable → on ne touche pas
 
-  const scoreEl = document.getElementById('immora-score-number')
-  const miniEl  = document.getElementById('immora-mini-score')
-  const descEl  = document.getElementById('immora-score-desc-main')
-  const newColor = updated.score >= 65 ? '#10b981' : updated.score >= 40 ? '#f59e0b' : '#ef4444'
   const newScore = Math.round(updated.score)
+  const newColor = newScore >= 70 ? '#10b981' : newScore >= 50 ? '#f59e0b' : '#ef4444'
 
-  if (scoreEl) {
-    scoreEl.style.transition = 'color 0.4s'
-    scoreEl.textContent = newScore
-    scoreEl.style.color = newColor
+  // Ring : nombre + arc + couleur
+  const ringNumber = document.getElementById('immora-score-ring-number')
+  const ringFill   = document.getElementById('immora-score-ring-fill')
+  if (ringNumber) {
+    ringNumber.style.transition = 'color 0.4s'
+    ringNumber.textContent = newScore
+    ringNumber.style.color = newColor
   }
-  if (miniEl) {
-    miniEl.textContent = newScore
-    miniEl.style.color = newColor
+  if (ringFill) {
+    ringFill.style.stroke = newColor
+    ringFill.style.strokeDashoffset = String(276.46 - (276.46 * newScore) / 100)
   }
-  if (descEl) descEl.textContent = updated.scoreLbl ?? descEl.textContent
+  const miniEl = document.getElementById('immora-mini-score')
+  if (miniEl) { miniEl.textContent = newScore; miniEl.style.color = newColor }
 
-  // Mettre à jour les KPIs rendement et cashflow
+  // Cartes métriques (net + cashflow) + brut secondaire
+  const setCard = (cardId, valId, text, t) => {
+    const val = document.getElementById(valId), card = document.getElementById(cardId)
+    if (val)  val.textContent = text
+    if (card) card.className = 'immo-metric immo-metric-' + t
+  }
+  const rnV = (updated.rendNet ?? 0)
+  setCard('immo-metric-net', 'immo-rend-net', rnV.toFixed(2) + '%', rnV >= 3.5 ? 'green' : rnV >= 2 ? 'amber' : 'red')
+  const cfV = Math.round(updated.cashflowMensuel ?? 0)
+  setCard('immo-metric-cf', 'immo-cashflow', (cfV >= 0 ? '+' : '') + cfV + ' €', cfV >= 50 ? 'green' : cfV >= -100 ? 'amber' : 'red')
   const rb = document.getElementById('immo-rend-brut')
-  const rn = document.getElementById('immo-rend-net')
-  const cf = document.getElementById('immo-cashflow')
-  if (rb) rb.textContent = (updated.rendBrut ?? 0).toFixed(2) + '%'
-  if (rn) rn.textContent = (updated.rendNet  ?? 0).toFixed(2) + '%'
-  if (cf) {
-    const cfVal = Math.round(updated.cashflowMensuel ?? 0)
-    cf.textContent = (cfVal >= 0 ? '+' : '') + cfVal + ' €'
+  if (rb) {
+    const v = (updated.rendBrut ?? 0)
+    rb.textContent = v.toFixed(2) + '%'
+    rb.className = 'immo-metric-sec-val ' + (v >= 5 ? 'immo-green' : v >= 3.5 ? 'immo-amber' : 'immo-red')
   }
 
   // Mettre à jour le CTA URL avec les travaux
@@ -1282,8 +1318,8 @@ function immoraUpdateScoreAfterTravaux(updated, initial) {
   const notice = document.getElementById('immora-notice')
   if (notice) {
     const sign = scoreDiff > 0 ? '+' : ''
-    notice.textContent = `Score recalculé avec travaux (${sign}${scoreDiff} pts) · 20% apport · 3.5%`
-    notice.style.color = scoreDiff >= 0 ? 'rgba(16,185,129,0.5)' : 'rgba(245,158,11,0.5)'
+    notice.textContent = `Score recalculé avec travaux (${sign}${scoreDiff} pts)`
+    notice.style.color = scoreDiff >= 0 ? 'rgba(16,185,129,0.55)' : 'rgba(245,158,11,0.55)'
   }
 }
 

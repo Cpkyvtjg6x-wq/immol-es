@@ -50,6 +50,7 @@ export function useEntitlements(currentSimCount = 0) {
       canTrackPatrimoine: bypass || limits.patrimoine,
       canFullMarketData: bypass || limits.marketDataFull,
       canWhiteLabel: bypass || limits.whiteLabel,
+      canManageRentals: bypass || limits.gestionLocative,
     }
   }, [tier, currentSimCount])
 }

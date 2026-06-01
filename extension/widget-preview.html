@@ -1,3 +1,21 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMMORA — Preview widget v5</title>
+<style>
+/* ---- override layout pour preview (le widget est normalement position:fixed) ---- */
+body{background:#0e0f13;margin:0;padding:44px 24px;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;color:#fff;}
+.pv-head{max-width:860px;margin:0 auto 30px;text-align:center;}
+.pv-head h1{font-size:18px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px;}
+.pv-head p{font-size:13px;color:#9aa0a6;margin:0;line-height:1.5;}
+.pv-grid{display:flex;gap:40px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+.pv-col{display:flex;flex-direction:column;gap:12px;align-items:center;}
+.pv-cap{font-size:12px;color:#9aa0a6;text-align:center;max-width:364px;line-height:1.45;}
+.pv-cap b{color:#34d399;font-weight:700;}
+.pv-cap .amb{color:#fbbf24;font-weight:700;}
+/* neutralise le positionnement fixe pour afficher les cartes en flux */
+#immora-widget{position:static !important;bottom:auto;right:auto;}
+#immora-card{animation:none !important;}
+/* ---- CSS RÉEL DU WIDGET (extension/content/widget.css) ---- */
 /* ════════════════════════════════════════════════════════════════════════════
    IMMORA — Widget v5 (premium · DA SaaS · hiérarchie repensée)
    Palette : emerald #10B981 (primaire) · indigo #6366F1 (secondaire) ·
@@ -805,3 +823,139 @@
   #immora-card { width: auto; }
   #immora-metrics { grid-template-columns: 1fr 1fr; }
 }
+</style></head><body>
+<div class="pv-head">
+  <h1>IMMORA — nouveau widget (v5)</h1>
+  <p>Rendu fidèle (CSS réel de l'extension). Deux scénarios pour montrer que le verdict colle désormais au cashflow.</p>
+</div>
+<div class="pv-grid">
+
+  <div class="pv-col">
+    <div id="immora-widget"><div id="immora-card" class="immora-card-tier-anon" style="--immora-score-color:#10b981">
+      <div class="immora-aurora"></div>
+      <div id="immora-header">
+        <div id="immora-logo">
+          <div id="immora-logo-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><defs><clipPath id="lc1"><circle cx="12" cy="12" r="9.1"/></clipPath></defs><g clip-path="url(#lc1)"><path d="M 4 18 C 11 18 15 8 19 5" stroke="#10b981" stroke-width="1.7" fill="none"/><line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.7"/></g><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.7" fill="none" opacity="0.85"/></svg></div>
+          <div id="immora-logo-text">IMMO<span>RA</span></div>
+        </div>
+        <div id="immora-header-right">
+          <div id="immora-source-badge">Seloger · <span style="color:#10b981">10/14</span></div>
+          <button id="immora-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" d="M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div id="immora-body" style="display:block">
+        <div id="immora-hero">
+          <div id="immora-score-ring">
+            <svg viewBox="0 0 100 100" width="64" height="64">
+              <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.07)" stroke-width="9" fill="none"/>
+              <circle cx="50" cy="50" r="44" stroke="#10b981" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="52.53" transform="rotate(-90 50 50)"/>
+            </svg>
+            <div id="immora-score-ring-content"><div id="immora-score-ring-number" style="color:#10b981">81</div></div>
+          </div>
+          <div id="immora-verdict">
+            <div id="immora-verdict-label" style="color:#10b981">Très bon rendement</div>
+            <div id="immora-verdict-sub">9.7% brut · cashflow quasi neutre (−45 €/mois)</div>
+          </div>
+        </div>
+        <div id="immora-metrics">
+          <div class="immo-metric immo-metric-green" id="immo-metric-net"><div class="immo-metric-label">Rendement net</div><div class="immo-metric-value">5.30%</div></div>
+          <div class="immo-metric immo-metric-amber" id="immo-metric-cf"><div class="immo-metric-label">Cashflow / mois</div><div class="immo-metric-value">−45 €</div></div>
+        </div>
+        <div id="immora-metrics-sec">
+          <div class="immo-metric-sec"><span class="immo-metric-sec-label">Rendement brut</span><span class="immo-metric-sec-val immo-green">9.73%</span></div>
+          <div class="immo-metric-sec-divider"></div>
+          <div class="immo-metric-sec"><span class="immo-metric-sec-label">Mensualité crédit</span><span class="immo-metric-sec-val">569 €</span></div>
+        </div>
+        <div id="immora-subscores">
+          <div class="immora-sub"><span class="immora-sub-label">Rentabilité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">95</span></div>
+          <div class="immora-sub"><span class="immora-sub-label">Cashflow</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:60%;background:#f59e0b"></span></span><span class="immora-sub-val" style="color:#f59e0b">60</span></div>
+          <div class="immora-sub"><span class="immora-sub-label">Fiscalité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">95</span></div>
+          <div class="immora-sub"><span class="immora-sub-label">Marché</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:78%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">78</span></div>
+        </div>
+        <div id="immora-nego" class="immo-nego-good">
+          <div class="immo-nego-left"><div class="immo-nego-label">Offre conseillée</div><div class="immo-nego-detail">Prix attractif · 1 930 €/m²</div></div>
+          <div class="immo-nego-right"><div class="immo-nego-price">107 800 €</div><div class="immo-nego-row"><span class="immo-nego-eco">−2 200 €</span><span class="immo-tag-green">−2%</span></div></div>
+        </div>
+        <div id="immora-fiscal">
+          <div class="immo-fiscal-left"><div class="immo-fiscal-label">Meilleur régime fiscal</div><div class="immo-fiscal-name">LMNP Réel (amortissement)</div></div>
+          <div class="immo-fiscal-right"><span class="immo-fiscal-rend" style="color:#34d399">5.01%</span><span class="immo-fiscal-sub">net-net</span></div>
+        </div>
+        <div id="immora-marche" style="display:flex">
+          <div class="immo-marche-left"><div class="immo-marche-label">🔥 Marché Montpellier</div><div class="immo-marche-text">Loyer réf. : 15 €/m²/mois</div></div>
+        </div>
+        <div id="immora-notice">loyer issu de l'annonce · 20% apport · 3.5% · TMI 30%</div>
+        <div id="immora-cta-row">
+          <a id="immora-cta" href="#">Analyser en détail <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+          <button class="immo-save-btn immo-save-btn-locked"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 016 0v3H9z"/></svg> Pro</button>
+        </div>
+      </div>
+    </div></div>
+    <div class="pv-cap">Scénario de ta capture : score 81 mais cashflow négatif → verdict <b>« Très bon rendement »</b> + « cashflow quasi neutre », cashflow en <span class="amb">ambre</span> (plus « Excellent deal » vert à côté d'un −45 € rouge).</div>
+  </div>
+
+  <div class="pv-col">
+    <div id="immora-widget"><div id="immora-card" class="immora-card-tier-pro" style="--immora-score-color:#10b981">
+      <div class="immora-aurora"></div>
+      <div id="immora-header">
+        <div id="immora-logo">
+          <div id="immora-logo-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><defs><clipPath id="lc2"><circle cx="12" cy="12" r="9.1"/></clipPath></defs><g clip-path="url(#lc2)"><path d="M 4 18 C 11 18 15 8 19 5" stroke="#10b981" stroke-width="1.7" fill="none"/><line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.7"/></g><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.7" fill="none" opacity="0.85"/></svg></div>
+          <div id="immora-logo-text">IMMO<span>RA</span></div>
+        </div>
+        <div id="immora-header-right">
+          <div id="immora-source-badge">Leboncoin · <span style="color:#10b981">13/14</span></div>
+          <button id="immora-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" d="M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div id="immora-body" style="display:block">
+        <div id="immora-hero">
+          <div id="immora-score-ring">
+            <svg viewBox="0 0 100 100" width="64" height="64">
+              <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.07)" stroke-width="9" fill="none"/>
+              <circle cx="50" cy="50" r="44" stroke="#10b981" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="33.18" transform="rotate(-90 50 50)"/>
+            </svg>
+            <div id="immora-score-ring-content"><div id="immora-score-ring-number" style="color:#10b981">88</div></div>
+          </div>
+          <div id="immora-verdict">
+            <div id="immora-verdict-label" style="color:#10b981">Excellent deal</div>
+            <div id="immora-verdict-sub">Cashflow +180 €/mois · 9.0% brut</div>
+          </div>
+        </div>
+        <div id="immora-metrics">
+          <div class="immo-metric immo-metric-green"><div class="immo-metric-label">Rendement net</div><div class="immo-metric-value">6.10%</div></div>
+          <div class="immo-metric immo-metric-green"><div class="immo-metric-label">Cashflow / mois</div><div class="immo-metric-value">+180 €</div></div>
+        </div>
+        <div id="immora-metrics-sec">
+          <div class="immo-metric-sec"><span class="immo-metric-sec-label">Rendement brut</span><span class="immo-metric-sec-val immo-green">9.00%</span></div>
+          <div class="immo-metric-sec-divider"></div>
+          <div class="immo-metric-sec"><span class="immo-metric-sec-label">Mensualité crédit</span><span class="immo-metric-sec-val">540 €</span></div>
+        </div>
+        <div id="immora-subscores">
+          <div class="immora-sub"><span class="immora-sub-label">Rentabilité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">95</span></div>
+          <div class="immora-sub"><span class="immora-sub-label">Cashflow</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:90%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">90</span></div>
+          <div class="immora-sub"><span class="immora-sub-label">Fiscalité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">95</span></div>
+          <div class="immora-sub"><span class="immora-sub-label">Marché</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:84%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">84</span></div>
+        </div>
+        <div id="immora-nego">
+          <div class="immo-nego-left"><div class="immo-nego-label">Offre conseillée</div><div class="immo-nego-detail">Marge de négo standard · 1 600 €/m²</div></div>
+          <div class="immo-nego-right"><div class="immo-nego-price">95 000 €</div><div class="immo-nego-row"><span class="immo-nego-eco">−5 000 €</span><span class="immo-tag-amber">−5%</span></div></div>
+        </div>
+        <div id="immora-fiscal">
+          <div class="immo-fiscal-left"><div class="immo-fiscal-label">Meilleur régime fiscal</div><div class="immo-fiscal-name">LMNP Réel (amortissement)</div></div>
+          <div class="immo-fiscal-right"><span class="immo-fiscal-rend" style="color:#34d399">5.40%</span><span class="immo-fiscal-sub">net-net</span></div>
+        </div>
+        <div id="immora-marche" class="marche-opportunite" style="display:flex">
+          <div class="immo-marche-left"><div class="immo-marche-label">🔥 Marché Béziers</div><div class="immo-marche-text">Sous le prix médian · réf. 1 750 €/m²</div></div>
+          <div class="immo-marche-badge badge-opportunite">−9%</div>
+        </div>
+        <div id="immora-notice">loyer issu de l'annonce · ✓ vos paramètres</div>
+        <div id="immora-cta-row">
+          <a id="immora-cta" href="#">Analyser en détail <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+          <button class="immo-save-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg> Sauver</button>
+        </div>
+      </div>
+    </div></div>
+    <div class="pv-cap">Vraie bonne affaire (cashflow positif) → verdict <b>« Excellent deal »</b>, tout en vert. Accent <span style="color:#a5b4fc;font-weight:700">indigo</span> sur le bloc fiscal pour casser le tout-vert.</div>
+  </div>
+
+</div>
+</body></html>

@@ -19,6 +19,7 @@ export type UpgradeFeature =
   | 'patrimoine'      // suivi des biens détenus
   | 'market_data'     // données marché complètes
   | 'white_label'     // logo personnalisé (Agence)
+  | 'gestion_locative' // module de gestion locative complet
   | 'generic'         // CTA générique
 
 interface UpgradeContextValue {
@@ -73,6 +74,11 @@ const FEATURE_LABELS: Record<UpgradeFeature, { title: string; subtitle: string; 
     title: 'Le rapport white-label est réservé au plan Agence',
     subtitle: "Personnalisez vos PDF avec votre logo et nom d'agence pour vos clients.",
     recommendedPlan: 'agency',
+  },
+  gestion_locative: {
+    title: 'La gestion locative est réservée au plan Pro',
+    subtitle: "Pilotez vos biens loués : loyers, quittances, baux, révision IRL, travaux, charges et préparation de la déclaration — tout au même endroit.",
+    recommendedPlan: 'pro',
   },
   generic: {
     title: 'Cette fonctionnalité est réservée au plan Pro',

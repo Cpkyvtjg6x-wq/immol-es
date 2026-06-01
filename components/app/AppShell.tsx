@@ -90,6 +90,16 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
       badge: simulations.length > 0 ? `${simulations.length}` : null as string | null,
     },
     {
+      href: '/gestion',
+      label: 'Gestion locative',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a4 4 0 11-4 4m0 0L4 18m0 0v3h3m-3-3l2-2m4-4l3 3" />
+        </svg>
+      ),
+      badge: 'Pro' as string | null,
+    },
+    {
       href: '/bibliotheque',
       label: 'Bibliotheque',
       icon: (

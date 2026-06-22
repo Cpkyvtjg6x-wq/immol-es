@@ -413,7 +413,11 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
           {user ? (
             <>
               <div className="flex items-center gap-1 px-1 pb-1">
-                <NotificationBell simulationCount={simulations.length} isPro={isPro} />
+                <NotificationBell
+                  simulationCount={simulations.length}
+                  isPro={isPro}
+                  placement="top-left"
+                />
                 <p className="text-[10px] text-th-sidebar-text-1 ml-1">Notifications</p>
               </div>
               <Link

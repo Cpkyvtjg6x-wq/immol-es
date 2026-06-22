@@ -20,6 +20,16 @@ interface NotificationBellProps {
   isPro: boolean
   isTrial?: boolean
   trialDaysLeft?: number
+  /**
+   * Où le panneau s'ouvre par rapport à la cloche.
+   * - `top-right` (défaut) : au-dessus, ancré à droite → s'étend vers la gauche
+   *   (usage : topbar mobile, header centré)
+   * - `top-left` : au-dessus, ancré à gauche → s'étend vers la droite
+   *   (usage : sidebar gauche — évite que le panneau sorte de l'écran)
+   * - `right-side` : à droite de la cloche, ouvert sur le côté
+   *   (usage : sidebar pinnée si bell tout en bas)
+   */
+  placement?: 'top-right' | 'top-left' | 'right-side'
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -56,7 +66,7 @@ const TYPE_COLORS = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function NotificationBell({ simulationCount, isPro, isTrial, trialDaysLeft }: NotificationBellProps) {
+export function NotificationBell({ simulationCount, isPro, isTrial, trialDaysLeft, placement = 'top-right' }: NotificationBellProps) {
   const [open, setOpen] = useState(false)
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
   const ref = useRef<HTMLDivElement>(null)
@@ -191,9 +201,18 @@ export function NotificationBell({ simulationCount, isPro, isTrial, trialDaysLef
         )}
       </button>
 
-      {/* Dropdown panel */}
+      {/* Dropdown panel — position calculée selon `placement` */}
       {open && (
-        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-0 w-80 rounded-2xl border border-th-border-med bg-th-surface shadow-2xl z-50 overflow-hidden">
+        <div className={`absolute w-80 rounded-2xl border border-th-border-med bg-th-surface shadow-2xl z-50 overflow-hidden ${
+          placement === 'top-left'
+            // Au-dessus, ancré à gauche → ouvre vers la droite (sidebar)
+            ? 'bottom-full mb-2 left-0'
+            : placement === 'right-side'
+              // À droite de la cloche, ouvre sur le côté (sidebar — alternative)
+              ? 'bottom-0 left-full ml-2'
+              // Défaut : mobile centré, lg ancré à droite
+              : 'bottom-full mb-2 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-0'
+        }`}>
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-th-border">
             <p className="text-sm font-bold text-th-text-1">Notifications</p>

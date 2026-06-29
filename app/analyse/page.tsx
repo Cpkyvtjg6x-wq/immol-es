@@ -490,7 +490,7 @@ export default function AnalysePage() {
 
           {/* ── Panel formulaire ─────────────────────────────────────────── */}
           <aside
-            className="shrink-0 border-r border-th-border flex flex-col bg-black overflow-hidden"
+            className="shrink-0 border-r border-th-border flex flex-col bg-th-bg overflow-hidden"
             style={{
               width: panelOpen ? '560px' : '44px',
               transition: 'width 280ms cubic-bezier(0.32, 0.72, 0, 1)',
@@ -501,7 +501,7 @@ export default function AnalysePage() {
               <div className="flex-1 overflow-hidden flex flex-col">
 
                 {/* ── Mode toggle pill ── */}
-                <div className="shrink-0 px-4 pt-3 pb-3 border-b border-th-border bg-black">
+                <div className="shrink-0 px-4 pt-3 pb-3 border-b border-th-border bg-th-bg">
                   <div className="flex bg-th-surface2 rounded-xl p-1 gap-0.5">
                     <button
                       onClick={() => setMode('express')}

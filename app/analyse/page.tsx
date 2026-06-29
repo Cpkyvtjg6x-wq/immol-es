@@ -486,15 +486,22 @@ export default function AnalysePage() {
         </header>
 
         {/* ── Corps split-view ─────────────────────────────────────────────── */}
-        <div className="flex flex-1 min-h-0">
+        {/* relative : contexte de positionnement pour l'overlay panneau mobile
+            (aucun effet visuel sur desktop, où l'aside reste in-flow) */}
+        <div className="flex flex-1 min-h-0 relative">
 
-          {/* ── Panel formulaire ─────────────────────────────────────────── */}
+          {/* ── Panel formulaire ─────────────────────────────────────────────
+              Desktop (lg+) : panneau in-flow 560px ouvert / 44px réduit.
+              Mobile/tablette (<lg) : overlay plein écran au-dessus des résultats
+              quand ouvert ; masqué (largeur 0) quand fermé. Réouverture via le
+              bouton toggle du header (z-40, toujours au-dessus de l'overlay). */}
           <aside
-            className="shrink-0 border-r border-th-border flex flex-col bg-th-bg overflow-hidden"
-            style={{
-              width: panelOpen ? '560px' : '44px',
-              transition: 'width 280ms cubic-bezier(0.32, 0.72, 0, 1)',
-            }}
+            className={`border-r border-th-border flex flex-col bg-th-bg overflow-hidden lg:shrink-0 max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:z-30 max-lg:shadow-2xl ${
+              panelOpen
+                ? 'w-full lg:w-[560px]'
+                : 'w-0 max-lg:border-r-0 lg:w-11'
+            }`}
+            style={{ transition: 'width 280ms cubic-bezier(0.32, 0.72, 0, 1)' }}
           >
             {panelOpen ? (
               /* ── Panel ouvert ── */

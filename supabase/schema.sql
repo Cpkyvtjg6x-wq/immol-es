@@ -50,13 +50,14 @@ create table if not exists public.ai_analyses (
 );
 
 -- ─── Trigger: updated_at automatique ─────────────────────────────────────────
+-- search_path fixe (sécurité : lint 0011) — corps n'utilise que now() (pg_catalog).
 create or replace function public.handle_updated_at()
 returns trigger as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql set search_path = '';
 
 create trigger profiles_updated_at
   before update on public.profiles
@@ -67,6 +68,8 @@ create trigger simulations_updated_at
   for each row execute function public.handle_updated_at();
 
 -- ─── Trigger: créer profil automatiquement à l'inscription ───────────────────
+-- SECURITY DEFINER (requis pour insérer dans profiles au signup) + search_path
+-- fixe (lint 0011). objets qualifiés (public.profiles), coalesce/->> = pg_catalog.
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
@@ -79,7 +82,11 @@ begin
   );
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = '';
+
+-- Ne pas exposer cette fonction en RPC (lints 0028/0029) : le trigger fonctionne
+-- sans EXECUTE accordé (Postgres ne vérifie pas EXECUTE au déclenchement).
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
 
 create trigger on_auth_user_created
   after insert on auth.users
@@ -128,7 +135,9 @@ create policy "Users can insert their own AI analyses"
 -- ─── Vues utilitaires ────────────────────────────────────────────────────────
 
 -- Vue: simulation avec infos profil
-create or replace view public.simulations_with_profile as
+-- security_invoker : la vue applique le RLS du user qui interroge (lint 0010).
+create or replace view public.simulations_with_profile
+with (security_invoker = true) as
 select
   s.*,
   p.email,

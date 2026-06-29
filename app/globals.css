@@ -148,6 +148,8 @@ body {
 }
 input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: none;
+  /* Ring de focus visible au clavier (a11y) — s'ajoute au changement de bordure. */
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.55);
 }
 
 /* ─── Sélection texte thématisée ──────────────────────────── */
@@ -844,3 +846,15 @@ input[type=number]::-webkit-outer-spin-button {
   margin: 0;
 }
 input[type=number] { -moz-appearance: textfield; }
+
+/* ─── Accessibilité : respect de prefers-reduced-motion ───────────────────────
+   Neutralise les animations infinies (particules, marquee, glows…) et raccourcit
+   les transitions pour les utilisateurs sensibles au mouvement (confort + batterie). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

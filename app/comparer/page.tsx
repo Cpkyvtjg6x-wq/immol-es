@@ -177,11 +177,11 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
   let currentSection = ''
 
   return (
-    <div className="rounded-xl border border-th-border overflow-hidden">
+    <div className="rounded-xl border border-th-border overflow-x-auto">
       {/* Column headers */}
       <div
         className="grid border-b border-th-border bg-th-surface"
-        style={{ gridTemplateColumns: `220px repeat(${active.length}, 1fr)` }}
+        style={{ gridTemplateColumns: `minmax(180px, 220px) repeat(${active.length}, minmax(150px, 1fr))` }}
       >
         <div className="px-5 py-3.5">
           <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wider">Indicateur</p>
@@ -217,7 +217,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
               )}
               <div
                 className="grid hover:bg-th-surface2 transition-colors"
-                style={{ gridTemplateColumns: `220px repeat(${active.length}, 1fr)` }}
+                style={{ gridTemplateColumns: `minmax(180px, 220px) repeat(${active.length}, minmax(150px, 1fr))` }}
               >
                 <div className="px-5 py-3.5 flex items-center">
                   <p className="text-[12px] text-th-text-2">{metric.label}</p>
@@ -256,7 +256,7 @@ function ComparisonTable({ selected }: { selected: (SavedSimulation | null)[] })
       {/* Score footer */}
       <div
         className="grid border-t border-th-border-med bg-th-surface"
-        style={{ gridTemplateColumns: `220px repeat(${active.length}, 1fr)` }}
+        style={{ gridTemplateColumns: `minmax(180px, 220px) repeat(${active.length}, minmax(150px, 1fr))` }}
       >
         <div className="px-5 py-4 flex items-center">
           <p className="text-[12px] font-bold text-th-text-1">Score global</p>

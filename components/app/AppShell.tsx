@@ -474,7 +474,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
       </aside>
 
       {/* Main content — sidebar fixe, seul le contenu transitionne (pattern premium) */}
-      <div className="content-area lg:pl-56 flex-1 min-h-screen pt-14 lg:pt-0">
+      <div className="content-area lg:pl-56 flex-1 min-w-0 min-h-screen pt-14 lg:pt-0">
         <motion.div
           key={pathname}
           initial={{ opacity: 0, y: 14 }}

@@ -92,7 +92,7 @@ function AddBienModal({
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="relative max-w-lg w-full max-h-[88vh] overflow-y-auto bg-th-surface border border-th-border rounded-2xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="relative max-w-lg w-full max-h-[88vh] overflow-y-auto bg-th-surface border border-th-border rounded-2xl p-4 sm:p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-5">
           <div>
             <h2 className="text-lg font-bold text-th-text-1" style={{ letterSpacing: '-0.02em' }}>Ajouter un bien à gérer</h2>
@@ -118,7 +118,7 @@ function AddBienModal({
             <label className={LABEL}>Nom du bien *</label>
             <input value={label} onChange={e => setLabel(e.target.value)} placeholder="Ex : T2 Toulouse — Carmes" className={INPUT} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={LABEL}>Type</label>
               <select value={typeBien} onChange={e => setTypeBien(e.target.value)} className={INPUT}>
@@ -138,7 +138,7 @@ function AddBienModal({
             <label className={LABEL}>Adresse</label>
             <input value={adresse} onChange={e => setAdresse(e.target.value)} placeholder="12 rue de la Paix" className={INPUT} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={LABEL}>Ville</label>
               <input value={ville} onChange={e => setVille(e.target.value)} className={INPUT} />
@@ -148,7 +148,7 @@ function AddBienModal({
               <input value={cp} onChange={e => setCp(e.target.value)} className={INPUT} />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className={LABEL}>Surface (m²)</label>
               <input type="number" value={surface} onChange={e => setSurface(e.target.value)} className={INPUT} />

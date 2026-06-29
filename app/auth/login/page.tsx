@@ -66,7 +66,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
+    <div className="min-h-screen bg-th-bg flex items-center justify-center p-6 overflow-x-hidden">
       <ForceDark />
       {/* Lit ?error= et ?next= dans l'URL sans bloquer le prerender */}
       <Suspense fallback={null}>
@@ -74,7 +74,7 @@ export default function LoginPage() {
       </Suspense>
 
       {/* Background gradient */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />
       </div>
 

@@ -117,7 +117,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
       <div className="relative w-full max-w-lg bg-th-surface border border-th-border-med rounded-2xl shadow-2xl overflow-hidden">
 
         {/* Header */}
-        <div className="px-8 pt-8 pb-6 border-b border-th-border">
+        <div className="px-5 sm:px-8 pt-8 pb-6 border-b border-th-border">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
@@ -136,7 +136,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
 
         {/* ── Step 0 — Profil ── */}
         {step === 0 && (
-          <div className="px-8 py-7 space-y-6">
+          <div className="px-5 sm:px-8 py-7 space-y-6">
             <div>
               <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-2">Étape 1 sur 3</p>
               <h2 className="text-xl font-black text-th-text-1" style={{ letterSpacing: '-0.03em' }}>
@@ -186,7 +186,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
 
         {/* ── Step 1 — Démo bien ── */}
         {step === 1 && (
-          <div className="px-8 py-7 space-y-6">
+          <div className="px-5 sm:px-8 py-7 space-y-6">
             <div>
               <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-2">Étape 2 sur 3</p>
               <h2 className="text-xl font-black text-th-text-1" style={{ letterSpacing: '-0.03em' }}>
@@ -224,7 +224,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
             </div>
 
             {/* Résultats flash */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <div className="rounded-xl border border-th-border bg-th-surface p-4 text-center">
                 <p className="text-[10px] font-semibold text-th-text-3 uppercase tracking-wide mb-2">Rendement brut</p>
                 <p className="text-xl font-black text-emerald-400">{rendBrut}%</p>
@@ -260,7 +260,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
 
         {/* ── Step 2 — C'est parti ── */}
         {step === 2 && (
-          <div className="px-8 py-7 space-y-6 text-center">
+          <div className="px-5 sm:px-8 py-7 space-y-6 text-center">
             <div>
               <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-2">Étape 3 sur 3</p>
               <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">

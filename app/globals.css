@@ -140,6 +140,11 @@ body {
 ::-webkit-scrollbar-thumb  { background: var(--c-scrollbar); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--c-scrollbar-hover); }
 
+/* Masquage scrollbar — pour barres scrollables horizontalement (onglets) sans
+   barre visible. Cross-browser. Utilisé via .scrollbar-none + overflow-x-auto. */
+.scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
 /* ─── Focus rings premium ─────────────────────────────────── */
 /* Exclure input/textarea/select : ils utilisent le border de leur wrapper */
 :focus-visible:not(input):not(textarea):not(select) {

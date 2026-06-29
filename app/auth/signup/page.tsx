@@ -88,7 +88,7 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
+      <div className="min-h-screen bg-th-bg flex items-center justify-center p-6 overflow-x-hidden">
         <div className="max-w-md w-full text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-3xl mx-auto">
             ✓
@@ -107,9 +107,9 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
+    <div className="min-h-screen bg-th-bg flex items-center justify-center p-6 overflow-x-hidden">
       <ForceDark />
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />
       </div>
 

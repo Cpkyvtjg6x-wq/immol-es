@@ -239,7 +239,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
             </div>
 
             {/* Body */}
-            <div className="px-6 py-5 overflow-y-auto">
+            <div className="px-4 sm:px-6 py-5 overflow-y-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={step}
@@ -255,7 +255,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                       <Field label="Nom du bien">
                         <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex : T3 Lyon Croix-Rousse" />
                       </Field>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Field label="Ville">
                           <input className={inputCls} value={f.ville ?? ''} onChange={(e) => set('ville', e.target.value)} placeholder="Lyon" />
                         </Field>
@@ -263,7 +263,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                           <input type="date" max={today()} className={inputCls} value={acquiredAt} onChange={(e) => setAcquiredAt(e.target.value)} />
                         </Field>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Field label="Type de bien">
                           <select className={inputCls} value={f.typeBien} onChange={(e) => set('typeBien', e.target.value)}>
                             {TYPE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -273,7 +273,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                           <NumInput value={f.surface ?? 0} onChange={(v) => set('surface', v)} unit="m²" />
                         </Field>
                       </div>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Field label="Prix d’achat">
                           <NumInput value={f.prixAchat ?? 0} onChange={(v) => set('prixAchat', v)} unit="€" />
                         </Field>
@@ -295,7 +295,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                   {/* STEP 1 — Financement */}
                   {step === 1 && (
                     <>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Field label="Apport">
                           <NumInput value={f.apport ?? 0} onChange={(v) => set('apport', v)} unit="€" />
                         </Field>
@@ -303,7 +303,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                           <NumInput value={f.travaux ?? 0} onChange={(v) => set('travaux', v)} unit="€" />
                         </Field>
                       </div>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Field label="Taux du prêt">
                           <NumInput value={f.taux ?? 0} onChange={(v) => set('taux', v)} unit="%" step={0.01} />
                         </Field>
@@ -336,7 +336,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                   {/* STEP 2 — Loyers & charges */}
                   {step === 2 && (
                     <>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Field label="Type de location">
                           <select className={inputCls} value={f.locType} onChange={(e) => set('locType', e.target.value as InvestmentParams['locType'])}>
                             <option value="nu">Location nue</option>
@@ -359,7 +359,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                           <NumInput value={f.nbChambres ?? 0} onChange={(v) => set('nbChambres', v)} />
                         </Field>
                       )}
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Field label="Taxe foncière">
                           <NumInput value={f.taxeFonciere ?? 0} onChange={(v) => set('taxeFonciere', v)} unit="€/an" />
                         </Field>
@@ -370,7 +370,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                           <NumInput value={f.assurancePno ?? 0} onChange={(v) => set('assurancePno', v)} unit="€/an" />
                         </Field>
                       </div>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Field label="Gestion">
                           <NumInput value={f.fraisGestionPct ?? 0} onChange={(v) => set('fraisGestionPct', v)} unit="%" step={0.5} />
                         </Field>
@@ -389,7 +389,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                   {/* STEP 3 — Résultats */}
                   {step === 3 && computed && (
                     <>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {[
                           { label: 'Rendement brut', val: `${computed.res.rendementBrut.toFixed(1)} %`, color: '#10b981' },
                           { label: 'Rendement net', val: `${computed.res.rendementNet.toFixed(1)} %`, color: '#10b981' },
@@ -429,7 +429,7 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
                       </label>
 
                       {manual && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="grid grid-cols-2 gap-3 pt-1">
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                           <Field label="Rendement brut">
                             <NumInput value={ovr.rendBrut} onChange={(v) => setOvr((o) => ({ ...o, rendBrut: v }))} unit="%" step={0.1} />
                           </Field>

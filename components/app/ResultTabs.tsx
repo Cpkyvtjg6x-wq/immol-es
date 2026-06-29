@@ -945,8 +945,8 @@ export function ResultTabs({
           </h2>
         </div>
 
-        {/* Tab buttons */}
-        <div className="flex px-2">
+        {/* Tab buttons — scrollables horizontalement sur mobile si trop étroit */}
+        <div className="flex px-2 overflow-x-auto scrollbar-none">
           {tabs.map((t) => (
             <TabButton
               key={t.id}

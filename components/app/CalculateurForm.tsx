@@ -231,16 +231,17 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 function NumInput({
-  value, onChange, suffix, placeholder, min = 0, step = 1, readOnly, error, warn,
+  value, onChange, suffix, placeholder, min = 0, step = 1, readOnly, error, warn, label,
 }: {
   value: number; onChange?: (v: number) => void; suffix?: string
   placeholder?: string; min?: number; step?: number; readOnly?: boolean
-  error?: string; warn?: string
+  error?: string; warn?: string; label?: string
 }) {
   const [focused, setFocused] = useState(false)
   // Saisie brute locale — permet de taper "3,5" sans que la virgule disparaisse
   const [rawInput, setRawInput] = useState('')
   const msgId = useId()
+  const inputId = useId()
   const describedBy = error ? `${msgId}-err` : warn ? `${msgId}-warn` : undefined
 
   const displayValue = focused
@@ -255,8 +256,12 @@ function NumInput({
 
   return (
     <div>
+      {label && (
+        <label htmlFor={inputId} className="block text-[10px] font-semibold text-th-text-2 uppercase tracking-wider mb-1.5">{label}</label>
+      )}
       <div className="relative flex items-center">
         <input
+          id={inputId}
           type="text"
           inputMode="decimal"
           value={displayValue}
@@ -938,8 +943,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
               {/* Prix + Surface */}
               <Row2>
                 <div>
-                  <Label>Prix d'achat</Label>
-                  <NumInput value={p.prixAchat} onChange={(v) => set('prixAchat', v)} suffix="€" step={1000} error={validationErrors.prixAchat} />
+                  <NumInput label="Prix d'achat"  value={p.prixAchat} onChange={(v) => set('prixAchat', v)} suffix="€" step={1000} error={validationErrors.prixAchat} />
                   {/* Presets rapides */}
                   <div className="flex gap-1 mt-1.5 flex-wrap">
                     {[75, 100, 150, 200, 300, 400].map(k => (
@@ -959,8 +963,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                   </div>
                 </div>
                 <div>
-                  <Label>Surface</Label>
-                  <NumInput value={p.surface} onChange={(v) => set('surface', v)} suffix="m²" />
+                  <NumInput label="Surface"  value={p.surface} onChange={(v) => set('surface', v)} suffix="m²" />
                   {/* Presets surface */}
                   <div className="flex gap-1 mt-1.5 flex-wrap">
                     {[20, 35, 50, 70].map(s => (
@@ -1401,16 +1404,13 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
               {/* Apport + Taux + Durée */}
               <Row3>
                 <div>
-                  <Label>Apport</Label>
-                  <NumInput value={p.apport} onChange={(v) => set('apport', v)} suffix="€" step={1000} warn={validationErrors.apport} />
+                  <NumInput label="Apport"  value={p.apport} onChange={(v) => set('apport', v)} suffix="€" step={1000} warn={validationErrors.apport} />
                 </div>
                 <div>
-                  <Label>Taux crédit</Label>
-                  <NumInput value={p.taux} onChange={(v) => set('taux', v)} suffix="%" step={0.05} error={validationErrors.taux} warn={validationErrors.tauxWarn} />
+                  <NumInput label="Taux crédit"  value={p.taux} onChange={(v) => set('taux', v)} suffix="%" step={0.05} error={validationErrors.taux} warn={validationErrors.tauxWarn} />
                 </div>
                 <div>
-                  <Label>Durée</Label>
-                  <NumInput value={p.duree} onChange={(v) => set('duree', v)} suffix="ans" min={5} />
+                  <NumInput label="Durée"  value={p.duree} onChange={(v) => set('duree', v)} suffix="ans" min={5} />
                 </div>
               </Row3>
 
@@ -1430,17 +1430,14 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                 <div className="space-y-3 pl-3 border-l border-th-border">
                   <Row2>
                     <div>
-                      <Label>Assurance</Label>
-                      <NumInput value={p.assuranceTaux} onChange={(v) => set('assuranceTaux', v)} suffix="%" step={0.01} />
+                      <NumInput label="Assurance"  value={p.assuranceTaux} onChange={(v) => set('assuranceTaux', v)} suffix="%" step={0.01} />
                     </div>
                     <div>
-                      <Label>Garantie</Label>
-                      <NumInput value={p.fraisGarantiePct} onChange={(v) => set('fraisGarantiePct', v)} suffix="%" step={0.1} />
+                      <NumInput label="Garantie"  value={p.fraisGarantiePct} onChange={(v) => set('fraisGarantiePct', v)} suffix="%" step={0.1} />
                     </div>
                   </Row2>
                   <div>
-                    <Label>Frais de dossier</Label>
-                    <NumInput value={p.fraisDossier} onChange={(v) => set('fraisDossier', v)} suffix="€" />
+                    <NumInput label="Frais de dossier"  value={p.fraisDossier} onChange={(v) => set('fraisDossier', v)} suffix="€" />
                   </div>
                 </div>
               )}
@@ -1459,17 +1456,14 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                 <div className="space-y-3 pl-3 border-l border-emerald-500/20">
                   <Row2>
                     <div>
-                      <Label>Montant PTZ</Label>
-                      <NumInput value={p.ptzMontant} onChange={(v) => set('ptzMontant', v)} suffix="€" step={1000} />
+                      <NumInput label="Montant PTZ"  value={p.ptzMontant} onChange={(v) => set('ptzMontant', v)} suffix="€" step={1000} />
                     </div>
                     <div>
-                      <Label>Taux PTZ</Label>
-                      <NumInput value={p.ptzTaux} onChange={(v) => set('ptzTaux', v)} suffix="%" step={0.1} />
+                      <NumInput label="Taux PTZ"  value={p.ptzTaux} onChange={(v) => set('ptzTaux', v)} suffix="%" step={0.1} />
                     </div>
                   </Row2>
                   <div>
-                    <Label>Durée PTZ</Label>
-                    <NumInput value={p.ptzDuree} onChange={(v) => set('ptzDuree', v)} suffix="ans" />
+                    <NumInput label="Durée PTZ"  value={p.ptzDuree} onChange={(v) => set('ptzDuree', v)} suffix="ans" />
                   </div>
                 </div>
               )}
@@ -1622,12 +1616,10 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
               {isNu && (
                 <Row2>
                   <div>
-                    <Label>Loyer HC / mois</Label>
-                    <NumInput value={p.loyerNu} onChange={(v) => set('loyerNu', v)} suffix="€" error={validationErrors.loyerNu} />
+                    <NumInput label="Loyer HC / mois"  value={p.loyerNu} onChange={(v) => set('loyerNu', v)} suffix="€" error={validationErrors.loyerNu} />
                   </div>
                   <div>
-                    <Label>Charges récup. / mois</Label>
-                    <NumInput value={p.chargesRecuperables} onChange={(v) => set('chargesRecuperables', v)} suffix="€" />
+                    <NumInput label="Charges récup. / mois"  value={p.chargesRecuperables} onChange={(v) => set('chargesRecuperables', v)} suffix="€" />
                   </div>
                 </Row2>
               )}
@@ -1635,8 +1627,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
               {/* ── MEUBLÉ ─────────────────────────────────────────── */}
               {isMeuble && (
                 <div>
-                  <Label>Loyer charges comprises / mois</Label>
-                  <NumInput value={p.loyerMeuble} onChange={(v) => set('loyerMeuble', v)} suffix="€" error={validationErrors.loyerMeuble} />
+                  <NumInput label="Loyer charges comprises / mois"  value={p.loyerMeuble} onChange={(v) => set('loyerMeuble', v)} suffix="€" error={validationErrors.loyerMeuble} />
                 </div>
               )}
 
@@ -1658,8 +1649,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                     </div>
                   </div>
                   <div>
-                    <Label>Loyer par chambre / mois</Label>
-                    <NumInput value={p.loyerParChambre} onChange={(v) => set('loyerParChambre', v)} suffix="€" error={validationErrors.loyerColoc} />
+                    <NumInput label="Loyer par chambre / mois"  value={p.loyerParChambre} onChange={(v) => set('loyerParChambre', v)} suffix="€" error={validationErrors.loyerColoc} />
                   </div>
                   <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-emerald-500/[0.05] border border-emerald-500/15">
                     <span className="text-[11px] text-th-text-2">Loyer total</span>
@@ -1676,12 +1666,10 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                   {/* Prix / nuit + taux occupation */}
                   <Row2>
                     <div>
-                      <Label>Prix moyen / nuit</Label>
-                      <NumInput value={p.prixNuit ?? 80} onChange={(v) => set('prixNuit', v)} suffix="€" />
+                      <NumInput label="Prix moyen / nuit"  value={p.prixNuit ?? 80} onChange={(v) => set('prixNuit', v)} suffix="€" />
                     </div>
                     <div>
-                      <Label>Durée moy. séjour</Label>
-                      <NumInput value={p.dureeSejourMoyen ?? 3} onChange={(v) => set('dureeSejourMoyen', Math.max(1, v))} suffix=" nuits" step={1} />
+                      <NumInput label="Durée moy. séjour"  value={p.dureeSejourMoyen ?? 3} onChange={(v) => set('dureeSejourMoyen', Math.max(1, v))} suffix=" nuits" step={1} />
                     </div>
                   </Row2>
 
@@ -2104,18 +2092,15 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
               {/* Charges fixes */}
               <Row3>
                 <div>
-                  <Label>Taxe foncière</Label>
-                  <NumInput value={p.taxeFonciere} onChange={(v) => set('taxeFonciere', v)} suffix="€" />
+                  <NumInput label="Taxe foncière"  value={p.taxeFonciere} onChange={(v) => set('taxeFonciere', v)} suffix="€" />
                 </div>
                 {!isImmeuble && (
                   <div>
-                    <Label>Charges copro</Label>
-                    <NumInput value={p.chargesCopro} onChange={(v) => set('chargesCopro', v)} suffix="€" />
+                    <NumInput label="Charges copro"  value={p.chargesCopro} onChange={(v) => set('chargesCopro', v)} suffix="€" />
                   </div>
                 )}
                 <div>
-                  <Label>Assurance PNO</Label>
-                  <NumInput value={p.assurancePno} onChange={(v) => set('assurancePno', v)} suffix="€" />
+                  <NumInput label="Assurance PNO"  value={p.assurancePno} onChange={(v) => set('assurancePno', v)} suffix="€" />
                 </div>
               </Row3>
 
@@ -2125,12 +2110,10 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                   <p className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">Immeuble de rapport</p>
                   <Row2>
                     <div>
-                      <Label>Entretien parties communes</Label>
-                      <NumInput value={p.entretienPartiesCommunes} onChange={(v) => set('entretienPartiesCommunes', v)} suffix="€/an" step={100} />
+                      <NumInput label="Entretien parties communes"  value={p.entretienPartiesCommunes} onChange={(v) => set('entretienPartiesCommunes', v)} suffix="€/an" step={100} />
                     </div>
                     <div>
-                      <Label>Assurance immeuble</Label>
-                      <NumInput value={p.assuranceImmeuble} onChange={(v) => set('assuranceImmeuble', v)} suffix="€/an" step={100} />
+                      <NumInput label="Assurance immeuble"  value={p.assuranceImmeuble} onChange={(v) => set('assuranceImmeuble', v)} suffix="€/an" step={100} />
                     </div>
                   </Row2>
                   <p className="text-[10px] text-th-text-3">Charges copro supprimées — vous êtes le seul copropriétaire (syndicat = vous)</p>
@@ -2143,30 +2126,24 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                   <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">Charges exploitation saisonnière</p>
                   <Row3>
                     <div>
-                      <Label>Ménage / rotation</Label>
-                      <NumInput value={p.fraisMenageParRotation} onChange={(v) => set('fraisMenageParRotation', v)} suffix="€" step={5} />
+                      <NumInput label="Ménage / rotation"  value={p.fraisMenageParRotation} onChange={(v) => set('fraisMenageParRotation', v)} suffix="€" step={5} />
                     </div>
                     <div>
-                      <Label>Conciergerie</Label>
-                      <NumInput value={p.fraisConciergerie} onChange={(v) => set('fraisConciergerie', v)} suffix="€/mois" step={10} />
+                      <NumInput label="Conciergerie"  value={p.fraisConciergerie} onChange={(v) => set('fraisConciergerie', v)} suffix="€/mois" step={10} />
                     </div>
                     <div>
-                      <Label>Linge & consommables</Label>
-                      <NumInput value={p.fournituresConsommables} onChange={(v) => set('fournituresConsommables', v)} suffix="€/mois" step={5} />
+                      <NumInput label="Linge & consommables"  value={p.fournituresConsommables} onChange={(v) => set('fournituresConsommables', v)} suffix="€/mois" step={5} />
                     </div>
                   </Row3>
                   <Row3>
                     <div>
-                      <Label>Électricité / eau</Label>
-                      <NumInput value={p.electriciteEau} onChange={(v) => set('electriciteEau', v)} suffix="€/mois" step={10} />
+                      <NumInput label="Électricité / eau"  value={p.electriciteEau} onChange={(v) => set('electriciteEau', v)} suffix="€/mois" step={10} />
                     </div>
                     <div>
-                      <Label>Taxe de séjour</Label>
-                      <NumInput value={p.taxeSejour} onChange={(v) => set('taxeSejour', v)} suffix="€/nuit/pers." step={0.1} />
+                      <NumInput label="Taxe de séjour"  value={p.taxeSejour} onChange={(v) => set('taxeSejour', v)} suffix="€/nuit/pers." step={0.1} />
                     </div>
                     <div>
-                      <Label>Capacité max</Label>
-                      <NumInput value={p.nbPersonnesMax} onChange={(v) => set('nbPersonnesMax', v)} suffix="pers." step={1} />
+                      <NumInput label="Capacité max"  value={p.nbPersonnesMax} onChange={(v) => set('nbPersonnesMax', v)} suffix="pers." step={1} />
                     </div>
                   </Row3>
                   {(() => {
@@ -2194,17 +2171,14 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
               {/* Charges variables */}
               <Row3>
                 <div>
-                  <Label>Gestion</Label>
-                  <NumInput value={p.fraisGestionPct} onChange={(v) => set('fraisGestionPct', v)} suffix="%" step={0.5} />
+                  <NumInput label="Gestion"  value={p.fraisGestionPct} onChange={(v) => set('fraisGestionPct', v)} suffix="%" step={0.5} />
                 </div>
                 <div>
-                  <Label>Provision</Label>
-                  <NumInput value={p.provisionPct} onChange={(v) => set('provisionPct', v)} suffix="%" step={0.5} />
+                  <NumInput label="Provision"  value={p.provisionPct} onChange={(v) => set('provisionPct', v)} suffix="%" step={0.5} />
                 </div>
                 {!isSaisonnier && (
                   <div>
-                    <Label>GLI</Label>
-                    <NumInput value={p.gliPct} onChange={(v) => set('gliPct', v)} suffix="%" step={0.1} />
+                    <NumInput label="GLI"  value={p.gliPct} onChange={(v) => set('gliPct', v)} suffix="%" step={0.1} />
                   </div>
                 )}
               </Row3>
@@ -2288,8 +2262,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                         />
                       </div>
                       <div>
-                        <Label>Frais comptable</Label>
-                        <NumInput value={p.fraisComptable} onChange={(v) => set('fraisComptable', v)} suffix="€/an" />
+                        <NumInput label="Frais comptable"  value={p.fraisComptable} onChange={(v) => set('fraisComptable', v)} suffix="€/an" />
                       </div>
                     </Row2>
                   </div>
@@ -2385,8 +2358,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
 
               {/* Revenus pro */}
               <div>
-                <Label>Revenus professionnels nets / an</Label>
-                <NumInput
+                <NumInput label="Revenus professionnels nets / an" 
                   value={p.revenusProAnnuels}
                   onChange={(v) => set('revenusProAnnuels', v)}
                   suffix="€"

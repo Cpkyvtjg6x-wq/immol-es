@@ -1,4 +1,6 @@
 import type { InvestmentParams, InvestmentResult, AmortizationRow, ProjectionRow } from './types'
+import { mensualite as mensualitePret, capitalRestant as capitalRestantPret } from './finance'
+import { computePlusValueTax } from './plus-value'
 
 /**
  * Core investment calculator — ported + extended from the original HTML/JS calculator.
@@ -29,13 +31,7 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
   // ─── PTZ mensualité ─────────────────────────────────────────────────────────
   let mensualitePtz = 0
   if (params.ptzEnabled && params.ptzMontant > 0) {
-    if (params.ptzTaux > 0) {
-      const r = params.ptzTaux / 100 / 12
-      const n = params.ptzDuree * 12
-      mensualitePtz = (params.ptzMontant * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
-    } else {
-      mensualitePtz = params.ptzMontant / (params.ptzDuree * 12)
-    }
+    mensualitePtz = mensualitePret(params.ptzMontant, params.ptzTaux, params.ptzDuree)
   }
 
   // ─── Montant emprunté (avec réinjection éventuelle) ─────────────────────────
@@ -45,7 +41,6 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
   )
   const montantEmprunte = Math.max(0, montantEmprunted - reinjectAmount)
 
-  const tauxMensuel = params.taux / 100 / 12
   const nbMensualites = params.duree * 12
 
   // ─── Mensualité crédit ──────────────────────────────────────────────────────
@@ -54,9 +49,7 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
     if (params.loanType === 'in-fine') {
       mensualiteCredit = montantEmprunte * (params.taux / 100 / 12)
     } else {
-      mensualiteCredit =
-        (montantEmprunte * tauxMensuel * Math.pow(1 + tauxMensuel, nbMensualites)) /
-        (Math.pow(1 + tauxMensuel, nbMensualites) - 1)
+      mensualiteCredit = mensualitePret(montantEmprunte, params.taux, params.duree)
     }
   }
 
@@ -231,17 +224,21 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
   // ─── Revente & TRI ──────────────────────────────────────────────────────────
   const horizon = params.horizonRevente || 10
   const appreciation = params.valorisationAnnuelle ?? 2.0
-  const prixRevente = params.prixAchat * Math.pow(1 + appreciation / 100, horizon)
+  // Base valorisée = prix d'achat + travaux (les travaux, surtout rénovation, sont
+  // valorisants). On exclut les frais de notaire (coût de transaction, non valorisable).
+  // Cohérent avec baseAcquisition ci-dessous et avec le module rénovation.
+  const baseValorisation = params.prixAchat + params.travaux
+  const prixRevente = baseValorisation * Math.pow(1 + appreciation / 100, horizon)
 
   // Plus-value brute
   const baseAcquisition = prixRevient // prix achat + frais notaire + travaux
   const plusValueBrute = Math.max(0, prixRevente - baseAcquisition)
 
-  // Abattements plus-value immobilière (règles françaises)
-  const { abattIR, abattPS } = calculerAbattementPlusValue(horizon)
-  const pvImposableIR = plusValueBrute * (1 - abattIR / 100)
-  const pvImposablePS = plusValueBrute * (1 - abattPS / 100)
-  const impotPlusValue = Math.max(0, pvImposableIR * 0.19 + pvImposablePS * 0.172)
+  // Impôt plus-value (abattements durée + surtaxe) — logique partagée avec /revente
+  const pvTax = computePlusValueTax(plusValueBrute, horizon)
+  const abattIR = pvTax.abattIR
+  const abattPS = pvTax.abattPS
+  const impotPlusValue = pvTax.impotTotal
 
   // Capital restant dû à l'horizon
   const capitalRestantHorizon = calculerCapitalRestant(montantEmprunte, params.taux, params.duree, horizon)
@@ -260,7 +257,7 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
   // ─── Tableaux ────────────────────────────────────────────────────────────────
   const tableauAmortissement = generateAmortizationSchedule(montantEmprunte, params.taux, params.duree)
   const projection = generateProjection(
-    params.prixAchat,
+    baseValorisation,
     montantEmprunte,
     params.taux,
     params.duree,
@@ -319,46 +316,10 @@ export function calculateInvestment(params: InvestmentParams): InvestmentResult 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Calcule les abattements sur plus-value immobilière (règles françaises)
- * - Exonération IR totale après 22 ans
- * - Exonération PS totale après 30 ans
- */
-function calculerAbattementPlusValue(dureeDetention: number): { abattIR: number; abattPS: number } {
-  let abattIR = 0
-  let abattPS = 0
-
-  if (dureeDetention <= 5) {
-    abattIR = 0
-    abattPS = 0
-  } else if (dureeDetention <= 21) {
-    abattIR = (dureeDetention - 5) * 6
-    abattPS = (dureeDetention - 5) * 1.65
-  } else if (dureeDetention === 22) {
-    abattIR = 100
-    abattPS = 22 * 1.65 - 5 * 1.65 + 1.60
-  } else if (dureeDetention <= 30) {
-    abattIR = 100
-    abattPS = Math.min(100, (dureeDetention - 5) * 1.65 + (dureeDetention - 22) * 9)
-  } else {
-    abattIR = 100
-    abattPS = 100
-  }
-
-  return {
-    abattIR: Math.min(100, abattIR),
-    abattPS: Math.min(100, abattPS),
-  }
-}
-
-/**
- * Calcule le capital restant dû après N années
+ * Calcule le capital restant dû après N années (délègue à lib/finance).
  */
 function calculerCapitalRestant(montant: number, tauxAnnuel: number, dureeAns: number, annees: number): number {
-  if (montant <= 0 || tauxAnnuel <= 0) return Math.max(0, montant - (montant / dureeAns) * annees)
-  const r = tauxAnnuel / 100 / 12
-  const n = dureeAns * 12
-  const mois = Math.min(annees * 12, n)
-  return Math.max(0, montant * ((Math.pow(1 + r, n) - Math.pow(1 + r, mois)) / (Math.pow(1 + r, n) - 1)))
+  return capitalRestantPret(montant, tauxAnnuel, dureeAns, annees)
 }
 
 /**
@@ -371,7 +332,14 @@ function calculerTRI(
   horizonAns: number,
   valeurTerminale: number
 ): number {
-  if (investissementInitial <= 0) return 0
+  // Investissement initial nul ou négatif (deal sans apport, ou produits de cession
+  // de lots conservés ≥ apport) : la mise de fonds immobilisée est nulle → le TRI est
+  // mathématiquement infini dès que les flux sont positifs. On renvoie une sentinelle
+  // élevée (cohérente avec le cas "toujours positif" plus bas), surtout PAS 0 — sinon
+  // les meilleurs montages (effet de levier maximal) afficheraient le pire score.
+  if (investissementInitial <= 0) {
+    return (cashflowAnnuel > 0 || valeurTerminale > 0) ? 500 : 0
+  }
 
   const npv = (r: number) => {
     let val = -investissementInitial
@@ -409,7 +377,7 @@ export function generateAmortizationSchedule(
 
   const r = tauxAnnuel / 100 / 12
   const n = dureeAns * 12
-  const mensualite = (montant * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
+  const mensualite = mensualitePret(montant, tauxAnnuel, dureeAns)
 
   const rows: AmortizationRow[] = []
   let capitalRestant = montant
@@ -445,19 +413,13 @@ export function generateProjection(
   irl = 1.5    // revalorisation loyer annuelle (%)
 ): ProjectionRow[] {
   const rows: ProjectionRow[] = []
-  const r = tauxAnnuel / 100 / 12
-  const n = dureeAns * 12
   let cashflowCumule = 0
   let cashflowCourant = cashflowMensuelInitial
 
   for (let annee = 1; annee <= horizonAns; annee++) {
     const valeurBien = prixAchat * Math.pow(1 + appreciationAnnuelle / 100, annee)
 
-    const moisEcoules = Math.min(annee * 12, n)
-    const capitalRestant =
-      tauxAnnuel > 0 && montantEmprunte > 0
-        ? montantEmprunte * ((Math.pow(1 + r, n) - Math.pow(1 + r, moisEcoules)) / (Math.pow(1 + r, n) - 1))
-        : Math.max(0, montantEmprunte - (montantEmprunte / n) * moisEcoules)
+    const capitalRestant = capitalRestantPret(montantEmprunte, tauxAnnuel, dureeAns, annee)
 
     // Revalorisation du cashflow avec l'IRL
     if (annee > 1) {

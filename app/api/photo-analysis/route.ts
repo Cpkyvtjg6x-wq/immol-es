@@ -5,6 +5,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { authenticateExtensionRequest } from '@/lib/extension-auth'
+import { checkAiQuota } from '@/lib/usage'
+import dns from 'node:dns/promises'
+import net from 'node:net'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -113,10 +116,51 @@ Valeurs pour urgence :
 - "optionnel" : amélioration utile mais non urgente`
 }
 
+// ── Anti-SSRF : rejette les URLs visant le réseau interne ─────────────────────
+// imageUrls vient du client (extension). Sans contrôle, un appelant pourrait viser
+// http://169.254.169.254 (métadonnées cloud), localhost ou des IP privées. On force
+// http(s) et on vérifie que l'hôte ne résout PAS vers une plage privée/loopback/
+// link-local. (Résidu connu : TOCTOU/DNS-rebinding entre lookup et fetch — acceptable
+// à ce stade ; le vecteur trivial metadata/localhost est fermé.)
+
+function isPrivateIp(ip: string): boolean {
+  if (net.isIPv4(ip)) {
+    const [a, b] = ip.split('.').map(Number)
+    if (a === 0 || a === 10 || a === 127) return true          // "this", privé, loopback
+    if (a === 169 && b === 254) return true                    // link-local (metadata cloud)
+    if (a === 172 && b >= 16 && b <= 31) return true           // privé
+    if (a === 192 && b === 168) return true                    // privé
+    if (a === 100 && b >= 64 && b <= 127) return true          // CGNAT
+    return false
+  }
+  const ipv6 = ip.toLowerCase()
+  if (ipv6 === '::1' || ipv6 === '::') return true             // loopback / non spécifié
+  if (ipv6.startsWith('fc') || ipv6.startsWith('fd')) return true   // ULA
+  if (ipv6.startsWith('fe80')) return true                    // link-local
+  if (ipv6.startsWith('::ffff:')) return isPrivateIp(ipv6.replace('::ffff:', '')) // IPv4 mappée
+  return false
+}
+
+async function isUrlSafeForFetch(rawUrl: string): Promise<boolean> {
+  let u: URL
+  try { u = new URL(rawUrl) } catch { return false }
+  if (u.protocol !== 'https:' && u.protocol !== 'http:') return false
+  const host = u.hostname
+  if (!host || host.toLowerCase() === 'localhost') return false
+  if (net.isIP(host)) return !isPrivateIp(host)               // hôte = IP littérale
+  try {
+    const addrs = await dns.lookup(host, { all: true })
+    return addrs.length > 0 && addrs.every(a => !isPrivateIp(a.address))
+  } catch {
+    return false
+  }
+}
+
 // ── Fetch image depuis URL → base64 ──────────────────────────────────────────
 
 async function fetchImageAsBase64(url: string): Promise<{ data: string; mediaType: string } | null> {
   try {
+    if (!(await isUrlSafeForFetch(url))) return null
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 8000)
 
@@ -209,6 +253,17 @@ export async function POST(req: NextRequest) {
       { error: 'Service vision non configuré (ANTHROPIC_API_KEY manquant)' },
       { status: 503, headers: CORS }
     )
+  }
+
+  // ── Quota IA mensuel (server-side) — plafonne le coût Claude par compte ──
+  if (auth.userId) {
+    const quota = await checkAiQuota(auth.userId, auth.tier)
+    if (!quota.allowed) {
+      return NextResponse.json(
+        { error: "Quota d'analyses IA du mois atteint", upgrade_required: 'ai_quota', tier: auth.tier },
+        { status: 429, headers: { ...CORS, 'x-immora-tier': auth.tier } },
+      )
+    }
   }
 
   try {

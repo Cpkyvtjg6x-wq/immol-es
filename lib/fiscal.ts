@@ -1,11 +1,20 @@
 import type { InvestmentResult, FiscalParams, FiscalResult, FiscalRegime } from './types'
+import {
+  PRELEVEMENTS_SOCIAUX,
+  IS_SEUIL_TAUX_REDUIT, IS_TAUX_REDUIT, IS_TAUX_NORMAL,
+  MICRO_FONCIER_PLAFOND, MICRO_FONCIER_ABATTEMENT,
+  MICRO_BIC_PLAFOND, MICRO_BIC_SAISONNIER_PLAFOND,
+  MICRO_BIC_ABATTEMENT, MICRO_BIC_SAISONNIER_ABATTEMENT,
+  PART_AMORTISSABLE, DEFICIT_FONCIER_PLAFOND,
+  COT_TNS_TAUX, COT_TNS_MIN_LMP,
+} from './fiscal-constants'
 
-const PS = 0.172 // Prélèvements sociaux 17.2%
+const PS = PRELEVEMENTS_SOCIAUX
 
 function calcIS(base: number): number {
   if (base <= 0) return 0
-  if (base <= 42500) return base * 0.15
-  return 42500 * 0.15 + (base - 42500) * 0.25
+  if (base <= IS_SEUIL_TAUX_REDUIT) return base * IS_TAUX_REDUIT
+  return IS_SEUIL_TAUX_REDUIT * IS_TAUX_REDUIT + (base - IS_SEUIL_TAUX_REDUIT) * IS_TAUX_NORMAL
 }
 
 function fmt(n: number): string {
@@ -14,7 +23,7 @@ function fmt(n: number): string {
 
 /** Calcule le total d'amortissement annuel LMNP selon les paramètres */
 function calcAmortTotal(params: FiscalParams): number {
-  const base = params.prixAchat * 0.85 // 85% du prix (hors terrain)
+  const base = params.prixAchat * PART_AMORTISSABLE // 85% du prix (hors terrain)
   const travaux = params.travaux ?? 0
 
   if (params.profilFis === 'confirme') {
@@ -73,9 +82,9 @@ export function calculateFiscal(
   // Conditions d'éligibilité
   const revMeuble       = isMeuble ? revBrut : 0
   const revNu           = isNu ? revBrut : 0
-  const lmnpMicroOk     = revMeuble <= 77700
+  const lmnpMicroOk     = revMeuble <= MICRO_BIC_PLAFOND
   const lmpOk           = params.lmpEnabled === true
-  const microFoncierOk  = revNu <= 15000
+  const microFoncierOk  = revNu <= MICRO_FONCIER_PLAFOND
 
   const regimes: FiscalRegime[] = []
 
@@ -88,7 +97,7 @@ export function calculateFiscal(
 
     // 1. Micro-foncier
     if (isNu) {
-      const base     = Math.max(0, revNu * 0.70)
+      const base     = Math.max(0, revNu * (1 - MICRO_FONCIER_ABATTEMENT))
       const impot    = base * tmi
       const ps       = base * PS
       const net      = revNu - charges - impot - ps
@@ -110,7 +119,7 @@ export function calculateFiscal(
       const impot    = base * tmi
       const ps       = base * PS
       const net      = revNu - charges - impot - ps
-      const deficitDed = deficit < 0 ? Math.min(10700, Math.abs(deficit)) : 0
+      const deficitDed = deficit < 0 ? Math.min(DEFICIT_FONCIER_PLAFOND, Math.abs(deficit)) : 0
       push({
         id: 'reel-foncier', name: 'Réel foncier', shortName: 'Réel-F', category: 'foncier',
         revImposable: base, impot, ps, totalFiscal: impot + ps, net,
@@ -124,8 +133,8 @@ export function calculateFiscal(
     // 3. LMNP Micro-BIC
     if (isMeuble) {
       const isSaisonnier   = params.locType === 'saisonnier'
-      const abatRate       = isSaisonnier ? 0.71 : 0.50
-      const seuil          = isSaisonnier ? 188700 : 77700
+      const abatRate       = isSaisonnier ? MICRO_BIC_SAISONNIER_ABATTEMENT : MICRO_BIC_ABATTEMENT
+      const seuil          = isSaisonnier ? MICRO_BIC_SAISONNIER_PLAFOND : MICRO_BIC_PLAFOND
       const base           = Math.max(0, revMeuble * (1 - abatRate))
       const impot          = base * tmi
       const ps             = base * PS
@@ -160,18 +169,24 @@ export function calculateFiscal(
 
     // 5. LMP
     if (isMeuble) {
-      const base           = Math.max(0, revMeuble - chargesMeuble)
-      const cotTNS         = revMeuble * 0.35
-      const impot          = base * tmi
+      // Cotisations sociales TNS : assises sur le BÉNÉFICE (résultat après charges,
+      // intérêts ET amortissement), pas sur les recettes brutes. En LMP au réel,
+      // l'amortissement efface souvent le bénéfice → cotisations proches du minimum
+      // forfaitaire (~1 200 €/an, dû même sans bénéfice car activité professionnelle).
+      // Les cotisations sont par ailleurs déductibles du résultat imposable à l'IR.
+      const benefice       = Math.max(0, revMeuble - chargesMeuble)
+      const cotTNS         = Math.max(COT_TNS_MIN_LMP, benefice * COT_TNS_TAUX)
+      const baseIR         = Math.max(0, benefice - cotTNS)
+      const impot          = baseIR * tmi
       const net            = revMeuble - charges - impot - cotTNS
       push({
         id: 'lmp', name: 'LMP — Loueur Meublé Professionnel', shortName: 'LMP', category: 'bic',
-        revImposable: base, impot, ps: cotTNS, totalFiscal: impot + cotTNS, net,
+        revImposable: baseIR, impot, ps: cotTNS, totalFiscal: impot + cotTNS, net,
         cfNet: net / 12 - mensualiteTotale,
         rendNetNet: prixRevient > 0 ? (net / prixRevient) * 100 : 0,
         disabled: !lmpOk,
         disabledReason: !lmpOk ? 'Recettes > 23 000€ ET > 50% autres revenus requis' : undefined,
-        tag: 'Cotisations TNS ~35% incluses',
+        tag: benefice > 0 ? `Cotisations TNS ~35% du bénéfice` : `Cotisations TNS au minimum (~${COT_TNS_MIN_LMP.toLocaleString('fr-FR')} €)`,
       })
     }
   }
@@ -185,7 +200,7 @@ export function calculateFiscal(
     const impot    = base * tmi
     const ps       = base * PS
     const net      = revNu - charges - impot - ps
-    const deficitDed = deficit < 0 ? Math.min(10700, Math.abs(deficit)) : 0
+    const deficitDed = deficit < 0 ? Math.min(DEFICIT_FONCIER_PLAFOND, Math.abs(deficit)) : 0
     push({
       id: 'sci-ir', name: "SCI à l'IR — Régime réel", shortName: 'SCI IR', category: 'societe',
       revImposable: base, impot, ps, totalFiscal: impot + ps, net,

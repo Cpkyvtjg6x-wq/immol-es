@@ -1,17 +1,15 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect } from 'react'
 
 /**
  * Thème custom — sans next-themes.
  *
- * Stratégie zéro-flash :
- *  • CSS : :root = dark (défaut), .light = mode clair
- *  • layout.tsx <head> script : lit localStorage et pose .light si besoin
- *    → premier pixel déjà dans le bon thème, sans aucune attente JS
- *  • Ce provider lit l'état réel du DOM pour initialiser React
- *    → pas de remove→add, pas de flash
- *  • Toggle : ajoute/retire .light uniquement → aucun état intermédiaire
+ * ⚠️ v1 DARK-ONLY : le mode clair est temporairement désactivé. Les primitives UI
+ * (Input/Select/Card/Button/Toast/Tooltip) et QuickAnalyse sont encore câblées en
+ * dark en dur → en mode clair le rendu est cassé. On force donc le thème sombre et
+ * on neutralise tout `.light` résiduel (utilisateur qui avait activé le clair avant).
+ * Réactiver le toggle une fois la refonte tokens faite (cf. plan Phase 2).
  */
 
 type Theme = 'dark' | 'light'
@@ -29,27 +27,20 @@ const ThemeContext = createContext<ThemeContextValue>({
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Initialisation depuis le DOM — déjà correct grâce au script <head>
-  const [theme, setThemeState] = useState<Theme>('dark')
-
+  // v1 dark-only : on neutralise tout `.light` posé par une session précédente.
   useEffect(() => {
-    // Lit l'état réel du DOM (posé par le script bloquant de layout.tsx)
-    const current = document.documentElement.classList.contains('light') ? 'light' : 'dark'
-    setThemeState(current)
+    document.documentElement.classList.remove('light')
+    try { localStorage.removeItem('theme') } catch {}
   }, [])
 
-  const setTheme = (t: Theme) => {
-    setThemeState(t)
-    try { localStorage.setItem('theme', t) } catch {}
-    if (t === 'light') {
-      document.documentElement.classList.add('light')
-    } else {
-      document.documentElement.classList.remove('light')
-    }
+  // No-op tant que le mode clair n'est pas refait : toute tentative de bascule
+  // retombe sur le dark (et retire un éventuel `.light`).
+  const setTheme = (_t: Theme) => {
+    document.documentElement.classList.remove('light')
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme: theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: 'dark', resolvedTheme: 'dark', setTheme }}>
       {children}
     </ThemeContext.Provider>
   )

@@ -170,32 +170,4 @@ export function calculateScore(
   }
 }
 
-/**
- * Génère des recommandations textuelles basées sur le score
- */
-export function generateRecommendations(
-  result: InvestmentResult,
-  score: ScoreResult
-): string[] {
-  const recs: string[] = []
-
-  if (result.rendBrut < 4.5) {
-    recs.push("Négociez le prix d'achat à la baisse ou augmentez le loyer pour améliorer la rentabilité brute.")
-  }
-
-  if (result.cashflowMensuel < -300) {
-    recs.push(
-      `Votre cash-flow est de ${Math.round(result.cashflowMensuel)} €/mois. Envisagez d'augmenter l'apport, la durée du prêt ou de renégocier le prix.`
-    )
-  }
-
-  if (result.roiApport < 5 && result.montantEmprunte > 0) {
-    recs.push("Le ROI sur votre apport est faible. Envisagez un apport moindre pour optimiser l'effet de levier.")
-  }
-
-  if (score.global >= 78) {
-    recs.push("Excellent projet ! Assurez-vous de l'état du bien et de la solidité de votre dossier bancaire.")
-  }
-
-  return recs
-}
+// (generateRecommendations supprimé — code mort, jamais appelé)

@@ -7,6 +7,7 @@ import { calculateScore } from '@/lib/score'
 import { generateInsights } from '@/lib/ai'
 import { getCityData } from '@/lib/market-data'
 import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '@/lib/types'
+import { checkAiQuota } from '@/lib/usage'
 import type { InvestmentParams, FiscalParams } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -72,6 +73,15 @@ export async function POST(req: NextRequest) {
           upgrade_required: 'ai_insights',
         },
         { status: 402 } // 402 Payment Required — sémantique correcte
+      )
+    }
+
+    // ── Quota IA mensuel (server-side) — plafonne le coût OpenAI par compte ──
+    const quota = await checkAiQuota(user.id, tier)
+    if (!quota.allowed) {
+      return NextResponse.json(
+        { error: "Quota d'analyses IA du mois atteint", upgrade_required: 'ai_quota' },
+        { status: 429 }
       )
     }
 

@@ -41,20 +41,13 @@ export const metadata: Metadata = {
     title: 'IMMORA — Calculateur d\'investissement immobilier',
     description:
       'Analysez vos investissements immobiliers : rendement, cash-flow, fiscalité et score IA.',
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/og-image.png`,
-        width: 1200,
-        height: 630,
-        alt: 'IMMORA',
-      },
-    ],
+    // og:image fourni automatiquement par app/opengraph-image.tsx
   },
   twitter: {
     card: 'summary_large_image',
     title: 'IMMORA — Calculateur d\'investissement immobilier',
     description: 'Analysez vos investissements immobiliers avec précision.',
-    images: [`${process.env.NEXT_PUBLIC_APP_URL}/og-image.png`],
+    // twitter:image fourni automatiquement par app/opengraph-image.tsx
   },
   robots: {
     index: true,
@@ -62,9 +55,8 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, 'max-video-preview': -1 },
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    shortcut: '/favicon.svg',
   },
 }
 
@@ -96,7 +88,9 @@ export default function RootLayout({
        * → Pour light : ajouter .light avant le premier pixel rendu.
        */}
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light')}catch(e){}})()` }} />
+        {/* v1 dark-only : on s'assure qu'aucun `.light` résiduel n'est appliqué
+            (le mode clair est temporairement désactivé, cf. ThemeProvider). */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{document.documentElement.classList.remove('light')}catch(e){}})()` }} />
       </head>
       <body className="antialiased min-h-screen">
         <ThemeProvider>

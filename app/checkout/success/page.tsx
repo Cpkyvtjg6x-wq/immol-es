@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Stripe from 'stripe'
+import { BrandLogo } from '@/components/app/BrandLogo'
 
 /**
  * Page d'atterrissage après un Stripe Checkout réussi.
@@ -85,13 +86,13 @@ export default async function CheckoutSuccessPage({
         'PDF pro & dossier bancaire complet',
         'Rapports white-label (votre logo)',
         'Comparaison illimitée de biens',
-        'Analyse IA (GPT-4) incluse',
+        'Analyse IA avancée incluse',
         'Support prioritaire 24h',
       ]
     : [
         'Simulations illimitées',
         'PDF pro & dossier bancaire complet',
-        'Analyse IA (GPT-4) incluse',
+        'Analyse IA avancée incluse',
         'Comparaison multi-biens',
         'Patrimoine & suivi des biens détenus',
         'Données marché complètes',
@@ -109,19 +110,7 @@ export default async function CheckoutSuccessPage({
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center">
-              <svg className="w-5 h-5 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                />
-              </svg>
-            </div>
-            <span className="text-white font-bold text-xl">
-              IMMO<span className="text-emerald-400">RA</span>
-            </span>
+            <BrandLogo size={34} textSize={22} />
           </Link>
         </div>
 

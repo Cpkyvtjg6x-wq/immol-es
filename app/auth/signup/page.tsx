@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { BrandLogo } from '@/components/app/BrandLogo'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -113,12 +114,7 @@ export default function SignupPage() {
       <div className="relative w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center">
-              <svg className="w-5 h-5 text-zinc-950" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-            </div>
-            <span className="text-white font-bold text-xl">IMMO<span className="text-emerald-400">RA</span></span>
+            <BrandLogo size={34} textSize={22} />
           </Link>
           <h1 className="text-2xl font-bold text-th-text-1 mt-4">Créer votre compte</h1>
           <p className="text-th-text-2 text-sm">

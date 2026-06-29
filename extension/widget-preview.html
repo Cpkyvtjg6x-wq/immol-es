@@ -1,961 +1,274 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IMMORA — Preview widget v5</title>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IMMORA — widget</title>
 <style>
-/* ---- override layout pour preview (le widget est normalement position:fixed) ---- */
-body{background:#0e0f13;margin:0;padding:44px 24px;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;color:#fff;}
-.pv-head{max-width:860px;margin:0 auto 30px;text-align:center;}
-.pv-head h1{font-size:18px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px;}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:#0e0f13;color:#fff;}
+.pv-head{max-width:900px;margin:0 auto;padding:30px 20px 6px;text-align:center;}
+.pv-head h1{font-size:18px;font-weight:700;margin:0 0 6px;letter-spacing:-.02em;}
 .pv-head p{font-size:13px;color:#9aa0a6;margin:0;line-height:1.5;}
-.pv-grid{display:flex;gap:40px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
-.pv-col{display:flex;flex-direction:column;gap:12px;align-items:center;}
-.pv-cap{font-size:12px;color:#9aa0a6;text-align:center;max-width:364px;line-height:1.45;}
-.pv-cap b{color:#34d399;font-weight:700;}
-.pv-cap .amb{color:#fbbf24;font-weight:700;}
-/* neutralise le positionnement fixe pour afficher les cartes en flux */
-#immora-widget{position:static !important;bottom:auto;right:auto;}
+.pv-cap{max-width:780px;margin:14px auto 30px;font-size:12px;color:#9aa0a6;text-align:center;line-height:1.55;}
+.pv-cap b{color:#34d399;font-weight:600;}
+.pv-stage{position:relative;max-width:900px;margin:0 auto 40px;border-radius:18px;overflow:hidden;
+  display:flex;justify-content:flex-end;padding:22px;min-height:820px;
+  background:linear-gradient(160deg,#6f8fb0 0%,#b9c6d2 38%,#e9e3d8 70%,#d8cbb8 100%);}
+.pv-fauxphoto::before{content:"";position:absolute;left:5%;top:8%;width:46%;height:34%;border-radius:14px;background:linear-gradient(135deg,#8aa6c4,#cdd6dd);box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.pv-fauxtext{position:absolute;left:5%;top:48%;width:40%;color:rgba(20,30,45,.55);font-weight:700;font-size:26px;letter-spacing:-.02em;}
+.pv-fauxtext span{display:block;font-size:13px;font-weight:500;color:rgba(20,30,45,.42);margin-top:10px;line-height:1.6;}
+#immora-widget{position:relative !important;bottom:auto;right:auto;}
 #immora-card{animation:none !important;}
-/* ---- CSS RÉEL DU WIDGET (extension/content/widget.css) ---- */
+/* ===== CSS RÉEL ===== */
 /* ════════════════════════════════════════════════════════════════════════════
-   IMMORA — Widget v5 (premium · DA SaaS · hiérarchie repensée)
-   Palette : emerald #10B981 (primaire) · indigo #6366F1 (secondaire) ·
-   zinc #09090B/#18181B/#27272A · amber #F59E0B · red #EF4444
+   IMMORA — Widget (calé sur la DA landing : Linear-premium, flat, mono labels)
+   Noir #0d0d0e · bordures fines blanches · 1 vert accent (#34d399) ·
+   sémantique vert/ambre/rouge sur les valeurs · CTA blanc · typo Geist-like
    ════════════════════════════════════════════════════════════════════════════ */
 
-/* ── Reset minimal ────────────────────────────────────────────────────────── */
 #immora-widget,
 #immora-widget * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto,
-               'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box; margin: 0; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
+/* mono = labels/unités/chiffres techniques (rappel JetBrains Mono de la landing) */
+.imm-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-/* ── Container ────────────────────────────────────────────────────────────── */
 #immora-widget {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 2147483646;
-  pointer-events: none;
-  --immora-score-color: #10b981;
+  position: fixed; bottom: 22px; right: 22px; z-index: 2147483646;
+  pointer-events: none; --immora-score-color: #34d399;
 }
 #immora-widget > * { pointer-events: auto; }
 
 /* ── Mini badge (collapsed) ──────────────────────────────────────────────── */
 #immora-mini {
-  display: none;
-  width: 58px;
-  height: 58px;
-  border-radius: 999px;
-  background: rgba(9, 9, 11, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(16, 185, 129, 0.12);
-  cursor: pointer;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: none; width: 54px; height: 54px; border-radius: 999px;
+  background: rgba(13, 13, 14, 0.66); border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%);
+  box-shadow: 0 10px 36px -10px rgba(0, 0, 0, 0.6);
+  cursor: pointer; flex-direction: column; align-items: center; justify-content: center;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
 }
-#immora-mini:hover { transform: scale(1.07); border-color: rgba(16, 185, 129, 0.45); }
-#immora-mini-score {
-  font-size: 21px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-#immora-mini-text {
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.40);
-  text-align: center;
-  line-height: 1.2;
-  margin-top: 2px;
-}
-#immora-mini-text span { color: rgba(16, 185, 129, 0.85); font-weight: 700; }
+#immora-mini:hover { transform: scale(1.07); border-color: rgba(52, 211, 153, 0.5); }
+#immora-mini-score { font-size: 19px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; color: #fff; }
+#immora-mini-text { font-size: 8px; color: rgba(255, 255, 255, 0.4); margin-top: 1px; }
 
-/* ── Card principale ──────────────────────────────────────────────────────── */
+/* ── Card ────────────────────────────────────────────────────────────────── */
 #immora-card {
-  position: relative;
-  width: 364px;
-  max-height: calc(100vh - 48px);
-  border-radius: 18px;
-  background: rgba(10, 10, 12, 0.97);
+  position: relative; width: 352px; max-height: calc(100vh - 44px);
+  border-radius: 16px;
+  background: rgba(13, 13, 15, 0.80);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
-  box-shadow:
-    0 24px 80px -20px rgba(0, 0, 0, 0.7),
-    0 8px 24px -8px rgba(16, 185, 129, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  overflow: hidden;
-  color: #fafafa;
-  font-size: 13px;
-  line-height: 1.4;
-  animation: immoraSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  backdrop-filter: blur(36px) saturate(140%); -webkit-backdrop-filter: blur(36px) saturate(140%);
+  box-shadow: 0 0 0 0.5px rgba(255,255,255,0.04), 0 40px 100px -24px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255,255,255,0.06);
+  overflow: hidden; color: #fafafa; font-size: 13px; line-height: 1.4;
+  animation: immoraSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-@keyframes immoraSlideIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)    scale(1); }
-}
-
-/* Aurora bicolore (emerald score + indigo) — rappel du gradient-mesh du SaaS */
+@keyframes immoraSlideIn { from { opacity: 0; transform: translateY(12px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .immora-aurora {
-  position: absolute;
-  top: -130px;
-  left: 0;
-  right: 0;
-  height: 260px;
-  background:
-    radial-gradient(circle at 28% 0%, var(--immora-score-color, #10b981) 0%, transparent 55%),
-    radial-gradient(circle at 88% 6%, #6366f1 0%, transparent 52%);
-  opacity: 0.13;
-  filter: blur(38px);
-  pointer-events: none;
-  z-index: 0;
+  position: absolute; top: -110px; left: 0; right: 0; height: 220px;
+  background: radial-gradient(circle at 24% 0%, var(--immora-score-color, #34d399) 0%, transparent 58%);
+  opacity: 0.10; filter: blur(36px); pointer-events: none; z-index: 0;
 }
 #immora-card > *:not(.immora-aurora) { position: relative; z-index: 1; }
+#immora-body { max-height: calc(100vh - 86px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent; }
+#immora-body::-webkit-scrollbar { width: 5px; }
+#immora-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
 
-#immora-body {
-  max-height: calc(100vh - 92px);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.10) transparent;
-  padding-bottom: 2px;
-}
-#immora-body::-webkit-scrollbar { width: 6px; }
-#immora-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.10); border-radius: 3px; }
+/* ── Header ──────────────────────────────────────────────────────────────── */
+#immora-header { display: flex; align-items: center; justify-content: space-between; padding: 13px 15px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+#immora-logo { display: flex; align-items: center; gap: 9px; }
+#immora-logo-icon { display: flex; align-items: center; }
+#immora-logo-texts { display: flex; flex-direction: column; line-height: 1.05; }
+#immora-logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.035em; color: #fff; }
+#immora-logo-sub { font-size: 9px; color: rgba(255, 255, 255, 0.42); letter-spacing: 0.02em; margin-top: 1px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+#immora-header-right { display: flex; align-items: center; gap: 7px; }
+#immora-source-badge { font-size: 10px; font-weight: 600; color: rgba(255, 255, 255, 0.5); padding: 3px 9px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 999px; letter-spacing: 0.01em; cursor: help; }
+#immora-toggle { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: rgba(255, 255, 255, 0.5); cursor: pointer; transition: all 0.15s; }
+#immora-toggle:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   HEADER
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 13px 16px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-#immora-logo { display: flex; align-items: center; gap: 8px; }
-#immora-logo-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.20), rgba(99, 102, 241, 0.12));
-  border: 1px solid rgba(16, 185, 129, 0.28);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#immora-logo-text {
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: #fff;
-}
-#immora-logo-text span { color: #10b981; }
-
-#immora-header-right { display: flex; align-items: center; gap: 8px; }
-#immora-source-badge {
-  font-size: 10px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.55);
-  padding: 4px 9px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 999px;
-  letter-spacing: 0.02em;
-  cursor: help;
-}
-#immora-toggle {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 7px;
-  color: rgba(255, 255, 255, 0.55);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-#immora-toggle:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   LOADING
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-loading { padding: 44px 20px; text-align: center; }
-#immora-loading p {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
-  margin-top: 14px;
-  letter-spacing: 0.02em;
-}
-.immo-spinner {
-  width: 24px; height: 24px;
-  border: 2px solid rgba(255, 255, 255, 0.08);
-  border-top-color: #10b981;
-  border-radius: 50%;
-  margin: 0 auto;
-  animation: immoraSpin 0.8s linear infinite;
-}
-.immo-spinner-small {
-  display: inline-block;
-  width: 12px; height: 12px;
-  border: 1.5px solid rgba(255, 255, 255, 0.10);
-  border-top-color: #10b981;
-  border-radius: 50%;
-  vertical-align: middle;
-  animation: immoraSpin 0.8s linear infinite;
-}
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+#immora-loading { padding: 42px 20px; text-align: center; }
+#immora-loading p { font-size: 11px; color: rgba(255, 255, 255, 0.45); margin-top: 13px; letter-spacing: 0.02em; }
+.immo-spinner { width: 22px; height: 22px; border: 2px solid rgba(255, 255, 255, 0.08); border-top-color: #34d399; border-radius: 50%; margin: 0 auto; animation: immoraSpin 0.8s linear infinite; }
+.immo-spinner-small { display: inline-block; width: 12px; height: 12px; border: 1.5px solid rgba(255,255,255,0.1); border-top-color: #34d399; border-radius: 50%; vertical-align: middle; animation: immoraSpin 0.8s linear infinite; }
 @keyframes immoraSpin { to { transform: rotate(360deg); } }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   ① VERDICT — ring compact (gauche) + verdict (droite)
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-hero {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 16px 16px 14px;
-}
-#immora-score-ring {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#immora-score-ring svg { display: block; }
-#immora-score-ring-content {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#immora-score-ring-number {
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-}
+/* ── ⓪ Données extraites (complétude) ────────────────────────────────────── */
+#immora-data { display: flex; align-items: center; gap: 8px; padding: 9px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+#immora-data-dot { width: 6px; height: 6px; border-radius: 999px; background: #34d399; flex-shrink: 0; }
+#immora-data-label { font-size: 10.5px; color: rgba(255, 255, 255, 0.5); }
+#immora-data-count { font-size: 10px; color: rgba(255, 255, 255, 0.7); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+#immora-data-bar { flex: 1; height: 3px; background: rgba(255, 255, 255, 0.07); border-radius: 999px; overflow: hidden; }
+#immora-data-bar-fill { display: block; height: 100%; width: 0%; background: #34d399; border-radius: 999px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+
+/* ── ① Score + verdict ───────────────────────────────────────────────────── */
+#immora-hero { padding: 15px 15px 14px; }
+#immora-hero-top { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+#immora-score-wrap { display: flex; align-items: baseline; gap: 2px; flex-shrink: 0; }
+#immora-score-number { font-size: 40px; font-weight: 700; letter-spacing: -0.045em; line-height: 0.9; color: #fff; font-variant-numeric: tabular-nums; }
+#immora-score-max { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.32); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
 #immora-verdict { min-width: 0; flex: 1; }
-#immora-verdict-label {
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 3px;
-}
-#immora-verdict-sub {
-  font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.55);
-  font-weight: 500;
-  line-height: 1.35;
-}
+#immora-verdict-label { font-size: 15.5px; font-weight: 600; letter-spacing: -0.025em; color: #fff; line-height: 1.15; margin-bottom: 2px; }
+#immora-verdict-sub { font-size: 11px; color: rgba(255, 255, 255, 0.52); font-weight: 400; line-height: 1.35; }
+#immora-score-bar { display: block; height: 4px; background: rgba(255, 255, 255, 0.07); border-radius: 999px; overflow: hidden; }
+#immora-score-bar-fill { display: block; height: 100%; width: 0%; background: #34d399; border-radius: 999px; }
 
-/* ── Warnings (DPE F/G) ───────────────────────────────────────────────────── */
-#immora-warnings {
-  padding: 0 16px 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.immora-warning {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 9px 11px;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.4;
-  border-radius: 10px;
-  text-align: left;
-}
+/* ── Warnings (DPE F/G) ──────────────────────────────────────────────────── */
+#immora-warnings { padding: 0 15px 4px; display: flex; flex-direction: column; gap: 6px; }
+.immora-warning { display: flex; align-items: flex-start; gap: 8px; padding: 9px 11px; font-size: 11px; font-weight: 500; line-height: 1.4; border-radius: 9px; }
 .immora-warning svg { flex-shrink: 0; margin-top: 1px; }
-.immora-warning-critical {
-  background: rgba(239, 68, 68, 0.10);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.25);
-}
-.immora-warning-high {
-  background: rgba(245, 158, 11, 0.10);
-  color: #fcd34d;
-  border: 1px solid rgba(245, 158, 11, 0.25);
-}
+.immora-warning-critical { background: rgba(239, 68, 68, 0.12); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.26); }
+.immora-warning-high { background: rgba(245, 158, 11, 0.12); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.26); }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   ② MÉTRIQUES CLÉS — 2 cartes primaires (net + cashflow) grandes & colorées
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
-  padding: 4px 16px 9px;
-}
-.immo-metric {
-  padding: 13px 12px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 13px;
-  text-align: center;
-  transition: background 0.3s, border-color 0.3s;
-}
-.immo-metric-label {
-  font-size: 9.5px;
-  color: rgba(255, 255, 255, 0.50);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-bottom: 7px;
-}
-.immo-metric-value {
-  font-size: 27px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: #fff;
-  font-variant-numeric: tabular-nums;
-}
-/* Teintes selon performance */
-.immo-metric-green { background: rgba(16, 185, 129, 0.09); border-color: rgba(16, 185, 129, 0.28); }
-.immo-metric-green .immo-metric-value { color: #34d399; }
-.immo-metric-amber { background: rgba(245, 158, 11, 0.09); border-color: rgba(245, 158, 11, 0.26); }
-.immo-metric-amber .immo-metric-value { color: #fbbf24; }
-.immo-metric-red   { background: rgba(239, 68, 68, 0.09); border-color: rgba(239, 68, 68, 0.26); }
-.immo-metric-red .immo-metric-value { color: #f87171; }
-
-/* Strip métriques secondaires (brut + mensualité) */
-#immora-metrics-sec {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin: 0 16px 14px;
-  padding: 9px 14px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 11px;
-}
-.immo-metric-sec {
-  flex: 1;
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 7px;
-}
-.immo-metric-sec-label {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 500;
-}
-.immo-metric-sec-val {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: #fff;
-  font-variant-numeric: tabular-nums;
-}
-.immo-metric-sec-divider {
-  width: 1px;
-  align-self: stretch;
-  background: rgba(255, 255, 255, 0.08);
-  margin: -2px 0;
-}
-
-/* Utilitaires couleur (valeurs) */
+/* ── ② Stats 2×2 ─────────────────────────────────────────────────────────── */
+#immora-stats { display: grid; grid-template-columns: 1fr 1fr; margin: 0 15px 13px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 11px; overflow: hidden; }
+.immo-stat { display: flex; flex-direction: column; gap: 3px; padding: 10px 13px; }
+.immo-stat:nth-child(odd)  { border-right: 1px solid rgba(255, 255, 255, 0.06); }
+.immo-stat:nth-child(-n+2) { border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.immo-stat-label { font-size: 8.5px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+.immo-stat-val { font-size: 14px; font-weight: 700; letter-spacing: -0.02em; color: #fff; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.immo-stat-primary .immo-stat-val { font-size: 17px; }
 .immo-green { color: #34d399 !important; }
 .immo-amber { color: #fbbf24 !important; }
 .immo-red   { color: #f87171 !important; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   ③ SOUS-SCORES — Label gauche | Barre | Valeur droite
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-subscores {
-  padding: 2px 16px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.immora-sub {
-  display: grid;
-  grid-template-columns: 78px 1fr 26px;
-  align-items: center;
-  gap: 11px;
-}
-.immora-sub-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.62);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  text-align: left;
-}
-.immora-sub-bar {
-  display: block;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 999px;
-  overflow: hidden;
-  width: 100%;
-}
-.immora-sub-fill {
-  display: block;
-  height: 100%;
-  width: 0%;
-  background: #10b981;
-  border-radius: 999px;
-  transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.immora-sub-val {
-  font-size: 12px;
-  font-weight: 800;
-  text-align: right;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-}
+/* ── ③ Sous-scores (barres fines) ────────────────────────────────────────── */
+#immora-subscores { padding: 0 15px 13px; display: flex; flex-direction: column; gap: 7px; margin-bottom: 1px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.immora-sub { display: grid; grid-template-columns: 70px 1fr 22px; align-items: center; gap: 10px; }
+.immora-sub-label { font-size: 10.5px; color: rgba(255, 255, 255, 0.55); font-weight: 500; text-align: left; }
+.immora-sub-bar { display: block; height: 4px; background: rgba(255, 255, 255, 0.07); border-radius: 999px; overflow: hidden; width: 100%; }
+.immora-sub-fill { display: block; height: 100%; width: 0%; background: #34d399; border-radius: 999px; transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+.immora-sub-val { font-size: 11px; font-weight: 700; text-align: right; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 
-/* ── Divider doux entre score-block et le reste ──────────────────────────── */
-#immora-subscores { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   ④ OFFRE CONSEILLÉE — rangée compacte (label+détail | prix+tag)
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-nego {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 14px 16px 11px;
-  padding: 13px 14px;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.02));
-  border: 1px solid rgba(245, 158, 11, 0.20);
-  border-radius: 13px;
-  transition: background 0.3s, border-color 0.3s;
-}
-#immora-nego.immo-nego-good {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.02));
-  border-color: rgba(16, 185, 129, 0.28);
-}
-#immora-nego.immo-nego-warn {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.02));
-  border-color: rgba(239, 68, 68, 0.25);
-}
+/* ── ④ Offre conseillée — rangée sobre ───────────────────────────────────── */
+#immora-nego { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 13px 15px 9px; padding: 11px 13px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 11px; }
 .immo-nego-left { min-width: 0; flex: 1; }
-.immo-nego-label {
-  font-size: 9.5px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.48);
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.immo-nego-detail {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.62);
-  line-height: 1.35;
-}
+.immo-nego-label { font-size: 8.5px; font-weight: 500; color: rgba(255, 255, 255, 0.42); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+.immo-nego-detail { font-size: 10.5px; color: rgba(255, 255, 255, 0.55); line-height: 1.3; }
 .immo-nego-right { flex-shrink: 0; text-align: right; }
-.immo-nego-price {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #fff;
-  line-height: 1;
-  margin-bottom: 5px;
-  font-variant-numeric: tabular-nums;
-}
-.immo-nego-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 7px;
-}
-.immo-nego-eco {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #fbbf24;
-  letter-spacing: -0.01em;
-}
+.immo-nego-price { font-size: 16px; font-weight: 700; letter-spacing: -0.025em; color: #fff; line-height: 1; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.immo-nego-row { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.immo-nego-eco { font-size: 11px; font-weight: 600; color: #fbbf24; letter-spacing: -0.01em; }
 #immora-nego.immo-nego-good .immo-nego-eco { color: #34d399; }
 #immora-nego.immo-nego-warn .immo-nego-eco { color: #f87171; }
-
-.immo-tag-green, .immo-tag-amber, .immo-tag-red {
-  font-size: 10.5px;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 999px;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
+.immo-tag-green, .immo-tag-amber, .immo-tag-red { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
 .immo-tag-green { background: rgba(16, 185, 129, 0.18); color: #34d399; }
 .immo-tag-amber { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
 .immo-tag-red   { background: rgba(239, 68, 68, 0.18); color: #f87171; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   ⑤ FISCAL — rangée compacte, accent INDIGO (secondaire de la DA)
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-fiscal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 16px 11px;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.10), rgba(99, 102, 241, 0.03));
-  border: 1px solid rgba(99, 102, 241, 0.22);
-  border-radius: 13px;
-}
+/* ── ⑤ Fiscal — rangée sobre ─────────────────────────────────────────────── */
+#immora-fiscal { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 15px 9px; padding: 10px 13px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 11px; }
 .immo-fiscal-left { min-width: 0; flex: 1; }
-.immo-fiscal-label {
-  font-size: 9.5px;
-  font-weight: 700;
-  color: rgba(165, 180, 252, 0.75);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-.immo-fiscal-name {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.01em;
-}
-.immo-fiscal-right {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-.immo-fiscal-rend {
-  font-size: 19px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #34d399;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.immo-fiscal-sub {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.42);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  margin-top: 3px;
-}
+.immo-fiscal-label { font-size: 8.5px; font-weight: 500; color: rgba(255, 255, 255, 0.42); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+.immo-fiscal-name { font-size: 13px; font-weight: 600; color: #fff; letter-spacing: -0.015em; }
+.immo-fiscal-right { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; }
+.immo-fiscal-rend { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #34d399; line-height: 1; font-variant-numeric: tabular-nums; }
+.immo-fiscal-sub { font-size: 8px; color: rgba(255, 255, 255, 0.4); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   ⑥ MARCHÉ
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-marche {
-  display: flex !important;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 16px 11px;
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 13px;
-  text-align: left;
-}
-.immo-marche-left { flex: 1; min-width: 0; }
-.immo-marche-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 3px;
-}
-.immo-marche-text { font-size: 10.5px; color: rgba(255, 255, 255, 0.50); }
-.immo-marche-badge {
-  font-size: 12px;
-  font-weight: 800;
-  padding: 5px 10px;
-  border-radius: 999px;
-  letter-spacing: -0.01em;
-  flex-shrink: 0;
-}
-.badge-opportunite    { background: rgba(16, 185, 129, 0.22); color: #34d399; }
-.badge-attractif      { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
-.badge-correct        { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.85); }
-.badge-surevalue      { background: rgba(245, 158, 11, 0.20); color: #fbbf24; }
-.badge-tres-surevalue { background: rgba(239, 68, 68, 0.20); color: #f87171; }
-.marche-opportunite,
-.marche-attractif    { border-color: rgba(16, 185, 129, 0.20) !important; }
-.marche-surevalue    { border-color: rgba(245, 158, 11, 0.25) !important; }
-.marche-tres-surevalue { border-color: rgba(239, 68, 68, 0.25) !important; }
+/* ── ⑥ Marché ────────────────────────────────────────────────────────────── */
+#immora-marche { display: flex !important; align-items: center; justify-content: space-between; gap: 12px; margin: 0 15px 9px; padding: 9px 13px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 11px; }
+.immo-marche-left { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.immo-marche-dot { width: 6px; height: 6px; border-radius: 999px; background: #34d399; flex-shrink: 0; }
+.immo-marche-texts { min-width: 0; }
+.immo-marche-label { font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.8); }
+.immo-marche-text { font-size: 10px; color: rgba(255, 255, 255, 0.48); }
+.immo-marche-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: -0.01em; flex-shrink: 0; }
+.badge-opportunite { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.badge-attractif { background: rgba(16, 185, 129, 0.14); color: #6ee7b7; }
+.badge-correct { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.82); }
+.badge-surevalue { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.badge-tres-surevalue { background: rgba(239, 68, 68, 0.2); color: #f87171; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   ⑦ PHOTOS travaux
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-photo-section { margin: 0 16px 11px; }
-.immo-photo-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.55);
-}
-.immo-photo-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 11px 14px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-}
-.immo-photo-header:hover { background: rgba(255, 255, 255, 0.04); }
-.immo-photo-header-left { min-width: 0; flex: 1; }
-.immo-photo-label {
-  font-size: 9.5px;
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-  display: block;
-}
-.immo-photo-etat { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
-.immo-photo-header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.immo-photo-total { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
-.immo-photo-pct { font-size: 9px; color: rgba(255, 255, 255, 0.40); letter-spacing: 0.04em; }
-.immo-photo-chevron { font-size: 12px; color: rgba(255, 255, 255, 0.40); transition: transform 0.2s; }
-#immo-photo-detail {
-  margin-top: 8px;
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
-}
-.immo-photo-resume { font-size: 11px; color: rgba(255, 255, 255, 0.60); line-height: 1.5; margin-bottom: 10px; }
-.immo-photo-postes { display: flex; flex-direction: column; gap: 6px; }
-.immo-photo-poste {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-.immo-photo-poste:last-child { border-bottom: none; }
-.immo-photo-poste-left { min-width: 0; flex: 1; }
-.immo-photo-poste-name { font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.85); display: block; }
-.immo-photo-poste-etat { font-size: 10px; color: rgba(255, 255, 255, 0.40); }
-.immo-photo-poste-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.immo-photo-poste-cout { font-size: 12px; font-weight: 700; letter-spacing: -0.01em; }
-.immo-tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.02em; }
-.immo-photo-fourchette {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.45);
-  text-align: center;
-}
-.immo-photo-confidence { font-size: 9.5px; color: rgba(255, 255, 255, 0.30); margin-left: 4px; }
-.immo-photo-upgrade {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.10), rgba(16, 185, 129, 0.06));
-  border: 1px solid rgba(99, 102, 241, 0.22);
-  border-radius: 12px;
-}
-.immo-photo-upgrade-left { flex: 1; min-width: 0; }
-.immo-photo-upgrade-label { font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.88); margin-bottom: 2px; }
-.immo-photo-upgrade-text { font-size: 10.5px; color: rgba(255, 255, 255, 0.50); line-height: 1.4; }
-.immo-photo-upgrade-cta {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  background: #10b981;
-  color: #07120d;
-  font-size: 11px;
-  font-weight: 800;
-  border-radius: 8px;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.15s;
-}
-.immo-photo-upgrade-cta:hover { background: #34d399; }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   ⑧ NOTICE
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-notice {
-  font-size: 9.5px;
-  color: rgba(255, 255, 255, 0.35);
-  text-align: center;
-  margin: 2px 16px 12px;
-  letter-spacing: 0.02em;
-  line-height: 1.5;
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
-   ⑨ CTA + Save
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-cta-row {
-  display: flex;
-  gap: 8px;
-  padding: 0 16px 16px;
-  align-items: stretch;
-}
-#immora-cta {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 13px 16px;
-  background: #10b981;
-  color: #07120d;
-  font-size: 13px;
-  font-weight: 800;
-  border-radius: 12px;
-  text-decoration: none;
-  letter-spacing: -0.01em;
-  transition: background 0.15s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 6px 18px -6px rgba(16, 185, 129, 0.55);
-}
-#immora-cta:hover { background: #34d399; box-shadow: 0 8px 22px -6px rgba(16, 185, 129, 0.6); }
+/* ── ⑦ Notice + CTA ──────────────────────────────────────────────────────── */
+#immora-notice { font-size: 9px; color: rgba(255, 255, 255, 0.34); text-align: center; margin: 3px 15px 11px; letter-spacing: 0.02em; line-height: 1.5; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+#immora-cta-row { display: flex; gap: 8px; padding: 0 15px 14px; align-items: stretch; }
+#immora-cta { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 12px 16px; background: #ffffff; color: #09090b; font-size: 13px; font-weight: 600; border-radius: 11px; text-decoration: none; letter-spacing: -0.01em; transition: background 0.15s, transform 0.1s, box-shadow 0.2s; box-shadow: 0 6px 18px -8px rgba(255, 255, 255, 0.25); }
+#immora-cta:hover { background: #f4f4f5; transform: translateY(-1px); }
 #immora-cta:active { transform: scale(0.98); }
-.immo-save-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 13px 13px;
-  background: rgba(16, 185, 129, 0.10);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.22);
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.immo-save-btn:hover {
-  background: rgba(16, 185, 129, 0.18);
-  border-color: rgba(16, 185, 129, 0.40);
-  color: #6ee7b7;
-}
-.immo-save-btn-locked {
-  background: rgba(99, 102, 241, 0.10);
-  color: #a5b4fc;
-  border-color: rgba(99, 102, 241, 0.24);
-}
-.immo-save-btn-locked:hover { background: rgba(99, 102, 241, 0.18); color: #c7d2fe; }
+.immo-save-btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 12px 12px; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 11px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.immo-save-btn:hover { background: rgba(255, 255, 255, 0.09); color: #fff; }
+.immo-save-btn-locked { color: rgba(255, 255, 255, 0.6); }
 .immo-save-loading { opacity: 0.55; cursor: wait; }
-.immo-save-ok {
-  background: rgba(16, 185, 129, 0.25) !important;
-  color: #10b981 !important;
-  cursor: default;
-}
+.immo-save-ok { background: rgba(52, 211, 153, 0.16) !important; color: #34d399 !important; border-color: rgba(52,211,153,0.3) !important; cursor: default; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   ERROR
-   ══════════════════════════════════════════════════════════════════════════ */
-#immora-error { padding: 32px 20px; text-align: center; }
-.immo-error-icon {
-  width: 44px; height: 44px;
-  border-radius: 999px;
-  background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.28);
-  font-size: 22px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 14px;
-}
-#immora-error p { font-size: 12px; color: rgba(255, 255, 255, 0.70); margin-bottom: 14px; line-height: 1.5; }
-#immora-retry {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-#immora-retry:hover { background: rgba(255, 255, 255, 0.10); }
+/* ── Error ───────────────────────────────────────────────────────────────── */
+#immora-error { padding: 30px 20px; text-align: center; }
+.immo-error-icon { width: 40px; height: 40px; border-radius: 999px; background: rgba(239, 68, 68, 0.14); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 13px; }
+#immora-error p { font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-bottom: 13px; line-height: 1.5; }
+#immora-retry { display: inline-block; background: rgba(255, 255, 255, 0.07); color: #fff; border: 1px solid rgba(255, 255, 255, 0.12); padding: 8px 18px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+#immora-retry:hover { background: rgba(255, 255, 255, 0.12); }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   COLLAPSED
-   ══════════════════════════════════════════════════════════════════════════ */
+/* ── Collapsed / tier / responsive ───────────────────────────────────────── */
 .immo-collapsed-state #immora-card { display: none; }
 .immo-collapsed-state #immora-mini { display: flex; }
-
-/* ── Tier accents ───────────────────────────────────────────────────────── */
-.immora-card-tier-pro,
-.immora-card-tier-business {
-  border-color: rgba(16, 185, 129, 0.22);
-  box-shadow:
-    0 24px 80px -20px rgba(0, 0, 0, 0.72),
-    0 8px 30px -8px rgba(16, 185, 129, 0.20),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-/* ── Responsive ─────────────────────────────────────────────────────────── */
-@media (max-width: 480px) {
-  #immora-widget { bottom: 16px; right: 16px; left: 16px; }
-  #immora-card { width: auto; }
-  #immora-metrics { grid-template-columns: 1fr 1fr; }
-}
+.immora-card-tier-pro, .immora-card-tier-business { border-color: rgba(52, 211, 153, 0.22); }
+@media (max-width: 480px) { #immora-widget { bottom: 14px; right: 14px; left: 14px; } #immora-card { width: auto; } }
 </style></head><body>
-<div class="pv-head">
-  <h1>IMMORA — nouveau widget (v5)</h1>
-  <p>Rendu fidèle (CSS réel de l'extension). Deux scénarios pour montrer que le verdict colle désormais au cashflow.</p>
-</div>
-<div class="pv-grid">
+<div class="pv-head"><h1>IMMORA — widget (refonte calée sur la landing)</h1>
+<p>Linear-premium : score en gros chiffre + barre, données extraites, stats sobres, CTA blanc.</p></div>
+<div class="pv-stage">
+  <div class="pv-fauxphoto"></div>
+  <div class="pv-fauxtext">348 000 €<span>Appartement 3 pièces · 56 m²<br>Angers · DPE D<br>Cuisine équipée, interphone…</span></div>
 
-  <div class="pv-col">
-    <div id="immora-widget"><div id="immora-card" class="immora-card-tier-anon" style="--immora-score-color:#10b981">
-      <div class="immora-aurora"></div>
-      <div id="immora-header">
-        <div id="immora-logo">
-          <div id="immora-logo-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><defs><clipPath id="lc1"><circle cx="12" cy="12" r="9.1"/></clipPath></defs><g clip-path="url(#lc1)"><path d="M 4 18 C 11 18 15 8 19 5" stroke="#10b981" stroke-width="1.7" fill="none"/><line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.7"/></g><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.7" fill="none" opacity="0.85"/></svg></div>
-          <div id="immora-logo-text">IMMO<span>RA</span></div>
-        </div>
-        <div id="immora-header-right">
-          <div id="immora-source-badge">Seloger · <span style="color:#10b981">10/14</span></div>
-          <button id="immora-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" d="M5 12h14"/></svg></button>
-        </div>
+  <div id="immora-widget"><div id="immora-card" class="immora-card-tier-anon" style="--immora-score-color:#f59e0b">
+    <div class="immora-aurora"></div>
+    <div id="immora-header">
+      <div id="immora-logo">
+        <span id="immora-logo-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><defs><clipPath id="lc"><circle cx="12" cy="12" r="9.1"/></clipPath></defs><g clip-path="url(#lc)"><path d="M 4 18 C 11 18 15 8 19 5" stroke="#4ade80" stroke-width="1.6" fill="none"/><line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.8"/></g><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.8" fill="none" opacity="0.9"/></svg></span>
+        <span id="immora-logo-texts"><span id="immora-logo-text">Immora</span><span id="immora-logo-sub">Analyseur · v6</span></span>
       </div>
-      <div id="immora-body" style="display:block">
-        <div id="immora-hero">
-          <div id="immora-score-ring">
-            <svg viewBox="0 0 100 100" width="64" height="64">
-              <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.07)" stroke-width="9" fill="none"/>
-              <circle cx="50" cy="50" r="44" stroke="#10b981" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="52.53" transform="rotate(-90 50 50)"/>
-            </svg>
-            <div id="immora-score-ring-content"><div id="immora-score-ring-number" style="color:#10b981">81</div></div>
-          </div>
+      <div id="immora-header-right">
+        <div id="immora-source-badge">Leboncoin</div>
+        <button id="immora-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" d="M5 12h14"/></svg></button>
+      </div>
+    </div>
+    <div id="immora-body" style="display:block">
+      <div id="immora-data">
+        <span id="immora-data-dot" style="background:#34d399"></span>
+        <span id="immora-data-label">Données extraites</span>
+        <span id="immora-data-count">12/14 champs</span>
+        <span id="immora-data-bar"><span id="immora-data-bar-fill" style="width:86%;background:#34d399"></span></span>
+      </div>
+      <div id="immora-hero">
+        <div id="immora-hero-top">
+          <div id="immora-score-wrap"><span id="immora-score-number" style="color:#f59e0b">61</span><span id="immora-score-max">/100</span></div>
           <div id="immora-verdict">
-            <div id="immora-verdict-label" style="color:#10b981">Très bon rendement</div>
-            <div id="immora-verdict-sub">9.7% brut · cashflow quasi neutre (−45 €/mois)</div>
+            <div id="immora-verdict-label" style="color:#f59e0b">Bon rendement</div>
+            <div id="immora-verdict-sub">8.0% brut · effort −228 €/mois</div>
           </div>
         </div>
-        <div id="immora-metrics">
-          <div class="immo-metric immo-metric-green" id="immo-metric-net"><div class="immo-metric-label">Rendement net</div><div class="immo-metric-value">5.30%</div></div>
-          <div class="immo-metric immo-metric-amber" id="immo-metric-cf"><div class="immo-metric-label">Cashflow / mois</div><div class="immo-metric-value">−45 €</div></div>
-        </div>
-        <div id="immora-metrics-sec">
-          <div class="immo-metric-sec"><span class="immo-metric-sec-label">Rendement brut</span><span class="immo-metric-sec-val immo-green">9.73%</span></div>
-          <div class="immo-metric-sec-divider"></div>
-          <div class="immo-metric-sec"><span class="immo-metric-sec-label">Mensualité crédit</span><span class="immo-metric-sec-val">569 €</span></div>
-        </div>
-        <div id="immora-subscores">
-          <div class="immora-sub"><span class="immora-sub-label">Rentabilité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">95</span></div>
-          <div class="immora-sub"><span class="immora-sub-label">Cashflow</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:60%;background:#f59e0b"></span></span><span class="immora-sub-val" style="color:#f59e0b">60</span></div>
-          <div class="immora-sub"><span class="immora-sub-label">Fiscalité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">95</span></div>
-          <div class="immora-sub"><span class="immora-sub-label">Marché</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:78%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">78</span></div>
-        </div>
-        <div id="immora-nego" class="immo-nego-good">
-          <div class="immo-nego-left"><div class="immo-nego-label">Offre conseillée</div><div class="immo-nego-detail">Prix attractif · 1 930 €/m²</div></div>
-          <div class="immo-nego-right"><div class="immo-nego-price">107 800 €</div><div class="immo-nego-row"><span class="immo-nego-eco">−2 200 €</span><span class="immo-tag-green">−2%</span></div></div>
-        </div>
-        <div id="immora-fiscal">
-          <div class="immo-fiscal-left"><div class="immo-fiscal-label">Meilleur régime fiscal</div><div class="immo-fiscal-name">LMNP Réel (amortissement)</div></div>
-          <div class="immo-fiscal-right"><span class="immo-fiscal-rend" style="color:#34d399">5.01%</span><span class="immo-fiscal-sub">net-net</span></div>
-        </div>
-        <div id="immora-marche" style="display:flex">
-          <div class="immo-marche-left"><div class="immo-marche-label">🔥 Marché Montpellier</div><div class="immo-marche-text">Loyer réf. : 15 €/m²/mois</div></div>
-        </div>
-        <div id="immora-notice">loyer issu de l'annonce · 20% apport · 3.5% · TMI 30%</div>
-        <div id="immora-cta-row">
-          <a id="immora-cta" href="#">Analyser en détail <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
-          <button class="immo-save-btn immo-save-btn-locked"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 016 0v3H9z"/></svg> Pro</button>
-        </div>
+        <span id="immora-score-bar"><span id="immora-score-bar-fill" style="width:61%;background:#f59e0b"></span></span>
       </div>
-    </div></div>
-    <div class="pv-cap">Scénario de ta capture : score 81 mais cashflow négatif → verdict <b>« Très bon rendement »</b> + « cashflow quasi neutre », cashflow en <span class="amb">ambre</span> (plus « Excellent deal » vert à côté d'un −45 € rouge).</div>
-  </div>
-
-  <div class="pv-col">
-    <div id="immora-widget"><div id="immora-card" class="immora-card-tier-pro" style="--immora-score-color:#10b981">
-      <div class="immora-aurora"></div>
-      <div id="immora-header">
-        <div id="immora-logo">
-          <div id="immora-logo-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><defs><clipPath id="lc2"><circle cx="12" cy="12" r="9.1"/></clipPath></defs><g clip-path="url(#lc2)"><path d="M 4 18 C 11 18 15 8 19 5" stroke="#10b981" stroke-width="1.7" fill="none"/><line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.7"/></g><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.7" fill="none" opacity="0.85"/></svg></div>
-          <div id="immora-logo-text">IMMO<span>RA</span></div>
-        </div>
-        <div id="immora-header-right">
-          <div id="immora-source-badge">Leboncoin · <span style="color:#10b981">13/14</span></div>
-          <button id="immora-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" d="M5 12h14"/></svg></button>
-        </div>
+      <div id="immora-stats">
+        <div class="immo-stat immo-stat-primary"><span class="immo-stat-label">Cashflow / mois</span><span class="immo-stat-val immo-red">−228 €</span></div>
+        <div class="immo-stat immo-stat-primary"><span class="immo-stat-label">Rendement net</span><span class="immo-stat-val immo-green">3.60%</span></div>
+        <div class="immo-stat"><span class="immo-stat-label">Rendement brut</span><span class="immo-stat-val immo-green">7.99%</span></div>
+        <div class="immo-stat"><span class="immo-stat-label">Mensualité</span><span class="immo-stat-val">609 €</span></div>
       </div>
-      <div id="immora-body" style="display:block">
-        <div id="immora-hero">
-          <div id="immora-score-ring">
-            <svg viewBox="0 0 100 100" width="64" height="64">
-              <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.07)" stroke-width="9" fill="none"/>
-              <circle cx="50" cy="50" r="44" stroke="#10b981" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="33.18" transform="rotate(-90 50 50)"/>
-            </svg>
-            <div id="immora-score-ring-content"><div id="immora-score-ring-number" style="color:#10b981">88</div></div>
-          </div>
-          <div id="immora-verdict">
-            <div id="immora-verdict-label" style="color:#10b981">Excellent deal</div>
-            <div id="immora-verdict-sub">Cashflow +180 €/mois · 9.0% brut</div>
-          </div>
-        </div>
-        <div id="immora-metrics">
-          <div class="immo-metric immo-metric-green"><div class="immo-metric-label">Rendement net</div><div class="immo-metric-value">6.10%</div></div>
-          <div class="immo-metric immo-metric-green"><div class="immo-metric-label">Cashflow / mois</div><div class="immo-metric-value">+180 €</div></div>
-        </div>
-        <div id="immora-metrics-sec">
-          <div class="immo-metric-sec"><span class="immo-metric-sec-label">Rendement brut</span><span class="immo-metric-sec-val immo-green">9.00%</span></div>
-          <div class="immo-metric-sec-divider"></div>
-          <div class="immo-metric-sec"><span class="immo-metric-sec-label">Mensualité crédit</span><span class="immo-metric-sec-val">540 €</span></div>
-        </div>
-        <div id="immora-subscores">
-          <div class="immora-sub"><span class="immora-sub-label">Rentabilité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">95</span></div>
-          <div class="immora-sub"><span class="immora-sub-label">Cashflow</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:90%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">90</span></div>
-          <div class="immora-sub"><span class="immora-sub-label">Fiscalité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">95</span></div>
-          <div class="immora-sub"><span class="immora-sub-label">Marché</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:84%;background:#10b981"></span></span><span class="immora-sub-val" style="color:#10b981">84</span></div>
-        </div>
-        <div id="immora-nego">
-          <div class="immo-nego-left"><div class="immo-nego-label">Offre conseillée</div><div class="immo-nego-detail">Marge de négo standard · 1 600 €/m²</div></div>
-          <div class="immo-nego-right"><div class="immo-nego-price">95 000 €</div><div class="immo-nego-row"><span class="immo-nego-eco">−5 000 €</span><span class="immo-tag-amber">−5%</span></div></div>
-        </div>
-        <div id="immora-fiscal">
-          <div class="immo-fiscal-left"><div class="immo-fiscal-label">Meilleur régime fiscal</div><div class="immo-fiscal-name">LMNP Réel (amortissement)</div></div>
-          <div class="immo-fiscal-right"><span class="immo-fiscal-rend" style="color:#34d399">5.40%</span><span class="immo-fiscal-sub">net-net</span></div>
-        </div>
-        <div id="immora-marche" class="marche-opportunite" style="display:flex">
-          <div class="immo-marche-left"><div class="immo-marche-label">🔥 Marché Béziers</div><div class="immo-marche-text">Sous le prix médian · réf. 1 750 €/m²</div></div>
-          <div class="immo-marche-badge badge-opportunite">−9%</div>
-        </div>
-        <div id="immora-notice">loyer issu de l'annonce · ✓ vos paramètres</div>
-        <div id="immora-cta-row">
-          <a id="immora-cta" href="#">Analyser en détail <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
-          <button class="immo-save-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg> Sauver</button>
-        </div>
+      <div id="immora-subscores">
+        <div class="immora-sub"><span class="immora-sub-label">Rentabilité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#34d399"></span></span><span class="immora-sub-val" style="color:#34d399">95</span></div>
+        <div class="immora-sub"><span class="immora-sub-label">Cashflow</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:38%;background:#fb923c"></span></span><span class="immora-sub-val" style="color:#fb923c">38</span></div>
+        <div class="immora-sub"><span class="immora-sub-label">Fiscalité</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:72%;background:#34d399"></span></span><span class="immora-sub-val" style="color:#34d399">72</span></div>
+        <div class="immora-sub"><span class="immora-sub-label">Marché</span><span class="immora-sub-bar"><span class="immora-sub-fill" style="width:95%;background:#34d399"></span></span><span class="immora-sub-val" style="color:#34d399">95</span></div>
       </div>
-    </div></div>
-    <div class="pv-cap">Vraie bonne affaire (cashflow positif) → verdict <b>« Excellent deal »</b>, tout en vert. Accent <span style="color:#a5b4fc;font-weight:700">indigo</span> sur le bloc fiscal pour casser le tout-vert.</div>
-  </div>
-
+      <div id="immora-nego" class="immo-nego-good">
+        <div class="immo-nego-left"><div class="immo-nego-label">Offre conseillée</div><div class="immo-nego-detail">Prix attractif · 2 504 €/m²</div></div>
+        <div class="immo-nego-right"><div class="immo-nego-price">115 346 €</div><div class="immo-nego-row"><span class="immo-nego-eco">−2 354 €</span><span class="immo-tag-green">−2%</span></div></div>
+      </div>
+      <div id="immora-fiscal">
+        <div class="immo-fiscal-left"><div class="immo-fiscal-label">Meilleur régime fiscal</div><div class="immo-fiscal-name">LMNP Réel (amortissement)</div></div>
+        <div class="immo-fiscal-right"><span class="immo-fiscal-rend" style="color:#fbbf24">3.60%</span><span class="immo-fiscal-sub">net-net</span></div>
+      </div>
+      <div id="immora-marche" style="display:flex">
+        <div class="immo-marche-left"><span class="immo-marche-dot"></span><div class="immo-marche-texts"><div class="immo-marche-label">Marché Angers</div><div class="immo-marche-text">Loyer réf. : 11 €/m²/mois</div></div></div>
+      </div>
+      <div id="immora-notice">loyer marché estimé · 20% apport · 3.5% · TMI 30%</div>
+      <div id="immora-cta-row">
+        <a id="immora-cta" href="#">Analyser en détail <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
+        <button class="immo-save-btn immo-save-btn-locked"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 016 0v3H9z"/></svg> Pro</button>
+      </div>
+    </div>
+  </div></div>
 </div>
+<div class="pv-cap">Refonte calée sur la landing : <b>score en gros chiffre + barre fine</b> (au lieu du ring), bandeau <b>« données extraites »</b> (complétude), stats sobres en mono, <b>CTA blanc</b>, un seul vert + sémantique sur les valeurs, fond translucide. Logo « Immora » casse mixte.</div>
 </body></html>

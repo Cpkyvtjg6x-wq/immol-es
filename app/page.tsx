@@ -1387,7 +1387,7 @@ function PricingSection({ onSignup }: { onSignup: () => void }) {
 
   const plans = [
     { id: 'free', name: 'Découverte', price: { m: 0, a: 0 }, desc: 'Pour découvrir l\'outil', features: ['Calculateur complet (Express + Expert)', 'Score d\'opportunité', '10 régimes fiscaux', '3 simulations sauvegardées', 'Données marché basiques'], cta: 'Commencer gratuitement', featured: false },
-    { id: 'pro', name: 'Pro', price: { m: 19.90, a: 12.90 }, desc: 'Pour investir sérieusement', features: ['Tout le plan Découverte', 'Simulations illimitées', 'Analyse IA (GPT-4) incluse', 'Export PDF & Excel pro', 'Dossier bancaire complet', 'Comparaison jusqu\'à 5 biens', 'Suivi de patrimoine'], cta: 'Essai 14 jours gratuit', featured: true },
+    { id: 'pro', name: 'Pro', price: { m: 19.90, a: 12.90 }, desc: 'Pour investir sérieusement', features: ['Tout le plan Découverte', 'Simulations illimitées', 'Analyse IA avancée incluse', 'Export PDF & Excel pro', 'Dossier bancaire complet', 'Comparaison jusqu\'à 5 biens', 'Suivi de patrimoine'], cta: 'Essai 14 jours gratuit', featured: true },
     { id: 'agency', name: 'Agence', price: { m: 59, a: 39 }, desc: 'Pour les pros de l\'immobilier', features: ['Tout le plan Pro', 'Rapports PDF avec votre logo', 'Comparaison illimit\u00e9e de biens', 'Support prioritaire 24h', 'Onboarding d\u00e9di\u00e9 (45 min)'], cta: 'Essai 14 jours gratuit', featured: false },
   ]
 

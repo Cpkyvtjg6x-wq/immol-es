@@ -70,7 +70,7 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
           </svg>
           <h3 className="text-sm font-semibold text-th-text-1">Analyse IA</h3>
-          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/[0.14] border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">GPT-4</span>
+          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/[0.14] border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">IA</span>
         </div>
         <div>
           {!insights && !loading && (

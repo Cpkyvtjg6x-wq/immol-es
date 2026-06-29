@@ -97,7 +97,9 @@ export async function POST(req: NextRequest) {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
         console.error('[Stripe] Paiement échoué:', invoice.customer)
-        // TODO: envoyer email de relance
+        // L'accès est rétrogradé automatiquement par handleSubscriptionChange dès que
+        // l'abonnement passe en 'past_due'/'unpaid' (statut hors active/trialing → 'free').
+        // Reste à faire (croissance, non bloquant) : email de relance / dunning.
         break
       }
     }
@@ -172,8 +174,12 @@ async function handleSubscriptionDeleted(
 }
 
 function getTierFromSession(session: Stripe.Checkout.Session): string {
-  // Le tier peut être stocké dans les metadata de la session
-  return session.metadata?.tier ?? 'pro'
+  // Fail-closed : on n'accepte QUE des valeurs connues, jamais un fallback payant.
+  // (Le tier en metadata provient du body client → ne pas lui faire confiance pour
+  // accorder un accès payant.) L'autorité réelle reste getTierFromSubscription,
+  // basée sur le priceId réellement facturé, exécutée via subscription.created/updated.
+  const tier = session.metadata?.tier
+  return tier === 'business' || tier === 'pro' ? tier : 'free'
 }
 
 /**
@@ -201,7 +207,7 @@ function extractCustomer(event: Stripe.Event): string | null {
 
 function getTierFromSubscription(subscription: Stripe.Subscription): string {
   const priceId = subscription.items.data[0]?.price?.id
-  if (!priceId) return 'pro'
+  if (!priceId) return 'free'
 
   // Les price IDs sont publics (préfixe NEXT_PUBLIC_) pour être lisibles par le client (Pricing.tsx).
   // Côté serveur, on lit les mêmes variables.
@@ -217,5 +223,10 @@ function getTierFromSubscription(subscription: Stripe.Subscription): string {
 
   if (agencyPrices.includes(priceId)) return 'business'
   if (proPrices.includes(priceId)) return 'pro'
-  return 'pro'
+
+  // Fail-closed : un priceId inconnu n'accorde JAMAIS un accès payant. On log fort
+  // car c'est soit une mauvaise config des NEXT_PUBLIC_STRIPE_PRICE_*, soit un produit
+  // Stripe non recensé → à corriger immédiatement (sinon le client paie sans accès).
+  console.error(`[Stripe] priceId non reconnu "${priceId}" → tier 'free' (vérifier les env NEXT_PUBLIC_STRIPE_PRICE_*)`)
+  return 'free'
 }

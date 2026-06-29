@@ -116,7 +116,7 @@ export default function AnalysePage() {
     }
     // Simulation chargée depuis le dashboard / bibliothèque / portfolio (one-shot via sessionStorage)
     try {
-      const raw = sessionStorage.getItem('immolyse_load_params')
+      const raw = sessionStorage.getItem('immora_load_params')
       if (raw) {
         // On NE supprime PAS ici (l'initialiseur peut être invoqué 2× en StrictMode) ;
         // le nettoyage se fait dans un useEffect après le montage.
@@ -166,7 +166,7 @@ export default function AnalysePage() {
   // Nettoyage de la clé de chargement (one-shot) après le montage —
   // robuste au double-rendu StrictMode (l'initialiseur l'a déjà lue).
   useEffect(() => {
-    try { sessionStorage.removeItem('immolyse_load_params') } catch {}
+    try { sessionStorage.removeItem('immora_load_params') } catch {}
   }, [])
 
   useEffect(() => {
@@ -231,7 +231,7 @@ export default function AnalysePage() {
   const applyCalculation = useCallback((params: InvestmentParams, isLive = false) => {
     if (params.prixAchat <= 0) return
     // Sauvegarde session uniquement (pour revente / rapport-bancaire dans le même onglet)
-    try { sessionStorage.setItem('immolyse_last_params', JSON.stringify(params)) } catch {}
+    try { sessionStorage.setItem('immora_last_params', JSON.stringify(params)) } catch {}
     setLastParams(params)
     if (!isLive) { setInsights(null); setResultsVisible(false) }
     const { res, fiscalResult, best, sc } = runCalculation(params)

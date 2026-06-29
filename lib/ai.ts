@@ -88,30 +88,4 @@ Sois direct, professionnel et spécifique aux chiffres. Maximum 2 phrases par in
   }
 }
 
-/**
- * Generate a short text summary of the investment (for export / email)
- */
-export async function generateSummary(
-  params: InvestmentParams,
-  result: InvestmentResult,
-  fiscal: FiscalResult | null,
-  score: ScoreResult
-): Promise<string> {
-  const prompt = `Rédige un résumé professionnel en 3-4 phrases de cet investissement immobilier.
-
-Projet: ${params.ville}, ${params.surface}m², ${params.prixAchat.toLocaleString('fr-FR')}€
-Cash-flow: ${result.cashflowMensuel.toFixed(0)}€/mois | Rendement brut: ${result.rendBrut.toFixed(2)}%
-${fiscal ? `Régime optimal: ${fiscal.best?.name} | ` : ''}Score: ${score.global}/100
-
-Sois concis, objectif et mentionne les points forts et les points de vigilance.`
-
-  const openai = getOpenAIClient()
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.4,
-    max_tokens: 300,
-  })
-
-  return completion.choices[0].message.content ?? ''
-}
+// (generateSummary supprimé — code mort, jamais appelé)

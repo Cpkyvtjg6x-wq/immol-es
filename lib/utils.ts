@@ -82,20 +82,6 @@ export function round(n: number, decimals = 2): number {
 }
 
 /**
- * Sleep utility
- */
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-/**
- * Generate unique ID
- */
-export function generateId(): string {
-  return Math.random().toString(36).slice(2, 11)
-}
-
-/**
  * Debounce function
  */
 export function debounce<T extends (...args: unknown[]) => unknown>(

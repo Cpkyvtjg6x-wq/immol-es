@@ -10,6 +10,7 @@ import {
   type Amenities,
 } from '@/lib/marche-reference'
 import { authenticateExtensionRequest } from '@/lib/extension-auth'
+import { checkIpRate, QUICK_ANALYSIS_RATE } from '@/lib/usage'
 import type { InvestmentParams } from '@/lib/types'
 
 // CORS — l'extension Chrome appelle depuis une origine différente
@@ -27,6 +28,21 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Rate-limit par IP ───────────────────────────────────────────────────
+    // Ce endpoint est volontairement ouvert (free/anon reçoit un score basique),
+    // donc public. On limite par IP pour empêcher l'abus / le DoS / l'envolée de
+    // la facture serverless. (Sur Vercel, x-forwarded-for est posé par le proxy.)
+    const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0].trim()
+      || req.headers.get('x-real-ip')
+      || 'unknown'
+    const rate = await checkIpRate(ip, 'qa', QUICK_ANALYSIS_RATE.limit, QUICK_ANALYSIS_RATE.windowSeconds)
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: 'Trop de requêtes — réessaie dans un instant.' },
+        { status: 429, headers: CORS },
+      )
+    }
+
     // ── Authentification utilisateur (extension Chrome) ─────────────────────
     // Free / anonyme : reçoit un score basique sans contexte marché complet.
     // Pro / Agence : reçoit l'analyse complète + URL pré-remplie /analyse.

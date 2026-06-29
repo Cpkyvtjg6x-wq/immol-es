@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IMMORA — 3 directions widget</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;}
+  body{background:#e7e3da;padding:36px 20px 60px;color:#18181b;}
+  .head{max-width:1180px;margin:0 auto 28px;text-align:center;}
+  .head h1{font-size:19px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px;}
+  .head p{font-size:13px;color:#6b6b6b;}
+  .grid{max-width:1180px;margin:0 auto;display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+  .col{width:330px;display:flex;flex-direction:column;gap:12px;}
+  .col-cap{text-align:center;}
+  .col-cap b{font-size:14px;font-weight:700;letter-spacing:-.01em;}
+  .col-cap span{display:block;font-size:11.5px;color:#6b6b6b;margin-top:3px;line-height:1.45;}
+  .mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;}
+  .tab{font-variant-numeric:tabular-nums;}
+
+  /* ════ A — SOMBRE MINIMAL ════ */
+  .A{background:#0f0f11;border:1px solid rgba(255,255,255,.08);border-radius:16px;color:#fff;overflow:hidden;box-shadow:0 30px 70px -28px rgba(0,0,0,.6);}
+  .A-h{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+  .A-logo{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;letter-spacing:-.03em;}
+  .A-src{font-size:10px;color:rgba(255,255,255,.45);padding:3px 8px;border:1px solid rgba(255,255,255,.08);border-radius:999px;}
+  .A-hero{display:flex;align-items:center;gap:13px;padding:16px 16px 14px;}
+  .A-score{font-size:34px;font-weight:700;letter-spacing:-.04em;color:#f59e0b;line-height:1;}
+  .A-vlab{font-size:15px;font-weight:600;letter-spacing:-.02em;color:#f59e0b;}
+  .A-vsub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;}
+  .A-stats{display:flex;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);}
+  .A-stat{flex:1;padding:11px 8px;text-align:center;border-right:1px solid rgba(255,255,255,.06);}
+  .A-stat:last-child{border-right:none;}
+  .A-stat .l{font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+  .A-stat .v{font-size:16px;font-weight:700;margin-top:4px;letter-spacing:-.02em;}
+  .A-offer{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;font-size:12px;color:rgba(255,255,255,.6);}
+  .A-offer b{color:#fff;font-weight:700;}
+  .A-cta{margin:4px 14px 14px;display:block;text-align:center;background:#fff;color:#09090b;font-size:13px;font-weight:600;padding:11px;border-radius:10px;text-decoration:none;}
+
+  /* ════ B — CLAIR / DASHBOARD ════ */
+  .B{background:#fff;border:1px solid #e6e4df;border-radius:16px;color:#1c1c1f;overflow:hidden;box-shadow:0 30px 70px -28px rgba(60,50,30,.22);}
+  .B-h{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid #efedea;}
+  .B-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;letter-spacing:-.03em;color:#18181b;}
+  .B-src{font-size:10px;color:#8a8a8a;padding:3px 9px;background:#f4f3f0;border-radius:999px;}
+  .B-hero{display:flex;align-items:center;gap:13px;padding:15px;}
+  .B-badge{width:54px;height:54px;border-radius:14px;background:#fef3e2;border:1px solid #f8dca8;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+  .B-badge .n{font-size:21px;font-weight:700;color:#b45309;letter-spacing:-.03em;line-height:1;}
+  .B-badge .m{font-size:8px;color:#b45309;opacity:.7;}
+  .B-vlab{font-size:15.5px;font-weight:600;letter-spacing:-.02em;color:#18181b;}
+  .B-vsub{font-size:11.5px;color:#71717a;margin-top:2px;}
+  .B-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 15px 12px;}
+  .B-stat{background:#f7f6f3;border-radius:10px;padding:10px 12px;}
+  .B-stat .l{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#9a9a9a;}
+  .B-stat .v{font-size:16px;font-weight:700;margin-top:3px;letter-spacing:-.02em;color:#18181b;}
+  .B-sub{padding:0 15px 13px;border-bottom:1px solid #efedea;display:flex;flex-direction:column;gap:7px;}
+  .B-srow{display:grid;grid-template-columns:64px 1fr 22px;align-items:center;gap:9px;}
+  .B-srow .l{font-size:10.5px;color:#71717a;}
+  .B-bar{height:5px;background:#eceae5;border-radius:999px;overflow:hidden;}
+  .B-bar i{display:block;height:100%;border-radius:999px;}
+  .B-srow .vv{font-size:11px;font-weight:700;text-align:right;}
+  .B-row{display:flex;justify-content:space-between;align-items:center;padding:11px 15px;border-bottom:1px solid #efedea;}
+  .B-row .l{font-size:11px;color:#71717a;}
+  .B-row .r{font-size:13px;font-weight:700;color:#18181b;}
+  .B-cta{margin:13px 15px;display:flex;gap:8px;}
+  .B-cta a{flex:1;text-align:center;background:#059669;color:#fff;font-size:13px;font-weight:600;padding:11px;border-radius:10px;text-decoration:none;}
+  .B-cta .pro{padding:11px 12px;background:#f4f3f0;color:#71717a;border-radius:10px;font-size:12px;font-weight:600;}
+  .green{color:#059669;} .red{color:#dc2626;} .amber{color:#d97706;}
+
+  /* ════ C — SOMBRE ÉDITORIAL ════ */
+  .C{background:#0d0d0f;border:1px solid rgba(255,255,255,.08);border-radius:18px;color:#fff;overflow:hidden;box-shadow:0 30px 70px -28px rgba(0,0,0,.65);}
+  .C-h{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;}
+  .C-logo{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;letter-spacing:-.03em;}
+  .C-meta{font-size:10px;color:rgba(255,255,255,.4);}
+  .C-hero{padding:8px 18px 18px;}
+  .C-kicker{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px;}
+  .C-vlab{font-size:27px;font-weight:700;letter-spacing:-.035em;line-height:1.04;color:#fbbf24;}
+  .C-vsub{font-size:12px;color:rgba(255,255,255,.55);margin-top:7px;}
+  .C-key{display:flex;align-items:baseline;gap:10px;padding:16px 18px;background:rgba(255,255,255,.025);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);}
+  .C-key .big{font-size:30px;font-weight:700;letter-spacing:-.04em;color:#f87171;line-height:1;}
+  .C-key .lab{font-size:11px;color:rgba(255,255,255,.5);}
+  .C-grid{display:flex;padding:14px 18px;gap:18px;}
+  .C-gi .l{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+  .C-gi .v{font-size:16px;font-weight:700;margin-top:3px;letter-spacing:-.02em;}
+  .C-foot{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.5);padding:0 18px 14px;}
+  .C-foot b{color:#fff;}
+  .C-cta{margin:0 16px 16px;display:block;text-align:center;background:#fff;color:#09090b;font-size:13px;font-weight:600;padding:12px;border-radius:11px;text-decoration:none;}
+  .dot{width:9px;height:9px;border-radius:999px;background:#f59e0b;display:inline-block;}
+  svg.lg{flex-shrink:0;}
+</style></head><body>
+<div class="head"><h1>3 directions pour le widget — choisis-en une</h1><p>Mêmes chiffres (score 61, cashflow −228). Dis-moi A, B ou C (ou un mix), je construis le gagnant.</p></div>
+<div class="grid">
+
+  <!-- A -->
+  <div class="col">
+    <div class="col-cap"><b>A — Sombre minimal</b><span>Petit, glanceable. L'essentiel only ; le détail se fait dans Immora.</span></div>
+    <div class="A">
+      <div class="A-h"><div class="A-logo"><svg class="lg" width="16" height="16" viewBox="0 0 24 24" fill="none"><defs><clipPath id="a1"><circle cx="12" cy="12" r="9.1"/></clipPath></defs><g clip-path="url(#a1)"><path d="M4 18C11 18 15 8 19 5" stroke="#4ade80" stroke-width="1.7" fill="none"/><line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.8"/></g><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.8" opacity=".9"/></svg>Immora</div><div class="A-src">Leboncoin</div></div>
+      <div class="A-hero"><div class="A-score tab">61</div><div><div class="A-vlab">Bon rendement</div><div class="A-vsub">8,0 % brut · effort mensuel</div></div></div>
+      <div class="A-stats">
+        <div class="A-stat"><div class="l">Cashflow</div><div class="v red tab">−228 €</div></div>
+        <div class="A-stat"><div class="l">Net</div><div class="v green tab">3,60 %</div></div>
+        <div class="A-stat"><div class="l">Mensualité</div><div class="v tab">609 €</div></div>
+      </div>
+      <div class="A-offer">Offre conseillée <b class="tab">115 346 € <span style="color:#34d399">−2 %</span></b></div>
+      <a class="A-cta" href="#">Analyser en détail →</a>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="col">
+    <div class="col-cap"><b>B — Clair / dashboard</b><span>Thème clair, structuré et aéré (façon l'outil que tu as montré), avec notre score.</span></div>
+    <div class="B">
+      <div class="B-h"><div class="B-logo"><svg class="lg" width="16" height="16" viewBox="0 0 24 24" fill="none"><defs><clipPath id="b1"><circle cx="12" cy="12" r="9.1"/></clipPath></defs><g clip-path="url(#b1)"><path d="M4 18C11 18 15 8 19 5" stroke="#059669" stroke-width="1.7" fill="none"/><line x1="2" y1="18" x2="22" y2="18" stroke="#18181b" stroke-width="1.8"/></g><circle cx="12" cy="12" r="10" stroke="#18181b" stroke-width="1.8" opacity=".85"/></svg>Immora</div><div class="B-src">Leboncoin · 12/14</div></div>
+      <div class="B-hero"><div class="B-badge"><div class="n tab">61</div><div class="m">/100</div></div><div><div class="B-vlab">Bon rendement</div><div class="B-vsub">8,0 % brut · effort −228 €/mois</div></div></div>
+      <div class="B-stats">
+        <div class="B-stat"><div class="l">Cashflow / mois</div><div class="v red tab">−228 €</div></div>
+        <div class="B-stat"><div class="l">Rendement net</div><div class="v green tab">3,60 %</div></div>
+        <div class="B-stat"><div class="l">Rendement brut</div><div class="v tab">7,99 %</div></div>
+        <div class="B-stat"><div class="l">Mensualité</div><div class="v tab">609 €</div></div>
+      </div>
+      <div class="B-sub">
+        <div class="B-srow"><span class="l">Rentabilité</span><div class="B-bar"><i style="width:95%;background:#059669"></i></div><span class="vv green">95</span></div>
+        <div class="B-srow"><span class="l">Cashflow</span><div class="B-bar"><i style="width:38%;background:#ea8a3c"></i></div><span class="vv amber">38</span></div>
+        <div class="B-srow"><span class="l">Fiscalité</span><div class="B-bar"><i style="width:72%;background:#059669"></i></div><span class="vv green">72</span></div>
+      </div>
+      <div class="B-row"><span class="l">Offre conseillée · 2 504 €/m²</span><span class="r tab">115 346 € <span class="green">−2 %</span></span></div>
+      <div class="B-row"><span class="l">Régime · LMNP réel</span><span class="r tab green">3,60 % <span style="color:#9a9a9a;font-weight:500">net-net</span></span></div>
+      <div class="B-cta"><a href="#">Analyser en détail →</a><span class="pro">Pro</span></div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="col">
+    <div class="col-cap"><b>C — Sombre éditorial</b><span>Le verdict en grand, une métrique clé mise en avant. Premium, affirmé.</span></div>
+    <div class="C">
+      <div class="C-h"><div class="C-logo"><svg class="lg" width="16" height="16" viewBox="0 0 24 24" fill="none"><defs><clipPath id="c1"><circle cx="12" cy="12" r="9.1"/></clipPath></defs><g clip-path="url(#c1)"><path d="M4 18C11 18 15 8 19 5" stroke="#4ade80" stroke-width="1.7" fill="none"/><line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.8"/></g><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.8" opacity=".9"/></svg>Immora</div><div class="C-meta mono"><span class="dot"></span> 61/100 · Leboncoin</div></div>
+      <div class="C-hero"><div class="C-kicker">Verdict</div><div class="C-vlab">Bon rendement,<br>mais effort mensuel.</div><div class="C-vsub">8,0 % brut · le bien te coûte de votre poche chaque mois.</div></div>
+      <div class="C-key"><div class="big tab">−228 €</div><div class="lab">cashflow / mois<br><span style="color:rgba(255,255,255,.35)">après crédit, charges & impôt</span></div></div>
+      <div class="C-grid">
+        <div class="C-gi"><div class="l">Rdt net</div><div class="v green tab">3,60 %</div></div>
+        <div class="C-gi"><div class="l">Rdt brut</div><div class="v tab">7,99 %</div></div>
+        <div class="C-gi"><div class="l">Mensualité</div><div class="v tab">609 €</div></div>
+      </div>
+      <div class="C-foot"><span>Offre conseillée</span><span><b class="tab">115 346 €</b> <span style="color:#34d399">−2 %</span></span></div>
+      <a class="C-cta" href="#">Analyser en détail →</a>
+    </div>
+  </div>
+
+</div>
+</body></html>

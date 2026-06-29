@@ -261,7 +261,7 @@ export default function DashboardPage() {
 
   function loadSimulation(sim: SavedSimulation) {
     if (sim.params && Object.keys(sim.params).length > 0) {
-      sessionStorage.setItem('immolyse_load_params', JSON.stringify(sim.params))
+      sessionStorage.setItem('immora_load_params', JSON.stringify(sim.params))
     }
     toast.info('Simulation chargée — paramètres restaurés')
     router.push('/analyse')
@@ -270,7 +270,7 @@ export default function DashboardPage() {
   function openBankReport(sim: SavedSimulation) {
     if (!canBankReport) { promptUpgrade('bank_report'); return }
     if (sim.params && Object.keys(sim.params).length > 0) {
-      sessionStorage.setItem('immolyse_last_params', JSON.stringify(sim.params))
+      sessionStorage.setItem('immora_last_params', JSON.stringify(sim.params))
     }
     router.push('/rapport-bancaire')
   }

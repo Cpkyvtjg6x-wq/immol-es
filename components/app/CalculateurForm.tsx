@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { InvestmentParams, InvestmentResult, LotGroup } from '@/lib/types'
 import { DEFAULT_PARAMS, calculerFraisNotaire } from '@/lib/calculator'
+import { mensualite as calcMensualitePret } from '@/lib/finance'
 import { calculateFiscal } from '@/lib/fiscal'
 import { AddressInput } from '@/components/app/AddressInput'
 import type { AddressResult } from '@/components/app/AddressInput'
@@ -1923,12 +1924,8 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                     const reinjectLocal = p.venteStrategy === 'reinject' ? prodCession
                       : p.venteStrategy === 'partiel' ? prodCession * (p.venteReinjectPct ?? 100) / 100 : 0
                     const emprunter = Math.max(0, emprunted - reinjectLocal)
-                    const r = p.taux / 100 / 12
-                    const n = p.duree * 12
-                    const calcMens = (montant: number) =>
-                      montant > 0 && p.taux > 0
-                        ? (montant * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
-                        : montant / n
+                    // Formule partagée (cf. lib/finance) — cohérence avec le moteur de calcul
+                    const calcMens = (montant: number) => calcMensualitePret(montant, p.taux, p.duree)
                     const mensAvant = calcMens(emprunted)
                     const mensApres = calcMens(emprunter)
                     const delta = mensAvant - mensApres

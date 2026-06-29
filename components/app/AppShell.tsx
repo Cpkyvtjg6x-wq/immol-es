@@ -50,7 +50,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
   const { simulations } = useSimulations(deferredUserId)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tagsExpanded, setTagsExpanded] = useState(false)
-  const { theme, setTheme } = useTheme()
+  const { theme } = useTheme()
   const isDark = theme === 'dark'
 
   const firstName =
@@ -393,23 +393,8 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
 
         {/* User footer */}
         <div className="p-2 shrink-0 space-y-0.5" style={{ borderTop: '1px solid var(--c-sidebar-border)' }}>
-          {/* Theme toggle */}
-          <div className="flex items-center justify-between px-3 py-1.5">
-            <span className="text-[10px] font-semibold text-th-sidebar-text-1 uppercase tracking-widest">
-              {isDark ? 'Mode sombre' : 'Mode clair'}
-            </span>
-            <button
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className="relative w-9 h-5 rounded-full transition-colors duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
-              style={{ background: isDark ? '#27272a' : '#50505a' }}
-              aria-label="Basculer le thème"
-            >
-              <span
-                className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-250"
-                style={{ transform: isDark ? 'translateX(0)' : 'translateX(16px)' }}
-              />
-            </button>
-          </div>
+          {/* Theme toggle retiré — v1 dark-only (cf. ThemeProvider). À réactiver
+              après la refonte tokens du mode clair. */}
           {user ? (
             <>
               <div className="flex items-center gap-1 px-1 pb-1">

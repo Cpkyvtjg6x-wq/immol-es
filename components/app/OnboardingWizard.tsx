@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { mensualite as calcMensualitePret } from '@/lib/finance'
 import { IconLeaf, IconTrendingUp, IconBuildingOffice, IconHome, IconRocket, IconChartBar, IconBuildingLibrary, IconBriefcase, IconArrowTrendingUp } from '@/components/ui/icons'
 
 interface OnboardingWizardProps {
@@ -64,12 +65,9 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [closing, setClosing] = useState(false)
 
-  // Calculs simplifiés pour le bien démo
+  // Calculs simplifiés pour le bien démo (formule partagée — cf. lib/finance)
   const mensualite = Math.round(
-    ((DEMO_BIEN.prixAchat - DEMO_BIEN.apport) *
-      (DEMO_BIEN.taux / 100 / 12) *
-      Math.pow(1 + DEMO_BIEN.taux / 100 / 12, DEMO_BIEN.duree * 12)) /
-      (Math.pow(1 + DEMO_BIEN.taux / 100 / 12, DEMO_BIEN.duree * 12) - 1)
+    calcMensualitePret(DEMO_BIEN.prixAchat - DEMO_BIEN.apport, DEMO_BIEN.taux, DEMO_BIEN.duree)
   )
   const cashflow = Math.round(DEMO_BIEN.loyer - DEMO_BIEN.charges - mensualite)
   const rendBrut = Math.round((DEMO_BIEN.loyer * 12 / DEMO_BIEN.prixAchat) * 1000) / 10
@@ -90,7 +88,7 @@ export function OnboardingWizard({ userId, onComplete }: OnboardingWizardProps) 
     setClosing(true)
     await markComplete()
     // Charger le bien démo dans le calculateur
-    sessionStorage.setItem('immolyse_load_params', JSON.stringify({
+    sessionStorage.setItem('immora_load_params', JSON.stringify({
       prixAchat: DEMO_BIEN.prixAchat,
       loyer: DEMO_BIEN.loyer,
       charges: DEMO_BIEN.charges,

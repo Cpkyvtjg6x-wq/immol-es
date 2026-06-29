@@ -8,29 +8,19 @@ import { LibraryPickerModal } from '@/components/app/LibraryPickerModal'
 import { useAuth } from '@/lib/hooks/useAuth'
 import type { SavedSimulation } from '@/lib/hooks/useSimulations'
 import { formatCurrency } from '@/lib/utils'
+import { computePlusValueTax, abattementPlusValue } from '@/lib/plus-value'
 import { IconHome, IconBuildingOffice, IconLightBulb, IconCheckCircle, IconExclamationTriangle } from '@/components/ui/icons'
 
-// ─── Barèmes fiscaux 2025 ──────────────────────────────────────────────────────
-const ABATTEMENT_IR: { ans: number; pct: number }[] = [
-  { ans: 5, pct: 0 }, { ans: 6, pct: 6 }, { ans: 7, pct: 12 }, { ans: 8, pct: 18 },
-  { ans: 9, pct: 24 }, { ans: 10, pct: 30 }, { ans: 11, pct: 36 }, { ans: 12, pct: 42 },
-  { ans: 13, pct: 48 }, { ans: 14, pct: 54 }, { ans: 15, pct: 60 }, { ans: 16, pct: 66 },
-  { ans: 17, pct: 72 }, { ans: 18, pct: 78 }, { ans: 19, pct: 84 }, { ans: 20, pct: 90 },
-  { ans: 21, pct: 96 }, { ans: 22, pct: 100 },
-]
-const ABATTEMENT_PS: { ans: number; pct: number }[] = [
-  { ans: 5, pct: 0 }, { ans: 6, pct: 1.65 }, { ans: 7, pct: 3.30 }, { ans: 8, pct: 4.95 },
-  { ans: 9, pct: 6.60 }, { ans: 10, pct: 8.25 }, { ans: 11, pct: 9.90 }, { ans: 12, pct: 11.55 },
-  { ans: 13, pct: 13.20 }, { ans: 14, pct: 14.85 }, { ans: 15, pct: 16.50 }, { ans: 16, pct: 18.15 },
-  { ans: 17, pct: 19.80 }, { ans: 18, pct: 21.45 }, { ans: 19, pct: 23.10 }, { ans: 20, pct: 24.75 },
-  { ans: 21, pct: 26.40 }, { ans: 22, pct: 28.00 }, { ans: 23, pct: 37.00 }, { ans: 24, pct: 46.00 },
-  { ans: 25, pct: 55.00 }, { ans: 26, pct: 64.00 }, { ans: 27, pct: 73.00 }, { ans: 28, pct: 82.00 },
-  { ans: 29, pct: 91.00 }, { ans: 30, pct: 100 },
-]
-
-function getAbattement(table: typeof ABATTEMENT_IR, ans: number): number {
-  const tranche = [...table].reverse().find(t => ans >= t.ans)
-  return tranche ? Math.min(tranche.pct, 100) : 0
+// Estimation des amortissements LMNP déduits sur la durée de détention — mêmes
+// hypothèses que le calcul fiscal (85 % hors terrain, structure 70 %/50 ans,
+// installations 15 %/15 ans, travaux/10 ans). Sert au défaut du champ "réforme 2025".
+function estimerAmortissementsLMNP(prixAchat: number, travaux: number, ans: number): number {
+  const baseAmort = Math.max(0, prixAchat) * 0.85
+  const an = Math.max(0, ans)
+  const structure = (baseAmort * 0.70 / 50) * Math.min(an, 50)
+  const install   = (baseAmort * 0.15 / 15) * Math.min(an, 15)
+  const trav      = (Math.max(0, travaux) / 10) * Math.min(an, 10)
+  return Math.round(structure + install + trav)
 }
 
 // ─── TRI bisection ─────────────────────────────────────────────────────────────
@@ -76,10 +66,15 @@ interface ReventeParams {
   apportInitial: number
   cashflowMensuelMoyen: number
   tmi: number
+  // LMNP réel — réforme LF 2025 (réintégration des amortissements dans la plus-value)
+  lmnpReel: boolean
+  amortissementsCumules: number
 }
 
 interface ReventeResult {
   plusValueBrute: number
+  amortReintegres: number       // amortissements réintégrés (réforme LMNP 2025)
+  plusValueImposable: number    // base taxable = plus-value brute + amort réintégrés
   abattementIR: number
   abattementPS: number
   baseImposableIR: number
@@ -100,14 +95,25 @@ interface ReventeResult {
 function calculerRevente(p: ReventeParams): ReventeResult {
   const ans = Math.max(0, p.anneesDetention)
   const prixRevientTotal = p.prixAchat + p.fraisAcquisition + p.travauxDeduits
-  const plusValueBrute = p.prixRevente - p.fraisRevente - prixRevientTotal
+  const plusValueBrute = p.prixRevente - p.fraisRevente - prixRevientTotal  // gain économique réel
 
   const reventeNette = Math.round(p.prixRevente - p.fraisRevente)
   const liquiditesBrutes = reventeNette - p.capitalRestantDu - p.ira - p.fraisMainlevee
 
+  // ── Réforme LF 2025 (LMNP au réel) ──────────────────────────────────────────
+  // Les amortissements déduits pendant la détention sont réintégrés dans la base
+  // taxable de la plus-value (CGI 150 VB III). La base imposable peut donc être
+  // supérieure au gain économique — voire positive sur une perte économique.
+  const amortReintegres = (p.typeBien === 'locatif' && p.lmnpReel)
+    ? Math.max(0, Math.round(p.amortissementsCumules))
+    : 0
+  const plusValueImposable = plusValueBrute + amortReintegres
+
   if (p.typeBien === 'residence_principale') {
     return {
       plusValueBrute: Math.round(plusValueBrute),
+      amortReintegres: 0,
+      plusValueImposable: Math.round(plusValueBrute),
       abattementIR: 100, abattementPS: 100,
       baseImposableIR: 0, baseImposablePS: 0,
       impotIR: 0, prelevementsSociaux: 0, surtaxe: 0, impotTotal: 0,
@@ -119,9 +125,11 @@ function calculerRevente(p: ReventeParams): ReventeResult {
     }
   }
 
-  if (plusValueBrute <= 0) {
+  if (plusValueImposable <= 0) {
     return {
       plusValueBrute: Math.round(plusValueBrute),
+      amortReintegres,
+      plusValueImposable: Math.round(plusValueImposable),
       abattementIR: 0, abattementPS: 0,
       baseImposableIR: 0, baseImposablePS: 0,
       impotIR: 0, prelevementsSociaux: 0, surtaxe: 0, impotTotal: 0,
@@ -133,47 +141,39 @@ function calculerRevente(p: ReventeParams): ReventeResult {
     }
   }
 
-  const abIR = getAbattement(ABATTEMENT_IR, ans)
-  const abPS = getAbattement(ABATTEMENT_PS, ans)
-  const baseIR = plusValueBrute * (1 - abIR / 100)
-  const basePS = plusValueBrute * (1 - abPS / 100)
-
-  const TAUX_PV = 0.19
-  const impotIR = baseIR > 0 ? baseIR * TAUX_PV : 0
-  const ps = basePS > 0 ? basePS * 0.172 : 0
-
-  let surtaxe = 0
-  if (plusValueBrute > 260000) surtaxe = baseIR * 0.06
-  else if (plusValueBrute > 210000) surtaxe = baseIR * 0.05
-  else if (plusValueBrute > 160000) surtaxe = baseIR * 0.04
-  else if (plusValueBrute > 110000) surtaxe = baseIR * 0.03
-  else if (plusValueBrute > 60000) surtaxe = baseIR * 0.02
-  else if (plusValueBrute > 50000) surtaxe = baseIR * 0.01
-
-  const impotTotal = Math.round(impotIR + ps + surtaxe)
-  const plusValueNette = Math.round(plusValueBrute - impotTotal)
+  // Impôt plus-value (abattements durée + surtaxe) — logique partagée avec lib/calculator
+  const tax = computePlusValueTax(plusValueImposable, ans)
+  const impotTotal = tax.impotTotal
+  const plusValueNette = Math.round(plusValueBrute - impotTotal)  // net économique = gain réel − impôt
   const liquiditesNettes = Math.round(liquiditesBrutes - impotTotal)
 
   return {
     plusValueBrute: Math.round(plusValueBrute),
-    abattementIR: abIR, abattementPS: abPS,
-    baseImposableIR: Math.round(baseIR),
-    baseImposablePS: Math.round(basePS),
-    impotIR: Math.round(impotIR + surtaxe),
-    prelevementsSociaux: Math.round(ps),
-    surtaxe: Math.round(surtaxe),
+    amortReintegres,
+    plusValueImposable: Math.round(plusValueImposable),
+    abattementIR: tax.abattIR, abattementPS: tax.abattPS,
+    baseImposableIR: tax.baseIR,
+    baseImposablePS: tax.basePS,
+    impotIR: tax.impotIR,
+    prelevementsSociaux: tax.prelevementsSociaux,
+    surtaxe: tax.surtaxe,
     impotTotal,
     plusValueNette,
     reventeNette: Math.round(reventeNette - impotTotal),
     liquiditesNettes,
-    exonerationIR: abIR >= 100,
-    exonerationPS: abPS >= 100,
+    exonerationIR: tax.exonereIR,
+    exonerationPS: tax.exonerePS,
     anneesDetention: ans,
   }
 }
 
 function calcResultForAns(p: ReventeParams, ans: number): ReventeResult {
-  return calculerRevente({ ...p, anneesDetention: ans })
+  // Pour la comparaison "vendre vs garder", les amortissements réintégrés doivent
+  // varier avec la durée de détention simulée (et non rester figés sur la valeur saisie).
+  const amort = p.lmnpReel
+    ? estimerAmortissementsLMNP(p.prixAchat, p.travauxDeduits, ans)
+    : p.amortissementsCumules
+  return calculerRevente({ ...p, anneesDetention: ans, amortissementsCumules: amort })
 }
 
 // ─── UI Components ─────────────────────────────────────────────────────────────
@@ -225,8 +225,8 @@ function Row({ label, value, color = 'white', bold = false, sep = false }: {
 function FriseAbattements({ ans }: { ans: number }) {
   const MAX = 32
   const steps = Array.from({ length: MAX + 1 }, (_, i) => i)
-  const irPct = (a: number) => getAbattement(ABATTEMENT_IR, a)
-  const psPct = (a: number) => getAbattement(ABATTEMENT_PS, a)
+  const irPct = (a: number) => abattementPlusValue(a).abattIR
+  const psPct = (a: number) => abattementPlusValue(a).abattPS
 
   // Milestones fixes : { a, label, align: 'left'|'center'|'right', note? }
   const milestones: { a: number; label: string; align: 'left' | 'center' | 'right'; noteColor?: string }[] = [
@@ -424,6 +424,8 @@ export default function ReventePage() {
     apportInitial: 30000,
     cashflowMensuelMoyen: 0,
     tmi: 30,
+    lmnpReel: false,
+    amortissementsCumules: 0,
   })
 
   useEffect(() => {
@@ -647,6 +649,70 @@ export default function ReventePage() {
                 </div>
               </div>
 
+              {/* B-bis. Régime LMNP — réforme LF 2025 */}
+              {params.typeBien === 'locatif' && (
+                <div className="rounded-2xl border border-th-border bg-th-surface p-6 space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h2 className="text-sm font-bold text-th-text-1">Loué en LMNP au réel ?</h2>
+                      <p className="text-[11px] text-th-text-2 mt-0.5">Réforme 2025 : les amortissements déduits sont réintégrés dans la plus-value</p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={params.lmnpReel}
+                      aria-label="Activer le régime LMNP au réel"
+                      onClick={() => {
+                        const next = !params.lmnpReel
+                        setParams(p => ({
+                          ...p,
+                          lmnpReel: next,
+                          amortissementsCumules: next && p.amortissementsCumules === 0
+                            ? estimerAmortissementsLMNP(p.prixAchat, p.travauxDeduits, p.anneesDetention)
+                            : p.amortissementsCumules,
+                        }))
+                      }}
+                      className="relative w-11 h-6 rounded-full transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+                      style={{ background: params.lmnpReel ? '#10b981' : '#3f3f46' }}
+                    >
+                      <span className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform"
+                        style={{ transform: params.lmnpReel ? 'translateX(20px)' : 'translateX(0)' }} />
+                    </button>
+                  </div>
+
+                  {params.lmnpReel && (
+                    <div className="rounded-xl bg-amber-500/[0.05] border border-amber-500/20 p-4 space-y-3">
+                      <div className="flex items-start gap-2">
+                        <IconExclamationTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-th-text-2 leading-relaxed">
+                          Depuis la loi de finances 2025, à la revente d&apos;un bien LMNP loué au réel, les amortissements
+                          déduits de vos loyers sont <strong className="text-th-text-1">réintégrés</strong> dans la base imposable
+                          de la plus-value. Vous pouvez donc être taxé même sur un faible gain.
+                          <span className="block mt-1 text-th-text-3">Exceptions : résidences services (étudiantes, séniors, tourisme classé).</span>
+                        </p>
+                      </div>
+                      <div className="flex items-end gap-3">
+                        <div className="flex-1">
+                          <NumInput
+                            label="Amortissements déduits (cumulés)"
+                            value={params.amortissementsCumules}
+                            onChange={v => set('amortissementsCumules', v)}
+                            hint="Total amorti sur la durée de détention"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => set('amortissementsCumules', estimerAmortissementsLMNP(params.prixAchat, params.travauxDeduits, params.anneesDetention))}
+                          className="px-3 py-2.5 text-xs font-semibold rounded-xl border border-th-border-med text-th-text-2 hover:text-th-text-1 hover:border-emerald-500/40 transition-colors shrink-0"
+                        >
+                          Estimer
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* C. Prix de revente */}
               <div className="rounded-2xl border border-th-border bg-th-surface p-6 space-y-4">
                 <h2 className="text-sm font-bold text-th-text-1">Prix de vente envisagé</h2>
@@ -806,11 +872,18 @@ export default function ReventePage() {
                   bold sep
                 />
 
-                {params.typeBien === 'locatif' && result.plusValueBrute > 0 && (
+                {result.amortReintegres > 0 && (
+                  <>
+                    <Row label="+ Amortissements réintégrés (réforme 2025)" value={`+ ${formatCurrency(result.amortReintegres)}`} color="amber" />
+                    <Row label="= Base imposable de la plus-value" value={formatCurrency(result.plusValueImposable)} bold sep />
+                  </>
+                )}
+
+                {params.typeBien === 'locatif' && result.plusValueImposable > 0 && (
                   <>
                     {!result.exonerationIR ? (
                       <>
-                        <Row label={`Réduction IR (${result.abattementIR}% selon durée)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementIR / 100))}`} color="emerald" />
+                        <Row label={`Réduction IR (${result.abattementIR}% selon durée)`} value={`– ${formatCurrency(Math.round(result.plusValueImposable * result.abattementIR / 100))}`} color="emerald" />
                         <Row label="Impôt sur le bénéfice (19%)" value={`– ${formatCurrency(result.impotIR)}`} color="red" />
                       </>
                     ) : (
@@ -818,7 +891,7 @@ export default function ReventePage() {
                     )}
                     {!result.exonerationPS ? (
                       <>
-                        <Row label={`Réduction cotisations (${result.abattementPS}%)`} value={`– ${formatCurrency(Math.round(result.plusValueBrute * result.abattementPS / 100))}`} color="emerald" />
+                        <Row label={`Réduction cotisations (${result.abattementPS}%)`} value={`– ${formatCurrency(Math.round(result.plusValueImposable * result.abattementPS / 100))}`} color="emerald" />
                         <Row label="Cotisations sociales (17.2%)" value={`– ${formatCurrency(result.prelevementsSociaux)}`} color="red" />
                       </>
                     ) : (

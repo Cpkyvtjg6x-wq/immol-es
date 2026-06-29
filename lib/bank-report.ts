@@ -6,15 +6,9 @@ import type {
   BankReportProfile,
   BankRatios,
 } from './types'
+import { mensualite as calcMensualite } from './finance'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function calcMensualite(montant: number, tauxAnnuel: number, dureeAns: number): number {
-  if (montant <= 0 || tauxAnnuel <= 0) return montant / (dureeAns * 12)
-  const r = tauxAnnuel / 100 / 12
-  const n = dureeAns * 12
-  return (montant * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
-}
 
 /** Capital empruntable pour une mensualité donnée (inverse de calcMensualite). */
 function capitalFromMensualite(mensualite: number, tauxAnnuel: number, dureeAns: number): number {

@@ -3,6 +3,8 @@
  * Aides 2025-2026 : MaPrimeRénov', Eco-PTZ, CEE, TVA réduite
  */
 
+import { PRELEVEMENTS_SOCIAUX } from './fiscal-constants'
+
 export type DpeClass = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'
 export type ProfileRevenu = 'tres-modeste' | 'modeste' | 'intermediaire' | 'superieur'
 
@@ -184,7 +186,7 @@ export function calculateRenovation(
   // LMNP amortissement travaux (meublé/coloc)
   const isLmnp = locType === 'meuble' || locType === 'coloc' || locType === 'saisonnier'
   const amortissementAnnuel = isLmnp ? Math.round(coutNet / 10) : 0
-  const economieImpotAnnuelle = isLmnp ? Math.round(amortissementAnnuel * (tmi / 100 + 0.172)) : 0
+  const economieImpotAnnuelle = isLmnp ? Math.round(amortissementAnnuel * (tmi / 100 + PRELEVEMENTS_SOCIAUX)) : 0
   const recoupementAns = economieImpotAnnuelle > 0
     ? Math.round(coutNet / economieImpotAnnuelle)
     : 0

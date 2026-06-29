@@ -16,9 +16,9 @@ function immoraCreateWidget(source) {
   const widget = document.createElement('div')
   widget.id = 'immora-widget'
   widget.innerHTML = `
-    <div id="immora-mini" title="Cliquer pour ouvrir l'analyse IMMORA">
-      <div id="immora-mini-score" style="color:#fff">…</div>
-      <div id="immora-mini-text">/100<br/><span>IMMORA</span></div>
+    <div id="immora-mini" title="Ouvrir l'analyse Immora">
+      <div id="immora-mini-score">…</div>
+      <div id="immora-mini-text">/100</div>
     </div>
     <div id="immora-card" class="immora-card-tier-anon">
       <div class="immora-aurora"></div>
@@ -26,17 +26,20 @@ function immoraCreateWidget(source) {
       <!-- ═══ HEADER ═══ -->
       <div id="immora-header">
         <div id="immora-logo">
-          <div id="immora-logo-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <span id="immora-logo-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
               <defs><clipPath id="immora-logo-clip"><circle cx="12" cy="12" r="9.1"/></clipPath></defs>
               <g clip-path="url(#immora-logo-clip)">
-                <path d="M 4 18 C 11 18 15 8 19 5" stroke="#10b981" stroke-width="1.7" fill="none"/>
-                <line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.7"/>
+                <path d="M 4 18 C 11 18 15 8 19 5" stroke="#4ade80" stroke-width="1.6" fill="none"/>
+                <line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.8"/>
               </g>
-              <circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.7" fill="none" opacity="0.85"/>
+              <circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.8" fill="none" opacity="0.9"/>
             </svg>
-          </div>
-          <div id="immora-logo-text">IMMO<span>RA</span></div>
+          </span>
+          <span id="immora-logo-texts">
+            <span id="immora-logo-text">Immora</span>
+            <span id="immora-logo-sub">Analyseur · v6</span>
+          </span>
         </div>
         <div id="immora-header-right">
           <div id="immora-source-badge">${source}</div>
@@ -57,46 +60,43 @@ function immoraCreateWidget(source) {
       <!-- ═══ BODY ═══ -->
       <div id="immora-body" style="display:none">
 
-        <!-- ① VERDICT — ring compact à gauche + verdict à droite -->
-        <div id="immora-hero">
-          <div id="immora-score-ring">
-            <svg viewBox="0 0 100 100" width="64" height="64">
-              <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.07)" stroke-width="9" fill="none"/>
-              <circle id="immora-score-ring-fill" cx="50" cy="50" r="44" stroke="#10b981" stroke-width="9" fill="none"
-                stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="276.46"
-                transform="rotate(-90 50 50)"/>
-            </svg>
-            <div id="immora-score-ring-content">
-              <div id="immora-score-ring-number">—</div>
-            </div>
-          </div>
-          <div id="immora-verdict">
-            <div id="immora-verdict-label">Analyse…</div>
-            <div id="immora-verdict-sub">—</div>
-          </div>
+        <!-- ⓪ DONNÉES EXTRAITES (complétude) -->
+        <div id="immora-data">
+          <span id="immora-data-dot"></span>
+          <span id="immora-data-label">Données extraites</span>
+          <span id="immora-data-count">—</span>
+          <span id="immora-data-bar"><span id="immora-data-bar-fill"></span></span>
         </div>
 
-        <!-- ② MÉTRIQUES CLÉS — 2 cartes primaires (net + cashflow) -->
-        <div id="immora-metrics">
-          <div class="immo-metric" id="immo-metric-net">
-            <div class="immo-metric-label">Rendement net</div>
-            <div class="immo-metric-value" id="immo-rend-net">—</div>
+        <!-- ① SCORE + VERDICT (gros chiffre + barre fine) -->
+        <div id="immora-hero">
+          <div id="immora-hero-top">
+            <div id="immora-score-wrap"><span id="immora-score-number">—</span><span id="immora-score-max">/100</span></div>
+            <div id="immora-verdict">
+              <div id="immora-verdict-label">Analyse…</div>
+              <div id="immora-verdict-sub">—</div>
+            </div>
           </div>
-          <div class="immo-metric" id="immo-metric-cf">
-            <div class="immo-metric-label">Cashflow / mois</div>
-            <div class="immo-metric-value" id="immo-cashflow">—</div>
-          </div>
+          <span id="immora-score-bar"><span id="immora-score-bar-fill"></span></span>
         </div>
-        <!-- métriques secondaires — strip compact -->
-        <div id="immora-metrics-sec">
-          <div class="immo-metric-sec">
-            <span class="immo-metric-sec-label">Rendement brut</span>
-            <span class="immo-metric-sec-val" id="immo-rend-brut">—</span>
+
+        <!-- ② STATS — grille 2×2 compacte, couleur uniquement sur la valeur -->
+        <div id="immora-stats">
+          <div class="immo-stat immo-stat-primary">
+            <span class="immo-stat-label">Cashflow / mois</span>
+            <span class="immo-stat-val" id="immo-cashflow">—</span>
           </div>
-          <div class="immo-metric-sec-divider"></div>
-          <div class="immo-metric-sec">
-            <span class="immo-metric-sec-label">Mensualité crédit</span>
-            <span class="immo-metric-sec-val" id="immo-mensualite">—</span>
+          <div class="immo-stat immo-stat-primary">
+            <span class="immo-stat-label">Rendement net</span>
+            <span class="immo-stat-val" id="immo-rend-net">—</span>
+          </div>
+          <div class="immo-stat">
+            <span class="immo-stat-label">Rendement brut</span>
+            <span class="immo-stat-val" id="immo-rend-brut">—</span>
+          </div>
+          <div class="immo-stat">
+            <span class="immo-stat-label">Mensualité</span>
+            <span class="immo-stat-val" id="immo-mensualite">—</span>
           </div>
         </div>
 
@@ -154,10 +154,7 @@ function immoraCreateWidget(source) {
         <!-- ⑥ MARCHÉ -->
         <div id="immora-marche" style="display:none"></div>
 
-        <!-- ⑦ PHOTOS travaux -->
-        <div id="immora-photo-section" style="display:none"></div>
-
-        <!-- ⑧ NOTICE -->
+        <!-- ⑦ NOTICE -->
         <div id="immora-notice">Loyer marché estimé · 20% apport · 3.5% · TMI 30%</div>
 
         <!-- ⑨ CTA principal + bouton Sauver -->
@@ -201,26 +198,12 @@ function immoraRenderResults(r) {
     card.style.setProperty('--immora-score-color', scoreColor)
   }
 
-  // ── Hero : ring SVG (r=44 → C = 2π×44 = 276.46) ────────────────────────
-  const ringFill = document.getElementById('immora-score-ring-fill')
-  const ringNumber = document.getElementById('immora-score-ring-number')
-  const CIRCUMFERENCE = 276.46
-  if (ringFill) {
-    const offset = CIRCUMFERENCE - (CIRCUMFERENCE * score) / 100
-    ringFill.style.stroke = scoreColor
-    requestAnimationFrame(() => {
-      ringFill.style.transition = 'stroke-dashoffset 1100ms cubic-bezier(0.16,1,0.3,1), stroke 300ms'
-      ringFill.style.strokeDashoffset = String(offset)
-    })
-  }
-  if (ringNumber) {
-    ringNumber.style.color = scoreColor
-    immoraAnimateNumber(ringNumber, 0, score, 1000)
-  }
-
-  // Mini badge (collapsed)
-  const miniScore = document.getElementById('immora-mini-score')
-  if (miniScore) { miniScore.textContent = score; miniScore.style.color = scoreColor }
+  // ── Score (gros chiffre + barre fine) — couleur appliquée plus bas (ton du verdict)
+  const scoreNumberEl = document.getElementById('immora-score-number')
+  const scoreBarFill  = document.getElementById('immora-score-bar-fill')
+  const miniScore     = document.getElementById('immora-mini-score')
+  if (scoreNumberEl) immoraAnimateNumber(scoreNumberEl, 0, score, 900)
+  if (miniScore) miniScore.textContent = score
 
   // ── Verdict — cohérent avec le CASHFLOW, pas seulement le score ──────────
   // Un fort rendement brut peut donner un score élevé tout en ayant un cashflow
@@ -249,8 +232,11 @@ function immoraRenderResults(r) {
       if (cf >= 0) {
         label = 'Bon deal'; vColor = '#10b981'
         sub = `Cashflow ${cfStr} · ${brut}% brut`
-      } else {
+      } else if (cf >= -150) {
         label = 'Bon deal'; vColor = '#34d399'
+        sub = `${brut}% brut · effort léger ${cfStr}`
+      } else {
+        label = 'Bon rendement'; vColor = '#f59e0b'
         sub = `${brut}% brut · effort ${cfStr}`
       }
     } else if (score >= 40) {
@@ -266,6 +252,16 @@ function immoraRenderResults(r) {
     verdictLabel.textContent = label
     verdictLabel.style.color = vColor
     verdictSub.textContent = sub
+    // Couleur du verdict appliquée au score (chiffre + barre) et au mini-badge
+    if (scoreNumberEl) scoreNumberEl.style.color = vColor
+    if (scoreBarFill) {
+      scoreBarFill.style.background = vColor
+      requestAnimationFrame(() => {
+        scoreBarFill.style.transition = 'width 900ms cubic-bezier(0.16,1,0.3,1)'
+        scoreBarFill.style.width = score + '%'
+      })
+    }
+    if (miniScore) miniScore.style.color = vColor
   }
 
   // ── 4 sous-scores (label | barre | valeur sur 1 ligne) ─────────────────
@@ -292,28 +288,17 @@ function immoraRenderResults(r) {
   // Warnings DPE F/G
   immoraRenderWarnings(r.warnings ?? [])
 
-  // ── Métriques clés — primaires (rendement net + cashflow), grandes & colorées
-  const setMetric = (cardId, valId, text, tone) => {
-    const val  = document.getElementById(valId)
-    const card = document.getElementById(cardId)
-    if (val)  val.textContent = text
-    if (card) card.className = 'immo-metric immo-metric-' + tone
+  // ── Stats — la couleur ne porte QUE sur la valeur (selon signe / seuil) ──
+  const stat = (id, text, tone) => {
+    const el = document.getElementById(id)
+    if (el) { el.textContent = text; el.className = 'immo-stat-val immo-' + tone }
   }
-  const rnVal = (r.rendNet ?? 0)
-  setMetric('immo-metric-net', 'immo-rend-net', rnVal.toFixed(2) + '%',
-    rnVal >= 3.5 ? 'green' : rnVal >= 2 ? 'amber' : 'red')
   const cfVal = Math.round(r.cashflowMensuel ?? 0)
-  // −45€ = quasi neutre → ambre (pas rouge alarmant), cohérent avec le verdict
-  setMetric('immo-metric-cf', 'immo-cashflow', (cfVal >= 0 ? '+' : '') + cfVal + ' €',
-    cfVal >= 50 ? 'green' : cfVal >= -100 ? 'amber' : 'red')
-
-  // ── Métriques secondaires — brut + mensualité (strip compact) ───────────
-  const rb = document.getElementById('immo-rend-brut')
-  if (rb) {
-    const rbVal = (r.rendBrut ?? 0)
-    rb.textContent = rbVal.toFixed(2) + '%'
-    rb.className = 'immo-metric-sec-val ' + (rbVal >= 5 ? 'immo-green' : rbVal >= 3.5 ? 'immo-amber' : 'immo-red')
-  }
+  stat('immo-cashflow', (cfVal >= 0 ? '+' : '') + cfVal + ' €', cfVal >= 50 ? 'green' : cfVal >= -100 ? 'amber' : 'red')
+  const rnVal = (r.rendNet ?? 0)
+  stat('immo-rend-net', rnVal.toFixed(2) + '%', rnVal >= 3.5 ? 'green' : rnVal >= 2 ? 'amber' : 'red')
+  const rbVal = (r.rendBrut ?? 0)
+  stat('immo-rend-brut', rbVal.toFixed(2) + '%', rbVal >= 5 ? 'green' : rbVal >= 3.5 ? 'amber' : 'red')
   const mens = document.getElementById('immo-mensualite')
   if (mens) mens.textContent = Math.round(r.mensualite ?? 0) + ' €'
 
@@ -384,15 +369,18 @@ function immoraRenderResults(r) {
         'tres-surevalue': 'marche-tres-surevalue',
       }[mc.positionnement] || ''
 
-      const tensionEmoji = { forte: '🔥', moyenne: '📊', faible: '💤' }[mc.tension] || '📊'
+      const dotColor = { forte: '#34d399', moyenne: '#fbbf24', faible: '#f87171' }[mc.tension] || '#34d399'
       const ref = mc.prixM2Ref ? ` · réf. ${mc.prixM2Ref.toLocaleString('fr-FR')} €/m²` : ''
 
       mel.className = marcheClass
       mel.style.display = 'flex'
       mel.innerHTML = `
         <div class="immo-marche-left">
-          <div class="immo-marche-label">${tensionEmoji} Marché ${mc.ville || 'local'}</div>
-          <div class="immo-marche-text">${mc.positionnementLabel || ''}${ref}</div>
+          <span class="immo-marche-dot" style="background:${dotColor}"></span>
+          <div class="immo-marche-texts">
+            <div class="immo-marche-label">Marché ${mc.ville || 'local'}</div>
+            <div class="immo-marche-text">${mc.positionnementLabel || ''}${ref}</div>
+          </div>
         </div>
         <div class="immo-marche-badge ${badgeClass}">${mc.ecartMarche > 0 ? '+' : ''}${mc.ecartMarche}%</div>
       `
@@ -401,8 +389,11 @@ function immoraRenderResults(r) {
       mel.style.display = 'flex'
       mel.innerHTML = `
         <div class="immo-marche-left">
-          <div class="immo-marche-label">📊 Marché ${mc.ville || 'local'}</div>
-          <div class="immo-marche-text">Loyer réf. : ${mc.loyerM2Ref} €/m²/mois</div>
+          <span class="immo-marche-dot"></span>
+          <div class="immo-marche-texts">
+            <div class="immo-marche-label">Marché ${mc.ville || 'local'}</div>
+            <div class="immo-marche-text">Loyer réf. : ${mc.loyerM2Ref} €/m²/mois</div>
+          </div>
         </div>
       `
     }
@@ -1155,7 +1146,7 @@ function immoraShowPhotoUpgrade() {
   el.innerHTML = `
     <div class="immo-photo-upgrade">
       <div class="immo-photo-upgrade-left">
-        <div class="immo-photo-upgrade-label">📸 Analyse travaux par IA</div>
+        <div class="immo-photo-upgrade-label">Analyse travaux par IA</div>
         <div class="immo-photo-upgrade-text">Estimation chiffrée des travaux poste par poste (cuisine, sdb, peinture…) à partir des photos de l'annonce.</div>
       </div>
       <a class="immo-photo-upgrade-cta" href="${IMMORA_API}/checkout/start?plan=pro&cycle=annual" target="_blank" rel="noopener">
@@ -1166,14 +1157,22 @@ function immoraShowPhotoUpgrade() {
 
 // Met à jour le badge source en bas (avec compteur de complétude)
 function immoraSetSourceBadge(source, completeness) {
-  const el = document.getElementById('immora-source-badge')
-  if (!el) return
   const { detected, total } = completeness
-  let color = '#10b981' // vert
-  if (detected < total * 0.5) color = '#ef4444'      // rouge
-  else if (detected < total * 0.75) color = '#f59e0b' // ambre
-  el.innerHTML = `${source} · <span style="color:${color}">${detected}/${total}</span>`
-  el.title = `${detected} champs détectés sur ${total} (les manquants sont estimés)`
+  let color = '#34d399'
+  if (detected < total * 0.5) color = '#f87171'
+  else if (detected < total * 0.75) color = '#fbbf24'
+  const el = document.getElementById('immora-source-badge')
+  if (el) {
+    el.textContent = source
+    el.title = `${detected}/${total} champs détectés (les manquants sont estimés)`
+  }
+  // Bandeau « Données extraites » (complétude)
+  const cnt = document.getElementById('immora-data-count')
+  const dot = document.getElementById('immora-data-dot')
+  const bar = document.getElementById('immora-data-bar-fill')
+  if (cnt) cnt.textContent = `${detected}/${total} champs`
+  if (dot) dot.style.background = color
+  if (bar) { bar.style.background = color; requestAnimationFrame(() => { bar.style.width = Math.round((detected / total) * 100) + '%' }) }
 }
 
 // Compte les champs réellement extraits (vs estimés/par défaut)
@@ -1279,36 +1278,31 @@ function immoraUpdateScoreAfterTravaux(updated, initial) {
   const newColor = newScore >= 70 ? '#10b981' : newScore >= 50 ? '#f59e0b' : '#ef4444'
 
   // Ring : nombre + arc + couleur
-  const ringNumber = document.getElementById('immora-score-ring-number')
-  const ringFill   = document.getElementById('immora-score-ring-fill')
-  if (ringNumber) {
-    ringNumber.style.transition = 'color 0.4s'
-    ringNumber.textContent = newScore
-    ringNumber.style.color = newColor
+  const scoreNumberEl = document.getElementById('immora-score-number')
+  const scoreBarFill  = document.getElementById('immora-score-bar-fill')
+  if (scoreNumberEl) {
+    scoreNumberEl.style.transition = 'color 0.4s'
+    scoreNumberEl.textContent = newScore
+    scoreNumberEl.style.color = newColor
   }
-  if (ringFill) {
-    ringFill.style.stroke = newColor
-    ringFill.style.strokeDashoffset = String(276.46 - (276.46 * newScore) / 100)
+  if (scoreBarFill) {
+    scoreBarFill.style.background = newColor
+    scoreBarFill.style.width = newScore + '%'
   }
   const miniEl = document.getElementById('immora-mini-score')
   if (miniEl) { miniEl.textContent = newScore; miniEl.style.color = newColor }
 
-  // Cartes métriques (net + cashflow) + brut secondaire
-  const setCard = (cardId, valId, text, t) => {
-    const val = document.getElementById(valId), card = document.getElementById(cardId)
-    if (val)  val.textContent = text
-    if (card) card.className = 'immo-metric immo-metric-' + t
+  // Stats (cashflow / net / brut) — couleur sur la valeur
+  const stat = (id, text, tone) => {
+    const el = document.getElementById(id)
+    if (el) { el.textContent = text; el.className = 'immo-stat-val immo-' + tone }
   }
-  const rnV = (updated.rendNet ?? 0)
-  setCard('immo-metric-net', 'immo-rend-net', rnV.toFixed(2) + '%', rnV >= 3.5 ? 'green' : rnV >= 2 ? 'amber' : 'red')
   const cfV = Math.round(updated.cashflowMensuel ?? 0)
-  setCard('immo-metric-cf', 'immo-cashflow', (cfV >= 0 ? '+' : '') + cfV + ' €', cfV >= 50 ? 'green' : cfV >= -100 ? 'amber' : 'red')
-  const rb = document.getElementById('immo-rend-brut')
-  if (rb) {
-    const v = (updated.rendBrut ?? 0)
-    rb.textContent = v.toFixed(2) + '%'
-    rb.className = 'immo-metric-sec-val ' + (v >= 5 ? 'immo-green' : v >= 3.5 ? 'immo-amber' : 'immo-red')
-  }
+  stat('immo-cashflow', (cfV >= 0 ? '+' : '') + cfV + ' €', cfV >= 50 ? 'green' : cfV >= -100 ? 'amber' : 'red')
+  const rnV = (updated.rendNet ?? 0)
+  stat('immo-rend-net', rnV.toFixed(2) + '%', rnV >= 3.5 ? 'green' : rnV >= 2 ? 'amber' : 'red')
+  const rbV = (updated.rendBrut ?? 0)
+  stat('immo-rend-brut', rbV.toFixed(2) + '%', rbV >= 5 ? 'green' : rbV >= 3.5 ? 'amber' : 'red')
 
   // Mettre à jour le CTA URL avec les travaux
   const cta = document.getElementById('immora-cta')

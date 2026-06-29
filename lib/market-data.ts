@@ -361,28 +361,4 @@ export function getCityData(ville: string): CityData | null {
   return VILLES[ville] ?? null
 }
 
-/**
- * Get all city names sorted alphabetically
- */
-export function getCityNames(): string[] {
-  return Object.keys(VILLES).sort()
-}
-
-/**
- * Get cities by region
- */
-export function getCitiesByRegion(): Record<string, string[]> {
-  const result: Record<string, string[]> = {}
-  for (const [name, data] of Object.entries(VILLES)) {
-    if (!result[data.region]) result[data.region] = []
-    result[data.region].push(name)
-  }
-  return result
-}
-
-/**
- * Get quartiers for a given city
- */
-export function getQuartiers(ville: string): QuartierData[] {
-  return VILLES[ville]?.quartiers ?? []
-}
+// (getCityNames / getCitiesByRegion / getQuartiers supprimés — code mort, jamais appelés)

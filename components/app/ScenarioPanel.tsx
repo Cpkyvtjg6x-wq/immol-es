@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { InvestmentParams, InvestmentResult } from '@/lib/types'
-import { calculateInvestment } from '@/lib/calculator'
+import { calculateInvestment, calculerFraisNotaire } from '@/lib/calculator'
 import { formatCurrency } from '@/lib/utils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ function roundTo(n: number, step: number): number {
 function buildScenarioParams(base: InvestmentParams, s: ScenarioState): InvestmentParams {
   const apport = Math.round(s.prixAchat * s.apportPct / 100)
   const fraisNotaire = base.fraisNotaireAuto
-    ? Math.round(s.prixAchat * (base.etat === 'neuf' ? 0.03 : 0.08))
+    ? calculerFraisNotaire(s.prixAchat, base.etat)
     : base.fraisNotaire
   const updated: InvestmentParams = { ...base, prixAchat: s.prixAchat, taux: s.taux, apport, duree: s.duree, travaux: s.travaux, fraisNotaire }
   if (base.locType === 'nu')          updated.loyerNu          = s.loyer

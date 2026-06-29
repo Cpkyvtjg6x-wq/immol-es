@@ -216,6 +216,23 @@ button, a, input, select, textarea {
   transition-timing-function: ease;
 }
 
+/* ─── Transition douce au changement de thème (sombre ⇄ clair) ────────────────
+   Appliquée UNIQUEMENT pendant le switch : ThemeProvider pose la classe
+   .theme-transition sur <html>, puis la retire après ~450ms. On ne transitionne
+   QUE les propriétés de couleur (jamais transform/opacity) → aucune animation en
+   cours n'est perturbée, et rien ne se déclenche au chargement initial (pas de
+   flash d'hydratation). Respect de prefers-reduced-motion géré côté JS (classe
+   non posée si l'utilisateur réduit les animations). */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow !important;
+  transition-duration: 0.45s !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-delay: 0s !important;
+}
+
 /* ─── Typography classes ─────────────────────────────────────── */
 
 /* Police principale : Geist (via CSS variable injectée par next/font) */

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 
 /**
  * Thème custom — sans next-themes.
@@ -24,17 +24,41 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('dark')
+  const transitionTimer = useRef<number | null>(null)
 
   useEffect(() => {
     const current = document.documentElement.classList.contains('light') ? 'light' : 'dark'
     setThemeState(current)
+    return () => {
+      if (transitionTimer.current) window.clearTimeout(transitionTimer.current)
+    }
   }, [])
 
   const setTheme = (t: Theme) => {
     setThemeState(t)
     try { localStorage.setItem('theme', t) } catch {}
-    if (t === 'light') document.documentElement.classList.add('light')
-    else document.documentElement.classList.remove('light')
+
+    const root = document.documentElement
+
+    // Transition douce des couleurs le temps du switch (sauf si l'utilisateur
+    // préfère réduire les animations). La classe .theme-transition active une
+    // transition globale (globals.css), retirée après l'animation pour ne pas
+    // la laisser en continu (perf + pas de flash à l'hydratation).
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+    if (!reduceMotion) {
+      root.classList.add('theme-transition')
+      if (transitionTimer.current) window.clearTimeout(transitionTimer.current)
+      transitionTimer.current = window.setTimeout(() => {
+        root.classList.remove('theme-transition')
+        transitionTimer.current = null
+      }, 500)
+    }
+
+    if (t === 'light') root.classList.add('light')
+    else root.classList.remove('light')
   }
 
   return (

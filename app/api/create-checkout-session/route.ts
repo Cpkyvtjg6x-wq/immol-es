@@ -11,11 +11,24 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: NextRequest) {
   try {
-    const { priceId, planName } = await req.json()
+    const body = await req.json().catch(() => ({} as Record<string, unknown>))
+    const priceId = typeof body?.priceId === 'string' ? body.priceId : ''
 
-    if (!priceId) {
-      return NextResponse.json({ error: 'priceId manquant' }, { status: 400 })
+    // Liste blanche des price IDs autorisés (env) → on dérive le tier du PRIX RÉEL,
+    // jamais du planName envoyé par le client (ferme la faille "Agence au prix Pro").
+    const PRICE_TIERS: Record<string, 'pro' | 'business'> = {}
+    for (const id of [process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY, process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL]) {
+      if (id) PRICE_TIERS[id] = 'pro'
     }
+    for (const id of [process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_MONTHLY, process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY_ANNUAL]) {
+      if (id) PRICE_TIERS[id] = 'business'
+    }
+
+    const tier = PRICE_TIERS[priceId]
+    if (!tier) {
+      return NextResponse.json({ error: 'priceId invalide' }, { status: 400 })
+    }
+    const planName = tier === 'business' ? 'agency' : 'pro'
 
     // Récupérer l'utilisateur connecté via Supabase SSR
     // (@supabase/ssr 0.1.0 — API get/set/remove, pas getAll/setAll)
@@ -55,22 +68,22 @@ export async function POST(req: NextRequest) {
       allow_promotion_codes: true,
       metadata: {
         userId: user.id,
-        planName: planName ?? 'pro',
-        // Le webhook lit metadata.tier (cf. getTierFromSession) — mapping
-        // plan UI → tier DB : 'pro' → 'pro', 'agency' → 'business'.
-        tier: planName === 'agency' ? 'business' : 'pro',
+        planName,
+        // tier dérivé du priceId validé (cf. liste blanche ci-dessus) — le webhook
+        // recoupe de toute façon via getTierFromSubscription.
+        tier,
       },
       subscription_data: {
         trial_period_days: 14,
         metadata: {
           userId: user.id,
-          tier: planName === 'agency' ? 'business' : 'pro',
+          tier,
         },
       },
       // Stripe substitue automatiquement {CHECKOUT_SESSION_ID} par l'ID réel.
       // La page /checkout/success retrouve la session côté serveur pour afficher
       // les détails (fin d'essai, plan, etc.).
-      success_url: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${planName ?? 'pro'}`,
+      success_url: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${planName}`,
       cancel_url: `${appUrl}/#pricing`,
     })
 

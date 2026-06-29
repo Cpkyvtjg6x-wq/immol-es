@@ -11,6 +11,7 @@ import {
 } from '@/lib/marche-reference'
 import { authenticateExtensionRequest } from '@/lib/extension-auth'
 import { checkIpRate, QUICK_ANALYSIS_RATE } from '@/lib/usage'
+import { validate, quickAnalysisSchema, jsonByteSize } from '@/lib/validation'
 import type { InvestmentParams } from '@/lib/types'
 
 // CORS — l'extension Chrome appelle depuis une origine différente
@@ -49,6 +50,13 @@ export async function POST(req: NextRequest) {
     const auth = await authenticateExtensionRequest(req.headers.get('authorization'))
 
     const body = await req.json()
+    if (jsonByteSize(body) > 100_000) {
+      return NextResponse.json({ error: 'Payload trop volumineux' }, { status: 413, headers: CORS })
+    }
+    const v = validate(quickAnalysisSchema, body)
+    if (!v.ok) {
+      return NextResponse.json({ error: v.message }, { status: 400, headers: CORS })
+    }
 
     const {
       prixAchat,

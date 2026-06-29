@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { authenticateExtensionRequest } from '@/lib/extension-auth'
 import { checkAiQuota } from '@/lib/usage'
+import { validate, photoAnalysisSchema, jsonByteSize } from '@/lib/validation'
 import dns from 'node:dns/promises'
 import net from 'node:net'
 
@@ -268,17 +269,20 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
+    if (jsonByteSize(body) > 50_000) {
+      return NextResponse.json({ error: 'Payload trop volumineux' }, { status: 413, headers: CORS })
+    }
+    const v = validate(photoAnalysisSchema, body)
+    if (!v.ok) {
+      return NextResponse.json({ error: v.message }, { status: 400, headers: CORS })
+    }
     const {
       imageUrls,
       surface   = 50,
       typeBien  = 'Appartement',
       ville     = 'France',
       prixAchat = 0,
-    } = body
-
-    if (!Array.isArray(imageUrls) || imageUrls.length === 0) {
-      return NextResponse.json({ error: 'imageUrls requis' }, { status: 400, headers: CORS })
-    }
+    } = v.data
 
     const urlsToAnalyse = imageUrls.slice(0, 5)
 

@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { authenticateExtensionRequest } from '@/lib/extension-auth'
+import { validate, simulationSaveSchema, jsonByteSize } from '@/lib/validation'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -42,6 +43,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
+    const v = validate(simulationSaveSchema, body)
+    if (!v.ok) {
+      return NextResponse.json({ error: v.message }, { status: 400, headers: CORS })
+    }
     const {
       name,
       params,        // les params utilisés pour le calcul (extraits + estimés)
@@ -49,12 +54,14 @@ export async function POST(req: NextRequest) {
       score,         // score global
       sourceUrl,     // URL de l'annonce d'origine (Seloger, LBC…)
       sourcePortal,  // 'Seloger' | 'Leboncoin' | …
-    } = body
+    } = v.data
 
-    if (!name || !params) {
+    // Borne la taille du JSONB stocké (anti-abus stockage — un user Pro pourrait
+    // sinon insérer des Mo de JSON arbitraire par sauvegarde).
+    if (jsonByteSize(params) + jsonByteSize(results) > 200_000) {
       return NextResponse.json(
-        { error: 'name et params requis' },
-        { status: 400, headers: CORS },
+        { error: 'Données de simulation trop volumineuses' },
+        { status: 413, headers: CORS },
       )
     }
 

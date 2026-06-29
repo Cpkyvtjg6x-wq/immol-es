@@ -8,6 +8,7 @@ import { generateInsights } from '@/lib/ai'
 import { getCityData } from '@/lib/market-data'
 import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '@/lib/types'
 import { checkAiQuota } from '@/lib/usage'
+import { validate, aiAnalyseSchema, jsonByteSize } from '@/lib/validation'
 import type { InvestmentParams, FiscalParams } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -16,17 +17,15 @@ export const maxDuration = 30
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { params, fiscalParams } = body as {
-      params: InvestmentParams
-      fiscalParams: Partial<FiscalParams>
+    if (jsonByteSize(body) > 100_000) {
+      return NextResponse.json({ error: 'Payload trop volumineux' }, { status: 413 })
     }
-
-    if (!params || !params.prixAchat) {
-      return NextResponse.json(
-        { error: 'Paramètres de simulation manquants' },
-        { status: 400 }
-      )
+    const v = validate(aiAnalyseSchema, body)
+    if (!v.ok) {
+      return NextResponse.json({ error: v.message }, { status: 400 })
     }
+    const params = v.data.params as unknown as InvestmentParams
+    const fiscalParams = (v.data.fiscalParams ?? {}) as Partial<FiscalParams>
 
     // Vérification clé OpenAI
     if (!process.env.OPENAI_API_KEY) {

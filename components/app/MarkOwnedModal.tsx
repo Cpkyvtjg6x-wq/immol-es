@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { SimulationStatus } from '@/lib/hooks/useSimulations'
+import { useDialog } from '@/lib/hooks/useDialog'
 
 interface MarkOwnedModalProps {
   open: boolean
@@ -16,6 +17,7 @@ function today() {
 }
 
 export function MarkOwnedModal({ open, sim, onClose, onConfirm }: MarkOwnedModalProps) {
+  const { dialogRef, dialogProps } = useDialog(open, onClose)
   const [date, setDate] = useState<string>(today())
 
   useEffect(() => {
@@ -41,6 +43,9 @@ export function MarkOwnedModal({ open, sim, onClose, onConfirm }: MarkOwnedModal
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
             onClick={(e) => e.stopPropagation()}
+            ref={dialogRef}
+            {...dialogProps}
+            aria-label="Marquer le bien comme détenu"
             className="relative w-full max-w-md rounded-2xl border border-th-border bg-th-surface shadow-card-th overflow-hidden"
           >
             <div className="px-6 pt-6 pb-4">

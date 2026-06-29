@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useAnimationControls } from 'framer-motion'
 import { DEFAULT_PARAMS, calculateInvestment } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
+import { useDialog } from '@/lib/hooks/useDialog'
 import type { InvestmentParams, InvestmentResult, ScoreResult } from '@/lib/types'
 
 interface AddOwnedModalProps {
@@ -60,6 +61,7 @@ function NumInput({ value, onChange, unit, step, placeholder }: { value: number;
 }
 
 export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
+  const { dialogRef, dialogProps } = useDialog(open, onClose)
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
   const [manual, setManual] = useState(false)
@@ -191,6 +193,9 @@ export function AddOwnedModal({ open, onClose, onSubmit }: AddOwnedModalProps) {
             animate={controls}
             exit={{ opacity: 0, scale: 0.97, y: 10, transition: { duration: 0.18 } }}
             onClick={(e) => e.stopPropagation()}
+            ref={dialogRef}
+            {...dialogProps}
+            aria-label="Ajouter un bien détenu"
             className="relative w-full max-w-lg rounded-2xl border border-th-border bg-th-surface shadow-card-th overflow-hidden flex flex-col max-h-[90vh]"
           >
             {/* Header + steps */}

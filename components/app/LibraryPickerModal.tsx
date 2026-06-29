@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import { useSimulations, type SavedSimulation } from '@/lib/hooks/useSimulations'
 import { DEFAULT_TAGS, loadCustomTags, resolveTag, type TagDef } from '@/lib/tags'
 import { TagChip } from '@/components/app/TagChip'
+import { useDialog } from '@/lib/hooks/useDialog'
 
 function fmt(n: number) {
   return Math.round(n).toLocaleString('fr-FR')
@@ -38,6 +39,7 @@ interface LibraryPickerModalProps {
 }
 
 export function LibraryPickerModal({ open, onClose, onSelect, title = 'Choisir un bien de la bibliothèque' }: LibraryPickerModalProps) {
+  const { dialogRef, dialogProps } = useDialog(open, onClose)
   const { user } = useAuth()
   const { simulations, loading } = useSimulations(user?.id ?? null)
   const [search, setSearch] = useState('')
@@ -77,6 +79,9 @@ export function LibraryPickerModal({ open, onClose, onSelect, title = 'Choisir u
             exit={{ opacity: 0, scale: 0.98, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
             onClick={(e) => e.stopPropagation()}
+            ref={dialogRef}
+            {...dialogProps}
+            aria-label={title}
             className="relative w-full max-w-4xl max-h-[85vh] flex flex-col rounded-2xl border border-th-border bg-th-surface shadow-card-th overflow-hidden"
           >
             {/* Header */}

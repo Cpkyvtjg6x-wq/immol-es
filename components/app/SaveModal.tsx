@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { InvestmentParams, InvestmentResult, ScoreResult } from '@/lib/types'
 import { formatCurrency, formatPct } from '@/lib/utils'
+import { useDialog } from '@/lib/hooks/useDialog'
 
 interface SaveModalProps {
   isOpen: boolean
@@ -17,6 +18,7 @@ interface SaveModalProps {
 
 export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, onSave }: SaveModalProps) {
   const router = useRouter()
+  const { dialogRef, dialogProps } = useDialog(isOpen, onClose)
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -58,7 +60,7 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md rounded-2xl border border-th-border bg-th-surface shadow-2xl overflow-hidden">
+      <div ref={dialogRef} {...dialogProps} aria-label="Sauvegarder la simulation" className="relative w-full max-w-md rounded-2xl border border-th-border bg-th-surface shadow-2xl overflow-hidden">
         {/* Close */}
         <button
           onClick={onClose}

@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { ForceDark } from '@/components/app/ForceDark'
 
 /**
  * Route de bascule signup → Stripe Checkout.
@@ -25,6 +26,7 @@ export default function CheckoutStartPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
+          <ForceDark />
           <div className="w-12 h-12 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
         </div>
       }

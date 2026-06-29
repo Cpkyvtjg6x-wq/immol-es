@@ -16,13 +16,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-zinc-300">
+          <label htmlFor={inputId} className="block text-sm font-medium text-th-text-2">
             {label}
           </label>
         )}
         <div className="relative flex items-center">
           {prefix && (
-            <span className="absolute left-3 text-zinc-500 text-sm pointer-events-none">
+            <span className="absolute left-3 text-th-text-3 text-sm pointer-events-none">
               {prefix}
             </span>
           )}
@@ -30,7 +30,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full bg-zinc-800/60 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-zinc-500',
+              'w-full bg-th-surface2/60 border border-th-border-med rounded-xl px-3 py-2.5 text-sm text-th-text-1 placeholder:text-th-text-3',
               'focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50',
               'transition-all duration-200',
               error && 'border-red-500/50 focus:ring-red-500/50',
@@ -41,12 +41,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {suffix && (
-            <span className="absolute right-3 text-zinc-500 text-sm pointer-events-none">
+            <span className="absolute right-3 text-th-text-3 text-sm pointer-events-none">
               {suffix}
             </span>
           )}
         </div>
-        {hint && !error && <p className="text-xs text-zinc-500">{hint}</p>}
+        {hint && !error && <p className="text-xs text-th-text-3">{hint}</p>}
         {error && <p className="text-xs text-red-400">{error}</p>}
       </div>
     )

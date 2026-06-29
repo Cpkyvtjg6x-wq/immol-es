@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/landing/Navbar'
+import { ForceDark } from '@/components/app/ForceDark'
 import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
 import { formatCurrency } from '@/lib/utils'
 
@@ -262,6 +263,7 @@ export default function LandingPage() {
 
   return (
     <div className="bg-[#09090b] text-white overflow-x-hidden selection:bg-emerald-500/30">
+      <ForceDark />
       <ScrollProgressBar />
       <Navbar />
       <HeroSection />

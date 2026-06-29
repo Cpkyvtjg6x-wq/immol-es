@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { BrandLogo } from '@/components/app/BrandLogo'
+import { ForceDark } from '@/components/app/ForceDark'
 
 // ── Sous-composant isolé pour useSearchParams (requis par Next.js 14) ─────────
 // useSearchParams() doit être dans un <Suspense> — on l'isole ici.
@@ -66,6 +67,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-th-bg flex items-center justify-center p-6">
+      <ForceDark />
       {/* Lit ?error= et ?next= dans l'URL sans bloquer le prerender */}
       <Suspense fallback={null}>
         <UrlParamsReader onError={setError} onNext={setNextPath} />

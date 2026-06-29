@@ -88,9 +88,8 @@ export default function RootLayout({
        * → Pour light : ajouter .light avant le premier pixel rendu.
        */}
       <head>
-        {/* v1 dark-only : on s'assure qu'aucun `.light` résiduel n'est appliqué
-            (le mode clair est temporairement désactivé, cf. ThemeProvider). */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{document.documentElement.classList.remove('light')}catch(e){}})()` }} />
+        {/* Anti-FOUC : applique .light avant le premier pixel si le user l'a choisi. */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light')}catch(e){}})()` }} />
       </head>
       <body className="antialiased min-h-screen">
         <ThemeProvider>

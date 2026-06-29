@@ -68,7 +68,7 @@ export function Tooltip({ content, example, children, icon = true, side = 'top' 
         className="inline-flex items-center cursor-help"
       >
         {children ?? (icon && (
-          <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-white/[0.06] border border-white/[0.10] text-[9px] font-bold text-zinc-500 hover:text-zinc-300 hover:border-white/[0.20] hover:bg-white/[0.10] transition-all ml-1 select-none">
+          <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-th-surface3 border border-th-border-med text-[9px] font-bold text-th-text-3 hover:text-th-text-1 hover:border-th-text-3 transition-all ml-1 select-none">
             ?
           </span>
         ))}
@@ -84,10 +84,10 @@ export function Tooltip({ content, example, children, icon = true, side = 'top' 
           style={{ left: pos.x, top: pos.y }}
         >
           <div
-            className="max-w-[260px] rounded-xl border border-white/[0.10] bg-[#18181b]/95 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)_inset] px-3.5 py-3"
+            className="max-w-[260px] rounded-xl border border-th-border-med bg-th-surface2/95 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)_inset] px-3.5 py-3"
             style={{ animation: 'tooltip-in 120ms cubic-bezier(0.16,1,0.3,1)' }}
           >
-            <p className="text-[12px] text-zinc-200 leading-[1.55]">{content}</p>
+            <p className="text-[12px] text-th-text-1 leading-[1.55]">{content}</p>
             {example && (
               <p className="text-[11px] text-emerald-400/80 mt-1.5 font-mono">{example}</p>
             )}

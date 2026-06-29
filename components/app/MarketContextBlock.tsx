@@ -108,7 +108,7 @@ export function MarketContextBlock({ data, surface, prixAchat, loading }: Props)
     'Données de référence'
 
   const sourceDot = data.source === 'dvf' ? 'bg-emerald-500' :
-    data.source === 'mixed' ? 'bg-amber-400' : 'bg-zinc-600'
+    data.source === 'mixed' ? 'bg-amber-400' : 'bg-th-surface3'
 
   return (
     <div className="rounded-2xl border border-th-border bg-th-surface overflow-hidden">

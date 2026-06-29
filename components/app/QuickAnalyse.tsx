@@ -55,17 +55,17 @@ function QInput({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="flex items-center gap-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
+      <label className="flex items-center gap-1 text-[11px] font-semibold text-th-text-3 uppercase tracking-widest">
         {label}
         {tooltip && <Tooltip content={tooltip} example={tooltipExample} />}
       </label>
       <div className={`relative flex items-center rounded-xl border transition-all duration-200 ${
         focused
-          ? 'border-emerald-500/50 bg-[#0f1f18]'
-          : 'border-white/[0.08] bg-[#111113] hover:border-white/[0.14]'
+          ? 'border-emerald-500/50 bg-emerald-500/[0.06]'
+          : 'border-th-border bg-th-surface hover:border-th-border-med'
       }`}>
         {prefix && (
-          <span className="pl-3.5 text-[13px] text-zinc-600 select-none">{prefix}</span>
+          <span className="pl-3.5 text-[13px] text-th-text-3 select-none">{prefix}</span>
         )}
         <input
           type="text"
@@ -75,11 +75,11 @@ function QInput({
           onFocus={() => { setFocused(true); setRaw(value > 0 ? value.toString() : '') }}
           onBlur={() => setFocused(false)}
           placeholder={placeholder ?? '0'}
-          className="flex-1 bg-transparent px-3.5 py-3 text-[16px] font-semibold text-white tabular-nums outline-none placeholder:text-zinc-700 min-w-0"
+          className="flex-1 bg-transparent px-3.5 py-3 text-[16px] font-semibold text-th-text-1 tabular-nums outline-none placeholder:text-th-text-3 min-w-0"
           style={{ letterSpacing: '-0.02em' }}
         />
         {suffix && (
-          <span className="pr-3.5 text-[13px] text-zinc-500 select-none shrink-0">{suffix}</span>
+          <span className="pr-3.5 text-[13px] text-th-text-3 select-none shrink-0">{suffix}</span>
         )}
       </div>
     </div>
@@ -97,16 +97,16 @@ function LiveKpi({ label, value, sub, tone }: {
     green:   { val: 'text-emerald-400', bg: 'bg-emerald-500/[0.06]', border: 'border-emerald-500/[0.15]' },
     red:     { val: 'text-red-400',     bg: 'bg-red-500/[0.06]',     border: 'border-red-500/[0.15]' },
     amber:   { val: 'text-amber-400',   bg: 'bg-amber-500/[0.06]',   border: 'border-amber-500/[0.12]' },
-    neutral: { val: 'text-zinc-200',    bg: 'bg-white/[0.03]',       border: 'border-white/[0.08]' },
+    neutral: { val: 'text-th-text-1',   bg: 'bg-white/[0.03]',       border: 'border-th-border' },
   }[tone]
 
   return (
     <div className={`flex flex-col gap-1 px-4 py-3.5 rounded-xl border ${colors.bg} ${colors.border}`}>
-      <span className="text-[9.5px] font-bold text-zinc-600 uppercase tracking-[0.16em]">{label}</span>
+      <span className="text-[9.5px] font-bold text-th-text-3 uppercase tracking-[0.16em]">{label}</span>
       <span className={`text-[22px] font-bold tabular-nums ${colors.val}`} style={{ letterSpacing: '-0.04em' }}>
         {value}
       </span>
-      {sub && <span className="text-[10px] text-zinc-700">{sub}</span>}
+      {sub && <span className="text-[10px] text-th-text-3">{sub}</span>}
     </div>
   )
 }
@@ -121,7 +121,7 @@ function ScoreRing({ score }: { score: number }) {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-[9.5px] font-bold text-zinc-600 uppercase tracking-[0.16em]">Score</span>
+      <span className="text-[9.5px] font-bold text-th-text-3 uppercase tracking-[0.16em]">Score</span>
       <div className="relative w-14 h-14 flex items-center justify-center">
         <svg className="absolute inset-0 -rotate-90" viewBox="0 0 56 56">
           <circle cx="28" cy="28" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="4" />
@@ -216,18 +216,18 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
     <div className="h-full overflow-y-auto flex flex-col gap-5 p-4 pb-8">
 
       {/* ── Carte principale ── */}
-      <div className="rounded-2xl border border-white/[0.08] bg-[#0c0c0e] shadow-[0_4px_32px_rgba(0,0,0,0.5),0_1px_0_rgba(255,255,255,0.04)_inset] overflow-hidden">
+      <div className="rounded-2xl border border-th-border bg-th-bg shadow-[0_4px_32px_rgba(0,0,0,0.5),0_1px_0_rgba(255,255,255,0.04)_inset] overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-th-border">
           <div className="flex items-center gap-2.5">
             <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
-            <span className="text-[13px] font-semibold text-zinc-200 tracking-[-0.01em]">Analyse rapide</span>
+            <span className="text-[13px] font-semibold text-th-text-1 tracking-[-0.01em]">Analyse rapide</span>
           </div>
           {liveUpdating && (
             <div className="flex items-center gap-1.5">
               <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] text-zinc-600 font-mono">calcul en cours…</span>
+              <span className="text-[10px] text-th-text-3 font-mono">calcul en cours…</span>
             </div>
           )}
         </div>
@@ -236,16 +236,16 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
 
           {/* Localisation */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
+            <label className="text-[11px] font-semibold text-th-text-3 uppercase tracking-widest">
               Ville / Adresse
             </label>
-            <div className="rounded-xl border border-white/[0.08] bg-[#111113] hover:border-white/[0.14] transition-colors focus-within:border-emerald-500/50 focus-within:bg-[#0f1f18]">
+            <div className="rounded-xl border border-th-border bg-th-surface hover:border-th-border-med transition-colors focus-within:border-emerald-500/50 focus-within:bg-emerald-500/[0.06]">
               <AddressInput
                 value={adresseText}
                 onSelect={handleAddress}
                 onChangeText={setAdresseText}
                 placeholder="Lyon, Paris 11e, Bordeaux…"
-                className="w-full bg-transparent px-3.5 py-3 text-[15px] text-white outline-none placeholder:text-zinc-700"
+                className="w-full bg-transparent px-3.5 py-3 text-[15px] text-th-text-1 outline-none placeholder:text-th-text-3"
               />
             </div>
           </div>
@@ -273,7 +273,7 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
               tooltipExample="Ex : 42 m² pour un T2"
             />
             <div className="flex flex-col gap-1.5">
-              <label className="flex items-center gap-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
+              <label className="flex items-center gap-1 text-[11px] font-semibold text-th-text-3 uppercase tracking-widest">
                 Loyer mensuel
                 <Tooltip
                   content="Loyer charges comprises que vous prévoyez de percevoir. Pour le meublé, ajoutez environ 15-20% vs le nu."
@@ -290,14 +290,14 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
                     className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 ${
                       locType === lt
                         ? 'bg-emerald-500/[0.15] text-emerald-400 border border-emerald-500/[0.25]'
-                        : 'bg-white/[0.03] text-zinc-600 border border-white/[0.06] hover:text-zinc-400'
+                        : 'bg-white/[0.03] text-th-text-3 border border-th-border hover:text-th-text-2'
                     }`}
                   >
                     {lt === 'meuble' ? 'Meublé' : 'Nu'}
                   </button>
                 ))}
               </div>
-              <div className="relative flex items-center rounded-xl border border-white/[0.08] bg-[#111113] hover:border-white/[0.14] transition-all duration-200 focus-within:border-emerald-500/50 focus-within:bg-[#0f1f18]">
+              <div className="relative flex items-center rounded-xl border border-th-border bg-th-surface hover:border-th-border-med transition-all duration-200 focus-within:border-emerald-500/50 focus-within:bg-emerald-500/[0.06]">
                 <input
                   type="text"
                   inputMode="numeric"
@@ -307,14 +307,14 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
                     setLoyer(isNaN(v) ? 0 : v)
                   }}
                   placeholder="750"
-                  className="flex-1 bg-transparent px-3.5 py-3 text-[16px] font-semibold text-white tabular-nums outline-none placeholder:text-zinc-700"
+                  className="flex-1 bg-transparent px-3.5 py-3 text-[16px] font-semibold text-th-text-1 tabular-nums outline-none placeholder:text-th-text-3"
                   style={{ letterSpacing: '-0.02em' }}
                 />
-                <span className="pr-3.5 text-[13px] text-zinc-500 select-none">€/mois</span>
+                <span className="pr-3.5 text-[13px] text-th-text-3 select-none">€/mois</span>
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="flex items-center gap-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
+              <label className="flex items-center gap-1 text-[11px] font-semibold text-th-text-3 uppercase tracking-widest">
                 TMI
                 <Tooltip
                   content="Tranche Marginale d'Imposition — le taux auquel votre dernière tranche de revenus est taxée. Détermine l'optimisation fiscale recommandée."
@@ -330,7 +330,7 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
                     className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold tabular-nums transition-all duration-200 ${
                       tmi === t
                         ? 'bg-emerald-500/[0.15] text-emerald-400 border border-emerald-500/[0.25]'
-                        : 'bg-white/[0.03] text-zinc-600 border border-white/[0.06] hover:text-zinc-400'
+                        : 'bg-white/[0.03] text-th-text-3 border border-th-border hover:text-th-text-2'
                     }`}
                   >
                     {t}%
@@ -361,15 +361,15 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
                 sub="par mois"
                 tone={cfTone}
               />
-              <div className={`flex flex-col items-center justify-center px-4 py-3.5 rounded-xl border bg-white/[0.03] border-white/[0.08]`}>
+              <div className={`flex flex-col items-center justify-center px-4 py-3.5 rounded-xl border bg-white/[0.03] border-th-border`}>
                 <ScoreRing score={liveResult.score} />
               </div>
             </div>
 
             {/* Rend net net */}
-            <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-th-border bg-white/[0.02]">
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-zinc-600">Rendement net net</span>
+                <span className="text-[11px] text-th-text-3">Rendement net net</span>
                 <Tooltip content="Rendement après toutes charges, impôts et prélèvements sociaux, dans le régime fiscal le plus avantageux pour votre situation." />
               </div>
               <span className={`text-[15px] font-bold tabular-nums ${liveResult.rendNetNet >= 5 ? 'text-emerald-400' : liveResult.rendNetNet >= 3 ? 'text-amber-400' : 'text-red-400'}`} style={{ letterSpacing: '-0.03em' }}>
@@ -379,23 +379,23 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
 
             {/* Disclaimer charges par défaut */}
             <div className="flex items-center gap-1.5 px-1">
-              <svg className="w-3 h-3 text-zinc-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-3 h-3 text-th-text-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-[10px] text-zinc-700">Estimé avec charges par défaut — affinez en mode Expert</span>
+              <span className="text-[10px] text-th-text-3">Estimé avec charges par défaut — affinez en mode Expert</span>
             </div>
 
             {/* CTA Expert */}
             <button
               type="button"
               onClick={() => onSwitchExpert({ ...params, tmi, locType })}
-              className="w-full group flex items-center justify-between px-4 py-3.5 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.14] transition-all duration-200"
+              className="w-full group flex items-center justify-between px-4 py-3.5 rounded-xl border border-th-border bg-white/[0.02] hover:bg-white/[0.05] hover:border-th-border-med transition-all duration-200"
             >
               <div className="text-left">
-                <p className="text-[13px] font-semibold text-zinc-200">Analyse complète</p>
-                <p className="text-[11px] text-zinc-600 mt-0.5">Fiscalité · Travaux · Financement · Marché</p>
+                <p className="text-[13px] font-semibold text-th-text-1">Analyse complète</p>
+                <p className="text-[11px] text-th-text-3 mt-0.5">Fiscalité · Travaux · Financement · Marché</p>
               </div>
-              <svg className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4 text-th-text-3 group-hover:text-th-text-2 group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </button>
@@ -404,14 +404,14 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
 
         {/* Placeholder avant premier résultat */}
         {!hasResult && params.prixAchat === 0 && (
-          <div className="flex flex-col items-center justify-center py-6 px-4 rounded-2xl border border-dashed border-white/[0.06] gap-3">
+          <div className="flex flex-col items-center justify-center py-6 px-4 rounded-2xl border border-dashed border-th-border gap-3">
             <div className="flex items-center gap-2 text-emerald-500/50">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
               </svg>
               <span className="text-[11px] font-semibold uppercase tracking-widest">Prix d'achat requis</span>
             </div>
-            <p className="text-[12px] text-zinc-700 text-center leading-relaxed">
+            <p className="text-[12px] text-th-text-3 text-center leading-relaxed">
               Saisissez le prix d'achat et le loyer pour obtenir rendement, cashflow et score instantanément.
             </p>
           </div>

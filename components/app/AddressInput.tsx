@@ -184,9 +184,9 @@ export function AddressInput({
       <div className="relative flex items-center">
         <div className="absolute left-3 pointer-events-none">
           {loading ? (
-            <div className="w-3.5 h-3.5 border-[1.5px] border-zinc-600/40 border-t-emerald-400 rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-[1.5px] border-th-border-med border-t-emerald-400 rounded-full animate-spin" />
           ) : (
-            <svg className="w-3.5 h-3.5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-3.5 h-3.5 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
@@ -243,7 +243,7 @@ export function AddressInput({
                   </p>
                   <p className="text-[10px] text-th-text-3 mt-0.5 flex items-center gap-1.5">
                     <span className="text-th-text-3">{typeLabel(s.type)}</span>
-                    <span className="w-0.5 h-0.5 rounded-full bg-zinc-700" />
+                    <span className="w-0.5 h-0.5 rounded-full bg-th-surface3" />
                     <span>{s.context}</span>
                   </p>
                 </div>

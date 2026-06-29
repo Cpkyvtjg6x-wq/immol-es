@@ -36,14 +36,14 @@ export function Progress({
 
   return (
     <div className={cn('w-full', className)} {...props}>
-      <div className={cn('w-full bg-zinc-800 rounded-full overflow-hidden', sizes[size])}>
+      <div className={cn('w-full bg-th-surface2 rounded-full overflow-hidden', sizes[size])}>
         <div
           className={cn('h-full rounded-full transition-all duration-700 ease-out', colors[color])}
           style={{ width: `${pct}%` }}
         />
       </div>
       {showLabel && (
-        <div className="mt-1 text-right text-xs text-zinc-500">{Math.round(pct)}%</div>
+        <div className="mt-1 text-right text-xs text-th-text-3">{Math.round(pct)}%</div>
       )}
     </div>
   )

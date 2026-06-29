@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Stripe from 'stripe'
 import { BrandLogo } from '@/components/app/BrandLogo'
+import { ForceDark } from '@/components/app/ForceDark'
 
 /**
  * Page d'atterrissage après un Stripe Checkout réussi.
@@ -100,6 +101,7 @@ export default async function CheckoutSuccessPage({
 
   return (
     <div className="min-h-screen bg-th-bg relative overflow-hidden">
+      <ForceDark />
       {/* Aurora background */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl" />

@@ -12,7 +12,7 @@ export function Badge({ className, variant = 'zinc', size = 'md', children, ...p
     indigo: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
     amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
     red: 'bg-red-500/10 text-red-400 border-red-500/20',
-    zinc: 'bg-zinc-800 text-zinc-400 border-zinc-700',
+    zinc: 'bg-th-surface2 text-th-text-2 border-th-border-med',
     blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   }
 

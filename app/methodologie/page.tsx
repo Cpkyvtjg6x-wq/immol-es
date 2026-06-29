@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Navbar } from '@/components/landing/Navbar'
+import { ForceDark } from '@/components/app/ForceDark'
 import { SOURCES, SOURCE_TYPE_LABELS, DERNIERE_MAJ_DONNEES, type SourceType } from '@/lib/sources'
 import {
   IconBuildingLibrary, IconChartBar, IconScale, IconCheckCircle, IconExclamationTriangle, IconHome,
@@ -40,6 +41,7 @@ const CALCULS: { titre: string; desc: string; Icon: React.FC<{ className?: strin
 export default function MethodologiePage() {
   return (
     <div className="min-h-screen bg-th-bg text-th-text-1">
+      <ForceDark />
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-6 pt-28 pb-24">

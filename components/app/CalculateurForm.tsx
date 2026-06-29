@@ -54,10 +54,10 @@ function SectionBubble({
     'rgba(255,255,255,0.08)'
 
   const cardBorder =
-    open ? 'border-white/[0.10] bg-[#111113]' :
-    status === 'complete' ? 'border-emerald-500/20 bg-[#0d1a14]' :
-    status === 'in_progress' ? 'border-amber-500/15 bg-[#18140a]' :
-    'border-white/[0.06] bg-[#0c0c0e]'
+    open ? 'border-th-border-med bg-th-surface' :
+    status === 'complete' ? 'border-emerald-500/20 bg-emerald-500/[0.06]' :
+    status === 'in_progress' ? 'border-amber-500/15 bg-amber-500/[0.06]' :
+    'border-th-border bg-th-bg'
 
   const cardShadow =
     open
@@ -860,7 +860,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
     <form onSubmit={(e) => e.preventDefault()} className="flex flex-col h-full">
 
       {/* ─── Progression globale — sticky, toujours visible ──────────────── */}
-      <div className="shrink-0 border-b border-white/[0.06] bg-black/80 backdrop-blur-sm">
+      <div className="shrink-0 border-b border-th-border bg-th-bg/80 backdrop-blur-sm">
         <FormProgress sectionInfos={sectionInfos} onCollapse={onCollapse} />
       </div>
 
@@ -1960,7 +1960,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
                               }`}
                             >
                               <div className="flex items-center gap-2">
-                                <div className={`w-3 h-3 rounded-full border-2 shrink-0 ${p.venteStrategy === opt.v ? 'bg-amber-400 border-amber-400' : 'border-zinc-600'}`} />
+                                <div className={`w-3 h-3 rounded-full border-2 shrink-0 ${p.venteStrategy === opt.v ? 'bg-amber-400 border-amber-400' : 'border-th-border-med'}`} />
                                 <span className={`text-[11px] font-semibold ${p.venteStrategy === opt.v ? 'text-amber-300' : 'text-th-text-2'}`}>{opt.label}</span>
                               </div>
                               <p className="text-[10px] text-th-text-3 mt-0.5 ml-5">{opt.desc}</p>
@@ -2667,7 +2667,7 @@ export function CalculateurForm({ onCalculate, onChange, onReset, onCollapse, in
       </div>
 
       {/* ─── Footer — live indicator + reset ─────────────────────────────────── */}
-      <div className="shrink-0 px-4 py-1.5 border-t border-white/[0.06] bg-black/80 backdrop-blur-xl">
+      <div className="shrink-0 px-4 py-1.5 border-t border-th-border bg-th-bg/80 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 shrink-0" />

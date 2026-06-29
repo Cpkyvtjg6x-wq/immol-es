@@ -1,15 +1,11 @@
 'use client'
 
-import { createContext, useContext, useEffect } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 
 /**
  * Thème custom — sans next-themes.
- *
- * ⚠️ v1 DARK-ONLY : le mode clair est temporairement désactivé. Les primitives UI
- * (Input/Select/Card/Button/Toast/Tooltip) et QuickAnalyse sont encore câblées en
- * dark en dur → en mode clair le rendu est cassé. On force donc le thème sombre et
- * on neutralise tout `.light` résiduel (utilisateur qui avait activé le clair avant).
- * Réactiver le toggle une fois la refonte tokens faite (cf. plan Phase 2).
+ * :root = dark (défaut), .light = mode clair. Le script <head> de layout.tsx pose
+ * .light avant le 1er pixel (anti-FOUC) ; ce provider lit l'état réel du DOM.
  */
 
 type Theme = 'dark' | 'light'
@@ -27,20 +23,22 @@ const ThemeContext = createContext<ThemeContextValue>({
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // v1 dark-only : on neutralise tout `.light` posé par une session précédente.
+  const [theme, setThemeState] = useState<Theme>('dark')
+
   useEffect(() => {
-    document.documentElement.classList.remove('light')
-    try { localStorage.removeItem('theme') } catch {}
+    const current = document.documentElement.classList.contains('light') ? 'light' : 'dark'
+    setThemeState(current)
   }, [])
 
-  // No-op tant que le mode clair n'est pas refait : toute tentative de bascule
-  // retombe sur le dark (et retire un éventuel `.light`).
-  const setTheme = (_t: Theme) => {
-    document.documentElement.classList.remove('light')
+  const setTheme = (t: Theme) => {
+    setThemeState(t)
+    try { localStorage.setItem('theme', t) } catch {}
+    if (t === 'light') document.documentElement.classList.add('light')
+    else document.documentElement.classList.remove('light')
   }
 
   return (
-    <ThemeContext.Provider value={{ theme: 'dark', resolvedTheme: 'dark', setTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme: theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   )

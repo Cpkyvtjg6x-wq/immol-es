@@ -330,7 +330,7 @@ function FriseAbattements({ ans }: { ans: number }) {
               transform: `translateX(${xShift(m.align)})`,
             }}
           >
-            <div className={`w-px h-2 mb-0.5 mx-auto ${m.noteColor ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
+            <div className={`w-px h-2 mb-0.5 mx-auto ${m.noteColor ? 'bg-emerald-500' : 'bg-th-surface3'}`} />
             <span className={`text-[10px] whitespace-nowrap font-medium ${m.noteColor ?? 'text-th-text-2'}`}>
               {m.label}
             </span>
@@ -760,7 +760,7 @@ export default function ReventePage() {
                   className="w-full flex items-center justify-between px-6 py-4 hover:bg-th-surface transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${params.showTRI ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                    <div className={`w-2 h-2 rounded-full ${params.showTRI ? 'bg-emerald-400' : 'bg-th-surface3'}`} />
                     <h2 className="text-sm font-bold text-th-text-1">Rentabilité globale de l&apos;opération</h2>
                     <span className="text-[11px] text-th-text-2 font-medium">Optionnel</span>
                   </div>

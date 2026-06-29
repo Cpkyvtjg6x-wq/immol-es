@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Navbar } from '@/components/landing/Navbar'
+import { ForceDark } from '@/components/app/ForceDark'
 import { IconBriefcase, IconSparkles, IconBolt, IconRocket, IconCheckCircle } from '@/components/ui/icons'
 
 export default function ContactPage() {
@@ -21,6 +22,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-th-bg text-th-text-1">
+      <ForceDark />
       <Navbar />
 
       <div className="max-w-5xl mx-auto px-6 pt-28 pb-20">

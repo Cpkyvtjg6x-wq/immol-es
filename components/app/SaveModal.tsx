@@ -64,7 +64,7 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-7 h-7 rounded-lg bg-th-surface2 hover:bg-th-surface3 flex items-center justify-center text-th-text-2 hover:text-white transition-colors"
+          className="absolute top-4 right-4 w-7 h-7 rounded-lg bg-th-surface2 hover:bg-th-surface3 flex items-center justify-center text-th-text-2 hover:text-th-text-1 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -112,7 +112,7 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
               </button>
               <button
                 onClick={() => router.push('/auth/login')}
-                className="w-full py-2 text-sm text-th-text-2 hover:text-white transition-colors"
+                className="w-full py-2 text-sm text-th-text-2 hover:text-th-text-1 transition-colors"
               >
                 J'ai déjà un compte → Connexion
               </button>
@@ -133,13 +133,13 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
             <div className="flex gap-2">
               <button
                 onClick={onClose}
-                className="flex-1 py-2 text-sm text-th-text-2 hover:text-white border border-th-border-med rounded-xl transition-colors"
+                className="flex-1 py-2 text-sm text-th-text-2 hover:text-th-text-1 border border-th-border-med rounded-xl transition-colors"
               >
                 Continuer l'analyse
               </button>
               <button
                 onClick={() => router.push('/dashboard')}
-                className="flex-1 py-2 text-sm font-semibold bg-white text-zinc-950 rounded-xl hover:bg-zinc-100 transition-colors"
+                className="flex-1 py-2 text-sm font-semibold bg-th-surface3 text-th-text-1 rounded-xl hover:bg-th-surface2 transition-colors"
               >
                 Voir le dashboard
               </button>
@@ -175,7 +175,7 @@ export function SaveModal({ isOpen, onClose, isLoggedIn, result, score, params, 
             <div className="flex gap-2">
               <button
                 onClick={onClose}
-                className="flex-1 py-2 text-sm text-th-text-2 hover:text-white border border-th-border-med rounded-xl transition-colors"
+                className="flex-1 py-2 text-sm text-th-text-2 hover:text-th-text-1 border border-th-border-med rounded-xl transition-colors"
               >
                 Annuler
               </button>

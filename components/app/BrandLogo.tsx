@@ -21,7 +21,7 @@ export function BrandLogo({ size = 26, textSize = 18 }: { size?: number; textSiz
   return (
     <span className="flex items-center gap-2.5">
       <BrandMark size={size} />
-      <span className="select-none text-white" style={{ fontSize: textSize, fontWeight: 600, letterSpacing: '-0.035em' }}>
+      <span className="select-none text-th-text-1" style={{ fontSize: textSize, fontWeight: 600, letterSpacing: '-0.035em' }}>
         Immora
       </span>
     </span>

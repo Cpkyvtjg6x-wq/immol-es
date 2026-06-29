@@ -9,13 +9,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, disabled, children, ...props }, ref) => {
-    const base = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-950 disabled:opacity-50 disabled:pointer-events-none'
+    const base = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-th-bg disabled:opacity-50 disabled:pointer-events-none'
 
     const variants = {
       primary: 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 focus:ring-emerald-500/50',
       secondary: 'bg-indigo-500 hover:bg-indigo-400 text-white focus:ring-indigo-500 shadow-lg shadow-indigo-500/20',
-      ghost: 'bg-transparent hover:bg-zinc-800 text-zinc-300 hover:text-white focus:ring-zinc-700',
-      outline: 'border border-zinc-700 hover:border-zinc-500 bg-transparent text-zinc-300 hover:text-white focus:ring-zinc-700',
+      ghost: 'bg-transparent hover:bg-th-surface2 text-th-text-2 hover:text-th-text-1 focus:ring-th-border-med',
+      outline: 'border border-th-border-med hover:border-th-border-med bg-transparent text-th-text-2 hover:text-th-text-1 focus:ring-th-border-med',
       danger: 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 focus:ring-red-500',
     }
 

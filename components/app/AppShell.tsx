@@ -50,7 +50,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
   const { simulations } = useSimulations(deferredUserId)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [tagsExpanded, setTagsExpanded] = useState(false)
-  const { theme } = useTheme()
+  const { theme, setTheme } = useTheme()
   const isDark = theme === 'dark'
 
   const firstName =
@@ -229,7 +229,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
                 onClick={() => router.push('/#pricing')}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:border-emerald-500/30 transition-all group"
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
+                <div className="w-1.5 h-1.5 rounded-full bg-th-surface3" />
                 <span className="text-[11px] font-semibold text-th-sidebar-text-2 group-hover:text-th-sidebar-text-1">Gratuit</span>
                 <span className="ml-auto text-[10px] font-bold text-emerald-500 group-hover:text-emerald-400">Pro</span>
               </button>
@@ -287,7 +287,7 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
                       : 'text-th-sidebar-text-2 hover:text-th-sidebar-text-1 hover:bg-white/[0.03]'
                   }`}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-th-surface3 shrink-0" />
                   <span className="flex-1">Tous</span>
                   <span className="text-[10px] text-th-sidebar-text-2 tabular-nums mr-1">{simulations.length}</span>
                   {/* Chevron rotatif */}
@@ -393,8 +393,23 @@ export function AppShell({ children, activeTag, onTagFilter, customTags = [], on
 
         {/* User footer */}
         <div className="p-2 shrink-0 space-y-0.5" style={{ borderTop: '1px solid var(--c-sidebar-border)' }}>
-          {/* Theme toggle retiré — v1 dark-only (cf. ThemeProvider). À réactiver
-              après la refonte tokens du mode clair. */}
+          {/* Theme toggle */}
+          <div className="flex items-center justify-between px-3 py-1.5">
+            <span className="text-[10px] font-semibold text-th-sidebar-text-1 uppercase tracking-widest">
+              {isDark ? 'Mode sombre' : 'Mode clair'}
+            </span>
+            <button
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              className="relative w-9 h-5 rounded-full transition-colors duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+              style={{ background: isDark ? '#27272a' : '#50505a' }}
+              aria-label="Basculer le thème"
+            >
+              <span
+                className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-250"
+                style={{ transform: isDark ? 'translateX(0)' : 'translateX(16px)' }}
+              />
+            </button>
+          </div>
           {user ? (
             <>
               <div className="flex items-center gap-1 px-1 pb-1">

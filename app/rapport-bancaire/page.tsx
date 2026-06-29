@@ -1141,7 +1141,7 @@ export default function RapportBancairePage() {
                       <span className={`text-[10px] font-bold ${pct === 100 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-th-text-2'}`}>{checked}/{docsList.length}</span>
                     </div>
                     <div className="w-full bg-th-surface3 rounded-full h-1 mb-3">
-                      <div className={`h-1 rounded-full transition-all ${pct === 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-zinc-600'}`} style={{ width: `${pct}%` }} />
+                      <div className={`h-1 rounded-full transition-all ${pct === 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-th-surface3'}`} style={{ width: `${pct}%` }} />
                     </div>
                     <div className="space-y-0.5 max-h-64 overflow-y-auto pr-1">
                       {docsList.map((doc, i) => {
@@ -1150,7 +1150,7 @@ export default function RapportBancairePage() {
                         return (
                           <button key={key} onClick={() => toggleDoc(key)}
                             className="w-full flex items-start gap-2 py-1.5 text-left hover:bg-th-surface rounded-lg px-1 transition-colors">
-                            <div className={`w-3.5 h-3.5 rounded shrink-0 mt-0.5 border transition-all flex items-center justify-center ${isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'}`}>
+                            <div className={`w-3.5 h-3.5 rounded shrink-0 mt-0.5 border transition-all flex items-center justify-center ${isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-th-border-med'}`}>
                               {isChecked && <svg className="w-2 h-2 text-zinc-950" fill="none" viewBox="0 0 10 10" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M1.5 5l2.5 2.5 4.5-4.5" /></svg>}
                             </div>
                             <span className={`text-[10.5px] leading-relaxed ${isChecked ? 'text-th-text-3 line-through' : 'text-th-text-2'}`}>{doc}</span>

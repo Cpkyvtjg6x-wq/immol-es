@@ -124,7 +124,7 @@ export function KpiGrid({ result, netNetYield, netNetRegime, params }: KpiGridPr
     <div className="space-y-2.5">
 
       {/* ── Hero row — 3 métriques principales ────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         <HeroCard
           label="Rendement net"
           value={formatPct(result.rendementNet)}
@@ -166,7 +166,7 @@ export function KpiGrid({ result, netNetYield, netNetRegime, params }: KpiGridPr
       </div>
 
       {/* ── Secondary row — 6 métriques compactes ─────────────────────────── */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         <MiniCard
           label="TRI (20 ans)"
           value={tri > 0 ? `${tri.toFixed(1)} %` : '—'}

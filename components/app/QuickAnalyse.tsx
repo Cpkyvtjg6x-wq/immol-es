@@ -250,8 +250,8 @@ export function QuickAnalyse({ onChange, onSwitchExpert, initialParams, liveResu
             </div>
           </div>
 
-          {/* Grille 2 col */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Grille 2 col (empilée sur mobile → boutons TMI lisibles) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <QInput
               label="Prix d'achat"
               value={params.prixAchat}

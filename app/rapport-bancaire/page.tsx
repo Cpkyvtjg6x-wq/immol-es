@@ -444,7 +444,7 @@ export default function RapportBancairePage() {
             </div>
           )}
 
-          <div className="grid grid-cols-[1fr_340px] gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
 
             {/* ── Colonne gauche : formulaire ── */}
             <div className="space-y-6">
@@ -453,7 +453,7 @@ export default function RapportBancairePage() {
               {hasData && result && (
                 <section className="bg-th-surface border border-th-border rounded-2xl p-5">
                   <h2 className="text-xs font-bold text-th-text-2 uppercase tracking-widest mb-4">Données du calculateur</h2>
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
                       { label: 'Prix d\'achat', value: fE(params.prixAchat) },
                       { label: 'Mensualité', value: fE(result.mensualiteTotale) + '/mois' },
@@ -715,7 +715,7 @@ export default function RapportBancairePage() {
               {/* ── Structure d'acquisition ── */}
               <section className="bg-th-surface border border-th-border rounded-2xl p-5">
                 <h2 className="text-xs font-bold text-th-text-2 uppercase tracking-widest mb-4">Structure d'acquisition</h2>
-                <div className="grid grid-cols-5 gap-2 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-4">
                   {(['nom-propre', 'sci-ir', 'sci-is', 'sarl-famille', 'holding-sci'] as const).map(mode => (
                     <button key={mode} onClick={() => updateProfile('modeAcquisition', mode)}
                       className={`px-3 py-2.5 rounded-lg text-[11px] font-semibold border transition-all text-center ${

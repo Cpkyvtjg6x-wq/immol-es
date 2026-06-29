@@ -225,7 +225,7 @@ function FiscaliteTab({
 
   if (!fiscalResults || fiscalResults.length === 0) {
     return (
-      <div className="py-24 text-center space-y-5 px-8">
+      <div className="py-24 text-center space-y-5 px-4 sm:px-8">
         <div className="w-14 h-14 rounded-2xl bg-th-surface2 border border-th-border flex items-center justify-center mx-auto">
           <svg className="w-7 h-7 text-th-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -272,7 +272,7 @@ function FiscaliteTab({
       {/* ════════════════════════════════════════════════════════════════════ */}
       {/* ZONE 0 — Comparaison des structures d'acquisition                     */}
       {/* ════════════════════════════════════════════════════════════════════ */}
-      <div className="border-b border-th-border px-8 py-8">
+      <div className="border-b border-th-border px-4 sm:px-8 py-8">
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-[13px] font-bold text-th-text-1 uppercase tracking-widest">Structure d&apos;acquisition</h3>
           <span className="text-[10px] text-th-text-3">location {locLabel} · TMI {params.tmi}%</span>
@@ -336,7 +336,7 @@ function FiscaliteTab({
       {/* ════════════════════════════════════════════════════════════════════ */}
       {/* ZONE A — Hero régime recommandé (pleine largeur, bulle avec contour) */}
       {/* ════════════════════════════════════════════════════════════════════ */}
-      <div className="border-b border-th-border px-8 py-10">
+      <div className="border-b border-th-border px-4 sm:px-8 py-10">
         {/* Header badge */}
         <div className="flex items-center gap-3 mb-7">
           <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/[0.14] px-3.5 py-1.5">
@@ -353,8 +353,8 @@ function FiscaliteTab({
         </div>
 
         {/* Card principale — bulle avec contour */}
-        <div className="rounded-2xl border border-emerald-500/20 bg-th-surface p-8">
-          <div className="flex items-start gap-12">
+        <div className="rounded-2xl border border-emerald-500/20 bg-th-surface p-5 sm:p-8">
+          <div className="flex flex-col md:flex-row items-start gap-6 md:gap-12">
 
             {/* Gauche */}
             <div className="flex-1 min-w-0 space-y-4">
@@ -453,11 +453,11 @@ function FiscaliteTab({
       {/* ZONE A.5 — Avant / Après (si >= 2 régimes éligibles)               */}
       {/* ════════════════════════════════════════════════════════════════════ */}
       {sorted.length >= 2 && economieImpot > 0 && (
-        <div className="border-b border-th-border px-8 py-8">
+        <div className="border-b border-th-border px-4 sm:px-8 py-8">
           <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider mb-5">
             Impact de l&apos;optimisation fiscale — Avant / Après
           </p>
-          <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-stretch">
 
             {/* Avant — pire régime */}
             <div className="rounded-2xl border border-red-500/15 bg-red-500/[0.02] p-5 space-y-4">
@@ -542,7 +542,7 @@ function FiscaliteTab({
       <div className="border-b border-th-border">
 
         {/* Label section */}
-        <div className="px-8 pt-8 pb-5 flex items-center justify-between">
+        <div className="px-4 sm:px-8 pt-8 pb-5 flex items-center justify-between">
           <div>
             <p className="text-[13px] font-semibold text-th-text-1">
               Comparatif des {sorted.length} régimes éligibles
@@ -552,7 +552,7 @@ function FiscaliteTab({
         </div>
 
         {/* Barres horizontales + sélecteur */}
-        <div className="px-8 pb-8 space-y-2">
+        <div className="px-4 sm:px-8 pb-8 space-y-2">
           {sorted.map((r, i) => {
             const isBest = i === 0
             const isSelected = r.id === (selectedId ?? best.id)
@@ -636,7 +636,7 @@ function FiscaliteTab({
       {/* ZONE C — Fiche détaillée du régime sélectionné                     */}
       {/* ════════════════════════════════════════════════════════════════════ */}
       {selected && (
-        <div className="px-8 py-8 space-y-6">
+        <div className="px-4 sm:px-8 py-8 space-y-6">
 
           {/* Titre fiche — bulle avec contour */}
           <div className="rounded-2xl border border-th-border-med bg-th-surface p-6">
@@ -667,7 +667,7 @@ function FiscaliteTab({
           </div>
 
           {/* 4 métriques fiscales */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Revenu imposable', value: formatCurrency(selected.revImposable), color: 'text-th-text-1', sub: 'Base de calcul' },
               { label: 'Impôt sur le revenu', value: formatCurrency(selected.impot), color: 'text-red-400', sub: `TMI ${params.tmi}%` },
@@ -690,7 +690,7 @@ function FiscaliteTab({
               <p className="text-[12px] font-semibold text-th-text-2 uppercase tracking-wider">
                 Mise en place — étapes concrètes
               </p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {selectedExpl.pratique.map((step, i) => (
                   <div key={i} className="flex items-start gap-3 rounded-xl bg-th-surface border border-th-border px-4 py-3.5">
                     <div className="w-7 h-7 rounded-full bg-blue-500/15 border border-blue-500/25 flex items-center justify-center shrink-0 mt-0.5">
@@ -708,7 +708,7 @@ function FiscaliteTab({
 
       {/* Régimes non éligibles */}
       {disabled.length > 0 && (
-        <div className="px-8 pb-8 border-t border-th-border pt-6">
+        <div className="px-4 sm:px-8 pb-8 border-t border-th-border pt-6">
           <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-wider mb-3">
             Non disponibles dans votre situation
           </p>
@@ -781,7 +781,7 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
     <div className="space-y-6">
 
       {/* ── 3 métriques crédit ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           {
             label: 'Mensualité totale',
@@ -850,7 +850,7 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
             <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-wider mb-4">
               Impact sur le rendement brut
             </p>
-            <div className="grid grid-cols-3 items-center gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-4">
 
               {/* Sans travaux */}
               <div className="rounded-xl border border-th-border bg-th-surface p-4 text-center">

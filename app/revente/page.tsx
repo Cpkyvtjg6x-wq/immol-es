@@ -501,7 +501,7 @@ export default function ReventePage() {
       <div className="min-h-screen bg-th-bg text-th-text-1">
 
         {/* Top bar */}
-        <div className="border-b border-th-border px-8 py-5 flex items-center justify-between">
+        <div className="border-b border-th-border px-4 sm:px-8 py-5 flex items-center justify-between">
           <div>
             <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-widest mb-0.5">Outils</p>
             <h1 className="text-xl font-black text-th-text-1" style={{ letterSpacing: '-0.03em' }}>
@@ -527,7 +527,7 @@ export default function ReventePage() {
           </div>
         </div>
 
-        <div className="px-8 py-8 max-w-6xl">
+        <div className="px-4 sm:px-8 py-8 max-w-6xl">
           <div className="grid lg:grid-cols-[1fr_420px] gap-8 items-start">
 
             {/* ── Formulaire ── */}
@@ -610,7 +610,7 @@ export default function ReventePage() {
                         <p className="text-[11px] text-amber-400 mt-1">Sélectionnez un mois et une année complets</p>
                       ) : null}
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <NumInput
                         label="Solde du crédit"
                         value={params.capitalRestantDu}

@@ -370,7 +370,7 @@ export default function ComparerPage() {
       <div className="min-h-screen bg-th-bg text-th-text-1">
 
         {/* Top bar */}
-        <div className="border-b border-th-border px-8 py-5 flex items-center justify-between">
+        <div className="border-b border-th-border px-4 sm:px-8 py-5 flex items-center justify-between">
           <div>
             <p className="text-[11px] font-semibold text-th-text-3 uppercase tracking-widest mb-0.5">
               Outils Pro
@@ -390,7 +390,7 @@ export default function ComparerPage() {
           </Link>
         </div>
 
-        <div className="px-8 py-8 space-y-8 max-w-7xl">
+        <div className="px-4 sm:px-8 py-8 space-y-8 max-w-7xl">
 
           {/* Intro */}
           <div className="rounded-xl border border-blue-500/15 bg-blue-500/[0.04] px-5 py-4">
@@ -425,7 +425,7 @@ export default function ComparerPage() {
                 <p className="text-[11px] font-semibold text-th-text-2 uppercase tracking-widest mb-4">
                   Choisir les biens à comparer
                 </p>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[0, 1, 2].map(i => (
                     <SimSelector
                       key={i}

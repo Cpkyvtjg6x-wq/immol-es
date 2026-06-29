@@ -137,15 +137,15 @@ export function MarketContextBlock({ data, surface, prixAchat, loading }: Props)
       </div>
 
       {/* ── Métriques principales ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-0 border-b border-th-border">
-        <div className="px-5 py-4 border-r border-th-border">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 border-b border-th-border">
+        <div className="px-5 py-4 border-b sm:border-b-0 sm:border-r border-th-border">
           <Metric
             label="Prix médian/m²"
             value={`${data.prixM2Median.toLocaleString('fr-FR')} €`}
             sub={`Fourchette ${data.prixM2Min.toLocaleString('fr-FR')}–${data.prixM2Max.toLocaleString('fr-FR')} €`}
           />
         </div>
-        <div className="px-5 py-4 border-r border-th-border">
+        <div className="px-5 py-4 border-b sm:border-b-0 sm:border-r border-th-border">
           <Metric
             label="Loyer estimé"
             value={`${data.loyerEstimeTotal} €/mois`}
@@ -163,7 +163,7 @@ export function MarketContextBlock({ data, surface, prixAchat, loading }: Props)
       </div>
 
       {/* ── Positionnement + tension ─────────────────────────────────────────── */}
-      <div className="px-5 py-4 grid grid-cols-2 gap-6 border-b border-th-border">
+      <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-6 border-b border-th-border">
 
         {/* Positionnement prix d'achat */}
         <div className="space-y-2.5">

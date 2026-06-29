@@ -319,8 +319,16 @@ function BtnGroup({
   onChange: (v: string) => void
   cols?: number
 }) {
+  // Colonnes desktop = cols (ou nb d'options) ; sur petit écran on plafonne à 3
+  // pour éviter des boutons illisibles (ex. 5 tranches de TMI). Variable CSS +
+  // variantes Tailwind → desktop strictement identique, repli mobile only.
+  const nCols = cols ?? options.length
+  const nColsMobile = Math.min(nCols, 3)
   return (
-    <div className={`grid gap-1`} style={{ gridTemplateColumns: `repeat(${cols ?? options.length}, 1fr)` }}>
+    <div
+      className="grid gap-1 grid-cols-[repeat(var(--bg-cols-m),minmax(0,1fr))] sm:grid-cols-[repeat(var(--bg-cols),minmax(0,1fr))]"
+      style={{ '--bg-cols': nCols, '--bg-cols-m': nColsMobile } as React.CSSProperties}
+    >
       {options.map((o) => (
         <button
           key={o.value}
@@ -393,11 +401,11 @@ function ToggleRow({
 }
 
 function Row2({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-2 gap-3">{children}</div>
+  return <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{children}</div>
 }
 
 function Row3({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-3 gap-2.5">{children}</div>
+  return <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">{children}</div>
 }
 
 function Divider() {

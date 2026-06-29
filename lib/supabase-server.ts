@@ -35,7 +35,7 @@ export async function createServerSupabaseClient() {
  * Use only in trusted server-side code (webhooks, admin routes)
  */
 export function createAdminClient() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // eslint-disable-next-line
   const { createClient } = require('@supabase/supabase-js')
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

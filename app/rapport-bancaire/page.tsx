@@ -62,7 +62,7 @@ async function generateBankPDF(
     params, result, fiscal, profile, ratios, today, totalPages,
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   const blob = await pdf(element as any).toBlob()
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')

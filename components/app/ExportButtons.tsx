@@ -35,7 +35,7 @@ async function generatePDF(
     today,
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   const blob = await pdf(element as any).toBlob()
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')

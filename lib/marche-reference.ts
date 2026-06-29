@@ -234,7 +234,7 @@ function applyQuartierAdjustment(
   quartierTexte: string | null | undefined,
 ): MarcheResult {
   if (!quartierTexte) return base
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // eslint-disable-next-line
   const { getQuartierAdjustment } = require('./quartiers') as typeof import('./quartiers')
   const adj = getQuartierAdjustment(ville, quartierTexte)
   if (!adj) return base

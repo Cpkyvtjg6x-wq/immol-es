@@ -15,169 +15,120 @@ function immoraCreateWidget(source) {
 
   const widget = document.createElement('div')
   widget.id = 'immora-widget'
-  widget.innerHTML = `
+  widget.innerHTML = immoraWidgetMarkup(source)
+
+  document.body.appendChild(widget)
+  immoraSetupTabs()
+  return widget
+}
+
+function immoraWidgetMarkup(source) {
+  return `
     <div id="immora-mini" title="Ouvrir l'analyse Immora">
       <div id="immora-mini-score">…</div>
       <div id="immora-mini-text">/100</div>
     </div>
-    <div id="immora-card" class="immora-card-tier-anon">
-      <div class="immora-aurora"></div>
-
-      <!-- ═══ HEADER ═══ -->
-      <div id="immora-header">
-        <div id="immora-logo">
-          <span id="immora-logo-icon">
+    <div id="immora-card">
+      <div class="imm-header">
+        <div class="imm-logo">
+          <span class="imm-logo-mark">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
               <defs><clipPath id="immora-logo-clip"><circle cx="12" cy="12" r="9.1"/></clipPath></defs>
               <g clip-path="url(#immora-logo-clip)">
-                <path d="M 4 18 C 11 18 15 8 19 5" stroke="#4ade80" stroke-width="1.6" fill="none"/>
+                <path d="M 4 18 C 11 18 15 8 19 5" stroke="#34d399" stroke-width="1.6" fill="none"/>
                 <line x1="2" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.8"/>
               </g>
               <circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.8" fill="none" opacity="0.9"/>
             </svg>
           </span>
-          <span id="immora-logo-texts">
-            <span id="immora-logo-text">Immora</span>
-            <span id="immora-logo-sub">Analyseur · v6</span>
-          </span>
+          <span class="imm-logo-name">Immora</span>
         </div>
-        <div id="immora-header-right">
-          <div id="immora-source-badge">${source}</div>
-          <button id="immora-toggle" title="Réduire" aria-label="Réduire">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-              <path stroke-linecap="round" d="M5 12h14"/>
-            </svg>
+        <div class="imm-header-right">
+          <span class="imm-badge">${source}</span>
+          <button id="immora-toggle" class="imm-iconbtn" title="Réduire" aria-label="Réduire">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" d="M5 12h14"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- ═══ LOADING ═══ -->
-      <div id="immora-loading">
-        <div class="immo-spinner"></div>
+      <div id="immora-loading" class="imm-loading">
+        <div class="imm-spinner"></div>
         <p>Analyse en cours…</p>
       </div>
 
-      <!-- ═══ BODY ═══ -->
+      <div id="immora-error" class="imm-error" style="display:none">
+        <div class="imm-error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v5M12 16h.01"/></svg></div>
+        <p id="immora-error-msg">Impossible d'extraire les données.</p>
+        <button id="immora-retry" class="imm-retry">Réessayer</button>
+      </div>
+
+      <div class="imm-tabs" id="immora-tabs" style="display:none">
+        <div class="imm-tab is-active" data-tab="synthese">Synthèse</div>
+        <div class="imm-tab" data-tab="detail">Détail</div>
+      </div>
+
       <div id="immora-body" style="display:none">
+        <div class="imm-view is-active" data-view="synthese">
+          <div class="imm-data">
+            <span class="imm-data-dot" id="imm-data-dot"></span>
+            <span class="imm-data-label">Données extraites</span>
+            <span class="imm-data-count imm-mono" id="imm-data-count">—</span>
+            <span class="imm-data-bar"><span class="imm-data-fill" id="imm-data-fill"></span></span>
+          </div>
 
-        <!-- ⓪ DONNÉES EXTRAITES (complétude) -->
-        <div id="immora-data">
-          <span id="immora-data-dot"></span>
-          <span id="immora-data-label">Données extraites</span>
-          <span id="immora-data-count">—</span>
-          <span id="immora-data-bar"><span id="immora-data-bar-fill"></span></span>
-        </div>
+          <div class="imm-warnings" id="imm-warnings"></div>
 
-        <!-- ① SCORE + VERDICT (gros chiffre + barre fine) -->
-        <div id="immora-hero">
-          <div id="immora-hero-top">
-            <div id="immora-score-wrap"><span id="immora-score-number">—</span><span id="immora-score-max">/100</span></div>
-            <div id="immora-verdict">
-              <div id="immora-verdict-label">Analyse…</div>
-              <div id="immora-verdict-sub">—</div>
+          <div class="imm-hero">
+            <div class="imm-ring">
+              <svg width="70" height="70" viewBox="0 0 70 70">
+                <circle class="imm-ring-track" cx="35" cy="35" r="30" fill="none" stroke-width="5.5"/>
+                <circle class="imm-ring-prog" id="imm-ring-prog" cx="35" cy="35" r="30" fill="none" stroke-width="5.5" stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
+              </svg>
+              <div class="imm-ring-center"><span class="imm-ring-num" id="imm-ring-num">—</span><span class="imm-ring-max imm-mono">/100</span></div>
+            </div>
+            <div class="imm-verdict">
+              <div class="imm-verdict-label" id="imm-verdict-label">Analyse…</div>
+              <div class="imm-verdict-sub" id="imm-verdict-sub">—</div>
             </div>
           </div>
-          <span id="immora-score-bar"><span id="immora-score-bar-fill"></span></span>
-        </div>
 
-        <!-- ② STATS — grille 2×2 compacte, couleur uniquement sur la valeur -->
-        <div id="immora-stats">
-          <div class="immo-stat immo-stat-primary">
-            <span class="immo-stat-label">Cashflow / mois</span>
-            <span class="immo-stat-val" id="immo-cashflow">—</span>
-          </div>
-          <div class="immo-stat immo-stat-primary">
-            <span class="immo-stat-label">Rendement net</span>
-            <span class="immo-stat-val" id="immo-rend-net">—</span>
-          </div>
-          <div class="immo-stat">
-            <span class="immo-stat-label">Rendement brut</span>
-            <span class="immo-stat-val" id="immo-rend-brut">—</span>
-          </div>
-          <div class="immo-stat">
-            <span class="immo-stat-label">Mensualité</span>
-            <span class="immo-stat-val" id="immo-mensualite">—</span>
+          <div class="imm-kpis">
+            <div class="imm-kpi"><div class="imm-kpi-label imm-mono">Cashflow / mois</div><div class="imm-kpi-val" id="imm-kpi-cashflow">—</div></div>
+            <div class="imm-kpi"><div class="imm-kpi-label imm-mono">Rendement net</div><div class="imm-kpi-val" id="imm-kpi-rendnet">—</div></div>
+            <div class="imm-kpi"><div class="imm-kpi-label imm-mono">Rendement brut</div><div class="imm-kpi-val" id="imm-kpi-rendbrut">—</div></div>
+            <div class="imm-kpi"><div class="imm-kpi-label imm-mono">Mensualité</div><div class="imm-kpi-val" id="imm-kpi-mensualite">—</div></div>
           </div>
         </div>
 
-        <!-- ③ SOUS-SCORES (label | barre | valeur — alignés sur 1 ligne) -->
-        <div id="immora-subscores">
-          <div class="immora-sub" data-sub="rentabilite">
-            <span class="immora-sub-label">Rentabilité</span>
-            <span class="immora-sub-bar"><span class="immora-sub-fill"></span></span>
-            <span class="immora-sub-val">—</span>
+        <div class="imm-view" data-view="detail">
+          <div class="imm-section-label imm-mono">Sous-scores</div>
+          <div class="imm-subs" id="immora-subscores">
+            <div class="imm-sub" data-sub="rentabilite"><span class="imm-sub-label">Rentabilité</span><span class="imm-sub-bar"><span class="imm-sub-fill"></span></span><span class="imm-sub-val">—</span></div>
+            <div class="imm-sub" data-sub="cashflow"><span class="imm-sub-label">Cashflow</span><span class="imm-sub-bar"><span class="imm-sub-fill"></span></span><span class="imm-sub-val">—</span></div>
+            <div class="imm-sub" data-sub="fiscalite"><span class="imm-sub-label">Fiscalité</span><span class="imm-sub-bar"><span class="imm-sub-fill"></span></span><span class="imm-sub-val">—</span></div>
+            <div class="imm-sub" data-sub="marche"><span class="imm-sub-label">Marché</span><span class="imm-sub-bar"><span class="imm-sub-fill"></span></span><span class="imm-sub-val">—</span></div>
           </div>
-          <div class="immora-sub" data-sub="cashflow">
-            <span class="immora-sub-label">Cashflow</span>
-            <span class="immora-sub-bar"><span class="immora-sub-fill"></span></span>
-            <span class="immora-sub-val">—</span>
-          </div>
-          <div class="immora-sub" data-sub="fiscalite">
-            <span class="immora-sub-label">Fiscalité</span>
-            <span class="immora-sub-bar"><span class="immora-sub-fill"></span></span>
-            <span class="immora-sub-val">—</span>
-          </div>
-          <div class="immora-sub" data-sub="marche">
-            <span class="immora-sub-label">Marché</span>
-            <span class="immora-sub-bar"><span class="immora-sub-fill"></span></span>
-            <span class="immora-sub-val">—</span>
-          </div>
-        </div>
 
-        <!-- ④ OFFRE CONSEILLÉE — rangée compacte (label+détail | prix+tag) -->
-        <div id="immora-nego">
-          <div class="immo-nego-left">
-            <div class="immo-nego-label">Offre conseillée</div>
-            <div id="immora-nego-detail" class="immo-nego-detail">—</div>
+          <div class="imm-row" id="immora-nego" style="display:none">
+            <div class="imm-row-left"><div class="imm-row-label imm-mono">Offre conseillée</div><div class="imm-row-detail" id="immora-nego-detail">—</div></div>
+            <div class="imm-row-right"><div class="imm-row-value" id="immora-nego-price">—</div><div class="imm-row-meta"><span class="imm-row-eco" id="immora-nego-eco">—</span><span class="imm-tag" id="immora-nego-tag">—</span></div></div>
           </div>
-          <div class="immo-nego-right">
-            <div id="immora-nego-price" class="immo-nego-price">—</div>
-            <div class="immo-nego-row">
-              <span id="immora-nego-eco" class="immo-nego-eco">—</span>
-              <span id="immora-nego-tag" class="immo-tag-amber">—</span>
-            </div>
+
+          <div class="imm-row" id="immora-fiscal" style="display:none">
+            <div class="imm-row-left"><div class="imm-row-label imm-mono">Meilleur régime fiscal</div><div class="imm-row-name" id="immora-fiscal-name">—</div></div>
+            <div class="imm-row-right"><div class="imm-row-value" id="immora-fiscal-rend">—</div><div class="imm-row-sub">net-net</div></div>
           </div>
-        </div>
 
-        <!-- ⑤ FISCAL — rangée compacte, accent indigo -->
-        <div id="immora-fiscal">
-          <div class="immo-fiscal-left">
-            <div class="immo-fiscal-label">Meilleur régime fiscal</div>
-            <div id="immora-fiscal-name" class="immo-fiscal-name">—</div>
-          </div>
-          <div class="immo-fiscal-right">
-            <span id="immora-fiscal-rend" class="immo-fiscal-rend">—</span>
-            <span class="immo-fiscal-sub">net-net</span>
-          </div>
-        </div>
+          <div id="immora-marche"></div>
 
-        <!-- ⑥ MARCHÉ -->
-        <div id="immora-marche" style="display:none"></div>
-
-        <!-- ⑦ NOTICE -->
-        <div id="immora-notice">Loyer marché estimé · 20% apport · 3.5% · TMI 30%</div>
-
-        <!-- ⑨ CTA principal + bouton Sauver -->
-        <div id="immora-cta-row">
-          <a id="immora-cta" href="#" target="_blank" rel="noopener">
-            <span>Analyser en détail</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-            </svg>
-          </a>
+          <div class="imm-notice imm-mono" id="immora-notice">—</div>
         </div>
       </div>
 
-      <!-- ═══ ERROR ═══ -->
-      <div id="immora-error" style="display:none">
-        <div class="immo-error-icon">!</div>
-        <p id="immora-error-msg">Impossible d'extraire les données.</p>
-        <button id="immora-retry">Réessayer</button>
+      <div class="imm-cta-wrap" id="immora-cta-wrap" style="display:none">
+        <a id="immora-cta" class="imm-cta" href="#" target="_blank" rel="noopener"><span>Analyser en détail</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></a>
       </div>
     </div>`
-
-  document.body.appendChild(widget)
-  return widget
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -186,238 +137,139 @@ function immoraCreateWidget(source) {
 
 function immoraRenderResults(r) {
   const score = Math.round(r.score ?? 0)
-  const scoreColor = score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444'
 
-  // Tag de classe sur la card selon le tier (active des accents premium côté CSS)
-  const card = document.getElementById('immora-card')
-  if (card) {
-    card.classList.remove('immora-card-tier-anon', 'immora-card-tier-free', 'immora-card-tier-pro', 'immora-card-tier-business')
-    const tierClass = immoraUserTier ? `immora-card-tier-${immoraUserTier}` : 'immora-card-tier-anon'
-    card.classList.add(tierClass)
-    // Couleur de fond pilotée par le score (très subtile)
-    card.style.setProperty('--immora-score-color', scoreColor)
-  }
+  // Affichage : masquer le chargement, montrer onglets + corps + CTA
+  const setDisp = (id, d) => { const e = document.getElementById(id); if (e) e.style.display = d }
+  setDisp('immora-loading', 'none')
+  setDisp('immora-tabs', 'flex')
+  setDisp('immora-body', 'block')
+  setDisp('immora-cta-wrap', 'block')
 
-  // ── Score (gros chiffre + barre fine) — couleur appliquée plus bas (ton du verdict)
-  const scoreNumberEl = document.getElementById('immora-score-number')
-  const scoreBarFill  = document.getElementById('immora-score-bar-fill')
-  const miniScore     = document.getElementById('immora-mini-score')
-  if (scoreNumberEl) immoraAnimateNumber(scoreNumberEl, 0, score, 900)
+  const miniScore = document.getElementById('immora-mini-score')
   if (miniScore) miniScore.textContent = score
 
-  // ── Verdict — cohérent avec le CASHFLOW, pas seulement le score ──────────
-  // Un fort rendement brut peut donner un score élevé tout en ayant un cashflow
-  // négatif : on ne dit alors PAS "Excellent deal" (ce qui jurait avec le −45€
-  // rouge affiché juste à côté), mais "Très bon rendement · cashflow quasi
-  // neutre". La couleur du verdict suit cette nuance (vert / ambre / rouge).
-  const verdictLabel = document.getElementById('immora-verdict-label')
-  const verdictSub = document.getElementById('immora-verdict-sub')
-  if (verdictLabel && verdictSub) {
-    const cf = Math.round(r.cashflowMensuel ?? 0)
-    const brut = (r.rendBrut ?? 0).toFixed(1)
-    const cfStr = (cf >= 0 ? '+' : '') + cf + ' €/mois'
-    let label, sub, vColor
-    if (score >= 78) {
-      if (cf >= 30) {
-        label = 'Excellent deal'; vColor = '#10b981'
-        sub = `Cashflow ${cfStr} · ${brut}% brut`
-      } else if (cf >= -120) {
-        label = 'Très bon rendement'; vColor = '#10b981'
-        sub = `${brut}% brut · cashflow quasi neutre (${cfStr})`
-      } else {
-        label = 'Fort rendement, effort'; vColor = '#f59e0b'
-        sub = `${brut}% brut mais cashflow ${cfStr}`
-      }
-    } else if (score >= 58) {
-      if (cf >= 0) {
-        label = 'Bon deal'; vColor = '#10b981'
-        sub = `Cashflow ${cfStr} · ${brut}% brut`
-      } else if (cf >= -150) {
-        label = 'Bon deal'; vColor = '#34d399'
-        sub = `${brut}% brut · effort léger ${cfStr}`
-      } else {
-        label = 'Bon rendement'; vColor = '#f59e0b'
-        sub = `${brut}% brut · effort ${cfStr}`
-      }
-    } else if (score >= 40) {
-      label = 'Projet correct'; vColor = '#f59e0b'
-      sub = `À négocier${r.negoPct ? ` −${r.negoPct}%` : ''} · ${cfStr}`
-    } else if (score >= 22) {
-      label = 'Rentabilité limitée'; vColor = '#f59e0b'
-      sub = `Effort d'épargne ${cfStr}`
-    } else {
-      label = 'Très surévalué'; vColor = '#ef4444'
-      sub = `${cfStr} — pari sur la valorisation`
-    }
-    verdictLabel.textContent = label
-    verdictLabel.style.color = vColor
-    verdictSub.textContent = sub
-    // Couleur du verdict appliquée au score (chiffre + barre) et au mini-badge
-    if (scoreNumberEl) scoreNumberEl.style.color = vColor
-    if (scoreBarFill) {
-      scoreBarFill.style.background = vColor
-      requestAnimationFrame(() => {
-        scoreBarFill.style.transition = 'width 900ms cubic-bezier(0.16,1,0.3,1)'
-        scoreBarFill.style.width = score + '%'
-      })
-    }
-    if (miniScore) miniScore.style.color = vColor
+  // ── Verdict cohérent avec le cashflow (pas seulement le score) ──
+  const cf = Math.round(r.cashflowMensuel ?? 0)
+  const brut = (r.rendBrut ?? 0).toFixed(1)
+  const cfStr = (cf >= 0 ? '+' : '') + cf + ' €/mois'
+  let label, sub, vColor
+  if (score >= 78) {
+    if (cf >= 30) { label = 'Excellent deal'; vColor = '#34d399'; sub = `Cashflow ${cfStr} · ${brut}% brut` }
+    else if (cf >= -120) { label = 'Très bon rendement'; vColor = '#34d399'; sub = `${brut}% brut · cashflow quasi neutre (${cfStr})` }
+    else { label = 'Fort rendement, effort'; vColor = '#fbbf24'; sub = `${brut}% brut mais cashflow ${cfStr}` }
+  } else if (score >= 58) {
+    if (cf >= 0) { label = 'Bon deal'; vColor = '#34d399'; sub = `Cashflow ${cfStr} · ${brut}% brut` }
+    else if (cf >= -150) { label = 'Bon deal'; vColor = '#34d399'; sub = `${brut}% brut · effort léger ${cfStr}` }
+    else { label = 'Bon rendement'; vColor = '#fbbf24'; sub = `${brut}% brut · effort ${cfStr}` }
+  } else if (score >= 40) {
+    label = 'Projet correct'; vColor = '#fbbf24'; sub = `À négocier${r.negoPct ? ` −${r.negoPct}%` : ''} · ${cfStr}`
+  } else if (score >= 22) {
+    label = 'Rentabilité limitée'; vColor = '#fbbf24'; sub = `Effort d'épargne ${cfStr}`
+  } else {
+    label = 'Très surévalué'; vColor = '#f87171'; sub = `${cfStr} — pari sur la valorisation`
   }
 
-  // ── 4 sous-scores (label | barre | valeur sur 1 ligne) ─────────────────
-  const subScores = r.subScores ?? {}
-  document.querySelectorAll('#immora-subscores .immora-sub').forEach((el) => {
-    const key = el.dataset.sub
-    const val = Math.round(subScores[key] ?? 0)
-    const fill = el.querySelector('.immora-sub-fill')
-    const valEl = el.querySelector('.immora-sub-val')
-    if (!fill) return
-    const c = val >= 70 ? '#10b981' : val >= 50 ? '#f59e0b' : val >= 30 ? '#fb923c' : '#ef4444'
-    fill.style.background = c
-    if (valEl) {
-      valEl.textContent = val
-      valEl.style.color = c
-    }
-    requestAnimationFrame(() => {
-      fill.style.transition = 'width 900ms cubic-bezier(0.16,1,0.3,1)'
-      fill.style.width = val + '%'
-    })
-    el.title = `${val}/100`
-  })
+  // ── Anneau de score ──
+  const ringNum = document.getElementById('imm-ring-num')
+  const ringProg = document.getElementById('imm-ring-prog')
+  if (ringNum) { immoraAnimateNumber(ringNum, 0, score, 900); ringNum.style.color = vColor }
+  if (ringProg) {
+    const C = 188.5
+    ringProg.style.stroke = vColor
+    requestAnimationFrame(() => { ringProg.style.strokeDashoffset = String(C * (1 - score / 100)) })
+  }
+  const vl = document.getElementById('imm-verdict-label'); if (vl) { vl.textContent = label; vl.style.color = vColor }
+  const vs = document.getElementById('imm-verdict-sub'); if (vs) vs.textContent = sub
+  if (miniScore) miniScore.style.color = vColor
 
-  // Warnings DPE F/G
+  // ── 4 bulles KPI (couleur sur la valeur uniquement) ──
+  const kpi = (id, text, tone) => { const e = document.getElementById(id); if (e) { e.textContent = text; e.className = 'imm-kpi-val' + (tone ? ' imm-' + tone : '') } }
+  kpi('imm-kpi-cashflow', (cf >= 0 ? '+' : '') + cf + ' €', cf >= 50 ? 'green' : cf >= -100 ? 'amber' : 'red')
+  const rn = (r.rendNet ?? 0); kpi('imm-kpi-rendnet', rn.toFixed(2) + ' %', rn >= 3.5 ? 'green' : rn >= 2 ? 'amber' : 'red')
+  const rb = (r.rendBrut ?? 0); kpi('imm-kpi-rendbrut', rb.toFixed(2) + ' %', null)
+  kpi('imm-kpi-mensualite', Math.round(r.mensualite ?? 0) + ' €', null)
+
+  // ── Warnings DPE F/G ──
   immoraRenderWarnings(r.warnings ?? [])
 
-  // ── Stats — la couleur ne porte QUE sur la valeur (selon signe / seuil) ──
-  const stat = (id, text, tone) => {
-    const el = document.getElementById(id)
-    if (el) { el.textContent = text; el.className = 'immo-stat-val immo-' + tone }
-  }
-  const cfVal = Math.round(r.cashflowMensuel ?? 0)
-  stat('immo-cashflow', (cfVal >= 0 ? '+' : '') + cfVal + ' €', cfVal >= 50 ? 'green' : cfVal >= -100 ? 'amber' : 'red')
-  const rnVal = (r.rendNet ?? 0)
-  stat('immo-rend-net', rnVal.toFixed(2) + '%', rnVal >= 3.5 ? 'green' : rnVal >= 2 ? 'amber' : 'red')
-  const rbVal = (r.rendBrut ?? 0)
-  stat('immo-rend-brut', rbVal.toFixed(2) + '%', rbVal >= 5 ? 'green' : rbVal >= 3.5 ? 'amber' : 'red')
-  const mens = document.getElementById('immo-mensualite')
-  if (mens) mens.textContent = Math.round(r.mensualite ?? 0) + ' €'
+  // ── Sous-scores (Détail) ──
+  const subScores = r.subScores ?? {}
+  document.querySelectorAll('#immora-subscores .imm-sub').forEach((el) => {
+    const key = el.dataset.sub
+    const val = Math.round(subScores[key] ?? 0)
+    const fill = el.querySelector('.imm-sub-fill')
+    const valEl = el.querySelector('.imm-sub-val')
+    const c = val >= 70 ? '#34d399' : val >= 50 ? '#fbbf24' : val >= 30 ? '#fb923c' : '#f87171'
+    if (fill) { fill.style.background = c; requestAnimationFrame(() => { fill.style.width = val + '%' }) }
+    if (valEl) { valEl.textContent = val; valEl.style.color = c }
+    el.title = val + '/100'
+  })
 
-  // ── Offre conseillée — rangée compacte (plus le bloc-prix géant d'avant) ──
+  // ── Offre conseillée (Détail) ──
   if (r.prixMax) {
-    const fmt    = v => v.toLocaleString('fr-FR') + ' €'
-    const negoEl   = document.getElementById('immora-nego')
-    const tagEl    = document.getElementById('immora-nego-tag')
-    const priceEl  = document.getElementById('immora-nego-price')
-    const ecoEl    = document.getElementById('immora-nego-eco')
+    const fmt = (v) => v.toLocaleString('fr-FR') + ' €'
+    const negoEl = document.getElementById('immora-nego')
+    const tagEl = document.getElementById('immora-nego-tag')
+    const priceEl = document.getElementById('immora-nego-price')
+    const ecoEl = document.getElementById('immora-nego-eco')
     const detailEl = document.getElementById('immora-nego-detail')
-    const pct    = r.negoPct ?? 0
-    const ecoStr = fmt(r.economie ?? 0)
-    const m2Str  = r.prixM2 ? `${r.prixM2.toLocaleString('fr-FR')} €/m²` : ''
-
+    const pct = r.negoPct ?? 0
+    const m2Str = r.prixM2 ? `${r.prixM2.toLocaleString('fr-FR')} €/m²` : ''
+    if (negoEl) negoEl.style.display = 'flex'
     if (priceEl) priceEl.textContent = fmt(r.prixMax)
-    if (ecoEl)   ecoEl.textContent = r.economie > 0 ? `−${ecoStr}` : 'prix juste'
-
-    if (pct <= 3) {
-      if (negoEl)   negoEl.className = 'immo-nego-good'
-      if (tagEl)    { tagEl.className = 'immo-tag-green'; tagEl.textContent = `−${pct}%` }
-      if (detailEl) detailEl.textContent = `Prix attractif${m2Str ? ' · ' + m2Str : ''}`
-    } else if (pct <= 6) {
-      if (negoEl)   negoEl.className = ''
-      if (tagEl)    { tagEl.className = 'immo-tag-amber'; tagEl.textContent = `−${pct}%` }
-      if (detailEl) detailEl.textContent = `Marge de négo standard${m2Str ? ' · ' + m2Str : ''}`
-    } else {
-      if (negoEl)   negoEl.className = 'immo-nego-warn'
-      if (tagEl)    { tagEl.className = 'immo-tag-red'; tagEl.textContent = `−${pct}%` }
-      if (detailEl) detailEl.textContent = `Bien surévalué${m2Str ? ' · ' + m2Str : ''}`
-    }
+    if (ecoEl) { ecoEl.textContent = r.economie > 0 ? '−' + fmt(r.economie) : 'prix juste'; ecoEl.className = 'imm-row-eco' + (pct <= 3 ? ' imm-green' : pct > 6 ? ' imm-red' : '') }
+    if (tagEl) { const tc = pct <= 3 ? 'green' : pct <= 6 ? 'amber' : 'red'; tagEl.className = 'imm-tag imm-tag-' + tc; tagEl.textContent = '−' + pct + '%' }
+    if (detailEl) detailEl.textContent = (pct <= 3 ? 'Prix attractif' : pct <= 6 ? 'Marge de négo standard' : 'Bien surévalué') + (m2Str ? ' · ' + m2Str : '')
   }
 
-  // Régime fiscal
+  // ── Régime fiscal (Détail) ──
   if (r.bestRegime) {
-    const fc = r.bestRegime.rendNetNet >= 4 ? '#10b981' : r.bestRegime.rendNetNet >= 2 ? '#f59e0b' : '#ef4444'
+    const fc = r.bestRegime.rendNetNet >= 4 ? '#34d399' : r.bestRegime.rendNetNet >= 2 ? '#fbbf24' : '#f87171'
+    const fEl = document.getElementById('immora-fiscal')
     const nameEl = document.getElementById('immora-fiscal-name')
     const rendEl = document.getElementById('immora-fiscal-rend')
+    if (fEl) fEl.style.display = 'flex'
     if (nameEl) nameEl.textContent = r.bestRegime.name
-    if (rendEl) { rendEl.textContent = r.bestRegime.rendNetNet.toFixed(2) + '%'; rendEl.style.color = fc }
+    if (rendEl) { rendEl.textContent = r.bestRegime.rendNetNet.toFixed(2) + ' %'; rendEl.style.color = fc }
   }
 
-  // CTA
-  const cta = document.getElementById('immora-cta')
-  if (cta && r.analyseUrl) cta.href = r.analyseUrl
+  // ── Marché (ou verrou Free) ──
+  immoraRenderMarche(r)
 
-  // Bouton "Sauvegarder dans ma bibliothèque" (Pro/Agence)
-  immoraRenderSaveButton(r)
-
-  // Contexte marché local
-  if (r.marcheContext) {
-    const mc  = r.marcheContext
-    const mel = document.getElementById('immora-marche')
-    if (mel && mc.positionnement) {
-      const badgeClass = {
-        'opportunite':    'badge-opportunite',
-        'attractif':      'badge-attractif',
-        'correct':        'badge-correct',
-        'surevalue':      'badge-surevalue',
-        'tres-surevalue': 'badge-tres-surevalue',
-      }[mc.positionnement] || 'badge-correct'
-
-      const marcheClass = {
-        'opportunite':    'marche-opportunite',
-        'attractif':      'marche-attractif',
-        'correct':        '',
-        'surevalue':      'marche-surevalue',
-        'tres-surevalue': 'marche-tres-surevalue',
-      }[mc.positionnement] || ''
-
-      const dotColor = { forte: '#34d399', moyenne: '#fbbf24', faible: '#f87171' }[mc.tension] || '#34d399'
-      const ref = mc.prixM2Ref ? ` · réf. ${mc.prixM2Ref.toLocaleString('fr-FR')} €/m²` : ''
-
-      mel.className = marcheClass
-      mel.style.display = 'flex'
-      mel.innerHTML = `
-        <div class="immo-marche-left">
-          <span class="immo-marche-dot" style="background:${dotColor}"></span>
-          <div class="immo-marche-texts">
-            <div class="immo-marche-label">Marché ${mc.ville || 'local'}</div>
-            <div class="immo-marche-text">${mc.positionnementLabel || ''}${ref}</div>
-          </div>
-        </div>
-        <div class="immo-marche-badge ${badgeClass}">${mc.ecartMarche > 0 ? '+' : ''}${mc.ecartMarche}%</div>
-      `
-    } else if (mel && mc.loyerM2Ref) {
-      // Pas de surface → juste afficher le loyer ref
-      mel.style.display = 'flex'
-      mel.innerHTML = `
-        <div class="immo-marche-left">
-          <span class="immo-marche-dot"></span>
-          <div class="immo-marche-texts">
-            <div class="immo-marche-label">Marché ${mc.ville || 'local'}</div>
-            <div class="immo-marche-text">Loyer réf. : ${mc.loyerM2Ref} €/m²/mois</div>
-          </div>
-        </div>
-      `
-    }
-  }
-
-  // Mise à jour du notice avec la source du loyer et les hypothèses réelles
+  // ── Notice (hypothèses) ──
   const noticeEl = document.getElementById('immora-notice')
   if (noticeEl) {
-    const loyerLabel = r.loyerSource === 'annonce'   ? 'loyer issu de l\'annonce'
-      : r.loyerSource === 'fourni'   ? 'loyer fourni'
-      : r.loyerSource === 'marche'   ? 'loyer marché estimé'
+    const loyerLabel = r.loyerSource === 'annonce' ? "loyer issu de l'annonce"
+      : r.loyerSource === 'fourni' ? 'loyer fourni'
+      : r.loyerSource === 'marche' ? 'loyer marché estimé'
       : 'loyer estimé'
-    // Le backend renvoie params.apport et params.tmi → on les utilise tels quels
     const apportPct = r.apportEstime && r.prixAchat ? Math.round((r.apportEstime / r.prixAchat) * 100) : 20
     const tmiUsed = r.tmiUsed ?? 30
-    const tierTag = immoraUserTier && immoraUserTier !== 'free' ? ' · ✓ vos paramètres' : ''
-    noticeEl.textContent = `${loyerLabel} · ${apportPct}% apport · 3.5% · TMI ${tmiUsed}%${tierTag}`
+    noticeEl.textContent = `${loyerLabel} · ${apportPct}% apport · 3,5% · TMI ${tmiUsed}%`
   }
 
-  // Affichage
-  const loading = document.getElementById('immora-loading')
-  const body    = document.getElementById('immora-body')
-  if (loading) loading.style.display = 'none'
-  if (body)    body.style.display = 'block'
+  // ── CTA ──
+  const cta = document.getElementById('immora-cta')
+  if (cta && r.analyseUrl) cta.href = r.analyseUrl
+}
+
+function immoraRenderMarche(r) {
+  const el = document.getElementById('immora-marche')
+  if (!el) return
+  const mc = r.marcheContext
+  if (!mc) { el.innerHTML = ''; return }
+  if (mc.positionnement) {
+    const badgeClass = { 'opportunite': 'imm-tag-green', 'attractif': 'imm-tag-green', 'correct': 'imm-tag-amber', 'surevalue': 'imm-tag-amber', 'tres-surevalue': 'imm-tag-red' }[mc.positionnement] || 'imm-tag-amber'
+    const dotColor = { forte: '#34d399', moyenne: '#fbbf24', faible: '#f87171' }[mc.tension] || '#34d399'
+    const ref = mc.prixM2Ref ? ` · réf. ${mc.prixM2Ref.toLocaleString('fr-FR')} €/m²` : ''
+    el.innerHTML = `<div class="imm-row"><div class="imm-marche-left"><span class="imm-dot" style="background:${dotColor}"></span><div class="imm-row-left"><div class="imm-row-name">Marché ${mc.ville || 'local'}</div><div class="imm-row-detail">${mc.positionnementLabel || ''}${ref}</div></div></div><span class="imm-tag ${badgeClass}">${mc.ecartMarche > 0 ? '+' : ''}${mc.ecartMarche}%</span></div>`
+  } else if (mc.gatedPro) {
+    el.innerHTML = `<div class="imm-lock"><div class="imm-lock-left"><span class="imm-lock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span><div class="imm-lock-texts"><div class="imm-lock-title">Données marché détaillées</div><div class="imm-lock-sub">Positionnement, tension, écart au m²</div></div></div><button class="imm-lock-cta" id="immora-lock-cta">Passer à Pro</button></div>`
+    const b = document.getElementById('immora-lock-cta')
+    if (b) b.addEventListener('click', () => window.open(`${IMMORA_API}/checkout/start?plan=pro&cycle=annual`, '_blank', 'noopener'))
+  } else if (mc.loyerM2Ref) {
+    el.innerHTML = `<div class="imm-row"><div class="imm-marche-left"><span class="imm-dot"></span><div class="imm-row-left"><div class="imm-row-name">Marché ${mc.ville || 'local'}</div><div class="imm-row-detail">Loyer réf. : ${mc.loyerM2Ref} €/m²/mois</div></div></div></div>`
+  } else { el.innerHTML = '' }
 }
 
 function immoraShowError(msg) {
@@ -433,6 +285,16 @@ function immoraShowError(msg) {
 // TOGGLE — Collapse / Expand
 // ════════════════════════════════════════════════════════════════════════════
 
+function immoraSetupTabs() {
+  document.querySelectorAll('#immora-card .imm-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const v = tab.dataset.tab
+      document.querySelectorAll('#immora-card .imm-tab').forEach((t) => t.classList.toggle('is-active', t.dataset.tab === v))
+      document.querySelectorAll('#immora-card .imm-view').forEach((el) => el.classList.toggle('is-active', el.dataset.view === v))
+    })
+  })
+}
+
 function immoraSetupToggle(widget, onRetry) {
   const toggle = document.getElementById('immora-toggle')
   const mini   = document.getElementById('immora-mini')
@@ -440,10 +302,10 @@ function immoraSetupToggle(widget, onRetry) {
 
   if (toggle) toggle.addEventListener('click', (e) => {
     e.stopPropagation()
-    widget.classList.add('immo-collapsed-state')
+    widget.classList.add('imm-collapsed')
   })
   if (mini) mini.addEventListener('click', () => {
-    widget.classList.remove('immo-collapsed-state')
+    widget.classList.remove('imm-collapsed')
   })
   if (retry && onRetry) retry.addEventListener('click', () => {
     const error   = document.getElementById('immora-error')
@@ -484,7 +346,7 @@ const IMMORA_CACHE_MAX_ENTRIES = 100        // garde-fou sur la quota
 function immoraUrlKey(url) {
   let h = 5381
   for (let i = 0; i < url.length; i++) h = ((h << 5) + h) ^ url.charCodeAt(i)
-  return 'i_' + (h >>> 0).toString(36)
+  return 'i2_' + (h >>> 0).toString(36)
 }
 
 async function immoraCacheGet(url) {
@@ -508,7 +370,7 @@ async function immoraCacheSet(url, result) {
     chrome.storage.local.set({ [key]: { t: Date.now(), r: result } })
     // GC opportuniste : si on dépasse la limite, on purge les plus vieilles
     chrome.storage.local.get(null, (all) => {
-      const entries = Object.entries(all || {}).filter(([k]) => k.startsWith('i_'))
+      const entries = Object.entries(all || {}).filter(([k]) => k.startsWith('i2_'))
       if (entries.length > IMMORA_CACHE_MAX_ENTRIES) {
         const toRemove = entries
           .sort((a, b) => (a[1]?.t ?? 0) - (b[1]?.t ?? 0))
@@ -1077,7 +939,7 @@ function immoraInit({ isDetailPage, extractData, source, maxRetries = 5, retryDe
     // Phase 1 : analyse rapide
     doAnalyse(data, (result) => {
       // Phase 2 : analyse photos (après 500ms pour laisser le widget s'afficher)
-      setTimeout(() => doPhotoAnalysis(data, result), 500)
+      /* analyse photo désactivée dans la refonte v2 — à réintégrer */
     })
   }
 
@@ -1114,31 +976,16 @@ function immoraHidePhotoLoading() {
 
 // Bandeau d'avertissement (DPE F/G, autres severities)
 function immoraRenderWarnings(warnings) {
-  // Supprime un éventuel ancien bandeau
-  const existing = document.getElementById('immora-warnings')
-  if (existing) existing.remove()
-  if (!warnings || warnings.length === 0) return
-
-  const hero = document.getElementById('immora-hero')
-  if (!hero) return
-
-  const wrap = document.createElement('div')
-  wrap.id = 'immora-warnings'
+  const wrap = document.getElementById('imm-warnings')
+  if (!wrap) return
+  if (!warnings || !warnings.length) { wrap.innerHTML = ''; return }
+  const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>`
   wrap.innerHTML = warnings.map((w) => {
-    const isCritical = w.severity === 'critical'
-    return `<div class="immora-warning ${isCritical ? 'immora-warning-critical' : 'immora-warning-high'}">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.85-2.77L13.85 4.78a2 2 0 00-3.7 0L3.15 16.23A2 2 0 005 19z"/>
-      </svg>
-      <span>${w.message}</span>
-    </div>`
+    const cls = w.severity === 'critical' ? 'imm-warn-critical' : 'imm-warn-high'
+    return `<div class="imm-warn ${cls}">${icon}<span>${w.message}</span></div>`
   }).join('')
-
-  // Insère juste après le hero (avant les sous-scores)
-  hero.parentNode.insertBefore(wrap, hero.nextSibling)
 }
 
-// CTA upgrade Pro quand l'analyse photos est gated (free → 402)
 function immoraShowPhotoUpgrade() {
   const el = document.getElementById('immora-photo-section')
   if (!el) return
@@ -1158,24 +1005,16 @@ function immoraShowPhotoUpgrade() {
 // Met à jour le badge source en bas (avec compteur de complétude)
 function immoraSetSourceBadge(source, completeness) {
   const { detected, total } = completeness
-  let color = '#34d399'
-  if (detected < total * 0.5) color = '#f87171'
-  else if (detected < total * 0.75) color = '#fbbf24'
-  const el = document.getElementById('immora-source-badge')
-  if (el) {
-    el.textContent = source
-    el.title = `${detected}/${total} champs détectés (les manquants sont estimés)`
-  }
-  // Bandeau « Données extraites » (complétude)
-  const cnt = document.getElementById('immora-data-count')
-  const dot = document.getElementById('immora-data-dot')
-  const bar = document.getElementById('immora-data-bar-fill')
-  if (cnt) cnt.textContent = `${detected}/${total} champs`
+  const pct = total ? Math.round((detected / total) * 100) : 0
+  const color = pct >= 75 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171'
+  const cnt = document.getElementById('imm-data-count')
+  const dot = document.getElementById('imm-data-dot')
+  const bar = document.getElementById('imm-data-fill')
+  if (cnt) cnt.textContent = `${detected}/${total}`
   if (dot) dot.style.background = color
-  if (bar) { bar.style.background = color; requestAnimationFrame(() => { bar.style.width = Math.round((detected / total) * 100) + '%' }) }
+  if (bar) { bar.style.background = color; requestAnimationFrame(() => { bar.style.width = pct + '%' }) }
 }
 
-// Compte les champs réellement extraits (vs estimés/par défaut)
 function immoraExtractionCompleteness(data) {
   const fields = [
     'prixAchat', 'surface', 'ville', 'dpe', 'nbPieces', 'typeBien',

@@ -1,9 +1,7 @@
 /* ════════════════════════════════════════════════════════════════════════════
-   IMMORA — Widget (refonte juin 2026)
-   DA Immora : carte sombre premium #0d0d0f · bordures fines blanches ·
-   accent émeraude #34d399 · sémantique vert/ambre/rouge sur les VALEURS ·
-   labels en mono · 2 vues (Synthèse / Détail) en onglets · CTA blanc.
-   Tout est scopé sous #immora-widget (+ reset) pour ne pas hériter du site hôte.
+   IMMORA — Widget (calé sur la DA landing : Linear-premium, flat, mono labels)
+   Noir #0d0d0e · bordures fines blanches · 1 vert accent (#34d399) ·
+   sémantique vert/ambre/rouge sur les valeurs · CTA blanc · typo Geist-like
    ════════════════════════════════════════════════════════════════════════════ */
 
 #immora-widget,
@@ -12,180 +10,175 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
+/* mono = labels/unités/chiffres techniques (rappel JetBrains Mono de la landing) */
 .imm-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 #immora-widget {
   position: fixed; bottom: 22px; right: 22px; z-index: 2147483646;
-  pointer-events: none;
+  pointer-events: none; --immora-score-color: #34d399;
 }
 #immora-widget > * { pointer-events: auto; }
 
-/* ── Mini badge (réduit) ─────────────────────────────────────────────────── */
+/* ── Mini badge (collapsed) ──────────────────────────────────────────────── */
 #immora-mini {
-  display: none; width: 52px; height: 52px; border-radius: 999px;
-  background: rgba(13,13,15,0.92); border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 10px 36px -10px rgba(0,0,0,0.6);
+  display: none; width: 54px; height: 54px; border-radius: 999px;
+  background: rgba(13, 13, 14, 0.66); border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%);
+  box-shadow: 0 10px 36px -10px rgba(0, 0, 0, 0.6);
   cursor: pointer; flex-direction: column; align-items: center; justify-content: center;
-  transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), border-color 0.2s;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
 }
-#immora-mini:hover { transform: scale(1.07); border-color: rgba(52,211,153,0.5); }
-#immora-mini-score { font-size: 18px; font-weight: 600; line-height: 1; letter-spacing: -0.03em; color: #fafafa; }
-#immora-mini-text { font-size: 8px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+#immora-mini:hover { transform: scale(1.07); border-color: rgba(52, 211, 153, 0.5); }
+#immora-mini-score { font-size: 19px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; color: #fff; }
+#immora-mini-text { font-size: 8px; color: rgba(255, 255, 255, 0.4); margin-top: 1px; }
 
 /* ── Card ────────────────────────────────────────────────────────────────── */
 #immora-card {
-  position: relative; width: 360px; max-height: calc(100vh - 44px);
+  position: relative; width: 352px; max-height: calc(100vh - 44px);
   border-radius: 16px;
-  background: #0d0d0f;
-  border: 0.5px solid rgba(255,255,255,0.09);
-  box-shadow: 0 30px 70px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04);
+  background: rgba(13, 13, 15, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(36px) saturate(140%); -webkit-backdrop-filter: blur(36px) saturate(140%);
+  box-shadow: 0 0 0 0.5px rgba(255,255,255,0.04), 0 40px 100px -24px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255,255,255,0.06);
   overflow: hidden; color: #fafafa; font-size: 13px; line-height: 1.4;
-  display: flex; flex-direction: column;
-  animation: immoraSlideIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+  animation: immoraSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes immoraSlideIn { from { opacity: 0; transform: translateY(12px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-/* ── Header ──────────────────────────────────────────────────────────────── */
-.imm-header { display: flex; align-items: center; justify-content: space-between; padding: 13px 15px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
-.imm-logo { display: flex; align-items: center; gap: 9px; }
-.imm-logo-mark { display: flex; width: 26px; height: 26px; border-radius: 8px; background: rgba(52,211,153,0.12); align-items: center; justify-content: center; }
-.imm-logo-name { font-size: 14px; font-weight: 600; letter-spacing: -0.02em; color: #fff; }
-.imm-header-right { display: flex; align-items: center; gap: 7px; }
-.imm-badge { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); padding: 3px 9px; background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 999px; }
-.imm-iconbtn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 7px; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.15s; }
-.imm-iconbtn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-.imm-iconbtn svg { width: 13px; height: 13px; }
-
-/* ── Onglets Synthèse / Détail ───────────────────────────────────────────── */
-.imm-tabs { display: flex; gap: 8px; padding: 12px 15px 0; flex-shrink: 0; }
-.imm-tab { flex: 1; text-align: center; padding: 7px 0; font-size: 12px; font-weight: 500; border-radius: 9px; cursor: pointer; transition: all 0.15s; color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.07); }
-.imm-tab:hover { color: rgba(255,255,255,0.8); }
-.imm-tab.is-active { color: #0d0d0f; background: #fafafa; border-color: transparent; }
-
-/* ── Corps scrollable + vues ─────────────────────────────────────────────── */
-#immora-body { overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent; }
+.immora-aurora {
+  position: absolute; top: -110px; left: 0; right: 0; height: 220px;
+  background: radial-gradient(circle at 24% 0%, var(--immora-score-color, #34d399) 0%, transparent 58%);
+  opacity: 0.10; filter: blur(36px); pointer-events: none; z-index: 0;
+}
+#immora-card > *:not(.immora-aurora) { position: relative; z-index: 1; }
+#immora-body { max-height: calc(100vh - 86px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent; }
 #immora-body::-webkit-scrollbar { width: 5px; }
 #immora-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
-.imm-view { display: none; }
-.imm-view.is-active { display: block; }
 
-/* ── Bandeau complétude des données ──────────────────────────────────────── */
-.imm-data { display: flex; align-items: center; gap: 8px; padding: 10px 15px 0; }
-.imm-data-dot { width: 6px; height: 6px; border-radius: 999px; background: #34d399; flex-shrink: 0; }
-.imm-data-label { font-size: 10.5px; color: rgba(255,255,255,0.5); }
-.imm-data-count { font-size: 10px; color: rgba(255,255,255,0.7); }
-.imm-data-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.07); border-radius: 999px; overflow: hidden; }
-.imm-data-fill { display: block; height: 100%; width: 0%; background: #34d399; border-radius: 999px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+/* ── Header ──────────────────────────────────────────────────────────────── */
+#immora-header { display: flex; align-items: center; justify-content: space-between; padding: 13px 15px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+#immora-logo { display: flex; align-items: center; gap: 9px; }
+#immora-logo-icon { display: flex; align-items: center; }
+#immora-logo-texts { display: flex; flex-direction: column; line-height: 1.05; }
+#immora-logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.035em; color: #fff; }
+#immora-logo-sub { font-size: 9px; color: rgba(255, 255, 255, 0.42); letter-spacing: 0.02em; margin-top: 1px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+#immora-header-right { display: flex; align-items: center; gap: 7px; }
+#immora-source-badge { font-size: 10px; font-weight: 600; color: rgba(255, 255, 255, 0.5); padding: 3px 9px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 999px; letter-spacing: 0.01em; cursor: help; }
+#immora-toggle { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: rgba(255, 255, 255, 0.5); cursor: pointer; transition: all 0.15s; }
+#immora-toggle:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 
-/* ── Warnings (DPE F/G) ──────────────────────────────────────────────────── */
-.imm-warnings { padding: 11px 15px 0; display: flex; flex-direction: column; gap: 6px; }
-.imm-warn { display: flex; align-items: flex-start; gap: 8px; padding: 9px 11px; font-size: 11px; font-weight: 500; line-height: 1.4; border-radius: 9px; }
-.imm-warn svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
-.imm-warn-critical { background: rgba(239,68,68,0.12); color: #fca5a5; border: 0.5px solid rgba(239,68,68,0.26); }
-.imm-warn-high { background: rgba(245,158,11,0.12); color: #fcd34d; border: 0.5px solid rgba(245,158,11,0.26); }
-
-/* ── Hero : anneau de score + verdict ────────────────────────────────────── */
-.imm-hero { display: flex; align-items: center; gap: 15px; padding: 15px 15px 13px; }
-.imm-ring { position: relative; width: 70px; height: 70px; flex-shrink: 0; }
-.imm-ring svg { transform: rotate(-90deg); }
-.imm-ring-track { stroke: rgba(255,255,255,0.08); }
-.imm-ring-prog { stroke: #34d399; stroke-linecap: round; transition: stroke-dashoffset 1.1s cubic-bezier(0.16,1,0.3,1); }
-.imm-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.imm-ring-num { font-size: 23px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; color: #fff; font-variant-numeric: tabular-nums; }
-.imm-ring-max { font-size: 9px; color: rgba(255,255,255,0.4); }
-.imm-verdict { min-width: 0; }
-.imm-verdict-label { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 3px; color: #fff; }
-.imm-verdict-sub { font-size: 11.5px; color: rgba(255,255,255,0.52); line-height: 1.4; }
-
-/* ── 4 bulles KPI (Synthèse) ─────────────────────────────────────────────── */
-.imm-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 15px 14px; }
-.imm-kpi { padding: 10px 12px; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.07); border-radius: 12px; }
-.imm-kpi-label { font-size: 9px; color: rgba(255,255,255,0.42); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
-.imm-kpi-val { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: #fafafa; font-variant-numeric: tabular-nums; }
-
-/* Tonalités sémantiques (sur les valeurs uniquement) */
-.imm-green { color: #34d399 !important; }
-.imm-amber { color: #fbbf24 !important; }
-.imm-red   { color: #f87171 !important; }
-
-/* ── Détail : libellé de section ─────────────────────────────────────────── */
-.imm-section-label { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.07em; padding: 14px 15px 0; }
-
-/* ── Détail : sous-scores ────────────────────────────────────────────────── */
-.imm-subs { display: flex; flex-direction: column; gap: 11px; padding: 11px 15px 4px; }
-.imm-sub { display: grid; grid-template-columns: 74px 1fr 30px; align-items: center; gap: 10px; }
-.imm-sub-label { font-size: 12px; color: rgba(255,255,255,0.65); }
-.imm-sub-bar { height: 5px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
-.imm-sub-fill { display: block; height: 100%; width: 0%; background: #34d399; border-radius: 999px; transition: width 0.9s cubic-bezier(0.16,1,0.3,1); }
-.imm-sub-val { font-size: 12px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
-
-/* ── Lignes (offre / fiscal / marché) ────────────────────────────────────── */
-.imm-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 9px 15px 0; padding: 11px 13px; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.07); border-radius: 12px; }
-.imm-row:first-of-type { margin-top: 14px; }
-.imm-row-left { min-width: 0; }
-.imm-row-label { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
-.imm-row-detail { font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.3; }
-.imm-row-name { font-size: 13px; font-weight: 500; letter-spacing: -0.01em; color: #fff; }
-.imm-row-right { text-align: right; flex-shrink: 0; }
-.imm-row-value { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; color: #fff; font-variant-numeric: tabular-nums; }
-.imm-row-meta { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 5px; }
-.imm-row-sub { font-size: 9px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
-.imm-row-eco { font-size: 11px; font-weight: 500; color: #fbbf24; }
-.imm-row-eco.imm-green { color: #34d399; }
-.imm-row-eco.imm-red { color: #f87171; }
-
-.imm-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
-.imm-tag-green { background: rgba(52,211,153,0.16); color: #34d399; }
-.imm-tag-amber { background: rgba(245,158,11,0.16); color: #fbbf24; }
-.imm-tag-red   { background: rgba(239,68,68,0.16); color: #f87171; }
-
-/* Marché — variante avec pastille de tension */
-.imm-marche-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
-.imm-dot { width: 7px; height: 7px; border-radius: 999px; background: #34d399; flex-shrink: 0; }
-
-/* ── Notice (hypothèses) ─────────────────────────────────────────────────── */
-.imm-notice { font-size: 9px; color: rgba(255,255,255,0.32); text-align: center; margin: 12px 15px 0; line-height: 1.5; letter-spacing: 0.02em; }
-
-/* ── Verrou Free (sections Pro) ──────────────────────────────────────────── */
-.imm-locked { position: relative; }
-.imm-lock { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 9px 15px 0; padding: 12px 13px; background: rgba(52,211,153,0.05); border: 0.5px dashed rgba(52,211,153,0.30); border-radius: 12px; }
-.imm-lock-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
-.imm-lock-icon { color: #34d399; display: flex; }
-.imm-lock-icon svg { width: 15px; height: 15px; }
-.imm-lock-texts { min-width: 0; }
-.imm-lock-title { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); }
-.imm-lock-sub { font-size: 10px; color: rgba(255,255,255,0.45); }
-.imm-lock-cta { font-size: 11px; font-weight: 600; color: #34d399; background: rgba(52,211,153,0.14); border: 0.5px solid rgba(52,211,153,0.25); padding: 5px 11px; border-radius: 8px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.15s; }
-.imm-lock-cta:hover { background: rgba(52,211,153,0.22); }
-
-/* ── CTA ─────────────────────────────────────────────────────────────────── */
-.imm-cta-wrap { padding: 15px; flex-shrink: 0; }
-.imm-cta { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 12px; background: #fafafa; color: #0d0d0f; font-size: 13px; font-weight: 600; border-radius: 11px; text-decoration: none; letter-spacing: -0.01em; transition: background 0.15s, transform 0.1s; }
-.imm-cta:hover { background: #fff; transform: translateY(-1px); }
-.imm-cta:active { transform: scale(0.98); }
-.imm-cta svg { width: 15px; height: 15px; }
-
-/* ── Chargement ──────────────────────────────────────────────────────────── */
-.imm-loading { padding: 48px 20px; text-align: center; }
-.imm-loading p { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 14px; letter-spacing: 0.02em; }
-.imm-spinner { width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.08); border-top-color: #34d399; border-radius: 50%; margin: 0 auto; animation: immoraSpin 0.8s linear infinite; }
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+#immora-loading { padding: 42px 20px; text-align: center; }
+#immora-loading p { font-size: 11px; color: rgba(255, 255, 255, 0.45); margin-top: 13px; letter-spacing: 0.02em; }
+.immo-spinner { width: 22px; height: 22px; border: 2px solid rgba(255, 255, 255, 0.08); border-top-color: #34d399; border-radius: 50%; margin: 0 auto; animation: immoraSpin 0.8s linear infinite; }
+.immo-spinner-small { display: inline-block; width: 12px; height: 12px; border: 1.5px solid rgba(255,255,255,0.1); border-top-color: #34d399; border-radius: 50%; vertical-align: middle; animation: immoraSpin 0.8s linear infinite; }
 @keyframes immoraSpin { to { transform: rotate(360deg); } }
 
-/* ── Erreur ──────────────────────────────────────────────────────────────── */
-.imm-error { padding: 34px 22px; text-align: center; }
-.imm-error-icon { width: 40px; height: 40px; border-radius: 999px; background: rgba(239,68,68,0.14); color: #f87171; border: 0.5px solid rgba(239,68,68,0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
-.imm-error-icon svg { width: 20px; height: 20px; }
-.imm-error p { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 14px; line-height: 1.5; }
-.imm-retry { display: inline-block; background: rgba(255,255,255,0.07); color: #fff; border: 0.5px solid rgba(255,255,255,0.12); padding: 8px 18px; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-.imm-retry:hover { background: rgba(255,255,255,0.12); }
+/* ── ⓪ Données extraites (complétude) ────────────────────────────────────── */
+#immora-data { display: flex; align-items: center; gap: 8px; padding: 9px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+#immora-data-dot { width: 6px; height: 6px; border-radius: 999px; background: #34d399; flex-shrink: 0; }
+#immora-data-label { font-size: 10.5px; color: rgba(255, 255, 255, 0.5); }
+#immora-data-count { font-size: 10px; color: rgba(255, 255, 255, 0.7); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+#immora-data-bar { flex: 1; height: 3px; background: rgba(255, 255, 255, 0.07); border-radius: 999px; overflow: hidden; }
+#immora-data-bar-fill { display: block; height: 100%; width: 0%; background: #34d399; border-radius: 999px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
 
-/* ── États : collapsed + responsive ──────────────────────────────────────── */
-.imm-collapsed #immora-card { display: none; }
-.imm-collapsed #immora-mini { display: flex; }
-@media (max-width: 480px) {
-  #immora-widget { bottom: 14px; right: 14px; left: 14px; }
-  #immora-card { width: auto; }
-}
-@media (prefers-reduced-motion: reduce) {
-  #immora-card, .imm-sub-fill, .imm-data-fill, .imm-ring-prog { animation: none !important; transition: none !important; }
-}
+/* ── ① Score + verdict ───────────────────────────────────────────────────── */
+#immora-hero { padding: 15px 15px 14px; }
+#immora-hero-top { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+#immora-score-wrap { display: flex; align-items: baseline; gap: 2px; flex-shrink: 0; }
+#immora-score-number { font-size: 40px; font-weight: 700; letter-spacing: -0.045em; line-height: 0.9; color: #fff; font-variant-numeric: tabular-nums; }
+#immora-score-max { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.32); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+#immora-verdict { min-width: 0; flex: 1; }
+#immora-verdict-label { font-size: 15.5px; font-weight: 600; letter-spacing: -0.025em; color: #fff; line-height: 1.15; margin-bottom: 2px; }
+#immora-verdict-sub { font-size: 11px; color: rgba(255, 255, 255, 0.52); font-weight: 400; line-height: 1.35; }
+#immora-score-bar { display: block; height: 4px; background: rgba(255, 255, 255, 0.07); border-radius: 999px; overflow: hidden; }
+#immora-score-bar-fill { display: block; height: 100%; width: 0%; background: #34d399; border-radius: 999px; }
+
+/* ── Warnings (DPE F/G) ──────────────────────────────────────────────────── */
+#immora-warnings { padding: 0 15px 4px; display: flex; flex-direction: column; gap: 6px; }
+.immora-warning { display: flex; align-items: flex-start; gap: 8px; padding: 9px 11px; font-size: 11px; font-weight: 500; line-height: 1.4; border-radius: 9px; }
+.immora-warning svg { flex-shrink: 0; margin-top: 1px; }
+.immora-warning-critical { background: rgba(239, 68, 68, 0.12); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.26); }
+.immora-warning-high { background: rgba(245, 158, 11, 0.12); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.26); }
+
+/* ── ② Stats — 4 bulles distinctes (DA Immora) ───────────────────────────── */
+#immora-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 15px 13px; }
+.immo-stat { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; }
+.immo-stat-label { font-size: 8.5px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+.immo-stat-val { font-size: 14px; font-weight: 700; letter-spacing: -0.02em; color: #fff; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.immo-stat-primary .immo-stat-val { font-size: 14px; }
+.immo-green { color: #34d399 !important; }
+.immo-amber { color: #fbbf24 !important; }
+.immo-red   { color: #f87171 !important; }
+
+/* ── ③ Sous-scores (barres fines) ────────────────────────────────────────── */
+#immora-subscores { padding: 0 15px 13px; display: flex; flex-direction: column; gap: 7px; margin-bottom: 1px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.immora-sub { display: grid; grid-template-columns: 70px 1fr 22px; align-items: center; gap: 10px; }
+.immora-sub-label { font-size: 10.5px; color: rgba(255, 255, 255, 0.55); font-weight: 500; text-align: left; }
+.immora-sub-bar { display: block; height: 4px; background: rgba(255, 255, 255, 0.07); border-radius: 999px; overflow: hidden; width: 100%; }
+.immora-sub-fill { display: block; height: 100%; width: 0%; background: #34d399; border-radius: 999px; transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+.immora-sub-val { font-size: 11px; font-weight: 700; text-align: right; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+
+/* ── ④ Offre conseillée — rangée sobre ───────────────────────────────────── */
+#immora-nego { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 13px 15px 9px; padding: 11px 13px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 11px; }
+.immo-nego-left { min-width: 0; flex: 1; }
+.immo-nego-label { font-size: 8.5px; font-weight: 500; color: rgba(255, 255, 255, 0.42); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+.immo-nego-detail { font-size: 10.5px; color: rgba(255, 255, 255, 0.55); line-height: 1.3; }
+.immo-nego-right { flex-shrink: 0; text-align: right; }
+.immo-nego-price { font-size: 16px; font-weight: 700; letter-spacing: -0.025em; color: #fff; line-height: 1; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.immo-nego-row { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.immo-nego-eco { font-size: 11px; font-weight: 600; color: #fbbf24; letter-spacing: -0.01em; }
+#immora-nego.immo-nego-good .immo-nego-eco { color: #34d399; }
+#immora-nego.immo-nego-warn .immo-nego-eco { color: #f87171; }
+.immo-tag-green, .immo-tag-amber, .immo-tag-red { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
+.immo-tag-green { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+.immo-tag-amber { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+.immo-tag-red   { background: rgba(239, 68, 68, 0.18); color: #f87171; }
+
+/* ── ⑤ Fiscal — rangée sobre ─────────────────────────────────────────────── */
+#immora-fiscal { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 15px 9px; padding: 10px 13px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 11px; }
+.immo-fiscal-left { min-width: 0; flex: 1; }
+.immo-fiscal-label { font-size: 8.5px; font-weight: 500; color: rgba(255, 255, 255, 0.42); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+.immo-fiscal-name { font-size: 13px; font-weight: 600; color: #fff; letter-spacing: -0.015em; }
+.immo-fiscal-right { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; }
+.immo-fiscal-rend { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #34d399; line-height: 1; font-variant-numeric: tabular-nums; }
+.immo-fiscal-sub { font-size: 8px; color: rgba(255, 255, 255, 0.4); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+
+/* ── ⑥ Marché ────────────────────────────────────────────────────────────── */
+#immora-marche { display: flex !important; align-items: center; justify-content: space-between; gap: 12px; margin: 0 15px 9px; padding: 9px 13px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 11px; }
+.immo-marche-left { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.immo-marche-dot { width: 6px; height: 6px; border-radius: 999px; background: #34d399; flex-shrink: 0; }
+.immo-marche-texts { min-width: 0; }
+.immo-marche-label { font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.8); }
+.immo-marche-text { font-size: 10px; color: rgba(255, 255, 255, 0.48); }
+.immo-marche-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: -0.01em; flex-shrink: 0; }
+.badge-opportunite { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.badge-attractif { background: rgba(16, 185, 129, 0.14); color: #6ee7b7; }
+.badge-correct { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.82); }
+.badge-surevalue { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.badge-tres-surevalue { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+/* ── ⑦ Notice + CTA ──────────────────────────────────────────────────────── */
+#immora-notice { font-size: 9px; color: rgba(255, 255, 255, 0.34); text-align: center; margin: 3px 15px 11px; letter-spacing: 0.02em; line-height: 1.5; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+#immora-cta-row { display: flex; gap: 8px; padding: 0 15px 14px; align-items: stretch; }
+#immora-cta { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 12px 16px; background: #ffffff; color: #09090b; font-size: 13px; font-weight: 600; border-radius: 11px; text-decoration: none; letter-spacing: -0.01em; transition: background 0.15s, transform 0.1s, box-shadow 0.2s; box-shadow: 0 6px 18px -8px rgba(255, 255, 255, 0.25); }
+#immora-cta:hover { background: #f4f4f5; transform: translateY(-1px); }
+#immora-cta:active { transform: scale(0.98); }
+.immo-save-btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 12px 12px; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 11px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.immo-save-btn:hover { background: rgba(255, 255, 255, 0.09); color: #fff; }
+.immo-save-btn-locked { color: rgba(255, 255, 255, 0.6); }
+.immo-save-loading { opacity: 0.55; cursor: wait; }
+.immo-save-ok { background: rgba(52, 211, 153, 0.16) !important; color: #34d399 !important; border-color: rgba(52,211,153,0.3) !important; cursor: default; }
+
+/* ── Error ───────────────────────────────────────────────────────────────── */
+#immora-error { padding: 30px 20px; text-align: center; }
+.immo-error-icon { width: 40px; height: 40px; border-radius: 999px; background: rgba(239, 68, 68, 0.14); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 13px; }
+#immora-error p { font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-bottom: 13px; line-height: 1.5; }
+#immora-retry { display: inline-block; background: rgba(255, 255, 255, 0.07); color: #fff; border: 1px solid rgba(255, 255, 255, 0.12); padding: 8px 18px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+#immora-retry:hover { background: rgba(255, 255, 255, 0.12); }
+
+/* ── Collapsed / tier / responsive ───────────────────────────────────────── */
+.immo-collapsed-state #immora-card { display: none; }
+.immo-collapsed-state #immora-mini { display: flex; }
+.immora-card-tier-pro, .immora-card-tier-business { border-color: rgba(52, 211, 153, 0.22); }
+@media (max-width: 480px) { #immora-widget { bottom: 14px; right: 14px; left: 14px; } #immora-card { width: auto; } }

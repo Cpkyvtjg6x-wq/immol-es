@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     const dpe     = dpeRaw     ?? 'D'
     const locType = locTypeRaw ?? auth.calcDefaults.locType ?? 'meuble'
     const tmi     = typeof tmiRaw === 'number' ? tmiRaw : (auth.calcDefaults.tmi ?? 30)
-    const apportPct = auth.calcDefaults.apportPct ?? 0.20
+    const apportPct = auth.calcDefaults.apportPct ?? 0.15
 
     // ── Validation ────────────────────────────────────────────────────────────
     if (!prixAchat || prixAchat < 10000) {
@@ -157,10 +157,10 @@ export async function POST(req: NextRequest) {
     const apport = Math.round(prixAchat * apportPct)
 
     // ⚠️ BUG MAJEUR FIX : DEFAULT_PARAMS a taux=0 et duree=0 → mensualité crédit
-    // calculée à 0 → cashflow artificiellement positif. On force les valeurs
-    // marché standard (3.5% sur 20 ans) sauf si le user Pro a configuré les siennes.
-    const taux  = auth.calcDefaults.tauxCredit  ?? 3.5
-    const duree = auth.calcDefaults.dureeCredit ?? 20
+    // calculée à 0 → cashflow artificiellement positif. On force des valeurs
+    // marché réalistes (3,7% sur 25 ans) sauf si le user Pro a configuré les siennes.
+    const taux  = auth.calcDefaults.tauxCredit  ?? 3.7
+    const duree = auth.calcDefaults.dureeCredit ?? 25
 
     // Estimation charges copro depuis la description ou référentiel
     const chargesCoproFinal = chargesCopro

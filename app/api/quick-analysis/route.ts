@@ -458,5 +458,9 @@ function buildAnalyseUrl(params: InvestmentParams, loyerEstime: number, extra?: 
   if (extra?.taxeFonciere) p.set('taxe',         String(extra.taxeFonciere))
   if (extra?.nbPieces)     p.set('pieces',       String(extra.nbPieces))
   if (extra?.codePostal)   p.set('cp',           extra.codePostal)
+  // Anti-cache : rend chaque URL unique → le navigateur ne ressert jamais une
+  // ancienne version de /analyse mise en cache (cause des "client-side exception"
+  // chez les utilisateurs restés sur un build périmé). Charge toujours le build à jour.
+  p.set('cb', String(Date.now()))
   return `${base}/analyse?${p.toString()}`
 }

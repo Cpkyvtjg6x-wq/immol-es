@@ -75,7 +75,8 @@ export default function RootLayout({
      */
     <html
       lang="fr"
-      className={`${GeistSans.variable} ${instrumentSerif.variable}`}
+      translate="no"
+      className={`${GeistSans.variable} ${instrumentSerif.variable} notranslate`}
       suppressHydrationWarning
     >
       {/*
@@ -88,6 +89,15 @@ export default function RootLayout({
        * → Pour light : ajouter .light avant le premier pixel rendu.
        */}
       <head>
+        {/* Anti-crash Google Traduction : l'app est en français et son DOM est très
+            dynamique (calculateur). Si Chrome/Google Translate traduit la page, il
+            remplace les nœuds texte et fait planter React (removeChild/insertBefore)
+            → "Application error: a client-side exception". On désactive la traduction. */}
+        <meta name="google" content="notranslate" />
+        {/* Filet de sécurité React × traduction : si un outil externe (Google
+            Translate, extension) déplace des nœuds texte malgré notranslate, on
+            empêche removeChild/insertBefore de jeter (sinon crash client). */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){if(typeof Node!=='function'||!Node.prototype)return;var rc=Node.prototype.removeChild;Node.prototype.removeChild=function(c){if(c&&c.parentNode!==this){return c}return rc.apply(this,arguments)};var ib=Node.prototype.insertBefore;Node.prototype.insertBefore=function(n,r){if(r&&r.parentNode!==this){return n}return ib.apply(this,arguments)}})()` }} />
         {/* Anti-FOUC : applique .light avant le premier pixel si le user l'a choisi. */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light')}catch(e){}})()` }} />
       </head>

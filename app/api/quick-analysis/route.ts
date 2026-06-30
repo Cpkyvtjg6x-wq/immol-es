@@ -371,7 +371,7 @@ export async function POST(req: NextRequest) {
       marcheContext,
 
       // URL pré-remplie pour basculer sur le calculateur complet
-      analyseUrl: buildAnalyseUrl(params, loyerEstimeFinal, {
+      analyseUrl: buildAnalyseUrl(params, loyerEstimeFinal, resolveAppBase(req), {
         travaux:      body.travaux,
         chargesCopro: chargesCoproFinal,
         taxeFonciere: taxeFonciereFinal,
@@ -433,14 +433,28 @@ function estimerTaxeFonciere(prixAchat: number): number {
   return Math.round(prixAchat * 0.005)
 }
 
-function buildAnalyseUrl(params: InvestmentParams, loyerEstime: number, extra?: {
+/**
+ * Domaine canonique pour l'URL renvoyée à l'extension.
+ * On NE se fie PAS à NEXT_PUBLIC_APP_URL : en prod elle peut pointer vers une
+ * URL de déploiement Vercel FIGÉE (immol-es-…-vercel.app) — un ancien build
+ * immuable → le widget envoyait l'utilisateur sur une vieille version cassée.
+ * On dérive du host réel de la requête, et on force immora.app si c'est un
+ * domaine *.vercel.app (jamais un déploiement gelé) ou si le host est absent.
+ */
+function resolveAppBase(req: NextRequest): string {
+  const host  = req.headers.get('x-forwarded-host') || req.headers.get('host') || ''
+  const proto = req.headers.get('x-forwarded-proto') || (host.startsWith('localhost') ? 'http' : 'https')
+  if (!host || host.endsWith('.vercel.app')) return 'https://immora.app'
+  return `${proto}://${host}`
+}
+
+function buildAnalyseUrl(params: InvestmentParams, loyerEstime: number, base: string, extra?: {
   travaux?: number
   chargesCopro?: number
   taxeFonciere?: number
   nbPieces?: number
   codePostal?: string
 }): string {
-  const base  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://immora.app'
   const loyer = params.locType === 'meuble' ? params.loyerMeuble : params.loyerNu
   const p = new URLSearchParams({
     prix:    String(params.prixAchat),

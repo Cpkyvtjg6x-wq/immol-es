@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { authenticateExtensionRequest } from '@/lib/extension-auth'
-import { checkAiQuota } from '@/lib/usage'
+import { checkAiQuota, checkIpRate } from '@/lib/usage'
 import { validate, photoAnalysisSchema, jsonByteSize } from '@/lib/validation'
 import dns from 'node:dns/promises'
 import net from 'node:net'
@@ -237,18 +237,24 @@ export async function POST(req: NextRequest) {
   // au lieu d'une erreur de config serveur (503) si ANTHROPIC_API_KEY manque.
   // L'analyse photo Claude Haiku coûte de l'argent → on bloque les Free/anon.
   const auth = await authenticateExtensionRequest(req.headers.get('authorization'))
-  if (!auth.canUseAI) {
+
+  // ⚠️⚠️ TEMPORAIRE (mode test) — l'analyse travaux est ouverte À TOUS pour valider
+  // le pipeline IA de bout en bout, indépendamment de l'auth/token. Le gating Pro
+  // (402) est DÉSACTIVÉ. À RÉACTIVER après le test (remettre le bloc `if (!auth.canUseAI)`).
+  // Garde-fou coût pendant ce mode : rate-limit par IP (+ clé serveur + quota compte).
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'unknown'
+  const rl = await checkIpRate(ip, 'photo', 12, 60)
+  if (!rl.allowed) {
     return NextResponse.json(
-      {
-        error: "L'analyse photos IA est réservée au plan Pro",
-        upgrade_required: 'ai_insights',
-        tier: auth.tier,
-      },
-      { status: 402, headers: { ...CORS, 'x-immora-tier': auth.tier } },
+      { error: 'Trop de requêtes, réessaie dans une minute' },
+      { status: 429, headers: { ...CORS, 'x-immora-tier': auth.tier } },
     )
   }
 
-  // Auth OK + tier Pro/Agence → on vérifie la config serveur
+  // Config serveur (clé vision)
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
       { error: 'Service vision non configuré (ANTHROPIC_API_KEY manquant)' },

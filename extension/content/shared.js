@@ -155,7 +155,10 @@ function immoraCreateWidget(source) {
         <div id="immora-marche" style="display:none"></div>
 
         <!-- ⑦ NOTICE -->
-        <div id="immora-notice">Loyer marché estimé · 20% apport · 3.5% · TMI 30%</div>
+        <div id="immora-notice">Loyer marché estimé · 15% apport · 3,7% · 25 ans · TMI 30%</div>
+
+        <!-- ⑧ ANALYSE TRAVAUX (photos IA) — rempli par immoraRenderPhotoAnalysis / masqué par défaut -->
+        <div id="immora-photo-section" style="display:none"></div>
 
         <!-- ⑨ CTA principal + bouton Sauver -->
         <div id="immora-cta-row">

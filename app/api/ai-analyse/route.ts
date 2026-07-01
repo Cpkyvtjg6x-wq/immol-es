@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { calculateInvestment } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
-import { generateInsights } from '@/lib/ai'
+import { generateAnalysis } from '@/lib/ai'
 import { getCityData } from '@/lib/market-data'
 import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '@/lib/types'
 import { effectiveTier } from '@/lib/owner'
@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
     const params = v.data.params as unknown as InvestmentParams
     const fiscalParams = (v.data.fiscalParams ?? {}) as Partial<FiscalParams>
 
-    // Vérification clé OpenAI
-    if (!process.env.OPENAI_API_KEY) {
+    // Vérification clé Claude (analyse IA migrée sur Anthropic)
+    if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
         { error: 'Service IA non configuré' },
         { status: 503 }
@@ -106,11 +106,12 @@ export async function POST(req: NextRequest) {
     const marketData = getCityData(params.ville)
     const score = calculateScore(result, fiscal, marketData)
 
-    // 4. IA Insights
-    const insights = await generateInsights(params, result, fiscal, score)
+    // 4. Analyse IA complète (verdict + insights) sur Claude
+    const analysis = await generateAnalysis(params, result, fiscal, score)
 
     return NextResponse.json({
-      insights,
+      verdict: analysis.verdict,
+      insights: analysis.insights,
       score: score.global,
       label: score.label,
       rendNetNet: fiscal.rendNetNet,

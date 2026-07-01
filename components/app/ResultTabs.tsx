@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { InvestmentResult, FiscalRegime, InvestmentParams, ScoreResult, AIInsight } from '@/lib/types'
+import { InvestmentResult, FiscalRegime, InvestmentParams, ScoreResult, AIInsight, AIVerdict } from '@/lib/types'
 import type { LocalMarketData } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { compareStructures } from '@/lib/fiscal'
@@ -24,6 +24,7 @@ interface ResultTabsProps {
   marketData: LocalMarketData | null
   marketLoading: boolean
   insights: AIInsight[] | null
+  aiVerdict: AIVerdict | null
   aiLoading: boolean
   isPro?: boolean
   onGenerateAI: () => void
@@ -161,7 +162,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function ResumeTab({
   result, params, score, bestFiscal,
   marketData, marketLoading,
-  insights, aiLoading, isPro, onGenerateAI, onApplyScenario,
+  insights, aiVerdict, aiLoading, isPro, onGenerateAI, onApplyScenario,
 }: {
   result: InvestmentResult
   params: InvestmentParams
@@ -170,6 +171,7 @@ function ResumeTab({
   marketData: LocalMarketData | null
   marketLoading: boolean
   insights: AIInsight[] | null
+  aiVerdict: AIVerdict | null
   aiLoading: boolean
   isPro?: boolean
   onGenerateAI: () => void
@@ -199,7 +201,7 @@ function ResumeTab({
       )}
       <div>
         <SectionLabel>Analyse IA</SectionLabel>
-        <AIInsights insights={insights} loading={aiLoading} onGenerate={onGenerateAI} isPro={isPro ?? false} />
+        <AIInsights insights={insights} verdict={aiVerdict} loading={aiLoading} onGenerate={onGenerateAI} isPro={isPro ?? false} />
       </div>
       <div>
         <SectionLabel>Scénarios & équilibre</SectionLabel>
@@ -918,7 +920,7 @@ function FinancementTab({ result, params }: { result: InvestmentResult; params: 
 export function ResultTabs({
   result, fiscalResults, params, score, bestFiscal,
   marketData, marketLoading,
-  insights, aiLoading, isPro,
+  insights, aiVerdict, aiLoading, isPro,
   onGenerateAI, onApplyScenario,
 }: ResultTabsProps) {
 
@@ -979,6 +981,7 @@ export function ResultTabs({
             marketData={marketData}
             marketLoading={marketLoading}
             insights={insights}
+            aiVerdict={aiVerdict}
             aiLoading={aiLoading}
             isPro={isPro}
             onGenerateAI={onGenerateAI}

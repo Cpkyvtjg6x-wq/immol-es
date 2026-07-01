@@ -1,13 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { AIInsight } from '@/lib/types'
+import { AIInsight, AIVerdict } from '@/lib/types'
 
 interface AIInsightsProps {
   insights: AIInsight[] | null
+  verdict?: AIVerdict | null
   loading: boolean
   onGenerate: () => void
   isPro?: boolean
+}
+
+const recoConfig = {
+  favorable:   { label: 'Favorable',   color: 'text-emerald-400', bg: 'bg-emerald-500/[0.12] border-emerald-500/25' },
+  a_negocier:  { label: 'À négocier',  color: 'text-amber-400',   bg: 'bg-amber-500/[0.12] border-amber-500/25' },
+  prudence:    { label: 'Prudence',    color: 'text-orange-400',  bg: 'bg-orange-500/[0.12] border-orange-500/25' },
+  defavorable: { label: 'Défavorable', color: 'text-red-400',     bg: 'bg-red-500/[0.12] border-red-500/25' },
 }
 
 const typeConfig = {
@@ -23,7 +31,7 @@ const priorityConfig = {
   low:    'text-th-text-3',
 }
 
-export function AIInsights({ insights, loading, onGenerate, isPro = false }: AIInsightsProps) {
+export function AIInsights({ insights, verdict, loading, onGenerate, isPro = false }: AIInsightsProps) {
   const [expanded, setExpanded] = useState<number | null>(0)
 
   if (!isPro) {
@@ -101,6 +109,24 @@ export function AIInsights({ insights, loading, onGenerate, isPro = false }: AII
               <div className="h-2.5 bg-th-surface2 rounded-full" style={{ width: '70%' }} />
             </div>
           ))}
+        </div>
+      )}
+
+      {verdict && !loading && (
+        <div className={`rounded-xl border p-4 mb-3 ${recoConfig[verdict.recommendation].bg}`}>
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${recoConfig[verdict.recommendation].color}`}>
+              {recoConfig[verdict.recommendation].label}
+            </span>
+            <span className="text-sm font-semibold text-th-text-1">{verdict.titre}</span>
+          </div>
+          {verdict.synthese && <p className="text-xs text-th-text-2 leading-relaxed">{verdict.synthese}</p>}
+          {verdict.prixCible && (
+            <div className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] text-th-text-1 bg-th-surface border border-th-border px-2.5 py-1 rounded-lg">
+              <span className="text-th-text-3">Prix conseillé</span>
+              <span className="font-semibold">{verdict.prixCible}</span>
+            </div>
+          )}
         </div>
       )}
 

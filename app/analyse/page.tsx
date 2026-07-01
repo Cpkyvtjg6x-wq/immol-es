@@ -8,7 +8,7 @@ import { ResultTabs } from '@/components/app/ResultTabs'
 import { calculateInvestment, DEFAULT_PARAMS } from '@/lib/calculator'
 import { calculateFiscal } from '@/lib/fiscal'
 import { calculateScore } from '@/lib/score'
-import { InvestmentParams, InvestmentResult, ScoreResult, AIInsight, FiscalRegime, FiscalResult, MarketData } from '@/lib/types'
+import { InvestmentParams, InvestmentResult, ScoreResult, AIInsight, AIVerdict, FiscalRegime, FiscalResult, MarketData } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
@@ -130,6 +130,7 @@ export default function AnalysePage() {
   const [result, setResult]               = useState<InvestmentResult | null>(null)
   const [score, setScore]                 = useState<ScoreResult | null>(null)
   const [insights, setInsights]           = useState<AIInsight[] | null>(null)
+  const [aiVerdict, setAiVerdict]         = useState<AIVerdict | null>(null)
   const [fiscalResults, setFiscalResults] = useState<FiscalRegime[] | null>(null)
   const [bestFiscal, setBestFiscal]       = useState<{ yield: number; regime: string } | null>(null)
   const [liveUpdating, setLiveUpdating]   = useState(false)
@@ -158,6 +159,7 @@ export default function AnalysePage() {
   // Dernière FiscalResult complète — utilisée pour recalculer le score quand market data arrive
   const lastFiscalRef = useRef<FiscalResult | null>(null)
   const lastResultRef = useRef<InvestmentResult | null>(null)
+  const autoAiRef = useRef(false) // demande d'analyse IA auto (arrivée depuis l'extension)
   const { user } = useAuth()
   const { simulations } = useSimulations(user?.id ?? null)
   const { canUseAI, canSaveMore, simulationLimit, remainingSimulations, isFree } = useEntitlements(simulations.length)
@@ -197,6 +199,7 @@ export default function AnalysePage() {
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search)
     if (sp.get('source') === 'extension' && sp.get('prix')) {
+      autoAiRef.current = true // → analyse IA lancée auto dès que le résultat est prêt
       setTimeout(() => applyCalculation(initialParams, false), 400)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -233,7 +236,7 @@ export default function AnalysePage() {
     // Sauvegarde session uniquement (pour revente / rapport-bancaire dans le même onglet)
     try { sessionStorage.setItem('immora_last_params', JSON.stringify(params)) } catch {}
     setLastParams(params)
-    if (!isLive) { setInsights(null); setResultsVisible(false) }
+    if (!isLive) { setInsights(null); setAiVerdict(null); setResultsVisible(false) }
     const { res, fiscalResult, best, sc } = runCalculation(params)
     setResult(res)
     setScore(sc)
@@ -280,10 +283,20 @@ export default function AnalysePage() {
         return
       }
       const data = await res.json()
+      if (data.verdict) setAiVerdict(data.verdict)
       if (data.insights) setInsights(data.insights)
     } catch { console.error('AI analyse failed') }
     finally { setAiLoading(false) }
   }, [lastParams, result, canUseAI, promptUpgrade])
+
+  // Analyse IA automatique à l'arrivée depuis l'extension : dès que le résultat est
+  // calculé et que l'utilisateur y a droit, on lance l'analyse complète sans clic.
+  useEffect(() => {
+    if (autoAiRef.current && result && lastParams && canUseAI && !insights && !aiLoading) {
+      autoAiRef.current = false
+      handleGenerateAI()
+    }
+  }, [result, lastParams, canUseAI, insights, aiLoading, handleGenerateAI])
 
   const handleSave = useCallback(() => {
     // Gating quota de sauvegardes (Free = 3 max)
@@ -295,6 +308,7 @@ export default function AnalysePage() {
     setResult(null)
     setScore(null)
     setInsights(null)
+    setAiVerdict(null)
     setFiscalResults(null)
     setBestFiscal(null)
     setLastParams(null)
@@ -312,6 +326,7 @@ export default function AnalysePage() {
     setResult(null)
     setScore(null)
     setInsights(null)
+    setAiVerdict(null)
     setFiscalResults(null)
     setBestFiscal(null)
     setShowResults(false)
@@ -729,6 +744,7 @@ export default function AnalysePage() {
                   marketData={marketData}
                   marketLoading={marketLoading}
                   insights={insights}
+                  aiVerdict={aiVerdict}
                   aiLoading={aiLoading}
                   isPro={!isFree}
                   onGenerateAI={handleGenerateAI}

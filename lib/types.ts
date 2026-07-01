@@ -334,6 +334,19 @@ export interface AIInsight {
   impact?: string
 }
 
+// Verdict global de l'analyse IA complète (au-dessus des insights détaillés).
+export interface AIVerdict {
+  recommendation: 'favorable' | 'a_negocier' | 'prudence' | 'defavorable'
+  titre: string            // ex: "Bon rendement, à négocier"
+  synthese: string         // 2-3 phrases : appréciation globale du bien
+  prixCible: string | null // ex: "≈ 195 000 € (-5 %)" — prix de négo conseillé
+}
+
+export interface AIAnalysis {
+  verdict: AIVerdict
+  insights: AIInsight[]
+}
+
 // ─── Amortization / Projection ────────────────────────────────────────────────
 
 export interface AmortizationRow {

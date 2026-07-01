@@ -411,7 +411,7 @@ function immoraRenderResults(r) {
     // Le backend renvoie params.apport et params.tmi → on les utilise tels quels
     const apportPct = r.apportEstime && r.prixAchat ? Math.round((r.apportEstime / r.prixAchat) * 100) : 20
     const tmiUsed = r.tmiUsed ?? 30
-    const tierTag = immoraUserTier && immoraUserTier !== 'free' ? ' · ✓ vos paramètres' : ''
+    const tierTag = immoraUserTier && immoraUserTier !== 'free' ? ' · vos paramètres' : ''
     noticeEl.textContent = `${loyerLabel} · ${apportPct}% apport · 3.5% · TMI ${tmiUsed}%${tierTag}`
   }
 
@@ -1180,7 +1180,7 @@ function immoraShowPhotoLaunch() {
   el.innerHTML = `
     <div class="immo-photo-launch">
       <div class="immo-photo-launch-txt">
-        <div class="immo-photo-launch-title">📸 Analyse travaux par IA</div>
+        <div class="immo-photo-launch-title">Analyse travaux par IA</div>
         <div class="immo-photo-launch-sub">Estime les travaux à partir des photos de l'annonce</div>
       </div>
       <button class="immo-photo-launch-btn" id="immo-photo-launch-btn">Lancer</button>
@@ -1195,7 +1195,7 @@ function immoraShowPhotoConnect() {
   el.style.display = 'block'
   el.innerHTML = `
     <div class="immo-photo-upgrade">
-      <div class="immo-photo-upgrade-label">🔒 Connecte-toi pour l'analyse IA</div>
+      <div class="immo-photo-upgrade-label">Connecte-toi pour l'analyse IA</div>
       <div class="immo-photo-upgrade-text">Ouvre immora.app (en étant connecté), puis reviens : l'analyse travaux se débloque automatiquement si ton offre l'inclut.</div>
       <div class="immo-photo-plans">
         <a class="immo-photo-plan immo-photo-plan-primary" href="${IMMORA_API}" target="_blank" rel="noopener">Ouvrir immora.app</a>
@@ -1216,8 +1216,6 @@ function immoraShowPhotoUpgrade() {
   const el = document.getElementById('immora-photo-section')
   if (!el) return
   el.style.display = 'block'
-  // ⚠️ DIAG TEMPORAIRE — dit exactement pourquoi le serveur nous voit en free
-  const _dbg = `tok:${immoraAuthToken ? immoraAuthToken.length + 'c' : 'ABSENT'} · tier:${immoraUserTier ?? 'null'} · ${immoraAuthDiag || '?'}`
   el.innerHTML = `
     <div class="immo-photo-upgrade">
       <div class="immo-photo-upgrade-label">Analyse travaux par IA · Pro</div>
@@ -1226,7 +1224,6 @@ function immoraShowPhotoUpgrade() {
         <a class="immo-photo-plan immo-photo-plan-primary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=annual" target="_blank" rel="noopener">Annuel · <b>12,90€</b>/mois</a>
         <a class="immo-photo-plan immo-photo-plan-secondary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=monthly" target="_blank" rel="noopener">Mensuel · <b>19,90€</b>/mois</a>
       </div>
-      <div style="font-size:9px;color:rgba(255,255,255,.5);padding:8px 0 2px;font-family:ui-monospace,monospace">🔧 ${_dbg}</div>
     </div>`
 }
 
@@ -1271,12 +1268,12 @@ function immoraRenderPhotoAnalysis(r, prixAchat) {
   const urgenceClass = { immediate: 'immo-tag-red', 'court-terme': 'immo-tag-amber', optionnel: 'immo-tag-green' }
 
   const etatConfig = {
-    'neuf':             { color: '#10b981', label: 'Neuf', emoji: '✨' },
-    'tres-bon':         { color: '#10b981', label: 'Très bon état', emoji: '✅' },
-    'bon':              { color: '#34d399', label: 'Bon état', emoji: '👍' },
-    'rafraichissement': { color: '#f59e0b', label: 'Rafraîchissement', emoji: '🖌️' },
-    'renovation-legere':{ color: '#f97316', label: 'Rénovation légère', emoji: '🔨' },
-    'renovation-lourde':{ color: '#ef4444', label: 'Rénovation lourde', emoji: '🏗️' },
+    'neuf':             { color: '#10b981', label: 'Neuf' },
+    'tres-bon':         { color: '#10b981', label: 'Très bon état' },
+    'bon':              { color: '#34d399', label: 'Bon état' },
+    'rafraichissement': { color: '#f59e0b', label: 'Rafraîchissement' },
+    'renovation-legere':{ color: '#f97316', label: 'Rénovation légère' },
+    'renovation-lourde':{ color: '#ef4444', label: 'Rénovation lourde' },
   }
 
   const cfg = etatConfig[r.etatGeneral] ?? etatConfig['bon']
@@ -1294,8 +1291,8 @@ function immoraRenderPhotoAnalysis(r, prixAchat) {
   el.innerHTML = `
     <div class="immo-photo-header" id="immo-photo-toggle" style="cursor:pointer">
       <div class="immo-photo-header-left">
-        <span class="immo-photo-label">📸 Analyse travaux · ${r.photosAnalysees ?? '?'} photo${(r.photosAnalysees ?? 0) > 1 ? 's' : ''}</span>
-        <div class="immo-photo-etat" style="color:${cfg.color}">${cfg.emoji} ${cfg.label}</div>
+        <span class="immo-photo-label">Analyse travaux · ${r.photosAnalysees ?? '?'} photo${(r.photosAnalysees ?? 0) > 1 ? 's' : ''}</span>
+        <div class="immo-photo-etat" style="color:${cfg.color}">${cfg.label}</div>
       </div>
       <div class="immo-photo-header-right">
         ${total > 0 ? `<div class="immo-photo-total" style="color:${cfg.color}">${fmt(total)}</div>` : '<div class="immo-photo-total" style="color:#10b981">Aucun travaux</div>'}

@@ -177,9 +177,36 @@ function immoraCreateWidget(source) {
         <p id="immora-error-msg">Impossible d'extraire les données.</p>
         <button id="immora-retry">Réessayer</button>
       </div>
+    </div>
+    <!-- Flèche en bas de la carte pour révéler le panneau travaux détaillé -->
+    <div id="immora-panel-chevron" title="Voir l'analyse travaux détaillée">▲</div>
+    <!-- Panneau latéral dédié au résultat de l'analyse travaux (coulisse à gauche) -->
+    <div id="immora-panel-travaux">
+      <div class="immora-panel-header">
+        <span class="immora-panel-title">📸 Analyse travaux</span>
+        <button id="immora-panel-close" class="immora-panel-close" aria-label="Fermer">✕</button>
+      </div>
+      <div id="immora-panel-content" class="immora-panel-content"></div>
     </div>`
 
   document.body.appendChild(widget)
+
+  // Flèche → ouvre/ferme le panneau travaux détaillé
+  const panelChevron = widget.querySelector('#immora-panel-chevron')
+  const panelClose = widget.querySelector('#immora-panel-close')
+  if (panelChevron) {
+    panelChevron.addEventListener('click', (e) => {
+      e.stopPropagation()
+      widget.classList.toggle('immora-panel-open')
+    })
+  }
+  if (panelClose) {
+    panelClose.addEventListener('click', (e) => {
+      e.stopPropagation()
+      widget.classList.remove('immora-panel-open')
+    })
+  }
+
   return widget
 }
 
@@ -531,6 +558,24 @@ async function immoraCacheSet(url, result) {
 let immoraAuthToken = null
 let immoraUserTier = null // 'free' | 'pro' | 'business' | null (anonyme)
 let immoraAuthDiag = ''    // ⚠️ DIAG TEMPORAIRE — trace de l'extraction du token
+
+// ── Préférence utilisateur : analyse travaux photo activée ou non (persistée) ─
+let immoraPhotoEnabled = true // défaut : activée
+function immoraGetPhotoPreference() {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.local.get(['immora_photo_enabled'], (items) => {
+        if (chrome.runtime.lastError) { resolve(true); return }
+        const v = items?.immora_photo_enabled
+        resolve(v === undefined ? true : !!v)
+      })
+    } catch (_) { resolve(true) }
+  })
+}
+function immoraSetPhotoPreference(enabled) {
+  immoraPhotoEnabled = !!enabled
+  try { chrome.storage.local.set({ immora_photo_enabled: !!enabled }) } catch (_) {}
+}
 
 async function immoraFetchAuthToken() {
   return new Promise((resolve) => {
@@ -996,6 +1041,9 @@ function immoraInit({ isDetailPage, extractData, source, maxRetries = 5, retryDe
     immoraAuthToken = t
   })
 
+  // Préférence "analyse travaux" (persistée) — chargée avant que doPhotoAnalysis tourne
+  const immoraPhotoReady = immoraGetPhotoPreference().then((e) => { immoraPhotoEnabled = e })
+
   // ── Appel API principal ──────────────────────────────────────────────────
   const doAnalyse = (data, onSuccess) => {
     immoraCallAPI(data)
@@ -1013,6 +1061,9 @@ function immoraInit({ isDetailPage, extractData, source, maxRetries = 5, retryDe
 
   // ── Phase 2 : analyse photos async ──────────────────────────────────────
   const doPhotoAnalysis = (data, initialResult) => {
+    // Toggle utilisateur : si l'analyse travaux est désactivée, on n'appelle pas
+    // l'IA — on montre juste un état compact avec un bouton "Activer".
+    if (!immoraPhotoEnabled) { immoraShowPhotoDisabled(); return }
     const photoUrls = immoraExtractPhotos()
     if (!photoUrls || photoUrls.length === 0) return
 
@@ -1055,6 +1106,11 @@ function immoraInit({ isDetailPage, extractData, source, maxRetries = 5, retryDe
     .then(photoResult => {
       if (!photoResult) return // 402 déjà géré
       immoraRenderPhotoAnalysis(photoResult, data.prixAchat)
+
+      // TRANSFERT TRAVAUX → /analyse : on injecte TOUJOURS le montant estimé dans
+      // le lien "Analyser en détail", indépendamment des garde-fous de recalcul de
+      // score ci-dessous. /analyse lit ?travaux= et pré-remplit le champ.
+      immoraInjectTravauxInCta(photoResult.travauxTotal)
 
       // Si travaux significatifs (>3% du prix) → recalcul avec travaux
       const travauxTotal = photoResult.travauxTotal ?? 0
@@ -1158,6 +1214,25 @@ function immoraRenderWarnings(warnings) {
 
   // Insère juste après le hero (avant les sous-scores)
   hero.parentNode.insertBefore(wrap, hero.nextSibling)
+}
+
+// Toggle OFF → analyse travaux désactivée : état compact + bouton "Activer".
+function immoraShowPhotoDisabled() {
+  const el = document.getElementById('immora-photo-section')
+  if (!el) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div class="immo-photo-disabled">
+      <span class="immo-photo-disabled-label">📸 Analyse travaux · désactivée</span>
+      <button class="immo-photo-enable-btn" id="immo-photo-enable-btn">Activer</button>
+    </div>`
+  const btn = document.getElementById('immo-photo-enable-btn')
+  if (btn) {
+    btn.addEventListener('click', () => {
+      immoraSetPhotoPreference(true)
+      location.reload() // relance l'analyse avec la préférence activée
+    })
+  }
 }
 
 // Gated + PAS de token → l'utilisateur n'est pas connecté (ou session pas encore
@@ -1271,6 +1346,7 @@ function immoraRenderPhotoAnalysis(r, prixAchat) {
         <div class="immo-photo-etat" style="color:${cfg.color}">${cfg.emoji} ${cfg.label}</div>
       </div>
       <div class="immo-photo-header-right">
+        <button id="immo-photo-switch" class="immo-switch immo-switch-on" title="Désactiver l'analyse travaux"><span class="immo-switch-thumb"></span></button>
         ${total > 0 ? `<div class="immo-photo-total" style="color:${cfg.color}">${fmt(total)}</div>` : '<div class="immo-photo-total" style="color:#10b981">Aucun travaux</div>'}
         ${pct !== null && total > 0 ? `<div class="immo-photo-pct">${pct}% du prix</div>` : ''}
         <div class="immo-photo-chevron" id="immo-photo-chevron">▸</div>
@@ -1314,6 +1390,87 @@ function immoraRenderPhotoAnalysis(r, prixAchat) {
       chevron.textContent  = open ? '▸' : '▾'
     })
   }
+
+  // Switch activer/désactiver (en-tête) → coupe l'analyse instantanément (sans reload)
+  const photoSwitch = document.getElementById('immo-photo-switch')
+  if (photoSwitch) {
+    photoSwitch.addEventListener('click', (e) => {
+      e.stopPropagation() // ne pas déclencher le repli du détail
+      immoraSetPhotoPreference(false)
+      immoraShowPhotoDisabled()
+    })
+  }
+
+  // Alimente le panneau latéral détaillé (révélable via la flèche en bas)
+  immoraPopulatePanelTravaux(r, prixAchat)
+}
+
+// Alimente le panneau latéral détaillé + révèle la flèche qui l'ouvre.
+function immoraPopulatePanelTravaux(r, prixAchat) {
+  const panel = document.getElementById('immora-panel-content')
+  const widget = document.getElementById('immora-widget')
+  if (!panel || !widget) return
+
+  const urgenceLabel = { immediate: 'Urgent', 'court-terme': '< 2 ans', optionnel: 'Optionnel' }
+  const urgenceClass = { immediate: 'immo-tag-red', 'court-terme': 'immo-tag-amber', optionnel: 'immo-tag-green' }
+  const etatConfig = {
+    'neuf':             { color: '#10b981', label: 'Neuf', emoji: '✨' },
+    'tres-bon':         { color: '#10b981', label: 'Très bon état', emoji: '✅' },
+    'bon':              { color: '#34d399', label: 'Bon état', emoji: '👍' },
+    'rafraichissement': { color: '#f59e0b', label: 'Rafraîchissement', emoji: '🖌️' },
+    'renovation-legere':{ color: '#f97316', label: 'Rénovation légère', emoji: '🔨' },
+    'renovation-lourde':{ color: '#ef4444', label: 'Rénovation lourde', emoji: '🏗️' },
+  }
+  const cfg = etatConfig[r.etatGeneral] ?? etatConfig['bon']
+  const total = r.travauxTotal ?? 0
+  const pct = prixAchat > 0 ? Math.round((total / prixAchat) * 100) : null
+  const fmt = v => v.toLocaleString('fr-FR') + ' €'
+  const postes = (r.postes ?? []).filter(p => p.cout > 0).sort((a, b) => b.cout - a.cout)
+
+  panel.innerHTML = `
+    <div class="immo-panel-hero">
+      <div class="immo-panel-etat" style="color:${cfg.color}">${cfg.emoji} ${cfg.label}</div>
+      <div class="immo-panel-total" style="color:${cfg.color}">${total > 0 ? fmt(total) : 'Aucun travaux'}</div>
+      <div class="immo-panel-sub">${pct !== null && total > 0 ? pct + '% du prix · ' : ''}${r.photosAnalysees ?? '?'} photo${(r.photosAnalysees ?? 0) > 1 ? 's' : ''}</div>
+    </div>
+    ${r.resume ? `<div class="immo-panel-resume">${r.resume}</div>` : ''}
+    ${postes.length > 0 ? `
+      <div class="immo-panel-sectitle">Postes de travaux</div>
+      <div class="immo-panel-postes">
+        ${postes.map(p => `
+          <div class="immo-panel-poste">
+            <div class="immo-panel-poste-l">
+              <span class="immo-panel-poste-name">${p.poste}</span>
+              <span class="immo-panel-poste-etat">${p.etat ?? ''}</span>
+            </div>
+            <div class="immo-panel-poste-r">
+              <span class="immo-panel-poste-cout">${fmt(p.cout)}</span>
+              <span class="immo-tag ${urgenceClass[p.urgence] ?? 'immo-tag-amber'}">${urgenceLabel[p.urgence] ?? ''}</span>
+            </div>
+          </div>`).join('')}
+      </div>` : ''}
+    <div class="immo-panel-fourchette">
+      Fourchette : ${fmt(r.fourchetteBasse)} – ${fmt(r.fourchetteHaute)}
+      <span class="immo-panel-conf">(confiance ${r.confidence ?? 0}%)</span>
+    </div>`
+
+  // Il y a un résultat à voir → on révèle la flèche d'ouverture du panneau
+  widget.classList.add('immora-has-panel')
+}
+
+// Injecte le montant de travaux estimé dans le lien "Analyser en détail" pour
+// que /analyse pré-remplisse le champ travaux. Toujours appelé après l'analyse
+// photo (pas de garde-fou), sans appel API supplémentaire.
+function immoraInjectTravauxInCta(travaux) {
+  const cta = document.getElementById('immora-cta')
+  const n = Math.round(travaux || 0)
+  if (!cta || !cta.href || cta.href === '#' || n <= 0) return
+  try {
+    const u = new URL(cta.href)
+    u.searchParams.set('travaux', String(n))
+    u.searchParams.set('cb', String(Date.now())) // anti-cache (cohérent avec l'API)
+    cta.href = u.toString()
+  } catch (_) { /* URL invalide → on ne touche pas */ }
 }
 
 // Mise à jour du score + KPIs après recalcul avec travaux

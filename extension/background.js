@@ -157,6 +157,28 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return true
 })
 
+// ── Synchro auto de la session ────────────────────────────────────────────────
+// Les content scripts (dont immora-auth.js) ne se réinjectent PAS dans les onglets
+// déjà ouverts au (re)chargement de l'extension. Pour éviter d'exiger un F5 manuel
+// sur immora.app, on injecte immora-auth.js dans tout onglet immora.app ouvert dès
+// que l'extension démarre ou est installée/mise à jour.
+function immoraSyncOpenTabs() {
+  try {
+    chrome.tabs.query({ url: 'https://immora.app/*' }, (tabs) => {
+      if (chrome.runtime.lastError || !tabs) return
+      for (const t of tabs) {
+        if (t.id == null) continue
+        chrome.scripting
+          .executeScript({ target: { tabId: t.id }, files: ['content/immora-auth.js'] })
+          .catch(() => {})
+      }
+    })
+  } catch (_) { /* scripting indispo → ignore */ }
+}
+
+chrome.runtime.onInstalled.addListener(immoraSyncOpenTabs)
+chrome.runtime.onStartup.addListener(immoraSyncOpenTabs)
+
 // ════════════════════════════════════════════════════════════════════════════
 // Badge sur l'icône quand on détecte une annonce
 // ════════════════════════════════════════════════════════════════════════════

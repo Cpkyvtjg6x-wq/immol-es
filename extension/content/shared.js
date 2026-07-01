@@ -1155,16 +1155,8 @@ function immoraShowPhotoUpgrade() {
       <div class="immo-photo-upgrade-label">Analyse travaux par IA · Pro</div>
       <div class="immo-photo-upgrade-text">Estimation chiffrée des travaux poste par poste (cuisine, sdb, peinture…) à partir des photos de l'annonce.</div>
       <div class="immo-photo-plans">
-        <a class="immo-photo-plan immo-photo-plan-primary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=annual" target="_blank" rel="noopener">
-          <span class="immo-photo-plan-cycle">Annuel</span>
-          <span class="immo-photo-plan-price">12,90€<span class="immo-photo-plan-per">/mois</span></span>
-          <span class="immo-photo-plan-note">−35%</span>
-        </a>
-        <a class="immo-photo-plan immo-photo-plan-secondary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=monthly" target="_blank" rel="noopener">
-          <span class="immo-photo-plan-cycle">Mensuel</span>
-          <span class="immo-photo-plan-price">19,90€<span class="immo-photo-plan-per">/mois</span></span>
-          <span class="immo-photo-plan-note">sans engagement</span>
-        </a>
+        <a class="immo-photo-plan immo-photo-plan-primary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=annual" target="_blank" rel="noopener">Annuel · <b>12,90€</b>/mois</a>
+        <a class="immo-photo-plan immo-photo-plan-secondary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=monthly" target="_blank" rel="noopener">Mensuel · <b>19,90€</b>/mois</a>
       </div>
     </div>`
 }

@@ -195,17 +195,14 @@
 #immora-photo-section .immo-photo-upgrade { display: flex; flex-direction: column; gap: 4px; padding: 12px 13px; }
 #immora-photo-section .immo-photo-upgrade-label { font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.85); }
 #immora-photo-section .immo-photo-upgrade-text { font-size: 9.5px; color: rgba(255, 255, 255, 0.5); line-height: 1.45; }
-#immora-photo-section .immo-photo-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 7px; }
-#immora-photo-section .immo-photo-plan { display: flex; flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 3px 5px; padding: 6px 9px; border-radius: 9px; text-decoration: none; text-align: center; transition: background 0.15s, transform 0.1s; }
+#immora-photo-section .immo-photo-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 8px; }
+#immora-photo-section .immo-photo-plan { display: flex; align-items: center; justify-content: center; gap: 3px; padding: 8px 6px; border-radius: 9px; text-decoration: none; font-size: 10.5px; font-weight: 600; line-height: 1.15; text-align: center; white-space: nowrap; transition: background 0.15s, transform 0.1s; }
 #immora-photo-section .immo-photo-plan:active { transform: scale(0.98); }
+#immora-photo-section .immo-photo-plan b { font-weight: 800; font-size: 11.5px; }
 #immora-photo-section .immo-photo-plan-primary { background: #ffffff; color: #09090b; }
 #immora-photo-section .immo-photo-plan-primary:hover { background: #f4f4f5; }
 #immora-photo-section .immo-photo-plan-secondary { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); }
 #immora-photo-section .immo-photo-plan-secondary:hover { background: rgba(255, 255, 255, 0.09); }
-#immora-photo-section .immo-photo-plan-cycle { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.6; flex-basis: 100%; }
-#immora-photo-section .immo-photo-plan-price { font-size: 13px; font-weight: 800; letter-spacing: -0.02em; }
-#immora-photo-section .immo-photo-plan-per { font-size: 8.5px; font-weight: 600; opacity: 0.55; }
-#immora-photo-section .immo-photo-plan-note { font-size: 8px; opacity: 0.6; }
 #immora-photo-section .immo-photo-plan-primary .immo-photo-plan-note { color: #059669; opacity: 1; font-weight: 700; }
 
 /* ── Error ───────────────────────────────────────────────────────────────── */

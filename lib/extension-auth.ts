@@ -12,6 +12,7 @@
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '@/lib/types'
+import { effectiveTier } from '@/lib/owner'
 
 let _adminClient: SupabaseClient | null = null
 function getAdminClient(): SupabaseClient {
@@ -95,7 +96,8 @@ export async function authenticateExtensionRequest(
       .eq('id', user.id)
       .single()
 
-    const tier = (profile?.subscription_tier ?? 'free') as SubscriptionTier
+    const dbTier = (profile?.subscription_tier ?? 'free') as SubscriptionTier
+    const tier = effectiveTier(user.email, dbTier)  // owner → Pro permanent (comme l'app)
     const limits = SUBSCRIPTION_LIMITS[tier] ?? SUBSCRIPTION_LIMITS.free
 
     // Extraction des defaults configurés par l'utilisateur (cf. /settings)

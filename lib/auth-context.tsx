@@ -28,9 +28,7 @@ import {
 import type { User } from '@supabase/supabase-js'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import type { SubscriptionTier } from '@/lib/types'
-
-// Email du propriétaire — accès Pro permanent pour les tests
-const OWNER_EMAIL = 'jeanamin.morfin@gmail.com'
+import { isOwnerEmail } from '@/lib/owner'
 
 // ─── Context type ─────────────────────────────────────────────────────────────
 
@@ -56,8 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = useCallback(async (currentUser: User) => {
-    // Owner mode — toujours Pro
-    if (currentUser.email === OWNER_EMAIL) {
+    // Owner mode — toujours Pro (source unique lib/owner)
+    if (isOwnerEmail(currentUser.email)) {
       setTier('pro')
       return
     }

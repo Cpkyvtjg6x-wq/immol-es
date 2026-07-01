@@ -7,6 +7,7 @@ import { calculateScore } from '@/lib/score'
 import { generateInsights } from '@/lib/ai'
 import { getCityData } from '@/lib/market-data'
 import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '@/lib/types'
+import { effectiveTier } from '@/lib/owner'
 import { checkAiQuota } from '@/lib/usage'
 import { validate, aiAnalyseSchema, jsonByteSize } from '@/lib/validation'
 import type { InvestmentParams, FiscalParams } from '@/lib/types'
@@ -64,7 +65,8 @@ export async function POST(req: NextRequest) {
       .select('subscription_tier')
       .eq('id', user.id)
       .single()
-    const tier = (profile?.subscription_tier ?? 'free') as SubscriptionTier
+    const dbTier = (profile?.subscription_tier ?? 'free') as SubscriptionTier
+    const tier = effectiveTier(user.email, dbTier)  // owner → Pro permanent (comme l'app)
     if (!SUBSCRIPTION_LIMITS[tier]?.aiInsights) {
       return NextResponse.json(
         {

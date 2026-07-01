@@ -169,6 +169,7 @@ function immoraCreateWidget(source) {
             </svg>
           </a>
         </div>
+        <div class="immora-body-foot" aria-hidden="true"></div>
       </div>
 
       <!-- ═══ ERROR ═══ -->

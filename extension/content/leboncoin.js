@@ -42,7 +42,7 @@
           if (adNode) {
             const ad = adNode.ad ?? adNode.listing ?? adNode.classified
             if (ad) {
-              const priceVal = ad.price ?? ad.price_cents ? (ad.price_cents / 100) : null
+              const priceVal = ad.price ?? (ad.price_cents ? (ad.price_cents / 100) : null)
               if (priceVal && immoraExtractPrice(String(priceVal)) > 10000) {
                 data.prixAchat = Math.round(priceVal)
               }

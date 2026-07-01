@@ -125,7 +125,7 @@
   // ════════════════════════════════════════════════════════════════════════════
 
   function isDetailPage() {
-    return /\/annonce\/(vente|location)\//.test(window.location.href)
+    return /\/annonce\/(vente|location|achat)\//.test(window.location.href)
   }
 
   function init() {

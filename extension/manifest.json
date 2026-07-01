@@ -63,7 +63,9 @@
         "*://www.bienici.com/annonce/vente/*",
         "*://bienici.com/annonce/vente/*",
         "*://www.bienici.com/annonce/location/*",
-        "*://bienici.com/annonce/location/*"
+        "*://bienici.com/annonce/location/*",
+        "*://www.bienici.com/annonce/achat/*",
+        "*://bienici.com/annonce/achat/*"
       ],
       "js": ["content/shared.js", "content/bienici.js"],
       "css": ["content/widget.css"],
@@ -80,6 +82,11 @@
       ],
       "js": ["content/shared.js", "content/logicimmo.js"],
       "css": ["content/widget.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://immora.app/*"],
+      "js": ["content/immora-auth.js"],
       "run_at": "document_idle"
     }
   ],

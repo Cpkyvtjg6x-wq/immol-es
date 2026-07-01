@@ -530,15 +530,20 @@ async function immoraCacheSet(url, result) {
 // durée de vie de la page). On les rafraîchit à chaque init().
 let immoraAuthToken = null
 let immoraUserTier = null // 'free' | 'pro' | 'business' | null (anonyme)
+let immoraAuthDiag = ''    // ⚠️ DIAG TEMPORAIRE — trace de l'extraction du token
 
 async function immoraFetchAuthToken() {
   return new Promise((resolve) => {
     try {
       chrome.runtime.sendMessage({ type: 'GET_AUTH_TOKEN' }, (resp) => {
-        if (chrome.runtime.lastError) { resolve(null); return }
+        if (chrome.runtime.lastError) {
+          immoraAuthDiag = 'msg:lastError'
+          resolve(null); return
+        }
+        immoraAuthDiag = resp?.diag ?? '?'
         resolve(resp?.token ?? null)
       })
-    } catch (_) { resolve(null) }
+    } catch (_) { immoraAuthDiag = 'msg:throw'; resolve(null) }
   })
 }
 
@@ -1147,13 +1152,20 @@ function immoraShowPhotoUpgrade() {
   el.style.display = 'block'
   el.innerHTML = `
     <div class="immo-photo-upgrade">
-      <div class="immo-photo-upgrade-left">
-        <div class="immo-photo-upgrade-label">Analyse travaux par IA</div>
-        <div class="immo-photo-upgrade-text">Estimation chiffrée des travaux poste par poste (cuisine, sdb, peinture…) à partir des photos de l'annonce.</div>
+      <div class="immo-photo-upgrade-label">Analyse travaux par IA · Pro</div>
+      <div class="immo-photo-upgrade-text">Estimation chiffrée des travaux poste par poste (cuisine, sdb, peinture…) à partir des photos de l'annonce.</div>
+      <div class="immo-photo-plans">
+        <a class="immo-photo-plan immo-photo-plan-primary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=annual" target="_blank" rel="noopener">
+          <span class="immo-photo-plan-cycle">Annuel</span>
+          <span class="immo-photo-plan-price">12,90€<span class="immo-photo-plan-per">/mois</span></span>
+          <span class="immo-photo-plan-note">−35%</span>
+        </a>
+        <a class="immo-photo-plan immo-photo-plan-secondary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=monthly" target="_blank" rel="noopener">
+          <span class="immo-photo-plan-cycle">Mensuel</span>
+          <span class="immo-photo-plan-price">19,90€<span class="immo-photo-plan-per">/mois</span></span>
+          <span class="immo-photo-plan-note">sans engagement</span>
+        </a>
       </div>
-      <a class="immo-photo-upgrade-cta" href="${IMMORA_API}/checkout/start?plan=pro&cycle=annual" target="_blank" rel="noopener">
-        Pro · 12,90€/mois
-      </a>
     </div>`
 }
 

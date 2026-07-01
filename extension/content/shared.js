@@ -983,9 +983,18 @@ function immoraInit({ isDetailPage, extractData, source, maxRetries = 5, retryDe
   const widget = immoraCreateWidget(source)
   if (!widget) return
 
-  // Récupère le token auth en parallèle de l'extraction des données.
-  // Sans token → user anonyme → API renvoie un score basique.
-  immoraFetchAuthToken().then((t) => { immoraAuthToken = t })
+  // Récupère le token auth. Si absent (session pas encore synchronisée depuis
+  // immora.app), on demande au background de re-synchroniser depuis un onglet
+  // immora.app ouvert, puis on retente. On attend immoraAuthReady avant d'appeler
+  // l'API → l'analyse part authentifiée si l'utilisateur est connecté.
+  const immoraAuthReady = immoraFetchAuthToken().then(async (t) => {
+    if (!t) {
+      try { chrome.runtime.sendMessage({ type: 'SYNC_SESSION' }) } catch (_) {}
+      await new Promise((r) => setTimeout(r, 1200))
+      t = await immoraFetchAuthToken()
+    }
+    immoraAuthToken = t
+  })
 
   // ── Appel API principal ──────────────────────────────────────────────────
   const doAnalyse = (data, onSuccess) => {
@@ -1025,9 +1034,12 @@ function immoraInit({ isDetailPage, extractData, source, maxRetries = 5, retryDe
       }),
     })
     .then(async (r) => {
-      // 402 Payment Required → user Free, on affiche un teaser Pro
+      // 402 : le serveur nous voit non-Pro. Deux cas très différents :
+      //  • pas de token → on n'est PAS connecté (ou session pas synchro) → "connecte-toi"
+      //  • token présent mais tier free → réel teaser Pro
       if (r.status === 402) {
-        immoraShowPhotoUpgrade()
+        if (!immoraAuthToken) immoraShowPhotoConnect()
+        else immoraShowPhotoUpgrade()
         return null
       }
       // 503 = ANTHROPIC_API_KEY manquant sur le serveur → on cache silencieusement
@@ -1081,10 +1093,13 @@ function immoraInit({ isDetailPage, extractData, source, maxRetries = 5, retryDe
     const completeness = immoraExtractionCompleteness(data)
     immoraSetSourceBadge(source, completeness)
 
-    // Phase 1 : analyse rapide
-    doAnalyse(data, (result) => {
-      // Phase 2 : analyse photos (après 500ms pour laisser le widget s'afficher)
-      setTimeout(() => doPhotoAnalysis(data, result), 500)
+    // Phase 1 : analyse rapide — on attend d'abord la résolution du token
+    // (immoraAuthReady) pour que l'appel parte authentifié si connecté.
+    immoraAuthReady.finally(() => {
+      doAnalyse(data, (result) => {
+        // Phase 2 : analyse photos (après 500ms pour laisser le widget s'afficher)
+        setTimeout(() => doPhotoAnalysis(data, result), 500)
+      })
     })
   }
 
@@ -1145,11 +1160,37 @@ function immoraRenderWarnings(warnings) {
   hero.parentNode.insertBefore(wrap, hero.nextSibling)
 }
 
+// Gated + PAS de token → l'utilisateur n'est pas connecté (ou session pas encore
+// synchronisée). On l'invite à ouvrir immora.app (pas à payer).
+function immoraShowPhotoConnect() {
+  const el = document.getElementById('immora-photo-section')
+  if (!el) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div class="immo-photo-upgrade">
+      <div class="immo-photo-upgrade-label">🔒 Connecte-toi pour l'analyse IA</div>
+      <div class="immo-photo-upgrade-text">Ouvre immora.app (en étant connecté), puis reviens : l'analyse travaux se débloque automatiquement si ton offre l'inclut.</div>
+      <div class="immo-photo-plans">
+        <a class="immo-photo-plan immo-photo-plan-primary" href="${IMMORA_API}" target="_blank" rel="noopener">Ouvrir immora.app</a>
+        <a class="immo-photo-plan immo-photo-plan-secondary" id="immo-photo-retry-conn" style="cursor:pointer">J'ai ouvert · Réessayer</a>
+      </div>
+    </div>`
+  const retry = document.getElementById('immo-photo-retry-conn')
+  if (retry) {
+    retry.addEventListener('click', () => {
+      try { chrome.runtime.sendMessage({ type: 'SYNC_SESSION' }) } catch (_) {}
+      setTimeout(() => location.reload(), 700)
+    })
+  }
+}
+
 // CTA upgrade Pro quand l'analyse photos est gated (free → 402)
 function immoraShowPhotoUpgrade() {
   const el = document.getElementById('immora-photo-section')
   if (!el) return
   el.style.display = 'block'
+  // ⚠️ DIAG TEMPORAIRE — dit exactement pourquoi le serveur nous voit en free
+  const _dbg = `tok:${immoraAuthToken ? immoraAuthToken.length + 'c' : 'ABSENT'} · tier:${immoraUserTier ?? 'null'} · ${immoraAuthDiag || '?'}`
   el.innerHTML = `
     <div class="immo-photo-upgrade">
       <div class="immo-photo-upgrade-label">Analyse travaux par IA · Pro</div>
@@ -1158,6 +1199,7 @@ function immoraShowPhotoUpgrade() {
         <a class="immo-photo-plan immo-photo-plan-primary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=annual" target="_blank" rel="noopener">Annuel · <b>12,90€</b>/mois</a>
         <a class="immo-photo-plan immo-photo-plan-secondary" href="${IMMORA_API}/checkout/start?plan=pro&cycle=monthly" target="_blank" rel="noopener">Mensuel · <b>19,90€</b>/mois</a>
       </div>
+      <div style="font-size:9px;color:rgba(255,255,255,.5);padding:8px 0 2px;font-family:ui-monospace,monospace">🔧 ${_dbg}</div>
     </div>`
 }
 

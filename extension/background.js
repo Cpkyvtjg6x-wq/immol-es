@@ -149,6 +149,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true
   }
 
+  // Demandé par un content script d'annonce qui n'a pas de token : on (re)injecte
+  // immora-auth.js dans tout onglet immora.app ouvert pour re-synchroniser la
+  // session sans que l'utilisateur ait à faire quoi que ce soit.
+  if (msg.type === 'SYNC_SESSION') {
+    immoraSyncOpenTabs()
+    sendResponse({ ok: true })
+    return true
+  }
+
   if (msg.type === 'GET_AUTH_TOKEN') {
     resolveAuthToken().then((r) => sendResponse(r)) // { token, tier, diag }
     return true // keep channel open for async
